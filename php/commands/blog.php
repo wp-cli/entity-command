@@ -33,13 +33,14 @@ class Blog_Command extends WP_CLI_Command {
 	/**
 	 * Create a blog in a multisite install.
 	 *
-	 * @synopsis --slug=<slug> --title=<title> [--email=<email>] [--site_id=<site-id>] [--public]
+	 * @synopsis --slug=<slug> [--title=<title>] [--email=<email>] [--site_id=<site-id>] [--private]
 	 */
-	public function create( $args, $assoc_args ) {
+	public function create( $_, $assoc_args ) {
 		global $wpdb;
 
 		$base = $assoc_args['slug'];
-		$title = $assoc_args['title'];
+		$title = isset( $assoc_args['title'] ) ? $assoc_args['title'] : ucfirst( $base );
+
 		$email = empty( $assoc_args['email'] ) ? '' : $assoc_args['email'];
 		// Site
 		if ( !empty( $assoc_args['site_id'] ) ) {
@@ -52,7 +53,7 @@ class Blog_Command extends WP_CLI_Command {
 			$site = wpmu_current_site();
 		}
 
-		$public = isset( $assoc_args['private'] ) ? 0 : 1;
+		$public = !isset( $assoc_args['private'] );
 
 		// Sanitize
 		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {

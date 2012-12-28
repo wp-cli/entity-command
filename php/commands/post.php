@@ -1,14 +1,14 @@
 <?php
 
-WP_CLI::add_command( 'post', 'Post_Command' );
-
 /**
  * Implement post command
  *
  * @package wp-cli
  * @subpackage commands/internals
  */
-class Post_Command extends WP_CLI_Command {
+class Post_Command extends \WP_CLI\CommandWithDBObject {
+
+	protected $obj_type = 'post';
 
 	/**
 	 * Create a post.
@@ -16,39 +16,24 @@ class Post_Command extends WP_CLI_Command {
 	 * @synopsis --<field>=<value> [--porcelain]
 	 */
 	public function create( $_, $assoc_args ) {
-		unset( $assoc_args['ID'] );
+		parent::create( $assoc_args );
+	}
 
-		$post_id = wp_insert_post( $assoc_args, true );
-
-		if ( is_wp_error( $post_id ) ) {
-			WP_CLI::error( $post_id );
-		}
-
-		if ( isset( $assoc_args['porcelain'] ) )
-			WP_CLI::line( $post_id );
-		else
-			WP_CLI::success( "Created post $post_id." );
+	protected function _create( $params ) {
+		return wp_insert_post( $params, true );
 	}
 
 	/**
-	 * Update a post.
+	 * Update one or more posts.
 	 *
-	 * @synopsis <id> --<field>=<value>
+	 * @synopsis <id>... --<field>=<value>
 	 */
 	public function update( $args, $assoc_args ) {
-		list( $post_id ) = $args;
+		parent::update( $args, $assoc_args );
+	}
 
-		if ( empty( $assoc_args ) ) {
-			WP_CLI::error( "Need some fields to update." );
-		}
-
-		$params = array_merge( $assoc_args, array( 'ID' => $post_id ) );
-
-		if ( wp_update_post( $params ) ) {
-			WP_CLI::success( "Updated post $post_id." );
-		} else {
-			WP_CLI::error( "Failed updating post $post_id" );
-		}
+	protected function _update( $params ) {
+		return wp_update_post( $params, true );
 	}
 
 	/**
@@ -56,15 +41,23 @@ class Post_Command extends WP_CLI_Command {
 	 *
 	 * @synopsis <id>... [--force]
 	 */
-	public function delete( $post_ids, $assoc_args ) {
-		$action = isset( $assoc_args['force'] ) ? 'Deleted' : 'Trashed';
+	public function delete( $args, $assoc_args ) {
+		$assoc_args = wp_parse_args( $assoc_args, array(
+			'force' => false
+		) );
 
-		foreach ( $post_ids as $post_id ) {
-			if ( wp_delete_post( $post_id, $assoc_args['force'] ) ) {
-				WP_CLI::success( "{$action} post $post_id." );
-			} else {
-				WP_CLI::error( "Failed deleting post $post_id." );
-			}
+		parent::delete( $args, $assoc_args );
+	}
+
+	protected function _delete( $post_id, $assoc_args ) {
+		$r = wp_delete_post( $post_id, $assoc_args['force'] );
+
+		if ( $r ) {
+			$action = $assoc_args['force'] ? 'Deleted' : 'Trashed';
+
+			return array( 'success', "$action post $post_id." );
+		} else {
+			return array( 'error', "Failed deleting post $post_id." );
 		}
 	}
 
@@ -204,3 +197,6 @@ class Post_Command extends WP_CLI_Command {
 		return ( mt_rand(1,10) == 7 ) ? true : false;
 	}
 }
+
+WP_CLI::add_command( 'post', 'Post_Command' );
+
