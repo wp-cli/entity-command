@@ -166,5 +166,3 @@ class Menu_Location_Command extends WP_CLI_Command {
 	}
 
 }
-
-WP_CLI::add_command( 'menu location', 'Menu_Location_Command' );

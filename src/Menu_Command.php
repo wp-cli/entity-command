@@ -198,5 +198,3 @@ class Menu_Command extends WP_CLI_Command {
 	}
 
 }
-
-WP_CLI::add_command( 'menu', 'Menu_Command' );

@@ -35,5 +35,3 @@ class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 		return $post->ID;
 	}
 }
-
-WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );

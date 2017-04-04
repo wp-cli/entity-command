@@ -197,5 +197,3 @@ class Taxonomy_Command extends WP_CLI_Command {
 		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'taxonomy' );
 	}
 }
-
-WP_CLI::add_command( 'taxonomy', 'Taxonomy_Command' );

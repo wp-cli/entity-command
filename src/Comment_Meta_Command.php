@@ -36,4 +36,3 @@ class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	}
 }
 
-WP_CLI::add_command( 'comment meta', 'Comment_Meta_Command' );

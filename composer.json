@@ -1,0 +1,55 @@
+{
+    "name": "wp-cli/entity-command",
+    "description": "Manage WordPress core entities.",
+    "type": "wp-cli-package",
+    "homepage": "https://github.com/wp-cli/entity-command",
+    "support": {
+        "issues": "https://github.com/wp-cli/entity-command/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Daniel Bachhuber",
+            "email": "daniel@runcommand.io",
+            "homepage": "https://runcommand.io"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "": "src/",
+            "WP_CLI\\": "src/WP_CLI"
+        },
+        "files": [ "entity-command.php" ]
+    },
+    "require": {},
+    "require-dev": {
+        "behat/behat": "~2.5",
+        "wp-cli/wp-cli": "*"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        },
+        "commands": [
+            "comment",
+            "comment meta",
+            "menu",
+            "menu item",
+            "menu location",
+            "network meta",
+            "post",
+            "post meta",
+            "post term",
+            "post-type",
+            "site",
+            "taxonomy",
+            "term",
+            "term meta",
+            "user",
+            "user meta",
+            "user term"
+        ]
+    }
+}

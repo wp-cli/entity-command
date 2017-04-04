@@ -591,5 +591,3 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		return file_get_contents( $readfile );
 	}
 }
-
-WP_CLI::add_command( 'post', 'Post_Command' );
