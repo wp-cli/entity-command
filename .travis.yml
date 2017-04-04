@@ -45,4 +45,4 @@ before_script:
   - composer validate
 
 script:
-  - behat --format progress --strict
+  - ./bin/test.sh
