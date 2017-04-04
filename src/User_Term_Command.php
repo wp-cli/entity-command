@@ -12,5 +12,3 @@
 class User_Term_Command extends \WP_CLI\CommandWithTerms {
 	protected $obj_type = 'user';
 }
-
-WP_CLI::add_command( 'user term', 'User_Term_Command' );

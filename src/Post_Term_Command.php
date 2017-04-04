@@ -22,5 +22,3 @@ class Post_Term_Command extends \WP_CLI\CommandWithTerms {
 		return $post->post_type;
 	}
 }
-
-WP_CLI::add_command( 'post term', 'Post_Term_Command' );

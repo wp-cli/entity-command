@@ -686,5 +686,3 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		}
 	}
 }
-
-WP_CLI::add_command( 'site', 'Site_Command' );

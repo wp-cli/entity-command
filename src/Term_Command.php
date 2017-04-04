@@ -576,5 +576,3 @@ class Term_Command extends WP_CLI_Command {
 		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'term' );
 	}
 }
-
-WP_CLI::add_command( 'term', 'Term_Command' );

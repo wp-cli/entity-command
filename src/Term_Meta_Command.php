@@ -38,12 +38,3 @@ class Term_Meta_Command extends \WP_CLI\CommandWithMeta {
 	}
 
 }
-
-WP_CLI::add_command( 'term meta', 'Term_Meta_Command', array(
-	'before_invoke' => function() {
-		if ( \WP_CLI\Utils\wp_version_compare( '4.4', '<' ) ) {
-			WP_CLI::error( "Requires WordPress 4.4 or greater." );
-		}
-	})
-);
-

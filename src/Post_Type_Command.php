@@ -169,5 +169,3 @@ class Post_Type_Command extends WP_CLI_Command {
 		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'post-type' );
 	}
 }
-
-WP_CLI::add_command( 'post-type', 'Post_Type_Command' );
