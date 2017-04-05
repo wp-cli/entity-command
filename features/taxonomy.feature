@@ -11,10 +11,10 @@ Feature: Manage WordPress taxonomies
       | category | Categories |             | post        | 1             | 1            | 1      |
       | post_tag | Tags       |             | post        | 1             |              | 1      |
 
-    When I run `wp taxonomy list --object_type=link --format=csv`
+    When I run `wp taxonomy list --object_type=nav_menu_item --format=csv`
     Then STDOUT should be CSV containing:
-      | name          | label            | description | object_type | show_tagcloud | hierarchical | public |
-      | link_category | Link Categories  |             | link        |               |              |        |
+      | name     | label            | description | object_type   | show_tagcloud | hierarchical | public |
+      | nav_menu | Navigation Menus |             | nav_menu_item |               |              |        |
 
   Scenario: Get taxonomy
     When I try `wp taxonomy get invalid-taxonomy`
