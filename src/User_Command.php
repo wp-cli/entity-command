@@ -47,13 +47,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * List users.
 	 *
+	 * Display WordPress users based on all arguments supported by
+	 * [WP_User_Query()](https://developer.wordpress.org/reference/classes/wp_user_query/prepare_query/).
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--role=<role>]
 	 * : Only display users with a certain role.
 	 *
 	 * [--<field>=<value>]
-	 * : Control output by one or more arguments of get_users().
+	 * : Control output by one or more arguments of WP_User_Query().
 	 *
 	 * [--network]
 	 * : List all users in the network for multisite.
@@ -117,6 +120,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     # List users with only given fields
 	 *     $ wp user list --fields=display_name,user_email --format=json
 	 *     [{"display_name":"supervisor","user_email":"supervisor@gmail.com"}]
+	 *
+	 *     # List users ordered by the 'last_activity' meta value.
+	 *     $ wp user list --meta_key=last_activity --orderby=meta_value_num
 	 *
 	 * @subcommand list
 	 */
