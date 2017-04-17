@@ -351,7 +351,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
 		} else {
-			$user->user_pass = wp_generate_password();
+			$user->user_pass = wp_generate_password(24);
 			$generated_pass = true;
 		}
 
