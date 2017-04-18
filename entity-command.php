@@ -21,6 +21,7 @@ WP_CLI::add_command( 'network meta', 'Network_Meta_Command', array(
 		}
 	}
 ) );
+WP_CLI::add_command( 'option', 'Option_Command' );
 WP_CLI::add_command( 'post', 'Post_Command' );
 WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
 WP_CLI::add_command( 'post term', 'Post_Term_Command' );
