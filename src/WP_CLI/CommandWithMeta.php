@@ -16,6 +16,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * List all metadata associated with an object.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <id>
 	 * : ID for the object.
 	 *
@@ -79,6 +81,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	/**
 	 * Get meta field value.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <id>
 	 * : The ID of the object.
 	 *
@@ -103,6 +107,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 	/**
 	 * Delete a meta field.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <id>
 	 * : The ID of the object.
