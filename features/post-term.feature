@@ -50,6 +50,12 @@ Feature: Manage post term
       1
       """
 
+    When I run `wp post term list 1 category --field=slug`
+    Then STDOUT should be:
+      """
+      new
+      """
+
     When I run `wp post term remove 1 category new`
     Then STDOUT should be:
       """

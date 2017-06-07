@@ -41,6 +41,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * <taxonomy>...
 	 * : One or more taxonomies to list.
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each term.
+	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific row fields.
 	 *
