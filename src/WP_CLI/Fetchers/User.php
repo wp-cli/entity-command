@@ -20,14 +20,17 @@ class User extends Base {
 	 */
 	public function get( $id_email_or_login ) {
 
-		if ( is_numeric( $id_email_or_login ) )
+		if ( is_numeric( $id_email_or_login ) ) {
 			$user = get_user_by( 'id', $id_email_or_login );
-		else if ( is_email( $id_email_or_login ) ) {
+		} elseif ( is_email( $id_email_or_login ) ) {
 			$user = get_user_by( 'email', $id_email_or_login );
-			if ( ! $user ) /** Logins can be emails */
+			// Logins can be emails
+			if ( ! $user ) {
 				$user = get_user_by( 'login', $id_email_or_login );
-		} else
+			}
+		} else {
 			$user = get_user_by( 'login', $id_email_or_login );
+		}
 
 		return $user;
 	}
