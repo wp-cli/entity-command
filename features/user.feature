@@ -306,3 +306,19 @@ Feature: Manage WordPress users
       http://example.com/?author=1
       http://example.com/?author=2
       """
+
+  Scenario: Get user with email as login
+    Given a WP install
+    And I run `wp user create testuser4@example.com testemail4@example.com`
+
+    When I run `wp user get testemail4@example.com --field=user_login`
+    Then STDOUT should be:
+      """
+      testuser4@example.com
+      """
+
+    When I run `wp user get testuser4@example.com --field=user_login`
+    Then STDOUT should be:
+      """
+      testuser4@example.com
+      """
