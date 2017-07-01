@@ -122,7 +122,6 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * : Remove all terms from the post.
 	 */
 	public function remove( $args, $assoc_args ) {
-		//print_r( $args );die;
 		$object_id      = array_shift( $args );
 		$taxonomy       = array_shift( $args );
 		$terms          = $args;
