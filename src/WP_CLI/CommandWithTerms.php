@@ -107,7 +107,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * <taxonomy>
 	 * : The name of the term's taxonomy.
 	 *
-	 * <term>...
+	 * [<term>...]
 	 * : The name of the term or terms to be removed from the object.
 	 *
 	 * [--by=<field>]
@@ -117,8 +117,12 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 *   - slug
 	 *   - id
 	 * ---
+	 *
+	 * [--all]
+	 * : Remove all terms from the post.
 	 */
 	public function remove( $args, $assoc_args ) {
+		//print_r( $args );die;
 		$object_id      = array_shift( $args );
 		$taxonomy       = array_shift( $args );
 		$terms          = $args;
@@ -130,7 +134,27 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
 		}
-		$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
+
+		if ( $field = Utils\get_flag_value( $assoc_args, 'all' ) ) {
+
+			// No need to specify terms while removing all terms.
+			if ( $terms ) {
+				WP_CLI::error( "No need to specify terms while removing all terms." );
+			}
+
+			// Remove all set categories from post.
+			$result = wp_delete_object_term_relationships( $object_id, $taxonomy );
+
+			// Set post to default category.
+			$cat_id = array( 1 );
+			$result = wp_set_object_terms( $object_id, $cat_id, $taxonomy, true );
+		} else {
+			if ( $terms ) {
+				$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
+			} else {
+				WP_CLI::error( "Please specify one or more terms." );
+			}
+		}
 
 		$label = count( $terms ) > 1 ? 'terms' : 'term';
 		if ( ! is_wp_error( $result ) ) {
