@@ -147,12 +147,10 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 			// Set post to default category.
 			$cat_id = array( 1 );
 			$result = wp_set_object_terms( $object_id, $cat_id, $taxonomy, true );
-		} else {
-			if ( $terms ) {
+		} elseif ( $terms ) {
 				$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
-			} else {
+		} else {
 				WP_CLI::error( 'Please specify one or more terms.' );
-			}
 		}
 
 		$label = count( $terms ) > 1 ? 'terms' : 'term';
