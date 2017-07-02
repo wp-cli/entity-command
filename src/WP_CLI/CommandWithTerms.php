@@ -138,7 +138,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 			// No need to specify terms while removing all terms.
 			if ( $terms ) {
-				WP_CLI::error( "No need to specify terms while removing all terms." );
+				WP_CLI::error( 'No need to specify terms while removing all terms.' );
 			}
 
 			// Remove all set categories from post.
@@ -151,7 +151,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 			if ( $terms ) {
 				$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
 			} else {
-				WP_CLI::error( "Please specify one or more terms." );
+				WP_CLI::error( 'Please specify one or more terms.' );
 			}
 		}
 
