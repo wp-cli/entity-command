@@ -149,7 +149,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 			$result = wp_set_object_terms( $object_id, $cat_id, $taxonomy, true );
 		} else {
 
-			// Abort of no terms are specified.
+			// Abort if no terms are specified.
 			if ( ! $terms ) {
 				WP_CLI::error( 'Please specify one or more terms.' );
 			}
