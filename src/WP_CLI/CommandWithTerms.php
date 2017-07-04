@@ -144,9 +144,11 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 			// Remove all set categories from post.
 			$result = wp_delete_object_term_relationships( $object_id, $taxonomy );
 
-			// Set post to default category.
-			$cat_id = array( 1 );
-			$result = wp_set_object_terms( $object_id, $cat_id, $taxonomy, true );
+			if ( 'category' === $taxonomy ) {
+				// Set post to default category.
+				$cat_id = array( 1 );
+				$result = wp_set_object_terms( $object_id, $cat_id, $taxonomy, true );
+			}
 		} else {
 
 			// Abort if no terms are specified.
