@@ -139,3 +139,95 @@ Feature: Manage post custom fields
       """
       My\New\Meta
       """
+
+  @pluck
+  Scenario: Multi-dimensional values can be plucked.
+    Given a WP install
+    And an input.json file:
+      """
+      {
+        "foo": "bar"
+      }
+      """
+    And I run `wp post meta set 1 meta-key --format=json < input.json`
+
+    When I run `wp post meta pluck 1 meta-key foo`
+    Then STDOUT should be:
+      """
+      bar
+      """
+
+  @pluck @pluck-deep
+  Scenario: Multi-dimensional values can be plucked at any depth.
+    Given a WP install
+    And an input.json file:
+      """
+      {
+        "foo": {
+          "bar": {
+            "baz": "some value"
+          }
+        },
+        "foo.com": {
+          "visitors": 999
+        }
+      }
+      """
+    And I run `wp post meta set 1 meta-key --format=json < input.json`
+
+    When I run `wp post meta pluck 1 meta-key foo.bar.baz`
+    Then STDOUT should be:
+      """
+      some value
+      """
+
+    When I run `wp post meta pluck 1 meta-key foo@bar@baz --delimiter=@`
+    Then STDOUT should be:
+      """
+      some value
+      """
+
+    When I run `wp post meta pluck 1 meta-key foo.com@visitors --delimiter=@`
+    Then STDOUT should be:
+      """
+      999
+      """
+
+  @pluck @pluck-fail
+  Scenario: The command fails when attempting to pluck a non-existent nested value.
+    Given a WP install
+    And I run `wp post meta set 1 meta-key '{ "key": "value" }' --format=json`
+
+    When I run `wp post meta pluck 1 meta-key key`
+    Then STDOUT should be:
+      """
+      value
+      """
+
+    When I try `wp post meta pluck 1 meta-key foo`
+    Then STDOUT should be empty
+
+  @patch
+  Scenario: Multi-dimensional values can be patched.
+    Given a WP install
+    And an input.json file:
+      """
+      {
+        "foo": "bar"
+      }
+      """
+    And I run `wp post meta set 1 meta-key --format=json < input.json`
+
+    When I run `wp post meta patch 1 meta-key foo baz`
+    Then STDOUT should be:
+      """
+      Success: Updated custom field 'meta-key'.
+      """
+
+    When I run `wp post meta get 1 meta-key`
+    Then STDOUT should be:
+      """
+      array (
+        'foo' => 'baz',
+      )
+      """

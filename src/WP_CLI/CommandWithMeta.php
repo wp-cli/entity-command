@@ -254,6 +254,127 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	}
 
 	/**
+	 * Get meta field value.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to get.
+	 *
+	 * <pluck-key>
+	 * : The name of the inner key to get.
+	 *
+	 * [--delimiter=<character>]
+	 * : The character to delimit hierarchy within the pluck-key.
+	 * ---
+	 * default: .
+	 * ---
+	 *
+	 * [--format=<format>]
+	 * : Accepted values: table, json. Default: table
+	 *
+	 */
+	public function pluck( $args, $assoc_args ) {
+		list( $object_id, $meta_key, $pluck_key ) = $args;
+
+		$object_id = $this->check_object_id( $object_id );
+
+		$value = get_metadata( $this->meta_type, $object_id, $meta_key, true );
+
+		$traverser = new RecursiveDataStructureTraverser( $value );
+		$traverser->set_delimiter( $assoc_args['delimiter'] );
+
+		try {
+			$value = $traverser->get( $pluck_key );
+		} catch ( \Exception $e ) {
+			die( 1 );
+		}
+
+		WP_CLI::print_value( $value, $assoc_args );
+	}
+
+	/**
+	 * Update a multi-dimensional meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to update.
+	 *
+	 * <patch-key>
+	 * : The name of the inner key to update.
+	 *
+	 * [<value>]
+	 * : The new value. If omitted, the value is read from STDIN.
+	 *
+	 * [--delimiter=<character>]
+	 * : The character to delimit hierarchy within the patch-key.
+	 * ---
+	 * default: .
+	 * ---
+	 *
+	 * [--mode=<mode>]
+	 * : Configures the behavior of the value update.
+	 * ---
+	 * default: replace
+	 * options:
+	 *   - replace
+	 *   - unset
+	 * ---
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
+	 */
+	public function patch( $args, $assoc_args ) {
+		list( $object_id, $meta_key, $patch_key ) = $args;
+
+		$patch_value = WP_CLI::get_value_from_arg_or_stdin( $args, 3 );
+		$patch_value = WP_CLI::read_value( $patch_value, $assoc_args );
+
+		$object_id = $this->check_object_id( $object_id );
+
+		/* Need to make a copy of $current_meta_value here as it is modified by reference */
+		$current_meta_value = $old_meta_value = sanitize_meta( $meta_key, get_metadata( $this->meta_type, $object_id, $meta_key, true ), $this->meta_type );
+
+		$traverser = new RecursiveDataStructureTraverser( $current_meta_value );
+		$traverser->set_delimiter( $assoc_args['delimiter'] );
+
+		$method = 'replace' == $assoc_args['mode'] ? 'set' : 'delete';
+		try {
+			$traverser->$method( $patch_key, $patch_value );
+		} catch ( \Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
+
+		$patched_meta_value = sanitize_meta( $meta_key, $traverser->value(), $this->meta_type );
+
+		if ( $patched_meta_value === $old_meta_value ) {
+			WP_CLI::success( "Value passed for custom field '$meta_key' is unchanged." );
+		} else {
+			$slashed = wp_slash( $patched_meta_value );
+			$success = update_metadata( $this->meta_type, $object_id, $meta_key, $slashed );
+
+			if ( $success ) {
+				WP_CLI::success( "Updated custom field '$meta_key'." );
+			} else {
+				WP_CLI::error( "Failed to update custom field '$meta_key'." );
+			}
+		}
+	}
+
+	/**
 	 * Get the fields for this object's meta
 	 *
 	 * @return array
