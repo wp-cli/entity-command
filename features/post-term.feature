@@ -199,3 +199,18 @@ Feature: Manage post term
     Then STDOUT should be a table containing rows:
       | term_id | name | slug |
       | 3       | 4    | 4    |
+
+  Scenario: Remove all terms from post
+    Given a WP install
+
+    When I run `wp post term remove 1 category --all`
+    Then STDOUT should be:
+      """
+      Success: Removed term.
+      """
+
+    When I try `wp post term remove 1 category cat1 cat2 --all`
+    Then STDERR should be:
+      """
+      Error: No need to specify terms while removing all terms.
+      """
