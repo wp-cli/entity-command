@@ -134,7 +134,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
 		}
 
-		if ( $field = Utils\get_flag_value( $assoc_args, 'all' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'all' ) ) {
 
 			// No need to specify terms while removing all terms.
 			if ( $terms ) {
@@ -145,10 +145,20 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 			$result = wp_delete_object_term_relationships( $object_id, $taxonomy );
 
 			if ( 'category' === $taxonomy ) {
-				// Set post to default category.
-				$cat_id = array( 1 );
+
+				// Set default category to post.
+				$default_category = (int) get_option( 'default_category' );
+				$default_category = ( ! empty( $default_category ) ) ? $default_category : 1;
+				$cat_id[]         = $default_category;
 				$result = wp_set_object_terms( $object_id, $cat_id, $taxonomy, true );
 			}
+
+			if ( ! is_wp_error( $result ) ) {
+				WP_CLI::success( 'Removed all terms.' );
+			} else {
+				WP_CLI::error( 'Failed to remove all terms.' );
+			}
+
 		} else {
 
 			// Abort if no terms are specified.
