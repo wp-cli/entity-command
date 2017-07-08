@@ -150,7 +150,13 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 				$default_category = (int) get_option( 'default_category' );
 				$default_category = ( ! empty( $default_category ) ) ? $default_category : 1;
 				$cat_id[]         = $default_category;
-				$result = wp_set_object_terms( $object_id, $cat_id, $taxonomy, true );
+				$default_category = wp_set_object_terms( $object_id, $cat_id, $taxonomy, true );
+
+				if ( ! is_wp_error( $default_category ) ) {
+					WP_CLI::success( 'Default term set to post.' );
+				} else {
+					WP_CLI::error( 'Failed to set default term.' );
+				}
 			}
 
 			if ( ! is_wp_error( $result ) ) {
@@ -158,6 +164,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 			} else {
 				WP_CLI::error( 'Failed to remove all terms.' );
 			}
+			return;
 
 		} else {
 
