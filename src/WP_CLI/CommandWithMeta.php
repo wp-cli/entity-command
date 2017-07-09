@@ -264,9 +264,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * <key>
 	 * : The name of the meta field to get.
 	 *
-	 * <pluck-key>
-	 * : The name of the inner key to get.
-	 *
+	 * <key-path>...
+	 * : The name(s) of the keys within the value to locate the value to pluck.
 	 *
 	 * [--format=<format>]
 	 * : The output format of the value.
@@ -278,16 +277,16 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 *   - yaml
 	 */
 	public function pluck( $args, $assoc_args ) {
-		list( $object_id, $meta_key, $pluck_key ) = $args;
-
+		list( $object_id, $meta_key ) = $args;
 		$object_id = $this->check_object_id( $object_id );
+		$key_path = array_slice( $args, 2 );
 
 		$value = get_metadata( $this->meta_type, $object_id, $meta_key, true );
 
 		$traverser = new RecursiveDataStructureTraverser( $value );
 
 		try {
-			$value = $traverser->get( $pluck_key );
+			$value = $traverser->get( $key_path );
 		} catch ( \Exception $e ) {
 			die( 1 );
 		}
