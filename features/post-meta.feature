@@ -141,7 +141,7 @@ Feature: Manage post custom fields
       """
 
   @pluck
-  Scenario: Multi-dimensional values can be plucked.
+  Scenario: Nested values can be retrieved.
     Given a WP install
     And an input.json file:
       """
@@ -158,7 +158,7 @@ Feature: Manage post custom fields
       """
 
   @pluck @pluck-deep
-  Scenario: Multi-dimensional values can be plucked at any depth.
+  Scenario: A nested value can be retrieved at any depth.
     Given a WP install
     And an input.json file:
       """
@@ -188,7 +188,7 @@ Feature: Manage post custom fields
       """
 
   @pluck @pluck-fail
-  Scenario: The command fails when attempting to pluck a non-existent nested value.
+  Scenario: Attempting to pluck a non-existent nested value fails.
     Given a WP install
     And I run `wp post meta set 1 meta-key '{ "key": "value" }' --format=json`
 
