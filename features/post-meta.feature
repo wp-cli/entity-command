@@ -228,10 +228,67 @@ Feature: Manage post custom fields
       Success: Updated custom field 'meta-key'.
       """
 
-    When I run `wp post meta get 1 meta-key`
+    When I run `wp post meta get 1 meta-key --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "foo": "baz"
+      }
+      """
+
+  @patch @patch-stdin
+  Scenario: Nested values can be set with a value from STDIN.
+    Given a WP install
+    And an input.json file:
+      """
+      {
+        "foo": {
+          "bar": "baz"
+        },
+        "bar": "bad"
+      }
+      """
+    And a patch file:
+      """
+      new value
+      """
+    And I run `wp post meta set 1 meta-key --format=json < input.json`
+
+    When I run `wp post meta patch 1 meta-key foo bar < patch`
     Then STDOUT should be:
       """
-      array (
-        'foo' => 'baz',
-      )
+      Success: Updated custom field 'meta-key'.
       """
+
+    When I run `wp post meta get 1 meta-key --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "foo": {
+          "bar": "new value"
+        },
+        "bar": "bad"
+      }
+      """
+
+  @patch @patch-fail
+  Scenario: Attempting to set a nested value fails if a parent's key does not exist.
+    Given a WP install
+    And an input.json file:
+      """
+      {
+        "foo": {
+          "bar": "baz"
+        },
+        "bar": "bad"
+      }
+      """
+    And I run `wp post meta set 1 meta-key --format=json < input.json`
+
+    When I try `wp post meta patch 1 meta-key foo no-key no-key 'new-value'`
+    Then STDOUT should be empty
+    And STDERR should contain:
+      """
+      No data exists for no-key
+      """
+    And the return code should be 1

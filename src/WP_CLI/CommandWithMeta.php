@@ -305,8 +305,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * <key>
 	 * : The name of the meta field to update.
 	 *
-	 * <patch-key>
-	 * : The name of the inner key to update.
+	 * <key-path>...
+	 * : The name(s) of the keys within the value to locate the value to patch.
 	 *
 	 * [<value>]
 	 * : The new value. If omitted, the value is read from STDIN.
@@ -330,12 +330,22 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * ---
 	 */
 	public function patch( $args, $assoc_args ) {
-		list( $object_id, $meta_key, $patch_key ) = $args;
-
-		$patch_value = WP_CLI::get_value_from_arg_or_stdin( $args, 3 );
-		$patch_value = WP_CLI::read_value( $patch_value, $assoc_args );
-
+		list( $object_id, $meta_key ) = $args;
 		$object_id = $this->check_object_id( $object_id );
+		$key_path = array_slice( $args, 2 );
+
+		/**
+		 * We need to check STDIN first as we have no way of determining the index of the value.
+		 * We set the read from STDIN to non-blocking, or it will be stuck in an infinite loop if not passed.
+		 */
+		stream_set_blocking( STDIN, 0 );
+		$stdin_value = trim( WP_CLI::get_value_from_arg_or_stdin( $args, -1 ) );
+
+		if ( '' !== $stdin_value ) {
+			$patch_value = WP_CLI::read_value( $stdin_value, $assoc_args );
+		} else {
+			$patch_value = WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
+		}
 
 		/* Need to make a copy of $current_meta_value here as it is modified by reference */
 		$current_meta_value = $old_meta_value = sanitize_meta( $meta_key, get_metadata( $this->meta_type, $object_id, $meta_key, true ), $this->meta_type );
@@ -344,7 +354,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		$method = 'replace' == $assoc_args['mode'] ? 'set' : 'delete';
 		try {
-			$traverser->$method( $patch_key, $patch_value );
+			$traverser->$method( $key_path, $patch_value );
 		} catch ( \Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
