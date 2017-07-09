@@ -254,7 +254,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Get meta field value.
+	 * Get a nested value from a meta field.
 	 *
 	 * ## OPTIONS
 	 *
@@ -295,7 +295,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	}
 
 	/**
-	 * Update a multi-dimensional meta field.
+	 * Update a nested value for a meta field.
 	 *
 	 * ## OPTIONS
 	 *
