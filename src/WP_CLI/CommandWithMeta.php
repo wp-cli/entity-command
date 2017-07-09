@@ -267,11 +267,6 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * <pluck-key>
 	 * : The name of the inner key to get.
 	 *
-	 * [--delimiter=<character>]
-	 * : The character to delimit hierarchy within the pluck-key.
-	 * ---
-	 * default: .
-	 * ---
 	 *
 	 * [--format=<format>]
 	 * : Accepted values: table, json. Default: table
@@ -285,7 +280,6 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$value = get_metadata( $this->meta_type, $object_id, $meta_key, true );
 
 		$traverser = new RecursiveDataStructureTraverser( $value );
-		$traverser->set_delimiter( $assoc_args['delimiter'] );
 
 		try {
 			$value = $traverser->get( $pluck_key );
@@ -312,12 +306,6 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 *
 	 * [<value>]
 	 * : The new value. If omitted, the value is read from STDIN.
-	 *
-	 * [--delimiter=<character>]
-	 * : The character to delimit hierarchy within the patch-key.
-	 * ---
-	 * default: .
-	 * ---
 	 *
 	 * [--mode=<mode>]
 	 * : Configures the behavior of the value update.
@@ -349,7 +337,6 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$current_meta_value = $old_meta_value = sanitize_meta( $meta_key, get_metadata( $this->meta_type, $object_id, $meta_key, true ), $this->meta_type );
 
 		$traverser = new RecursiveDataStructureTraverser( $current_meta_value );
-		$traverser->set_delimiter( $assoc_args['delimiter'] );
 
 		$method = 'replace' == $assoc_args['mode'] ? 'set' : 'delete';
 		try {

@@ -43,7 +43,7 @@ class RecursiveDataStructureTraverser {
 	 * @return static
 	 */
 	public function get( $locator ) {
-		return $this->traverse_to( $locator )->value();
+		return $this->traverse_to( (array) $locator )->value();
 	}
 
 	/**
@@ -56,7 +56,7 @@ class RecursiveDataStructureTraverser {
 	}
 
 	public function set( $locator, $value ) {
-		$this->traverse_to( $locator )->set_value( $value );
+		$this->traverse_to( (array) $locator )->set_value( $value );
 	}
 
 	public function set_value( $value ) {
@@ -97,8 +97,8 @@ class RecursiveDataStructureTraverser {
 	 * @return static
 	 */
 	public function traverse_to( $locator ) {
-		if ( 0 < strlen( $locator ) ) {
-			list( $current, $locator ) = $this->parse_locator( $locator );
+		if ( is_array( $locator ) && count( $locator ) ) {
+			$current = array_shift( $locator );
 
 			if ( ! $this->exists( $current ) ) {
 				throw new \Exception( "No data exists for $current \n " . print_r( $this->data, true ) );
@@ -108,7 +108,6 @@ class RecursiveDataStructureTraverser {
 				if ( $key === $current ) {
 					$traverser = new static( $key_data, $this );
 					$traverser->set_key( $key );
-					$traverser->set_delimiter( $this->delimiter );
 					return $traverser->traverse_to( $locator );
 				}
 			}
@@ -121,10 +120,6 @@ class RecursiveDataStructureTraverser {
 		$this->key = $key;
 	}
 
-	public function set_delimiter( $delimiter ) {
-		$this->delimiter = $delimiter;
-	}
-
 	/**
 	 * Check if the given key exists on the current data.
 	 *
@@ -134,20 +129,5 @@ class RecursiveDataStructureTraverser {
 	 */
 	public function exists( $key ) {
 		return ( is_array( $this->data ) && array_key_exists( $key, $this->data ) ) || ( is_object( $this->data ) && property_exists( $this->data, $key ) );
-	}
-
-	protected function parse_locator( $locator ) {
-		$parsed = array(
-			'current' => $locator,
-			'locator' => false,
-		);
-
-		if ( 0 < strlen( $this->delimiter ) ) {
-			$segments = explode( $this->delimiter, $locator, 2 );
-			$parsed['current'] = array_shift( $segments );
-			$parsed['locator'] = array_shift( $segments );
-		}
-
-		return array_values( $parsed );
 	}
 }

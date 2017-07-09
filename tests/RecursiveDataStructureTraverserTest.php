@@ -30,14 +30,15 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	function it_can_get_a_nested_array_value() {
 		$array = array(
 			'foo' => array(
-				'bar' => 'baz',
+				'bar' => array(
+					'baz' => 'value'
+				),
 			),
 		);
 
 		$traverser = new RecursiveDataStructureTraverser( $array );
-		$traverser->set_delimiter( '.' );
 
-		$this->assertEquals( 'baz', $traverser->get( 'foo.bar' ) );
+		$this->assertEquals( 'value', $traverser->get( array( 'foo', 'bar', 'baz' ) ) );
 	}
 
 	/** @test */
@@ -49,9 +50,8 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$traverser = new RecursiveDataStructureTraverser( $object );
-		$traverser->set_delimiter( '.' );
 
-		$this->assertEquals( 'baz', $traverser->get( 'foo.bar' ) );
+		$this->assertEquals( 'baz', $traverser->get( array( 'foo', 'bar' ) ) );
 	}
 
 	/** @test */
@@ -64,8 +64,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'baz', $array['foo']['bar'] );
 
 		$traverser = new RecursiveDataStructureTraverser( $array );
-		$traverser->set_delimiter( '.' );
-		$traverser->set( 'foo.bar', 'new' );
+		$traverser->set( array( 'foo', 'bar' ), 'new' );
 
 		$this->assertEquals( 'new', $array['foo']['bar'] );
 	}
@@ -80,8 +79,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'baz', $object->foo->bar );
 
 		$traverser = new RecursiveDataStructureTraverser( $object );
-		$traverser->set_delimiter( '.' );
-		$traverser->set( 'foo.bar', 'new' );
+		$traverser->set( array( 'foo', 'bar' ), 'new' );
 
 		$this->assertEquals( 'new', $object->foo->bar );
 	}
@@ -96,8 +94,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 		$this->assertArrayHasKey( 'bar', $array['foo'] );
 
 		$traverser = new RecursiveDataStructureTraverser( $array );
-		$traverser->set_delimiter( '.' );
-		$traverser->delete( 'foo.bar' );
+		$traverser->delete( array( 'foo', 'bar' ) );
 
 		$this->assertArrayNotHasKey( 'bar', $array['foo'] );
 	}
@@ -112,8 +109,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 		$this->assertObjectHasAttribute( 'bar', $object->foo );
 
 		$traverser = new RecursiveDataStructureTraverser( $object );
-		$traverser->set_delimiter( '.' );
-		$traverser->delete( 'foo.bar' );
+		$traverser->delete( array( 'foo', 'bar' ) );
 
 		$this->assertObjectNotHasAttribute( 'bar', $object->foo );
 	}

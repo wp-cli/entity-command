@@ -175,19 +175,13 @@ Feature: Manage post custom fields
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
 
-    When I run `wp post meta pluck 1 meta-key foo.bar.baz`
+    When I run `wp post meta pluck 1 meta-key foo bar baz`
     Then STDOUT should be:
       """
       some value
       """
 
-    When I run `wp post meta pluck 1 meta-key foo@bar@baz --delimiter=@`
-    Then STDOUT should be:
-      """
-      some value
-      """
-
-    When I run `wp post meta pluck 1 meta-key foo.com@visitors --delimiter=@`
+    When I run `wp post meta pluck 1 meta-key foo.com visitors`
     Then STDOUT should be:
       """
       999
