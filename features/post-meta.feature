@@ -202,8 +202,17 @@ Feature: Manage post custom fields
     Then STDOUT should be empty
     And the return code should be 1
 
-  @patch
-  Scenario: Multi-dimensional values can be patched.
+  @pluck @pluck-fail
+  Scenario: Attempting to pluck from a primitive value fails.
+    Given a WP install
+    And I run `wp post meta set 1 meta-key simple-value`
+
+    When I try `wp post meta pluck 1 meta-key foo`
+    Then STDOUT should be empty
+    And the return code should be 1
+
+  @patch @patch-arg
+  Scenario: Nested values can be changed.
     Given a WP install
     And an input.json file:
       """
