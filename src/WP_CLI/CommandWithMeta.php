@@ -269,8 +269,13 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 *
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
-	 *
+	 * : The output format of the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 *   - yaml
 	 */
 	public function pluck( $args, $assoc_args ) {
 		list( $object_id, $meta_key, $pluck_key ) = $args;
