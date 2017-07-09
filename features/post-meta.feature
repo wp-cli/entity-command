@@ -200,6 +200,7 @@ Feature: Manage post custom fields
 
     When I try `wp post meta pluck 1 meta-key foo`
     Then STDOUT should be empty
+    And the return code should be 1
 
   @patch
   Scenario: Multi-dimensional values can be patched.
