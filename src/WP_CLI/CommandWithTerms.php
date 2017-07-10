@@ -101,6 +101,8 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	/**
 	 * Remove a term from an object.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <id>
 	 * : The ID of the object.
 	 *
@@ -119,7 +121,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * ---
 	 *
 	 * [--all]
-	 * : Remove all terms from the post.
+	 * : Remove all terms from the object.
 	 */
 	public function remove( $args, $assoc_args ) {
 		$object_id      = array_shift( $args );
@@ -144,23 +146,23 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 			// Remove all set categories from post.
 			$result = wp_delete_object_term_relationships( $object_id, $taxonomy );
 
+			$message = 'Removed all terms.';
 			if ( 'category' === $taxonomy ) {
 
 				// Set default category to post.
 				$default_category = (int) get_option( 'default_category' );
 				$default_category = ( ! empty( $default_category ) ) ? $default_category : 1;
-				$cat_id[]         = $default_category;
-				$default_category = wp_set_object_terms( $object_id, $cat_id, $taxonomy, true );
+				$default_category = wp_set_object_terms( $object_id, array( $default_category ), $taxonomy, true );
 
 				if ( ! is_wp_error( $default_category ) ) {
-					WP_CLI::success( 'Default term set to post.' );
+					$message = 'Removed all terms and set default term.';
 				} else {
 					WP_CLI::error( 'Failed to set default term.' );
 				}
 			}
 
 			if ( ! is_wp_error( $result ) ) {
-				WP_CLI::success( 'Removed all terms.' );
+				WP_CLI::success( $message );
 			} else {
 				WP_CLI::error( 'Failed to remove all terms.' );
 			}
@@ -170,7 +172,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 			// Abort if no terms are specified.
 			if ( ! $terms ) {
-				WP_CLI::error( 'Please specify one or more terms.' );
+				WP_CLI::error( 'Please specify one or more terms, or use --all.' );
 			}
 
 			// Remove term from post.
