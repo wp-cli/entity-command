@@ -206,8 +206,7 @@ Feature: Manage post term
     When I run `wp post term remove 1 category --all`
     Then STDOUT should be:
       """
-      Success: Default term set to post.
-      Success: Removed all terms.
+      Success: Removed all terms and set default term.
       """
 
     When I try `wp post term remove 1 category cat1 cat2 --all`
