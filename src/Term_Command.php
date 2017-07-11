@@ -235,8 +235,16 @@ class Term_Command extends WP_CLI_Command {
 	 * <taxonomy>
 	 * : Taxonomy of the term to get
 	 *
-	 * <term-id>
-	 * : ID of the term to get
+	 * <term>
+	 * : ID or slug of the term to get
+	 *
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
 	 *
 	 * [--field=<field>]
 	 * : Instead of returning the whole term, returns the value of a single field.
@@ -263,8 +271,15 @@ class Term_Command extends WP_CLI_Command {
 	 */
 	public function get( $args, $assoc_args ) {
 
-		list( $taxonomy, $term_id ) = $args;
-		$term = get_term_by( 'id', $term_id, $taxonomy );
+		list( $taxonomy, $term ) = $args;
+
+		// Get term by specified argument otherwise get term by id.
+		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
+			$term = get_term_by( $field, $term, $taxonomy );
+		} else {
+			$term = get_term_by( 'id', $term, $taxonomy );
+		}
+
 		if ( ! $term ) {
 			WP_CLI::error( "Term doesn't exist." );
 		}
