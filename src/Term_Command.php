@@ -308,8 +308,16 @@ class Term_Command extends WP_CLI_Command {
 	 * <taxonomy>
 	 * : Taxonomy of the term to update.
 	 *
-	 * <term-id>
-	 * : ID for the term to update.
+	 * <term>
+	 * : ID or slug for the term to update.
+	 *
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
 	 *
 	 * [--name=<name>]
 	 * : A new name for the term.
@@ -328,10 +336,14 @@ class Term_Command extends WP_CLI_Command {
 	 *     # Change category with id 15 to use the name "Apple"
 	 *     $ wp term update category 15 --name=Apple
 	 *     Success: Term updated.
+	 *
+	 *     # Change category with slug apple to use the name "Apple"
+	 *     $ wp term update category apple --by=slug --name=Apple
+	 *     Success: Term updated.
 	 */
 	public function update( $args, $assoc_args ) {
 
-		list( $taxonomy, $term_id ) = $args;
+		list( $taxonomy, $term ) = $args;
 
 		$defaults = array(
 			'name'        => null,
@@ -347,6 +359,23 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
+
+		// Get term by specified argument otherwise get term by id.
+		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
+			$term = get_term_by( $field, $term, $taxonomy );
+
+			if ( ! $term ) {
+				WP_CLI::error( "Term doesn't exist." );
+			}
+
+			// Get the term id;
+			$term_id = $term->term_id;
+
+		} else {
+			$term_id = $term;
+		}
+
+		// Update term.
 		$ret = wp_update_term( $term_id, $taxonomy, $assoc_args );
 
 		if ( is_wp_error( $ret ) )
