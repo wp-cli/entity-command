@@ -394,8 +394,16 @@ class Term_Command extends WP_CLI_Command {
 	 * <taxonomy>
 	 * : Taxonomy of the term to delete.
 	 *
-	 * <term-id>...
-	 * : One or more IDs of terms to delete.
+	 * <term>...
+	 * : One or more IDs or slugs of terms to delete.
+	 *
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -411,11 +419,31 @@ class Term_Command extends WP_CLI_Command {
 	 *     Deleted post_tag 161.
 	 *     Success: Deleted 3 of 3 terms.
 	 */
-	public function delete( $args ) {
+	public function delete( $args, $assoc_args  ) {
 		$taxonomy = array_shift( $args );
 
 		$successes = $errors = 0;
 		foreach ( $args as $term_id ) {
+
+			$term = $term_id;
+
+			// Get term by specified argument otherwise get term by id.
+			if ( 'slug' === ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) ) {
+
+				// Get term by slug.
+				$term = get_term_by( $field, $term, $taxonomy );
+
+				// If term not found, then show error message and skip the iteration.
+				if ( ! $term ) {
+					WP_CLI::warning( sprintf( "%s %s doesn't exist.", $taxonomy, $term_id ) );
+					continue;
+				}
+
+				// Get the term id;
+				$term_id = $term->term_id;
+
+			}
+
 			$ret = wp_delete_term( $term_id, $taxonomy );
 
 			if ( is_wp_error( $ret ) ) {
@@ -425,7 +453,7 @@ class Term_Command extends WP_CLI_Command {
 				WP_CLI::log( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
 				$successes++;
 			} else {
-				WP_CLI::warning( sprintf( "%s %d doesn't exist.", $taxonomy, $term_id ) );
+				WP_CLI::warning( sprintf( "%s %s doesn't exist.", $taxonomy, $term_id ) );
 			}
 		}
 		Utils\report_batch_operation_results( 'term', 'delete', count( $args ), $successes, $errors );
