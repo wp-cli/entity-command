@@ -407,8 +407,13 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Delete post category
+	 *     # Delete post category by id
 	 *     $ wp term delete category 15
+	 *     Deleted category 15.
+	 *     Success: Deleted 1 of 1 terms.
+	 *
+	 *     # Delete post category by slug
+	 *     $ wp term delete category apple --by=slug
 	 *     Deleted category 15.
 	 *     Success: Deleted 1 of 1 terms.
 	 *
