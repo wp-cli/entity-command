@@ -278,7 +278,6 @@ class Term_Command extends WP_CLI_Command {
 
 		list( $taxonomy, $term ) = $args;
 
-		// Get term by specified argument otherwise get term by id.
 		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term, $taxonomy );
 
 		if ( ! $term ) {
@@ -358,23 +357,16 @@ class Term_Command extends WP_CLI_Command {
 
 		$assoc_args = wp_slash( $assoc_args );
 
-		// Get term by specified argument otherwise get term by id.
-		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
-			$term = get_term_by( $field, $term, $taxonomy );
+		list( $taxonomy, $term ) = $args;
 
-			if ( ! $term ) {
-				WP_CLI::error( "Term doesn't exist." );
-			}
+		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term, $taxonomy );
 
-			// Get the term id;
-			$term_id = $term->term_id;
-
-		} else {
-			$term_id = $term;
+		if ( ! $term ) {
+			WP_CLI::error( "Term doesn't exist." );
 		}
 
 		// Update term.
-		$ret = wp_update_term( $term_id, $taxonomy, $assoc_args );
+		$ret = wp_update_term( $term->term_id, $taxonomy, $assoc_args );
 
 		if ( is_wp_error( $ret ) )
 			WP_CLI::error( $ret->get_error_message() );
