@@ -235,8 +235,17 @@ class Term_Command extends WP_CLI_Command {
 	 * <taxonomy>
 	 * : Taxonomy of the term to get
 	 *
-	 * <term-id>
-	 * : ID of the term to get
+	 * <term>
+	 * : ID or slug of the term to get
+	 *
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * default: id
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
 	 *
 	 * [--field=<field>]
 	 * : Instead of returning the whole term, returns the value of a single field.
@@ -260,11 +269,17 @@ class Term_Command extends WP_CLI_Command {
 	 *     # Get details about a category with id 199.
 	 *     $ wp term get category 199 --format=json
 	 *     {"term_id":199,"name":"Apple","slug":"apple","term_group":0,"term_taxonomy_id":199,"taxonomy":"category","description":"A type of fruit","parent":0,"count":0,"filter":"raw"}
+	 *
+	 *     # Get details about a category with slug apple.
+	 *     $ wp term get category apple --by=slug --format=json
+	 *     {"term_id":199,"name":"Apple","slug":"apple","term_group":0,"term_taxonomy_id":199,"taxonomy":"category","description":"A type of fruit","parent":0,"count":0,"filter":"raw"}
 	 */
 	public function get( $args, $assoc_args ) {
 
-		list( $taxonomy, $term_id ) = $args;
-		$term = get_term_by( 'id', $term_id, $taxonomy );
+		list( $taxonomy, $term ) = $args;
+
+		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term, $taxonomy );
+
 		if ( ! $term ) {
 			WP_CLI::error( "Term doesn't exist." );
 		}
@@ -289,8 +304,17 @@ class Term_Command extends WP_CLI_Command {
 	 * <taxonomy>
 	 * : Taxonomy of the term to update.
 	 *
-	 * <term-id>
-	 * : ID for the term to update.
+	 * <term>
+	 * : ID or slug for the term to update.
+	 *
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * default: id
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
 	 *
 	 * [--name=<name>]
 	 * : A new name for the term.
@@ -309,10 +333,14 @@ class Term_Command extends WP_CLI_Command {
 	 *     # Change category with id 15 to use the name "Apple"
 	 *     $ wp term update category 15 --name=Apple
 	 *     Success: Term updated.
+	 *
+	 *     # Change category with slug apple to use the name "Apple"
+	 *     $ wp term update category apple --by=slug --name=Apple
+	 *     Success: Term updated.
 	 */
 	public function update( $args, $assoc_args ) {
 
-		list( $taxonomy, $term_id ) = $args;
+		list( $taxonomy, $term ) = $args;
 
 		$defaults = array(
 			'name'        => null,
@@ -328,7 +356,17 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
-		$ret = wp_update_term( $term_id, $taxonomy, $assoc_args );
+
+		list( $taxonomy, $term ) = $args;
+
+		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term, $taxonomy );
+
+		if ( ! $term ) {
+			WP_CLI::error( "Term doesn't exist." );
+		}
+
+		// Update term.
+		$ret = wp_update_term( $term->term_id, $taxonomy, $assoc_args );
 
 		if ( is_wp_error( $ret ) )
 			WP_CLI::error( $ret->get_error_message() );
@@ -346,13 +384,27 @@ class Term_Command extends WP_CLI_Command {
 	 * <taxonomy>
 	 * : Taxonomy of the term to delete.
 	 *
-	 * <term-id>...
-	 * : One or more IDs of terms to delete.
+	 * <term>...
+	 * : One or more IDs or slugs of terms to delete.
+	 *
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * default: id
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Delete post category
+	 *     # Delete post category by id
 	 *     $ wp term delete category 15
+	 *     Deleted category 15.
+	 *     Success: Deleted 1 of 1 terms.
+	 *
+	 *     # Delete post category by slug
+	 *     $ wp term delete category apple --by=slug
 	 *     Deleted category 15.
 	 *     Success: Deleted 1 of 1 terms.
 	 *
@@ -363,11 +415,31 @@ class Term_Command extends WP_CLI_Command {
 	 *     Deleted post_tag 161.
 	 *     Success: Deleted 3 of 3 terms.
 	 */
-	public function delete( $args ) {
+	public function delete( $args, $assoc_args  ) {
 		$taxonomy = array_shift( $args );
 
 		$successes = $errors = 0;
 		foreach ( $args as $term_id ) {
+
+			$term = $term_id;
+
+			// Get term by specified argument otherwise get term by id.
+			if ( 'slug' === ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) ) {
+
+				// Get term by slug.
+				$term = get_term_by( $field, $term, $taxonomy );
+
+				// If term not found, then show error message and skip the iteration.
+				if ( ! $term ) {
+					WP_CLI::warning( sprintf( "%s %s doesn't exist.", $taxonomy, $term_id ) );
+					continue;
+				}
+
+				// Get the term id;
+				$term_id = $term->term_id;
+
+			}
+
 			$ret = wp_delete_term( $term_id, $taxonomy );
 
 			if ( is_wp_error( $ret ) ) {
@@ -377,7 +449,7 @@ class Term_Command extends WP_CLI_Command {
 				WP_CLI::log( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
 				$successes++;
 			} else {
-				WP_CLI::warning( sprintf( "%s %d doesn't exist.", $taxonomy, $term_id ) );
+				WP_CLI::warning( sprintf( "%s %s doesn't exist.", $taxonomy, $term_id ) );
 			}
 		}
 		Utils\report_batch_operation_results( 'term', 'delete', count( $args ), $successes, $errors );
