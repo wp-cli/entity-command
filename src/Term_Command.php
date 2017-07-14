@@ -241,6 +241,10 @@ class Term_Command extends WP_CLI_Command {
 	 * [--by=<field>]
 	 * : Explicitly handle the term value as a slug or id.
 	 * ---
+	 * default: id
+	 * ---
+	 *
+	 * ---
 	 * options:
 	 *   - slug
 	 *   - id
@@ -278,11 +282,7 @@ class Term_Command extends WP_CLI_Command {
 		list( $taxonomy, $term ) = $args;
 
 		// Get term by specified argument otherwise get term by id.
-		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
-			$term = get_term_by( $field, $term, $taxonomy );
-		} else {
-			$term = get_term_by( 'id', $term, $taxonomy );
-		}
+		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term, $taxonomy );
 
 		if ( ! $term ) {
 			WP_CLI::error( "Term doesn't exist." );
