@@ -242,9 +242,6 @@ class Term_Command extends WP_CLI_Command {
 	 * : Explicitly handle the term value as a slug or id.
 	 * ---
 	 * default: id
-	 * ---
-	 *
-	 * ---
 	 * options:
 	 *   - slug
 	 *   - id
@@ -314,6 +311,7 @@ class Term_Command extends WP_CLI_Command {
 	 * [--by=<field>]
 	 * : Explicitly handle the term value as a slug or id.
 	 * ---
+	 * default: id
 	 * options:
 	 *   - slug
 	 *   - id
@@ -400,6 +398,7 @@ class Term_Command extends WP_CLI_Command {
 	 * [--by=<field>]
 	 * : Explicitly handle the term value as a slug or id.
 	 * ---
+	 * default: id
 	 * options:
 	 *   - slug
 	 *   - id
