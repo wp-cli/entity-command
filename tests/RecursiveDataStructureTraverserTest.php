@@ -64,7 +64,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'baz', $array['foo']['bar'] );
 
 		$traverser = new RecursiveDataStructureTraverser( $array );
-		$traverser->set( array( 'foo', 'bar' ), 'new' );
+		$traverser->update( array( 'foo', 'bar' ), 'new' );
 
 		$this->assertEquals( 'new', $array['foo']['bar'] );
 	}
@@ -79,7 +79,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals( 'baz', $object->foo->bar );
 
 		$traverser = new RecursiveDataStructureTraverser( $object );
-		$traverser->set( array( 'foo', 'bar' ), 'new' );
+		$traverser->update( array( 'foo', 'bar' ), 'new' );
 
 		$this->assertEquals( 'new', $object->foo->bar );
 	}

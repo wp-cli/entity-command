@@ -211,7 +211,7 @@ Feature: Manage post custom fields
     Then STDOUT should be empty
     And the return code should be 1
 
-  @patch @patch-arg
+  @patch @patch-update @patch-arg
   Scenario: Nested values can be changed.
     Given a WP install
     And an input.json file:
@@ -222,7 +222,7 @@ Feature: Manage post custom fields
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
 
-    When I run `wp post meta patch 1 meta-key foo baz`
+    When I run `wp post meta patch update 1 meta-key foo baz`
     Then STDOUT should be:
       """
       Success: Updated custom field 'meta-key'.
@@ -236,7 +236,7 @@ Feature: Manage post custom fields
       }
       """
 
-  @patch @patch-stdin
+  @patch @patch-update @patch-stdin
   Scenario: Nested values can be set with a value from STDIN.
     Given a WP install
     And an input.json file:
@@ -254,7 +254,7 @@ Feature: Manage post custom fields
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
 
-    When I run `wp post meta patch 1 meta-key foo bar < patch`
+    When I run `wp post meta patch update 1 meta-key foo bar < patch`
     Then STDOUT should be:
       """
       Success: Updated custom field 'meta-key'.
@@ -271,8 +271,8 @@ Feature: Manage post custom fields
       }
       """
 
-  @patch @patch-fail
-  Scenario: Attempting to set a nested value fails if a parent's key does not exist.
+  @patch @patch-update @patch-fail
+  Scenario: Attempting to update a nested value fails if a parent's key does not exist.
     Given a WP install
     And an input.json file:
       """
@@ -285,10 +285,10 @@ Feature: Manage post custom fields
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
 
-    When I try `wp post meta patch 1 meta-key foo no-key no-key 'new-value'`
+    When I try `wp post meta patch update 1 meta-key foo not-a-key new-value`
     Then STDOUT should be empty
     And STDERR should contain:
       """
-      No data exists for no-key
+      No data exists for not-a-key
       """
     And the return code should be 1
