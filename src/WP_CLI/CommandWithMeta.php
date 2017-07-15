@@ -305,7 +305,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * options:
 	 *   - add
 	 *   - update
-	 *   - remove
+	 *   - delete
 	 * ---
 	 *
 	 * <id>
@@ -341,9 +341,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		stream_set_blocking( STDIN, 0 );
 		$stdin_value = trim( WP_CLI::get_value_from_arg_or_stdin( $args, -1 ) );
 
-		if ( '' !== $stdin_value ) {
+		if ( 'delete' == $action ) {
+			$patch_value = null;
+		} elseif ( '' !== $stdin_value ) {
 			$patch_value = WP_CLI::read_value( $stdin_value, $assoc_args );
 		} else {
+			// Take the patch value as the last positional argument. Mutates $key_path to be 1 element shorter!
 			$patch_value = WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
 		}
 

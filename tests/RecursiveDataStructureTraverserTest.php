@@ -85,7 +85,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_unset_a_nested_array_value() {
+	function it_can_delete_a_nested_array_value() {
 		$array = array(
 			'foo' => array(
 				'bar' => 'baz',
@@ -100,7 +100,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_unset_a_nested_object_value() {
+	function it_can_delete_a_nested_object_value() {
 		$object = (object) array(
 			'foo' => (object) array(
 				'bar' => 'baz',

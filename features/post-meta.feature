@@ -292,3 +292,55 @@ Feature: Manage post custom fields
       No data exists for not-a-key
       """
     And the return code should be 1
+
+  @patch @patch-delete
+  Scenario: A key can be deleted from a nested value.
+    Given a WP install
+    And an input.json file:
+      """
+      {
+        "foo": {
+          "bar": "baz",
+          "abe": "lincoln"
+        }
+      }
+      """
+    And I run `wp post meta set 1 meta-key --format=json < input.json`
+
+    When I run `wp post meta patch delete 1 meta-key foo bar`
+    Then STDOUT should be:
+      """
+      Success: Updated custom field 'meta-key'.
+      """
+
+    When I run `wp post meta get 1 meta-key --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "foo": {
+          "abe": "lincoln"
+        }
+      }
+      """
+
+  @patch @patch-fail @patch-delete @patch-delete-fail
+  Scenario: A key cannot be deleted from a nested value from a non-existent key.
+    Given a WP install
+    And an input.json file:
+      """
+      {
+        "foo": {
+          "bar": "baz"
+        }
+      }
+      """
+    And I run `wp post meta set 1 meta-key --format=json < input.json`
+
+    When I try `wp post meta patch delete 1 meta-key foo not-a-key`
+    Then STDOUT should be empty
+    And STDERR should contain:
+      """
+      No data exists for not-a-key
+      """
+    And the return code should be 1
+
