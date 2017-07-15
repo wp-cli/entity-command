@@ -299,6 +299,15 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
+	 * <action>
+	 * : Patch action to perform.
+	 * ---
+	 * options:
+	 *   - add
+	 *   - update
+	 *   - remove
+	 * ---
+	 *
 	 * <id>
 	 * : The ID of the object.
 	 *
@@ -311,15 +320,6 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * [<value>]
 	 * : The new value. If omitted, the value is read from STDIN.
 	 *
-	 * [--mode=<mode>]
-	 * : Configures the behavior of the value update.
-	 * ---
-	 * default: replace
-	 * options:
-	 *   - replace
-	 *   - unset
-	 * ---
-	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value.
 	 * ---
@@ -330,9 +330,9 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * ---
 	 */
 	public function patch( $args, $assoc_args ) {
-		list( $object_id, $meta_key ) = $args;
+		list( $action, $object_id, $meta_key ) = $args;
 		$object_id = $this->check_object_id( $object_id );
-		$key_path = array_slice( $args, 2 );
+		$key_path = array_slice( $args, 3 );
 
 		/**
 		 * We need to check STDIN first as we have no way of determining the index of the value.
@@ -352,9 +352,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		$traverser = new RecursiveDataStructureTraverser( $current_meta_value );
 
-		$method = 'replace' == $assoc_args['mode'] ? 'set' : 'delete';
 		try {
-			$traverser->$method( $key_path, $patch_value );
+			$traverser->$action( $key_path, $patch_value );
 		} catch ( \Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}

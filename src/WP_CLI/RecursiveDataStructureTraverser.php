@@ -55,7 +55,7 @@ class RecursiveDataStructureTraverser {
 		return $this->data;
 	}
 
-	public function set( $locator, $value ) {
+	public function update( $locator, $value ) {
 		$this->traverse_to( (array) $locator )->set_value( $value );
 	}
 
