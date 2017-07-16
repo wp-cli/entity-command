@@ -303,7 +303,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : Patch action to perform.
 	 * ---
 	 * options:
-	 *   - add
+	 *   - insert
 	 *   - update
 	 *   - delete
 	 * ---
