@@ -67,6 +67,15 @@ class RecursiveDataStructureTraverser {
 		$this->traverse_to( $locator )->unset_on_parent();
 	}
 
+	public function insert( $locator, $value ) {
+		try {
+			$this->update( $locator, $value );
+		} catch ( NonExistentKeyException $e ) {
+			$e->get_traverser()->create_key();
+			$this->insert( $locator, $value );
+		}
+	}
+
 	/**
 	 * Delete the key on the parent's data that references this data.
 	 */
@@ -99,9 +108,12 @@ class RecursiveDataStructureTraverser {
 	public function traverse_to( $locator ) {
 		if ( is_array( $locator ) && count( $locator ) ) {
 			$current = array_shift( $locator );
+			$this->set_key( $current );
 
 			if ( ! $this->exists( $current ) ) {
-				throw new \Exception( "No data exists for $current \n " . print_r( $this->data, true ) );
+				$exception = new NonExistentKeyException( "No data exists for $current \n " . print_r( $this->data, true ) );
+				$exception->set_traverser( $this );
+				throw $exception;
 			}
 
 			foreach ( $this->data as $key => &$key_data ) {
@@ -118,6 +130,20 @@ class RecursiveDataStructureTraverser {
 
 	public function set_key( $key ) {
 		$this->key = $key;
+	}
+
+	/**
+	 * @throws \Exception
+	 * @internal param string $key
+	 */
+	protected function create_key() {
+		if ( is_array( $this->data ) ) {
+			$this->data[ $this->key ] = null;
+		} elseif ( is_object( $this->data ) ) {
+			$this->data->{$this->key} = null;
+		} else {
+			throw new \Exception( "Cannot create key '$this->key', invalid type." );
+		}
 	}
 
 	/**

@@ -113,4 +113,35 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertObjectNotHasAttribute( 'bar', $object->foo );
 	}
+
+	/** @test */
+	function it_can_insert_a_key_into_a_nested_array() {
+		$array = array(
+			'foo' => array(
+				'bar' => 'baz',
+			),
+		);
+
+		$traverser = new RecursiveDataStructureTraverser( $array );
+		$traverser->insert( array( 'foo', 'new' ), 'new value' );
+
+		$this->assertArrayHasKey( 'new', $array['foo'] );
+		$this->assertEquals( 'new value', $array['foo']['new'] );
+	}
+
+	/** @test */
+	function it_throws_an_exception_when_attempting_to_create_a_key_on_an_invalid_type() {
+		$data = 'a string';
+		$traverser = new RecursiveDataStructureTraverser( $data );
+
+		try {
+			$traverser->insert( array( 'key' ), 'value' );
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'a string', $data );
+			return;
+		}
+
+		$this->fail( 'Failed to assert that an exception was thrown when inserting a key into a string.' );
+	}
+
 }
