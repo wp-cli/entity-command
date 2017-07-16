@@ -211,6 +211,17 @@ Feature: Manage post custom fields
     Then STDOUT should be empty
     And the return code should be 1
 
+  @pluck @pluck-numeric
+  Scenario: A nested value can be retrieved from an integer key.
+    Given a WP install
+    And I run `wp post meta set 1 meta-key '[ "foo", "bar" ]' --format=json`
+
+    When I run `wp post meta pluck 1 meta-key 0`
+    Then STDOUT should be:
+      """
+      foo
+      """
+
   @patch @patch-update @patch-arg
   Scenario: Nested values can be changed.
     Given a WP install
@@ -380,4 +391,21 @@ Feature: Manage post custom fields
     Then STDOUT should be:
       """
       a simple value
+      """
+
+  @patch @patch-numeric
+  Scenario: A nested value can be updated using an integer key.
+    Given a WP install
+    And I run `wp post meta set 1 meta-key '[ "foo", "bar" ]' --format=json`
+
+    When I run `wp post meta patch update 1 meta-key 0 new`
+    Then STDOUT should be:
+      """
+      Success: Updated custom field 'meta-key'.
+      """
+
+    When I run `wp post meta get 1 meta-key --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      [ "new", "bar" ]
       """
