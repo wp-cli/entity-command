@@ -64,7 +64,7 @@ class RecursiveDataStructureTraverser {
 	}
 
 	public function delete( $locator ) {
-		$this->traverse_to( $locator )->unset_on_parent();
+		$this->traverse_to( (array) $locator )->unset_on_parent();
 	}
 
 	public function insert( $locator, $value ) {
