@@ -279,7 +279,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	public function pluck( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
 		$object_id = $this->check_object_id( $object_id );
-		$key_path = array_slice( $args, 2 );
+		$key_path = array_map( function( $key ) {
+			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
+				return (int) $key;
+			}
+			return $key;
+		}, array_slice( $args, 2 ) );
 
 		$value = get_metadata( $this->meta_type, $object_id, $meta_key, true );
 
@@ -332,7 +337,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	public function patch( $args, $assoc_args ) {
 		list( $action, $object_id, $meta_key ) = $args;
 		$object_id = $this->check_object_id( $object_id );
-		$key_path = array_slice( $args, 3 );
+		$key_path = array_map( function( $key ) {
+			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
+				return (int) $key;
+			}
+			return $key;
+		}, array_slice( $args, 3 ) );
 
 		/**
 		 * We need to check STDIN first as we have no way of determining the index of the value.
