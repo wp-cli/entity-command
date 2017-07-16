@@ -344,3 +344,40 @@ Feature: Manage post custom fields
       """
     And the return code should be 1
 
+  @patch @patch-insert
+  Scenario: A new key can be inserted into a nested value.
+    Given a WP install
+    And I run `wp post meta set 1 meta-key '{}' --format=json`
+
+    When I run `wp post meta patch insert 1 meta-key foo bar`
+    Then STDOUT should be:
+      """
+      Success: Updated custom field 'meta-key'.
+      """
+
+    When I run `wp post meta get 1 meta-key --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "foo": "bar"
+      }
+      """
+
+  @patch @patch-fail @patch-insert @patch-insert-fail
+  Scenario: A new key cannot be inserted into a non-nested value.
+    Given a WP install
+    And I run `wp post meta set 1 meta-key 'a simple value'`
+
+    When I try `wp post meta patch insert 1 meta-key foo bar`
+    Then STDOUT should be empty
+    And STDERR should contain:
+      """
+      Cannot create key 'foo'
+      """
+    And the return code should be 1
+
+    When I run `wp post meta get 1 meta-key`
+    Then STDOUT should be:
+      """
+      a simple value
+      """
