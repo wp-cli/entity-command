@@ -654,7 +654,7 @@ class Term_Command extends WP_CLI_Command {
 	 *     Assigning Terms  100% [=========] 0:02 / 0:02
 	 *
 	 */
-	public function assignment( $args, $assoc_args ) {
+	public function assign( $args ) {
 		global $wpdb;
 
 		list ( $taxonomy ) = $args;
@@ -670,8 +670,9 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		// Get total number of ( publish and private ) posts.
-		$count_posts = wp_count_posts();
+		$count_posts = wp_count_posts( $post_type );
 		$total_posts = $count_posts->publish + $count_posts->private;
+
 		// Set page.
 		$pg_num      = 1;
 
