@@ -180,6 +180,161 @@ wp network meta
 
 
 
+### wp option
+
+Manage options.
+
+~~~
+wp option <command>
+~~~
+
+**EXAMPLES**
+
+    # Get site URL.
+    $ wp option get siteurl
+    http://example.com
+
+    # Add option.
+    $ wp option add my_option foobar
+    Success: Added 'my_option' option.
+
+    # Update option.
+    $ wp option update my_option '{"foo": "bar"}' --format=json
+    Success: Updated 'my_option' option.
+
+    # Delete option.
+    $ wp option delete my_option
+    Success: Deleted 'my_option' option.
+
+
+
+
+
+## wp option add
+
+Add a new option value.
+
+~~~
+wp option add
+~~~
+
+**EXAMPLES**
+
+    # Create an option by reading a JSON file.
+    $ wp option add my_option --format=json < config.json
+    Success: Added 'my_option' option.
+
+
+
+
+
+## wp option delete
+
+Delete an option.
+
+~~~
+wp option delete
+~~~
+
+**EXAMPLES**
+
+    # Delete an option.
+    $ wp option delete my_option
+    Success: Deleted 'my_option' option.
+
+
+
+
+
+## wp option get
+
+Get the value for an option.
+
+~~~
+wp option get
+~~~
+
+**EXAMPLES**
+
+    # Get option.
+    $ wp option get home
+    http://example.com
+
+    # Get option in JSON format.
+    $ wp option get active_plugins --format=json
+    {"0":"dynamically-dynamic-sidebar\/dynamically-dynamic-sidebar.php","1":"monster-widget\/monster-widget.php","2":"show-current-template\/show-current-template.php","3":"theme-check\/theme-check.php","5":"wordpress-importer\/wordpress-importer.php"}
+
+
+
+
+
+## wp option list
+
+List options and their values.
+
+~~~
+wp option list
+~~~
+
+**EXAMPLES**
+
+    # Get the total size of all autoload options.
+    $ wp option list --autoload=on --format=total_bytes
+    33198
+
+    # Find biggest transients.
+    $ wp option list --search="*_transient_*" --fields=option_name,size_bytes | sort -n -k
+    2 | tail
+    option_name size_bytes
+    _site_transient_timeout_theme_roots 10
+    _site_transient_theme_roots 76
+    _site_transient_update_themes   181
+    _site_transient_update_core 808
+    _site_transient_update_plugins  6645
+
+    # List all options beginning with "i2f_".
+    $ wp option list --search="i2f_*"
+    +-------------+--------------+
+    | option_name | option_value |
+    +-------------+--------------+
+    | i2f_version | 0.1.0        |
+    +-------------+--------------+
+
+    # Delete all options beginning with "theme_mods_".
+    $ wp option list --search="theme_mods_*" --field=option_name | xargs -I % wp option
+    delete %
+    Success: Deleted 'theme_mods_twentysixteen' option.
+    Success: Deleted 'theme_mods_twentyfifteen' option.
+    Success: Deleted 'theme_mods_twentyfourteen' option.
+
+
+
+
+
+## wp option update
+
+Update an option value.
+
+~~~
+wp option update
+~~~
+
+**EXAMPLES**
+
+    # Update an option by reading from a file.
+    $ wp option update my_option < value.txt
+    Success: Updated 'my_option' option.
+
+    # Update one option on multiple sites using xargs.
+    $ wp site list --field=url | xargs -n1 -I {} sh -c 'wp --url={} option update
+    my_option my_value'
+    Success: Updated 'my_option' option.
+    Success: Updated 'my_option' option.
+
+
+
+
+
 ### wp post
 
 Manage posts.
