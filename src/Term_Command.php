@@ -634,6 +634,103 @@ class Term_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Assign some terms to object. It will assign maximum 5 terms to any post.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <taxonomy>
+	 * : The taxonomy for the terms.
+	 *
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Generate post categories.
+	 *     $ wp term generate category --count=30
+	 *     Generating terms  100% [=========] 0:02 / 0:02
+	 *
+	 *     # Assign random number of terms to posts.
+	 *     $ wp term assign category
+	 *     Assigning Terms  100% [=========] 0:02 / 0:02
+	 *
+	 */
+	public function assign( $args ) {
+		global $wpdb;
+
+		list ( $taxonomy ) = $args;
+		if ( ! taxonomy_exists( $taxonomy ) ) {
+			WP_CLI::error( sprintf( "'%s' is not a registered taxonomy.", $taxonomy ) );
+		}
+
+		// Set post type.
+		$post_type         = 'post';
+		$custom_post_type  = get_taxonomy( $taxonomy )->object_type[0];
+		if ( ! empty( $custom_post_type ) ) {
+			$post_type = $custom_post_type;
+		}
+
+		// Get total number of ( publish and private ) posts.
+		$count_posts = wp_count_posts( $post_type );
+		$total_posts = $count_posts->publish + $count_posts->private;
+
+		// Set page.
+		$pg_num      = 1;
+
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Assigning Terms', $total_posts );
+		do {
+
+			$terms = array();
+			// Get random number.
+			$number = mt_rand( 1, 5 );
+			$terms_sql = "SELECT term_id FROM $wpdb->term_taxonomy WHERE taxonomy = '$taxonomy' ORDER BY RAND() LIMIT $number";
+
+			// Get randome terms.
+			$rand_terms = $wpdb->get_results( $terms_sql );
+			foreach ( $rand_terms as $term ) {
+				$term = get_term_by( 'term_id', $term->term_id, $taxonomy );
+				if ( $term ) {
+					$terms[] = $term->slug;
+				}
+			}
+
+			$args = array (
+				'post_type'      => $post_type,
+				'posts_per_page' => 5,
+				'paged'          => $pg_num,
+				'post_status'    => array( 'publish', 'private' ),
+				'orderby'        => 'ID',
+				'order'          => 'DESC',
+			);
+
+			// Get posts.
+			$posts = get_posts( $args );
+			// Number of posts.
+			$count_result = count( $posts );
+
+			// Set terms to posts.
+			foreach ( $posts as $post ) {
+				$result = wp_set_object_terms( $post->ID, $terms, $taxonomy, false );
+				if ( is_wp_error( $result ) ) {
+					WP_CLI::warning( $result );
+				}
+				$progress->tick();
+			}
+
+			unset( $terms, $posts );
+
+			// Count remaining number of posts.
+			$total_posts = $total_posts - $count_result;
+
+			// Increase page number for next page result.
+			$pg_num++;
+
+		} while ( $total_posts > 0 );
+
+		$progress->finish();
+
+		WP_CLI::success( 'term assignment complete' );
+	}
+
 	private function maybe_make_child() {
 		// 50% chance of making child term
 		return ( mt_rand(1, 2) == 1 );
