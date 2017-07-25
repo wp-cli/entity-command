@@ -185,7 +185,7 @@ wp network meta
 Manage options.
 
 ~~~
-wp option <command>
+wp option
 ~~~
 
 **EXAMPLES**
@@ -208,15 +208,40 @@ wp option <command>
 
 
 
-
-
-## wp option add
+### wp option add
 
 Add a new option value.
 
 ~~~
-wp option add
+wp option add <key> [<value>] [--format=<format>] [--autoload=<autoload>]
 ~~~
+
+Errors if the option already exists.
+
+**OPTIONS**
+
+	<key>
+		The name of the option to add.
+
+	[<value>]
+		The value of the option to add. If ommited, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+	[--autoload=<autoload>]
+		Should this option be automatically loaded.
+		---
+		options:
+		  - 'yes'
+		  - 'no'
+		---
 
 **EXAMPLES**
 
@@ -226,15 +251,18 @@ wp option add
 
 
 
-
-
-## wp option delete
+### wp option delete
 
 Delete an option.
 
 ~~~
-wp option delete
+wp option delete <key>
 ~~~
+
+**OPTIONS**
+
+	<key>
+		Key for the option.
 
 **EXAMPLES**
 
@@ -244,15 +272,28 @@ wp option delete
 
 
 
-
-
-## wp option get
+### wp option get
 
 Get the value for an option.
 
 ~~~
-wp option get
+wp option get <key> [--format=<format>]
 ~~~
+
+**OPTIONS**
+
+	<key>
+		Key for the option.
+
+	[--format=<format>]
+		Get value in a particular format.
+		---
+		default: var_export
+		options:
+		  - var_export
+		  - json
+		  - yaml
+		---
 
 **EXAMPLES**
 
@@ -266,15 +307,58 @@ wp option get
 
 
 
-
-
-## wp option list
+### wp option list
 
 List options and their values.
 
 ~~~
-wp option list
+wp option list [--search=<pattern>] [--exclude=<pattern>] [--autoload=<value>] [--transients] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
+
+**OPTIONS**
+
+	[--search=<pattern>]
+		Use wildcards ( * and ? ) to match option name.
+
+	[--exclude=<pattern>]
+		Pattern to exclude. Use wildcards ( * and ? ) to match option name.
+
+	[--autoload=<value>]
+		Match only autoload options when value is on, and only not-autoload option when off.
+
+	[--transients]
+		List only transients. Use `--no-transients` to ignore all transients.
+
+	[--field=<field>]
+		Prints the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields.
+
+	[--format=<format>]
+		The serialization format for the value. total_bytes displays the total size of matching options in bytes.
+		---
+		default: table
+		options:
+		  - table
+		  - json
+		  - csv
+		  - count
+		  - yaml
+		  - total_bytes
+		---
+
+**AVAILABLE FIELDS**
+
+This field will be displayed by default for each matching option:
+
+* option_name
+* option_value
+
+These fields are optionally available:
+
+* autoload
+* size_bytes
 
 **EXAMPLES**
 
@@ -283,8 +367,7 @@ wp option list
     33198
 
     # Find biggest transients.
-    $ wp option list --search="*_transient_*" --fields=option_name,size_bytes | sort -n -k
-    2 | tail
+    $ wp option list --search="*_transient_*" --fields=option_name,size_bytes | sort -n -k 2 | tail
     option_name size_bytes
     _site_transient_timeout_theme_roots 10
     _site_transient_theme_roots 76
@@ -301,23 +384,45 @@ wp option list
     +-------------+--------------+
 
     # Delete all options beginning with "theme_mods_".
-    $ wp option list --search="theme_mods_*" --field=option_name | xargs -I % wp option
-    delete %
+    $ wp option list --search="theme_mods_*" --field=option_name | xargs -I % wp option delete %
     Success: Deleted 'theme_mods_twentysixteen' option.
     Success: Deleted 'theme_mods_twentyfifteen' option.
     Success: Deleted 'theme_mods_twentyfourteen' option.
 
 
 
-
-
-## wp option update
+### wp option update
 
 Update an option value.
 
 ~~~
-wp option update
+wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
 ~~~
+
+**OPTIONS**
+
+	<key>
+		The name of the option to update.
+
+	[<value>]
+		The new value. If ommited, the value is read from STDIN.
+
+	[--autoload=<autoload>]
+		Requires WP 4.2. Should this option be automatically loaded.
+		---
+		options:
+		  - 'yes'
+		  - 'no'
+		---
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
 
 **EXAMPLES**
 
@@ -326,12 +431,9 @@ wp option update
     Success: Updated 'my_option' option.
 
     # Update one option on multiple sites using xargs.
-    $ wp site list --field=url | xargs -n1 -I {} sh -c 'wp --url={} option update
-    my_option my_value'
+    $ wp site list --field=url | xargs -n1 -I {} sh -c 'wp --url={} option update my_option my_value'
     Success: Updated 'my_option' option.
     Success: Updated 'my_option' option.
-
-
 
 
 
@@ -646,30 +748,21 @@ We appreciate you taking the initiative to contribute to this project.
 
 Contributing isn’t limited to just code. We encourage you to contribute in the way that best fits your abilities, by writing tutorials, giving a demo at your local meetup, helping other users with their support questions, or revising our documentation.
 
+For a more thorough introduction, [check out WP-CLI's guide to contributing](https://make.wordpress.org/cli/handbook/contributing/). This package follows those policy and guidelines.
+
 ### Reporting a bug
 
 Think you’ve found a bug? We’d love for you to help us get it fixed.
 
 Before you create a new issue, you should [search existing issues](https://github.com/wp-cli/entity-command/issues?q=label%3Abug%20) to see if there’s an existing resolution to it, or if it’s already been fixed in a newer version.
 
-Once you’ve done a bit of searching and discovered there isn’t an open or fixed issue for your bug, please [create a new issue](https://github.com/wp-cli/entity-command/issues/new) with the following:
-
-1. What you were doing (e.g. "When I run `wp post list`").
-2. What you saw (e.g. "I see a fatal about a class being undefined.").
-3. What you expected to see (e.g. "I expected to see the list of posts.")
-
-Include as much detail as you can, and clear steps to reproduce if possible.
+Once you’ve done a bit of searching and discovered there isn’t an open or fixed issue for your bug, please [create a new issue](https://github.com/wp-cli/entity-command/issues/new). Include as much detail as you can, and clear steps to reproduce if possible. For more guidance, [review our bug report documentation](https://make.wordpress.org/cli/handbook/bug-reports/).
 
 ### Creating a pull request
 
 Want to contribute a new feature? Please first [open a new issue](https://github.com/wp-cli/entity-command/issues/new) to discuss whether the feature is a good fit for the project.
 
-Once you've decided to commit the time to seeing your pull request through, please follow our guidelines for creating a pull request to make sure it's a pleasant experience:
-
-1. Create a feature branch for each contribution.
-2. Submit your pull request early for feedback.
-3. Include functional tests with your changes. [Read the WP-CLI documentation](https://wp-cli.org/docs/pull-requests/#functional-tests) for an introduction.
-4. Follow the [WordPress Coding Standards](http://make.wordpress.org/core/handbook/coding-standards/).
+Once you've decided to commit the time to seeing your pull request through, [please follow our guidelines for creating a pull request](https://make.wordpress.org/cli/handbook/pull-requests/) to make sure it's a pleasant experience.
 
 
 *This README.md is generated dynamically from the project's codebase using `wp scaffold package-readme` ([doc](https://github.com/wp-cli/scaffold-package-command#wp-scaffold-package-readme)). To suggest changes, please submit a pull request against the corresponding part of the codebase.*
