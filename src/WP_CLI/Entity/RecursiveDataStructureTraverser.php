@@ -133,7 +133,7 @@ class RecursiveDataStructureTraverser {
 			$this->key = $current;
 
 			if ( ! $this->exists( $current ) ) {
-				$exception = new NonExistentKeyException( "No data exists for $current \n " . print_r( $this->data, true ) );
+				$exception = new NonExistentKeyException( "No data exists for key \"$current\"" );
 				$exception->set_traverser( $this );
 				throw $exception;
 			}

@@ -300,7 +300,7 @@ Feature: Manage post custom fields
     Then STDOUT should be empty
     And STDERR should contain:
       """
-      No data exists for not-a-key
+      No data exists for key "not-a-key"
       """
     And the return code should be 1
 
@@ -351,7 +351,7 @@ Feature: Manage post custom fields
     Then STDOUT should be empty
     And STDERR should contain:
       """
-      No data exists for not-a-key
+      No data exists for key "not-a-key"
       """
     And the return code should be 1
 
