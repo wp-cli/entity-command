@@ -3,6 +3,7 @@
 namespace WP_CLI;
 
 use WP_CLI;
+use WP_CLI\Entity\RecursiveDataStructureTraverser;
 
 /**
  * Base class for WP-CLI commands that deal with metadata
