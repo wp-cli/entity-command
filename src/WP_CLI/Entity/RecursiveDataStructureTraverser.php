@@ -23,10 +23,12 @@ class RecursiveDataStructureTraverser {
 	 * RecursiveDataStructureTraverser constructor.
 	 *
 	 * @param mixed $data The data to read/manipulate by reference.
+	 * @param string|int $key The key/property the data belongs to.
 	 * @param static $parent
 	 */
-	public function __construct( &$data, $parent = null ) {
+	public function __construct( &$data, $key = null, $parent = null ) {
 		$this->data =& $data;
+		$this->key = $key;
 		$this->parent = $parent;
 	}
 
@@ -128,7 +130,7 @@ class RecursiveDataStructureTraverser {
 	public function traverse_to( $key_path ) {
 		if ( is_array( $key_path ) && count( $key_path ) ) {
 			$current = array_shift( $key_path );
-			$this->set_key( $current );
+			$this->key = $current;
 
 			if ( ! $this->exists( $current ) ) {
 				$exception = new NonExistentKeyException( "No data exists for $current \n " . print_r( $this->data, true ) );
@@ -138,23 +140,13 @@ class RecursiveDataStructureTraverser {
 
 			foreach ( $this->data as $key => &$key_data ) {
 				if ( $key === $current ) {
-					$traverser = new static( $key_data, $this );
-					$traverser->set_key( $key );
+					$traverser = new static( $key_data, $key, $this );
 					return $traverser->traverse_to( $key_path );
 				}
 			}
 		}
 
 		return $this;
-	}
-
-	/**
-	 * Define the key for the current data.
-	 *
-	 * @param string $key
-	 */
-	public function set_key( $key ) {
-		$this->key = $key;
 	}
 
 	/**
