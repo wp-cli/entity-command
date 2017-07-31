@@ -1,20 +1,20 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Entity;
 
 class NonExistentKeyException extends \Exception {
-	/* @var RecursiveDataStructureTraverser */
+	/* @var \WP_CLI\Entity\RecursiveDataStructureTraverser */
 	protected $traverser;
 
 	/**
-	 * @param RecursiveDataStructureTraverser $traverser
+	 * @param \WP_CLI\Entity\RecursiveDataStructureTraverser $traverser
 	 */
 	public function set_traverser( $traverser ) {
 		$this->traverser = $traverser;
 	}
 
 	/**
-	 * @return RecursiveDataStructureTraverser
+	 * @return \WP_CLI\Entity\RecursiveDataStructureTraverser
 	 */
 	public function get_traverser() {
 		return $this->traverser;

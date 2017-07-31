@@ -1,6 +1,8 @@
 <?php
 
-namespace WP_CLI;
+namespace WP_CLI\Entity\Tests;
+
+use WP_CLI\Entity\RecursiveDataStructureTraverser;
 
 class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 
