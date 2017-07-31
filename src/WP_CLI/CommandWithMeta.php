@@ -4,6 +4,7 @@ namespace WP_CLI;
 
 use WP_CLI;
 use WP_CLI\Entity\RecursiveDataStructureTraverser;
+use WP_CLI\Entity\Utils;
 
 /**
  * Base class for WP-CLI commands that deal with metadata
@@ -345,17 +346,11 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 			return $key;
 		}, array_slice( $args, 3 ) );
 
-		/**
-		 * We need to check STDIN first as we have no way of determining the index of the value.
-		 * We set the read from STDIN to non-blocking, or it will be stuck in an infinite loop if not passed.
-		 */
-		stream_set_blocking( STDIN, 0 );
-		$stdin_value = trim( WP_CLI::get_value_from_arg_or_stdin( $args, -1 ) );
-
 		if ( 'delete' == $action ) {
 			$patch_value = null;
-		} elseif ( '' !== $stdin_value ) {
-			$patch_value = WP_CLI::read_value( $stdin_value, $assoc_args );
+		} elseif ( Utils::has_stdin() ) {
+			$stdin_value = WP_CLI::get_value_from_arg_or_stdin( $args, -1 );
+			$patch_value = WP_CLI::read_value( trim( $stdin_value ), $assoc_args );
 		} else {
 			// Take the patch value as the last positional argument. Mutates $key_path to be 1 element shorter!
 			$patch_value = WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
