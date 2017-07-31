@@ -10,11 +10,6 @@ class RecursiveDataStructureTraverser {
 	protected $data;
 
 	/**
-	 * @var string The character/sequence used to delineate hierarchy in a single key.
-	 */
-	protected $delimiter;
-
-	/**
 	 * @var null|string The key the data belongs to in the parent's data.
 	 */
 	protected $key;
