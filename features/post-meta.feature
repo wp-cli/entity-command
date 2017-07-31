@@ -383,7 +383,7 @@ Feature: Manage post custom fields
     Then STDOUT should be empty
     And STDERR should contain:
       """
-      Cannot create key 'foo'
+      Cannot create key "foo"
       """
     And the return code should be 1
 
