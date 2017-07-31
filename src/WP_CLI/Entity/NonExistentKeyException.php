@@ -2,7 +2,7 @@
 
 namespace WP_CLI\Entity;
 
-class NonExistentKeyException extends \Exception {
+class NonExistentKeyException extends \OutOfBoundsException {
 	/* @var \WP_CLI\Entity\RecursiveDataStructureTraverser */
 	protected $traverser;
 
