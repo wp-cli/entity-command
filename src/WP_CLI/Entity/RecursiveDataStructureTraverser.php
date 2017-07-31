@@ -127,26 +127,25 @@ class RecursiveDataStructureTraverser {
 	 *
 	 * @return static
 	 */
-	public function traverse_to( $key_path ) {
-		if ( is_array( $key_path ) && count( $key_path ) ) {
-			$current = array_shift( $key_path );
-			$this->key = $current;
+	public function traverse_to( array $key_path ) {
+		$current = array_shift( $key_path );
 
-			if ( ! $this->exists( $current ) ) {
-				$exception = new NonExistentKeyException( "No data exists for key \"$current\"" );
-				$exception->set_traverser( $this );
-				throw $exception;
-			}
-
-			foreach ( $this->data as $key => &$key_data ) {
-				if ( $key === $current ) {
-					$traverser = new static( $key_data, $key, $this );
-					return $traverser->traverse_to( $key_path );
-				}
-			}
+		if ( null === $current ) {
+			return $this;
 		}
 
-		return $this;
+		if ( ! $this->exists( $current ) ) {
+			$exception = new NonExistentKeyException( "No data exists for key \"$current\"" );
+			$exception->set_traverser( new static( $this->data, $current, $this->parent ) );
+			throw $exception;
+		}
+
+		foreach ( $this->data as $key => &$key_data ) {
+			if ( $key === $current ) {
+				$traverser = new static( $key_data, $key, $this );
+				return $traverser->traverse_to( $key_path );
+			}
+		}
 	}
 
 	/**
