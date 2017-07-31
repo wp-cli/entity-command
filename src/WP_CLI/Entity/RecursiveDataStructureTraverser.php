@@ -27,7 +27,7 @@ class RecursiveDataStructureTraverser {
 	/**
 	 * RecursiveDataStructureTraverser constructor.
 	 *
-	 * @param        $data
+	 * @param mixed $data The data to read/manipulate by reference.
 	 * @param static $parent
 	 */
 	public function __construct( &$data, $parent = null ) {
@@ -36,14 +36,14 @@ class RecursiveDataStructureTraverser {
 	}
 
 	/**
-	 * @param $locator
+	 * Get the nested value at the given key path.
 	 *
-	 * @throws \Exception
+	 * @param string|int|array $key_path
 	 *
 	 * @return static
 	 */
-	public function get( $locator ) {
-		return $this->traverse_to( (array) $locator )->value();
+	public function get( $key_path ) {
+		return $this->traverse_to( (array) $key_path )->value();
 	}
 
 	/**
@@ -55,24 +55,49 @@ class RecursiveDataStructureTraverser {
 		return $this->data;
 	}
 
-	public function update( $locator, $value ) {
-		$this->traverse_to( (array) $locator )->set_value( $value );
+	/**
+	 * Update a nested value at the given key path.
+	 *
+	 * @param string|int|array $key_path
+	 * @param mixed $value
+	 */
+	public function update( $key_path, $value ) {
+		$this->traverse_to( (array) $key_path )->set_value( $value );
 	}
 
+	/**
+	 * Update the current data with the given value.
+	 *
+	 * This will mutate the variable which was passed into the constructor
+	 * as the data is set and traversed by reference.
+	 *
+	 * @param mixed $value
+	 */
 	public function set_value( $value ) {
 		$this->data = $value;
 	}
 
-	public function delete( $locator ) {
-		$this->traverse_to( (array) $locator )->unset_on_parent();
+	/**
+	 * Unset the value at the given key path.
+	 *
+	 * @param $key_path
+	 */
+	public function delete( $key_path ) {
+		$this->traverse_to( (array) $key_path )->unset_on_parent();
 	}
 
-	public function insert( $locator, $value ) {
+	/**
+	 * Define a nested value while creating keys if they do not exist.
+	 *
+	 * @param array $key_path
+	 * @param mixed $value
+	 */
+	public function insert( $key_path, $value ) {
 		try {
-			$this->update( $locator, $value );
+			$this->update( $key_path, $value );
 		} catch ( NonExistentKeyException $e ) {
 			$e->get_traverser()->create_key();
-			$this->insert( $locator, $value );
+			$this->insert( $key_path, $value );
 		}
 	}
 
@@ -99,15 +124,15 @@ class RecursiveDataStructureTraverser {
 	/**
 	 * Get an instance of the traverser for the given hierarchical key.
 	 *
-	 * @param $locator
+	 * @param array $key_path Hierarchical key path within the current data to traverse to.
 	 *
-	 * @throws \Exception
+	 * @throws NonExistentKeyException
 	 *
 	 * @return static
 	 */
-	public function traverse_to( $locator ) {
-		if ( is_array( $locator ) && count( $locator ) ) {
-			$current = array_shift( $locator );
+	public function traverse_to( $key_path ) {
+		if ( is_array( $key_path ) && count( $key_path ) ) {
+			$current = array_shift( $key_path );
 			$this->set_key( $current );
 
 			if ( ! $this->exists( $current ) ) {
@@ -120,7 +145,7 @@ class RecursiveDataStructureTraverser {
 				if ( $key === $current ) {
 					$traverser = new static( $key_data, $this );
 					$traverser->set_key( $key );
-					return $traverser->traverse_to( $locator );
+					return $traverser->traverse_to( $key_path );
 				}
 			}
 		}
@@ -128,11 +153,18 @@ class RecursiveDataStructureTraverser {
 		return $this;
 	}
 
+	/**
+	 * Define the key for the current data.
+	 *
+	 * @param string $key
+	 */
 	public function set_key( $key ) {
 		$this->key = $key;
 	}
 
 	/**
+	 * Create the key on the current data.
+	 *
 	 * @throws \UnexpectedValueException
 	 */
 	protected function create_key() {
