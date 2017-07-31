@@ -133,8 +133,7 @@ class RecursiveDataStructureTraverser {
 	}
 
 	/**
-	 * @throws \Exception
-	 * @internal param string $key
+	 * @throws \UnexpectedValueException
 	 */
 	protected function create_key() {
 		if ( is_array( $this->data ) ) {
@@ -142,7 +141,7 @@ class RecursiveDataStructureTraverser {
 		} elseif ( is_object( $this->data ) ) {
 			$this->data->{$this->key} = null;
 		} else {
-			throw new \Exception( "Cannot create key '$this->key', invalid type." );
+			throw new \UnexpectedValueException( sprintf( 'Cannot create key "%s" on data type %s', $this->key, gettype( $this->data ) ) );
 		}
 	}
 
