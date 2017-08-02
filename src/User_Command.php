@@ -320,6 +320,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     $ wp user create bob bob@example.com --role=author
 	 *     Success: Created user 3.
 	 *     Password: k9**&I4vNH(&
+	 *
+	 *     # Create user without showing password upon success
+	 *     $ wp user create ann ann@example.com --porcelain
+	 *     4
 	 */
 	public function create( $args, $assoc_args ) {
 		$user = new stdClass;
