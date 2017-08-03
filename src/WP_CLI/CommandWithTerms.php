@@ -101,13 +101,15 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	/**
 	 * Remove a term from an object.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <id>
 	 * : The ID of the object.
 	 *
 	 * <taxonomy>
 	 * : The name of the term's taxonomy.
 	 *
-	 * <term>...
+	 * [<term>...]
 	 * : The name of the term or terms to be removed from the object.
 	 *
 	 * [--by=<field>]
@@ -117,6 +119,9 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 *   - slug
 	 *   - id
 	 * ---
+	 *
+	 * [--all]
+	 * : Remove all terms from the object.
 	 */
 	public function remove( $args, $assoc_args ) {
 		$object_id      = array_shift( $args );
@@ -130,7 +135,49 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
 		}
-		$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
+
+		if ( Utils\get_flag_value( $assoc_args, 'all' ) ) {
+
+			// No need to specify terms while removing all terms.
+			if ( $terms ) {
+				WP_CLI::error( 'No need to specify terms while removing all terms.' );
+			}
+
+			// Remove all set categories from post.
+			$result = wp_delete_object_term_relationships( $object_id, $taxonomy );
+
+			$message = 'Removed all terms.';
+			if ( 'category' === $taxonomy ) {
+
+				// Set default category to post.
+				$default_category = (int) get_option( 'default_category' );
+				$default_category = ( ! empty( $default_category ) ) ? $default_category : 1;
+				$default_category = wp_set_object_terms( $object_id, array( $default_category ), $taxonomy, true );
+
+				if ( ! is_wp_error( $default_category ) ) {
+					$message = 'Removed all terms and set default term.';
+				} else {
+					WP_CLI::error( 'Failed to set default term.' );
+				}
+			}
+
+			if ( ! is_wp_error( $result ) ) {
+				WP_CLI::success( $message );
+			} else {
+				WP_CLI::error( 'Failed to remove all terms.' );
+			}
+			return;
+
+		} else {
+
+			// Abort if no terms are specified.
+			if ( ! $terms ) {
+				WP_CLI::error( 'Please specify one or more terms, or use --all.' );
+			}
+
+			// Remove term from post.
+			$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
+		}
 
 		$label = count( $terms ) > 1 ? 'terms' : 'term';
 		if ( ! is_wp_error( $result ) ) {
