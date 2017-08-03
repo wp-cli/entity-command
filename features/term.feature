@@ -222,6 +222,7 @@ Feature: Manage WordPress terms
       Success: Deleted 1 of 1 terms.
       """
 
+  @require-wp-4.7
   Scenario: Fetch term by slug or ID
     When I run `wp term create category Apple --description="A type of fruit"`
     Then STDOUT should be:
