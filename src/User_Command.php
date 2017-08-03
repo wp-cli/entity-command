@@ -418,52 +418,52 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <user>...
 	 * : The user login, user email or user ID of the user(s) to update.
 	 *
-	 * --user_pass=<login>
+	 * [--user_pass=<password>]
 	 * : A string that contains the plain text password for the user.
 	 *
-	 * --user_login=<pass>
+	 * [--user_login=<login>]
 	 * : A string that contains the user's username for logging in.
 	 *
-	 * --user_nicename=<nice_name>
+	 * [--user_nicename=<nice_name>]
 	 * : A string that contains a URL-friendly name for the user. The default is the user's username.
 	 *
-	 * --user_url=<url>
+	 * [--user_url=<url>]
 	 * : A string containing the user's URL for the user's web site.
 	 *
-	 * --user_email=<email>
+	 * [--user_email=<email>]
 	 * : A string containing the user's email address.
 	 *
-	 * --display_name=<display>
+	 * [--display_name=<display_name>]
 	 * : A string that will be shown on the site. Defaults to user's username.
 	 *
-	 * --nickname=<nickname>
+	 * [--nickname=<nickname>]
 	 * : The user's nickname, defaults to the user's username.
 	 *
-	 * --first_name=<first_name>
+	 * [--first_name=<first_name>]
 	 * : The user's first name.
 	 *
-	 * --last_name=<last_name>
+	 * [--last_name=<last_name>]
 	 * : The user's last name.
 	 *
-	 * --description=<description>
+	 * [--description=<description>]
 	 * : A string containing content about the user.
 	 *
-	 * --rich_editing=<rich_editing>
+	 * [--rich_editing=<rich_editing>]
 	 * : A string for whether to enable the rich editor or not. False if not empty.
 	 *
-	 * --user_registered=<register_date>
+	 * [--user_registered=<yyyy-mm-dd>]
 	 * : The date the user registered. Format is Y-m-d H:i:s.
 	 *
-	 * --role=<role>
+	 * [--role=<role>]
 	 * : A string used to set the user's role.
 	 *
-	 * --jabber=<jabber>
+	 * [--jabber=<jabber>]
 	 * : User's Jabber account.
 	 *
-	 * --aim=<aim>
+	 * [--aim=<aim>]
 	 * : User's AOL IM account.
 	 *
-	 * --yim=<yim>
+	 * [--yim=<yim>]
 	 * : User's Yahoo IM account.
 	 *
 	 * --<field>=<value>
