@@ -314,6 +314,26 @@ class Option_Command extends WP_CLI_Command {
 	 *     Success: Updated 'my_option' option.
 	 *     Success: Updated 'my_option' option.
 	 *
+	 *     # Update site blog name.
+	 *     $ wp option update blogname "Random blog name"
+	 *     Success: Updated 'blogname' option.
+	 *
+	 *     # Update site blog description.
+	 *     $ wp option update blogdescription "Some random blog description"
+	 *     Success: Updated 'blogdescription' option.
+	 *
+	 *     # Update admin email address.
+	 *     $ wp option update admin_email someone@example.com
+	 *     Success: Updated 'admin_email' option.
+	 *
+	 *     # Set the default role.
+	 *     $ wp option update default_role author
+	 *     Success: Updated 'default_role' option.
+	 *
+	 *     # Set the timezone string.
+	 *     $ wp option update timezone_string "America/New_York"
+	 *     Success: Updated 'timezone_string' option.
+	 *
 	 * @alias set
 	 */
 	public function update( $args, $assoc_args ) {
