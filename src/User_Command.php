@@ -296,7 +296,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--user_pass=<password>]
 	 * : The user password. Default: randomly generated
 	 *
-	 * [--user_registered=<yyyy-mm-dd>]
+	 * [--user_registered=<yyyy-mm-dd hh:ii:ss>]
 	 * : The date the user registered. Default: current date
 	 *
 	 * [--display_name=<name>]
@@ -325,15 +325,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--rich_editing=<rich_editing>]
 	 * : A string for whether to enable the rich editor or not. False if not empty.
-	 *
-	 * [--jabber=<jabber>]
-	 * : User's Jabber account.
-	 *
-	 * [--aim=<aim>]
-	 * : User's AOL IM account.
-	 *
-	 * [--yim=<yim>]
-	 * : User's Yahoo IM account.
 	 *
 	 * [--send-email]
 	 * : Send an email to the user with their new account details.
@@ -478,20 +469,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--rich_editing=<rich_editing>]
 	 * : A string for whether to enable the rich editor or not. False if not empty.
 	 *
-	 * [--user_registered=<yyyy-mm-dd>]
-	 * : The date the user registered. Format is Y-m-d H:i:s.
+	 * [--user_registered=<yyyy-mm-dd hh:ii:ss>]
+	 * : The date the user registered.
 	 *
 	 * [--role=<role>]
 	 * : A string used to set the user's role.
-	 *
-	 * [--jabber=<jabber>]
-	 * : User's Jabber account.
-	 *
-	 * [--aim=<aim>]
-	 * : User's AOL IM account.
-	 *
-	 * [--yim=<yim>]
-	 * : User's Yahoo IM account.
 	 *
 	 * --<field>=<value>
 	 * : One or more fields to update. For accepted fields, see wp_update_user().
