@@ -296,7 +296,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--user_pass=<password>]
 	 * : The user password. Default: randomly generated
 	 *
-	 * [--user_registered=<yyyy-mm-dd hh:ii:ss>]
+	 * [--user_registered=<yyyy-mm-dd-hh-ii-ss>]
 	 * : The date the user registered. Default: current date
 	 *
 	 * [--display_name=<name>]
@@ -469,7 +469,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--rich_editing=<rich_editing>]
 	 * : A string for whether to enable the rich editor or not. False if not empty.
 	 *
-	 * [--user_registered=<yyyy-mm-dd hh:ii:ss>]
+	 * [--user_registered=<yyyy-mm-dd-hh-ii-ss>]
 	 * : The date the user registered.
 	 *
 	 * [--role=<role>]
