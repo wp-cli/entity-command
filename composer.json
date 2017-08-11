@@ -26,7 +26,8 @@
     "require": {},
     "require-dev": {
         "behat/behat": "~2.5",
-        "wp-cli/wp-cli": "*"
+        "wp-cli/wp-cli": "*",
+        "phpunit/phpunit": "^4.8"
     },
     "extra": {
         "branch-alias": {

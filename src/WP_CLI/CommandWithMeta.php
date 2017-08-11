@@ -3,6 +3,7 @@
 namespace WP_CLI;
 
 use WP_CLI;
+use WP_CLI\Entity\RecursiveDataStructureTraverser;
 
 /**
  * Base class for WP-CLI commands that deal with metadata
@@ -251,6 +252,134 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		}
 
+	}
+
+	/**
+	 * Get a nested value from a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to get.
+	 *
+	 * <key-path>...
+	 * : The name(s) of the keys within the value to locate the value to pluck.
+	 *
+	 * [--format=<format>]
+	 * : The output format of the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 *   - yaml
+	 */
+	public function pluck( $args, $assoc_args ) {
+		list( $object_id, $meta_key ) = $args;
+		$object_id = $this->check_object_id( $object_id );
+		$key_path = array_map( function( $key ) {
+			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
+				return (int) $key;
+			}
+			return $key;
+		}, array_slice( $args, 2 ) );
+
+		$value = get_metadata( $this->meta_type, $object_id, $meta_key, true );
+
+		$traverser = new RecursiveDataStructureTraverser( $value );
+
+		try {
+			$value = $traverser->get( $key_path );
+		} catch ( \Exception $e ) {
+			die( 1 );
+		}
+
+		WP_CLI::print_value( $value, $assoc_args );
+	}
+
+	/**
+	 * Update a nested value for a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <action>
+	 * : Patch action to perform.
+	 * ---
+	 * options:
+	 *   - insert
+	 *   - update
+	 *   - delete
+	 * ---
+	 *
+	 * <id>
+	 * : The ID of the object.
+	 *
+	 * <key>
+	 * : The name of the meta field to update.
+	 *
+	 * <key-path>...
+	 * : The name(s) of the keys within the value to locate the value to patch.
+	 *
+	 * [<value>]
+	 * : The new value. If omitted, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
+	 */
+	public function patch( $args, $assoc_args ) {
+		list( $action, $object_id, $meta_key ) = $args;
+		$object_id = $this->check_object_id( $object_id );
+		$key_path = array_map( function( $key ) {
+			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
+				return (int) $key;
+			}
+			return $key;
+		}, array_slice( $args, 3 ) );
+
+		if ( 'delete' == $action ) {
+			$patch_value = null;
+		} elseif ( Entity\Utils::has_stdin() ) {
+			$stdin_value = WP_CLI::get_value_from_arg_or_stdin( $args, -1 );
+			$patch_value = WP_CLI::read_value( trim( $stdin_value ), $assoc_args );
+		} else {
+			// Take the patch value as the last positional argument. Mutates $key_path to be 1 element shorter!
+			$patch_value = WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
+		}
+
+		/* Need to make a copy of $current_meta_value here as it is modified by reference */
+		$current_meta_value = $old_meta_value = sanitize_meta( $meta_key, get_metadata( $this->meta_type, $object_id, $meta_key, true ), $this->meta_type );
+
+		$traverser = new RecursiveDataStructureTraverser( $current_meta_value );
+
+		try {
+			$traverser->$action( $key_path, $patch_value );
+		} catch ( \Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
+
+		$patched_meta_value = sanitize_meta( $meta_key, $traverser->value(), $this->meta_type );
+
+		if ( $patched_meta_value === $old_meta_value ) {
+			WP_CLI::success( "Value passed for custom field '$meta_key' is unchanged." );
+		} else {
+			$slashed = wp_slash( $patched_meta_value );
+			$success = update_metadata( $this->meta_type, $object_id, $meta_key, $slashed );
+
+			if ( $success ) {
+				WP_CLI::success( "Updated custom field '$meta_key'." );
+			} else {
+				WP_CLI::error( "Failed to update custom field '$meta_key'." );
+			}
+		}
 	}
 
 	/**
