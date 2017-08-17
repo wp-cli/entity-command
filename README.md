@@ -301,6 +301,18 @@ wp option get <key> [--format=<format>]
     $ wp option get home
     http://example.com
 
+    # Get blog description.
+    $ wp option get blogdescription
+    A random blog description
+
+    # Get blog name
+    $ wp option get blogname
+    A random blog name
+
+    # Get admin email.
+    $ wp option get admin_email
+    someone@example.com
+
     # Get option in JSON format.
     $ wp option get active_plugins --format=json
     {"0":"dynamically-dynamic-sidebar\/dynamically-dynamic-sidebar.php","1":"monster-widget\/monster-widget.php","2":"show-current-template\/show-current-template.php","3":"theme-check\/theme-check.php","5":"wordpress-importer\/wordpress-importer.php"}
@@ -434,6 +446,26 @@ wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
     $ wp site list --field=url | xargs -n1 -I {} sh -c 'wp --url={} option update my_option my_value'
     Success: Updated 'my_option' option.
     Success: Updated 'my_option' option.
+
+    # Update site blog name.
+    $ wp option update blogname "Random blog name"
+    Success: Updated 'blogname' option.
+
+    # Update site blog description.
+    $ wp option update blogdescription "Some random blog description"
+    Success: Updated 'blogdescription' option.
+
+    # Update admin email address.
+    $ wp option update admin_email someone@example.com
+    Success: Updated 'admin_email' option.
+
+    # Set the default role.
+    $ wp option update default_role author
+    Success: Updated 'default_role' option.
+
+    # Set the timezone string.
+    $ wp option update timezone_string "America/New_York"
+    Success: Updated 'timezone_string' option.
 
 
 
