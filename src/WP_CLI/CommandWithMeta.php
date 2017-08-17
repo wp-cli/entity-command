@@ -31,6 +31,14 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
 	 *
+	 * [--order=<order>]
+	 * : Set ascending or descending order.
+	 * ---
+	 * default: asc
+	 * options:
+	 *  - asc
+	 *  - desc
+	 * ---
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -42,6 +50,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$object_id = $this->check_object_id( $object_id );
 
 		$metadata = get_metadata( $this->meta_type, $object_id );
+
+		// Sort array into descending order by key.
+		if ( 'desc' === Utils\get_flag_value( $assoc_args, 'order' ) ) {
+			krsort( $metadata );
+		}
+
 		if ( ! $metadata ) {
 			$metadata = array();
 		}
