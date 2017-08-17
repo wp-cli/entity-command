@@ -52,6 +52,7 @@
             "post term",
             "post-type",
             "site",
+            "site empty",
             "taxonomy",
             "term",
             "term meta",
