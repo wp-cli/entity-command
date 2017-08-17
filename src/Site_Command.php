@@ -160,7 +160,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * [--uploads]
-	 * : Also delete *all* files in the site's in the uploads directory.
+	 * : Also delete *all* files in the site's uploads directory.
 	 *
 	 * [--yes]
 	 * : Proceed to empty the site without a confirmation prompt.
