@@ -301,6 +301,18 @@ wp option get <key> [--format=<format>]
     $ wp option get home
     http://example.com
 
+    # Get blog description.
+    $ wp option get blogdescription
+    A random blog description
+
+    # Get blog name
+    $ wp option get blogname
+    A random blog name
+
+    # Get admin email.
+    $ wp option get admin_email
+    someone@example.com
+
     # Get option in JSON format.
     $ wp option get active_plugins --format=json
     {"0":"dynamically-dynamic-sidebar\/dynamically-dynamic-sidebar.php","1":"monster-widget\/monster-widget.php","2":"show-current-template\/show-current-template.php","3":"theme-check\/theme-check.php","5":"wordpress-importer\/wordpress-importer.php"}
@@ -435,6 +447,26 @@ wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
     Success: Updated 'my_option' option.
     Success: Updated 'my_option' option.
 
+    # Update site blog name.
+    $ wp option update blogname "Random blog name"
+    Success: Updated 'blogname' option.
+
+    # Update site blog description.
+    $ wp option update blogdescription "Some random blog description"
+    Success: Updated 'blogdescription' option.
+
+    # Update admin email address.
+    $ wp option update admin_email someone@example.com
+    Success: Updated 'admin_email' option.
+
+    # Set the default role.
+    $ wp option update default_role author
+    Success: Updated 'default_role' option.
+
+    # Set the timezone string.
+    $ wp option update timezone_string "America/New_York"
+    Success: Updated 'timezone_string' option.
+
 
 
 ### wp post
@@ -559,6 +591,49 @@ wp site
     $ wp site delete 123
     Are you sure you want to delete the 'http://www.example.com/example' site? [y/n] y
     Success: The site at 'http://www.example.com/example' was deleted.
+
+
+
+### wp site empty
+
+Empty a site of its content (posts, comments, terms, and meta).
+
+~~~
+wp site empty [--uploads] [--yes]
+~~~
+
+Truncates posts, comments, and terms tables to empty a site of its
+content. Doesn't affect site configuration (options) or users.
+
+If running a persistent object cache, make sure to flush the cache
+after emptying the site, as the cache values will be invalid otherwise.
+
+To also empty custom database tables, you'll need to hook into command
+execution:
+
+```
+WP_CLI::add_hook( 'after_invoke:site empty', function(){
+    global $wpdb;
+    foreach( array( 'p2p', 'p2pmeta' ) as $table ) {
+        $table = $wpdb->$table;
+        $wpdb->query( "TRUNCATE $table" );
+    }
+});
+```
+
+**OPTIONS**
+
+	[--uploads]
+		Also delete *all* files in the site's uploads directory.
+
+	[--yes]
+		Proceed to empty the site without a confirmation prompt.
+
+**EXAMPLES**
+
+    $ wp site empty
+    Are you sure you want to empty the site at http://www.example.com of all posts, comments, and terms? [y/n] y
+    Success: The site at 'http://www.example.com' was emptied.
 
 
 
