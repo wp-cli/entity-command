@@ -41,15 +41,15 @@ Feature: List WordPress options
     Then STDOUT should be:
       """
       option_id,option_name,option_value
-      1,sample_test_field_one,sample_test_field_value_one
-      2,sample_test_field_two,sample_test_field_value_two
+      109,sample_test_field_one,sample_test_field_value_one
+      111,sample_test_field_two,sample_test_field_value_two
       """
 
     When I run `wp option list --search="sample_test_field_*" --exclude="*field_one" --format=csv`
     Then STDOUT should be:
       """
-      option_name,option_value
-      sample_test_field_two,sample_test_field_value_two
+      option_id,option_name,option_value
+      111,sample_test_field_two,sample_test_field_value_two
       """
 
     When I run `wp option list`
