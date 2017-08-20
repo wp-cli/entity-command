@@ -31,6 +31,15 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
 	 *
+	 * [--orderby=<fields>]
+	 * : Set orderby which field.
+	 * ---
+	 * default: meta_key
+	 * options:
+	 *  - meta_key
+	 *  - meta_value
+	 * ---
+	 *
 	 * [--order=<order>]
 	 * : Set ascending or descending order.
 	 * ---
@@ -42,43 +51,42 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
+		global $wpdb;
 
 		list( $object_id ) = $args;
 
-		$keys = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : array();
+		// Selected keys.
+		$keys          = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : array();
+		$object_id     = $this->check_object_id( $object_id );
 
-		$object_id = $this->check_object_id( $object_id );
+		// Default sorting parameter.
+		$orderby_field = 'meta_key';
+		$sort          = Utils\get_flag_value( $assoc_args, 'order' );
 
-		$metadata = get_metadata( $this->meta_type, $object_id );
+		// Where clause.
+		$where         = $wpdb->prepare( " WHERE  `$wpdb->postmeta`.`post_id` = %d ", $object_id );
 
-		// Sort array into descending order by key.
-		if ( 'desc' === Utils\get_flag_value( $assoc_args, 'order' ) ) {
-			krsort( $metadata );
-		}
+		// Get metadata.
+		$metadata = $wpdb->get_results( "SELECT `post_id`,`meta_key`,`meta_value` FROM `$wpdb->postmeta` {$where} ORDER BY `$wpdb->postmeta`.`$orderby_field` $sort" );
 
 		if ( ! $metadata ) {
 			$metadata = array();
 		}
 
 		$items = array();
-		foreach( $metadata as $key => $values ) {
+		foreach ( $metadata as $value ) {
 
-			// Skip if not requested
-			if ( ! empty( $keys ) && ! in_array( $key, $keys ) ) {
+			// Skip if not requested.
+			if ( ! empty( $keys ) && ! in_array( $value->meta_key, $keys ) ) {
 				continue;
 			}
 
-			foreach( $values as $item_value ) {
-
-				$item_value = maybe_unserialize( $item_value );
-
-				$items[] = (object) array(
-					"{$this->meta_type}_id" => $object_id,
-					'meta_key'              => $key,
-					'meta_value'            => $item_value,
-					);
-
-			}
+			$value = maybe_unserialize( $value );
+			$items[] = array(
+				"{$this->meta_type}_id" => $object_id,
+				'meta_key'              => $value->meta_key,
+				'meta_value'            => $value->meta_value,
+			);
 
 		}
 
