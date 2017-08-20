@@ -30,8 +30,8 @@ Feature: Manage WordPress options
 
     When I run `wp option list --search='str_o*'`
     Then STDOUT should be a table containing rows:
-      | option_name  | option_value  |
-      | str_opt      | bar           |
+      | option_id | option_name  | option_value  |
+      | 109       | str_opt      | bar           |
 
     When I run `wp option list --search='str_o*' --format=total_bytes`
     Then STDOUT should be:
