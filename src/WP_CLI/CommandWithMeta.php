@@ -63,11 +63,16 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$orderby_field = 'meta_key';
 		$sort          = Utils\get_flag_value( $assoc_args, 'order' );
 
-		// Where clause.
-		$where         = $wpdb->prepare( " WHERE  `$wpdb->postmeta`.`post_id` = %d ", $object_id );
-
 		// Get metadata.
-		$metadata = $wpdb->get_results( "SELECT `post_id`,`meta_key`,`meta_value` FROM `$wpdb->postmeta` {$where} ORDER BY `$wpdb->postmeta`.`$orderby_field` $sort" );
+		if ( 'user' === $this->meta_type ) {
+			// Where clause.
+			$where    = $wpdb->prepare( " WHERE  `$wpdb->usermeta`.`user_id` = %d ", $object_id );
+			$metadata = $wpdb->get_results( "SELECT `user_id`,`meta_key`,`meta_value` FROM `$wpdb->usermeta` {$where} ORDER BY `$wpdb->usermeta`.`$orderby_field` $sort" );
+		} else {
+			// Where clause.
+			$where    = $wpdb->prepare( " WHERE  `$wpdb->postmeta`.`post_id` = %d ", $object_id );
+			$metadata = $wpdb->get_results( "SELECT `post_id`,`meta_key`,`meta_value` FROM `$wpdb->postmeta` {$where} ORDER BY `$wpdb->postmeta`.`$orderby_field` $sort" );
+		}
 
 		if ( ! $metadata ) {
 			$metadata = array();
