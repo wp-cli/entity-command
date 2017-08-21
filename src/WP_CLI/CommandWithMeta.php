@@ -81,11 +81,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 				continue;
 			}
 
-			$value = maybe_unserialize( $value );
+			$item_value = maybe_unserialize( $value->meta_value );
+
 			$items[] = array(
 				"{$this->meta_type}_id" => $object_id,
 				'meta_key'              => $value->meta_key,
-				'meta_value'            => $value->meta_value,
+				'meta_value'            => $item_value,
 			);
 
 		}
