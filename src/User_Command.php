@@ -598,7 +598,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <user>
 	 * : User ID, user email, or user login.
 	 *
-	 * [<role>]
+	 * <role>
 	 * : Make the user have the specified role. If not passed, the default role is
 	 * used.
 	 *
@@ -663,7 +663,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * <user>
 	 * : User ID, user email, or user login.
 	 *
-	 * [<role>]
+	 * <role>
 	 * : A specific role to remove.
 	 *
 	 * ## EXAMPLES
