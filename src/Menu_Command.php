@@ -81,7 +81,7 @@ class Menu_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <menu>...
+	 * <menu>
 	 * : The name, slug, or term ID for the menu(s).
 	 *
 	 * ## EXAMPLES
@@ -181,7 +181,7 @@ class Menu_Command extends WP_CLI_Command {
 
 		$formatter = $this->get_formatter( $assoc_args );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$ids = array_map(
 				function($o) {
 					return $o->term_id;

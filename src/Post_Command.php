@@ -158,7 +158,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$r = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
 
-		if ( $r === false )
+		if ( false === $r )
 			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
 		else
 			$this->update( $args, array( 'post_content' => $r ) );
@@ -375,7 +375,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$query_args['post_type'] = explode( ',', $query_args['post_type'] );
 		}
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
 			$query = new WP_Query( $query_args );
 			echo implode( ' ', $query->posts );
@@ -580,7 +580,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * @return string
 	 */
 	private function read_from_file_or_stdin( $arg ) {
-		if ( $arg !== '-' ) {
+		if ( '-' !== $arg ) {
 			$readfile = $arg;
 			if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
 				\WP_CLI::error( "Unable to read content from '$readfile'." );

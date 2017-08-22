@@ -276,7 +276,7 @@ class Option_Command extends WP_CLI_Command {
 		$results = $wpdb->get_results( "SELECT `option_name`,`option_value`,`autoload`" . $size_query
 					. " FROM `$wpdb->options` {$where}" );
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
+		if ( 'total_bytes' === \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' )  ) {
 			WP_CLI::line( $results[0]->size_bytes );
 		} else {
 			$formatter = new \WP_CLI\Formatter(
