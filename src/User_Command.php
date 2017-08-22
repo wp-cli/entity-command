@@ -126,7 +126,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * @subcommand list
 	 */
-	public function list_( $args, $assoc_args ) {
+	public function list_( $assoc_args ) {
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
 			if ( ! is_multisite() ) {
@@ -532,7 +532,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 */
-	public function generate( $args, $assoc_args ) {
+	public function generate( $assoc_args ) {
 		global $blog_id;
 
 		$defaults = array(
@@ -609,7 +609,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * @subcommand set-role
 	 */
-	public function set_role( $args, $assoc_args ) {
+	public function set_role( $args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 
 		$role = \WP_CLI\Utils\get_flag_value( $args, 1, get_option('default_role') );
@@ -643,7 +643,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * @subcommand add-role
 	 */
-	public function add_role( $args, $assoc_args ) {
+	public function add_role( $args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 
 		$role = $args[1];
@@ -673,7 +673,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * @subcommand remove-role
 	 */
-	public function remove_role( $args, $assoc_args ) {
+	public function remove_role( $args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 
 		if ( isset( $args[1] ) ) {
@@ -718,7 +718,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * @subcommand add-cap
 	 */
-	public function add_cap( $args, $assoc_args ) {
+	public function add_cap( $args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 		if ( $user ) {
 			$cap  = $args[1];
@@ -746,7 +746,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * @subcommand remove-cap
 	 */
-	public function remove_cap( $args, $assoc_args ) {
+	public function remove_cap( $args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 		if ( $user ) {
 			$cap = $args[1];
