@@ -315,7 +315,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		// Network
 		if ( !empty( $assoc_args['network_id'] ) ) {
 			$network = $this->_get_network( $assoc_args['network_id'] );
-			if ( $network === false ) {
+			if ( false === $network ) {
 				WP_CLI::error( sprintf( 'Network with id %d does not exist.', $assoc_args['network_id'] ) );
 			}
 		}
