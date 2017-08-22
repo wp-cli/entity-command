@@ -103,7 +103,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			return $item;
 		}, $items );
 
-		if ( ! empty( $assoc_args['format'] ) && 'ids' == $assoc_args['format'] ) {
+		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
 			$items = array_map( function( $item ) {
 				return $item->db_id;
 			}, $items );

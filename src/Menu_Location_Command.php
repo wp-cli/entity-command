@@ -74,7 +74,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 
 		$formatter = new \WP_CLI\Formatter( $assoc_args, array( 'location', 'description' ) );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$ids = array_map(
 				function($o) {
 					return $o->location;
@@ -154,7 +154,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 		}
 
 		$locations = get_nav_menu_locations();
-		if ( \WP_CLI\Utils\get_flag_value( $locations, $location ) != $menu->term_id ) {
+		if ( $menu->term_id !== \WP_CLI\Utils\get_flag_value( $locations, $location ) ) {
 			WP_CLI::error( "Menu isn't assigned to location." );
 		}
 

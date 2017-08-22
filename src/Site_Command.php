@@ -652,17 +652,17 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	private function update_site_status( $ids, $pref, $value ) {
-		if ( $pref == 'archived' && $value == 1 ) {
+		if ( 'archived' === $pref && $value == 1 ) {
 			$action = 'archived';
-		} else if ( $pref == 'archived' && $value == 0) {
+		} else if ( 'archived' === $pref && $value == 0) {
 			$action = 'unarchived';
-		} else if ( $pref == 'deleted' && $value == 1 ) {
+		} else if ( 'deleted' === $pref && $value == 1 ) {
 			$action = 'deactivated';
-		} else if ( $pref == 'deleted' && $value == 0 ) {
+		} else if ( 'deleted' === $pref && $value == 0 ) {
 			$action = 'activated';
-		} else if ( $pref == 'spam' && $value == 1 ) {
+		} else if ( 'spam' === $pref && $value == 1 ) {
 			$action = 'marked as spam';
-		} else if ( $pref == 'spam' && $value == 0 ) {
+		} else if ( 'spam' === $pref && $value == 0 ) {
 			$action = 'removed from spam';
 		}
 
