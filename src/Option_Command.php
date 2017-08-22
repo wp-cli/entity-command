@@ -175,7 +175,6 @@ class Option_Command extends WP_CLI_Command {
 	 * ---
 	 * default: option_name
 	 * options:
-	 *  - option_id
 	 *  - option_name
 	 *  - option_value
 	 * ---
@@ -237,7 +236,7 @@ class Option_Command extends WP_CLI_Command {
 		global $wpdb;
 		$pattern = '%';
 		$exclude = '';
-		$fields = array( 'option_id', 'option_name', 'option_value' );
+		$fields = array( 'option_name', 'option_value' );
 		$size_query = ",LENGTH(option_value) AS `size_bytes`";
 		$autoload_query = '';
 		$sort = Utils\get_flag_value( $assoc_args, 'order' );
@@ -293,16 +292,17 @@ class Option_Command extends WP_CLI_Command {
 		}
 		$where .= $autoload_query . $transients_query;
 
-		// Ser orderby field.
-		$orderby_field = 'option_name';
-		if ( 'option_value' === \WP_CLI\Utils\get_flag_value( $assoc_args, 'orderby' ) ) {
-			$orderby_field = 'option_value';
-		} else if ( 'option_id' === \WP_CLI\Utils\get_flag_value( $assoc_args, 'orderby' ) ) {
-			$orderby_field = 'option_id';
+		// Set orderby field.
+		$orderby = '';
+		if ( 'option_name' === \WP_CLI\Utils\get_flag_value( $assoc_args, 'orderby' ) && 'asc' === $sort ) {
+			$orderby = '';
+		} else {
+			$orderby_field = \WP_CLI\Utils\get_flag_value( $assoc_args, 'orderby' );
+			$orderby = "ORDER BY `$wpdb->options`.`$orderby_field` $sort";
 		}
 
-		$results = $wpdb->get_results( "SELECT `option_id`,`option_name`,`option_value`,`autoload`" . $size_query
-					. " FROM `$wpdb->options` {$where} ORDER BY `$wpdb->options`.`$orderby_field` $sort" );
+		$results = $wpdb->get_results( "SELECT `option_name`,`option_value`,`autoload`" . $size_query
+					. " FROM `$wpdb->options` {$where} $orderby" );
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			WP_CLI::line( $results[0]->size_bytes );
