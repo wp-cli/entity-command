@@ -315,7 +315,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		// Network
 		if ( !empty( $assoc_args['network_id'] ) ) {
 			$network = $this->_get_network( $assoc_args['network_id'] );
-			if ( $network === false ) {
+			if ( false === $network ) {
 				WP_CLI::error( sprintf( 'Network with id %d does not exist.', $assoc_args['network_id'] ) );
 			}
 		}
@@ -369,7 +369,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		if ( !$user_id ) { // Create a new user with a random password
 			$password = wp_generate_password( 12, false );
 			$user_id = wpmu_create_user( $base, $password, $email );
-			if ( false == $user_id ) {
+			if ( false === $user_id ) {
 				WP_CLI::error( "Can't create user." );
 			}
 			else {
