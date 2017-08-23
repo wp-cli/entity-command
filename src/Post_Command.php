@@ -108,7 +108,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *   be read from STDIN.
 	 *
 	 * --<field>=<value>
-	 * : One or more fields to update. See wp_update_post().
+	 * : One or more fields to update. See wp_insert_post().
 	 *
 	 * [--defer-term-counting]
 	 * : Recalculate term count in batch, for a performance boost.
