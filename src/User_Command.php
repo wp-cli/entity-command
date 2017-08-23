@@ -567,7 +567,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				'user_pass' => $login,
 				'nickname' => $name,
 				'display_name' => $name,
-				'role' => $role
+				'role' => $role,
 			) );
 
 			if ( false === $role ) {
