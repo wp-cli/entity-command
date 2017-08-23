@@ -27,7 +27,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		'post_title',
 		'post_name',
 		'post_date',
-		'post_status'
+		'post_status',
 	);
 
 	public function __construct() {
@@ -161,7 +161,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $r === false )
 			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
 		else
-			$this->update( $args, array( 'post_content' => $r ) );
+			$this->update( $args, array( 'post_content' => $r, ) );
 	}
 
 	protected function _edit( $content, $title ) {
@@ -247,7 +247,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function delete( $args, $assoc_args ) {
 		$defaults = array(
-			'force' => false
+			'force' => false,
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
