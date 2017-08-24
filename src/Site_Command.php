@@ -686,7 +686,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * @subcommand general
 	 */
 	public function general( $args ) {
-		$this->update_site_status( $args, 'mature', 1 );
+		$this->update_site_status( $args, 'mature', 0 );
 	}
 
 	/**
