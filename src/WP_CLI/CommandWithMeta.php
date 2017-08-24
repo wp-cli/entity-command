@@ -51,50 +51,41 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
-		global $wpdb;
 
 		list( $object_id ) = $args;
 
-		// Selected keys.
-		$keys          = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : array();
-		$object_id     = $this->check_object_id( $object_id );
+		$keys = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : array();
 
-		// Default sorting parameter.
-		$orderby_field = 'meta_key';
-		$sort          = Utils\get_flag_value( $assoc_args, 'order' );
+		$object_id = $this->check_object_id( $object_id );
 
-		// Get metadata.
-		if ( 'user' === $this->meta_type ) {
-			// Where clause.
-			$where    = $wpdb->prepare( " WHERE `$wpdb->usermeta`.`user_id` = %d ", $object_id );
-			$metadata = $wpdb->get_results( "SELECT `user_id`,`meta_key`,`meta_value` FROM `$wpdb->usermeta` {$where} ORDER BY `$wpdb->usermeta`.`$orderby_field` $sort" );
-		} else {
-			// Where clause.
-			$where    = $wpdb->prepare( " WHERE `$wpdb->postmeta`.`post_id` = %d ", $object_id );
-			$metadata = $wpdb->get_results( "SELECT `post_id`,`meta_key`,`meta_value` FROM `$wpdb->postmeta` {$where} ORDER BY `$wpdb->postmeta`.`$orderby_field` $sort" );
-		}
-
+		$metadata = get_metadata( $this->meta_type, $object_id );
 		if ( ! $metadata ) {
 			$metadata = array();
 		}
 
 		$items = array();
-		foreach ( $metadata as $value ) {
+		foreach( $metadata as $key => $values ) {
 
-			// Skip if not requested.
-			if ( ! empty( $keys ) && ! in_array( $value->meta_key, $keys ) ) {
+			// Skip if not requested
+			if ( ! empty( $keys ) && ! in_array( $key, $keys ) ) {
 				continue;
 			}
 
-			$item_value = maybe_unserialize( $value->meta_value );
+			foreach( $values as $item_value ) {
 
-			$items[] = array(
-				"{$this->meta_type}_id" => $object_id,
-				'meta_key'              => $value->meta_key,
-				'meta_value'            => $item_value,
-			);
+				$item_value = maybe_unserialize( $item_value );
+
+				$items[] = (object) array(
+					"{$this->meta_type}_id" => $object_id,
+					'meta_key'              => $key,
+					'meta_value'            => $item_value,
+					);
+
+			}
 
 		}
+
+		print_r( $items );
 
 		if ( ! empty( $assoc_args['fields'] ) ) {
 			$fields = explode( ',', $assoc_args['fields'] );
