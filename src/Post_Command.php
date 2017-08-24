@@ -424,7 +424,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * default:
 	 * ---
 	 *
-	 * [--post_date=<yyyy-mm-dd hh:ii:ss>]
+	 * [--post_date=<yyyy-mm-dd-hh-ii-ss>]
 	 * : The date of the generated posts. Default: current date
 	 *
 	 * [--post_content]
