@@ -286,7 +286,7 @@ Feature: Manage sites in a multisite installation
     When I run `wp site mature {FIRST_SITE}`
     Then STDOUT should be:
       """
-      Success: Site {FIRST_SITE} set to mature.
+      Success: Site {FIRST_SITE} marked as mature.
       """
 
     When I run `wp site list --fields=blog_id,mature`
@@ -297,11 +297,11 @@ Feature: Manage sites in a multisite installation
     When I run `wp site mature {FIRST_SITE} {SECOND_SITE}`
     Then STDERR should be:
       """
-      Warning: Site {FIRST_SITE} already set to mature.
+      Warning: Site {FIRST_SITE} already marked as mature.
       """
     And STDOUT should be:
       """
-      Success: Site {SECOND_SITE} set to mature.
+      Success: Site {SECOND_SITE} marked as mature.
       """
 
     When I run `wp site list --fields=blog_id,mature`

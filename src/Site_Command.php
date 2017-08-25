@@ -662,7 +662,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site mature 123
-	 *     Success: Site 123 set as mature.
+	 *     Success: Site 123 marked as mature.
 	 */
 	public function mature( $args ) {
 		$this->update_site_status( $args, 'mature', 1 );
