@@ -276,6 +276,106 @@ Feature: Manage sites in a multisite installation
       Warning: You are not allowed to change the main site.
       """
 
+  Scenario: Mark/remove a site as mature
+    Given a WP multisite install
+    And I run `wp site create --slug=first --porcelain`
+    And save STDOUT as {FIRST_SITE}
+    And I run `wp site create --slug=second --porcelain`
+    And save STDOUT as {SECOND_SITE}
+
+    When I run `wp site mature {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} marked as mature.
+      """
+
+    When I run `wp site list --fields=blog_id,mature`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | mature |
+      | {FIRST_SITE} | 1    |
+
+    When I run `wp site mature {FIRST_SITE} {SECOND_SITE}`
+    Then STDERR should be:
+      """
+      Warning: Site {FIRST_SITE} already marked as mature.
+      """
+    And STDOUT should be:
+      """
+      Success: Site {SECOND_SITE} marked as mature.
+      """
+
+    When I run `wp site list --fields=blog_id,mature`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | mature |
+      | {FIRST_SITE} | 1    |
+
+    When I run `wp site unmature {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} marked as unmature.
+      """
+
+    When I run `wp site list --fields=blog_id,mature`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | mature |
+      | {FIRST_SITE} | 0    |
+
+    When I run `wp site unmature 1`
+    Then STDERR should be:
+      """
+      Warning: You are not allowed to change the main site.
+      """
+
+  Scenario: Set/Unset a site as public
+    Given a WP multisite install
+    And I run `wp site create --slug=first --porcelain`
+    And save STDOUT as {FIRST_SITE}
+    And I run `wp site create --slug=second --porcelain`
+    And save STDOUT as {SECOND_SITE}
+
+    When I run `wp site private {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} marked as private.
+      """
+
+    When I run `wp site list --fields=blog_id,public`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | public |
+      | {FIRST_SITE} | 0    |
+
+    When I run `wp site private {FIRST_SITE} {SECOND_SITE}`
+    Then STDERR should be:
+      """
+      Warning: Site {FIRST_SITE} already marked as private.
+      """
+    And STDOUT should be:
+      """
+      Success: Site {SECOND_SITE} marked as private.
+      """
+
+    When I run `wp site list --fields=blog_id,public`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | public |
+      | {FIRST_SITE} | 0    |
+
+    When I run `wp site public {FIRST_SITE}`
+    Then STDOUT should be:
+      """
+      Success: Site {FIRST_SITE} marked as public.
+      """
+
+    When I run `wp site list --fields=blog_id,public`
+    Then STDOUT should be a table containing rows:
+      | blog_id      | public |
+      | {FIRST_SITE} | 1    |
+
+    When I run `wp site private 1`
+    Then STDERR should be:
+      """
+      Warning: You are not allowed to change the main site.
+      """
+
   Scenario: Permit CLI operations against archived and suspended sites
     Given a WP multisite install
     And I run `wp site create --slug=first --porcelain`

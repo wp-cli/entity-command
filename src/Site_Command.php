@@ -651,6 +651,78 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$this->update_site_status( $args, 'spam', 0 );
 	}
 
+	/**
+	 * Set one or more sites as mature.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to set as mature.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp site mature 123
+	 *     Success: Site 123 marked as mature.
+	 */
+	public function mature( $args ) {
+		$this->update_site_status( $args, 'mature', 1 );
+	}
+
+	/**
+	 * Set one or more sites as unmature.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to set as unmature.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp site general 123
+	 *     Success: Site 123 marked as unmature.
+	 */
+	public function unmature( $args ) {
+		$this->update_site_status( $args, 'mature', 0 );
+	}
+
+	/**
+	 * Set one or more sites as public.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to set as public.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp site public 123
+	 *     Success: Site 123 marked as public.
+	 *
+	 * @subcommand public
+	 */
+	public function set_public( $args ) {
+		$this->update_site_status( $args, 'public', 1 );
+	}
+
+	/**
+	 * Set one or more sites as private.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of sites to set as private.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp site private 123
+	 *     Success: Site 123 marked as private.
+	 *
+	 * @subcommand private
+	 */
+	public function set_private( $args ) {
+		$this->update_site_status( $args, 'public', 0 );
+	}
+
 	private function update_site_status( $ids, $pref, $value ) {
 		if ( $pref == 'archived' && $value == 1 ) {
 			$action = 'archived';
@@ -664,6 +736,14 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			$action = 'marked as spam';
 		} else if ( $pref == 'spam' && $value == 0 ) {
 			$action = 'removed from spam';
+		} else if ( $pref == 'public' && $value == 1 ) {
+			$action = 'marked as public';
+		} else if ( $pref == 'public' && $value == 0 ) {
+			$action = 'marked as private';
+		} else if ( $pref == 'mature' && $value == 1 ) {
+			$action = 'marked as mature';
+		} else if ( $pref == 'mature' && $value == 0 ) {
+			$action = 'marked as unmature';
 		}
 
 		foreach ( $ids as $site_id ) {
