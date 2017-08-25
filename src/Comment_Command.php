@@ -325,6 +325,10 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 
 		$assoc_args = self::process_csv_arguments_to_arrays( $assoc_args );
 
+		if ( 'count' === $formatter->format ) {
+			$assoc_args['count'] = true;
+		}
+
 		if ( ! empty( $assoc_args['comment__in'] )
 			&& ! empty( $assoc_args['orderby'] )
 			&& 'comment__in' === $assoc_args['orderby']
@@ -343,16 +347,19 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			$comments = $query->query( $assoc_args );
 		}
 
-		if ( 'ids' == $formatter->format ) {
-			$comments = wp_list_pluck( $comments, 'comment_ID' );
+		if ( 'count' === $formatter->format ) {
+			echo $comments;
 		} else {
-			$comments = array_map( function( $comment ){
-				$comment->url = get_comment_link( $comment->comment_ID );
-				return $comment;
-			}, $comments );
+			if ( 'ids' == $formatter->format ) {
+				$comments = wp_list_pluck( $comments, 'comment_ID' );
+			} elseif ( is_array( $comments ) ) {
+				$comments = array_map( function( $comment ){
+					$comment->url = get_comment_link( $comment->comment_ID );
+					return $comment;
+				}, $comments );
+			}
+			$formatter->display_items( $comments );
 		}
-
-		$formatter->display_items( $comments );
 	}
 
 	/**
