@@ -652,7 +652,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Set one or more sites to mature.
+	 * Set one or more sites as mature.
 	 *
 	 * ## OPTIONS
 	 *
@@ -662,35 +662,33 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site mature 123
-	 *     Success: Site 123 set to mature.
-	 *
-	 * @subcommand mature
+	 *     Success: Site 123 set as mature.
 	 */
 	public function mature( $args ) {
 		$this->update_site_status( $args, 'mature', 1 );
 	}
 
 	/**
-	 * Set one or more sites for general audience.
+	 * Set one or more sites as unmature.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <id>...
-	 * : One or more IDs of sites to set for general audience.
+	 * : One or more IDs of sites to set as unmature.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site general 123
-	 *     Success: Site 123 marked for general audience.
+	 *     Success: Site 123 marked as unmature.
 	 *
-	 * @subcommand general
+	 * @subcommand unmature
 	 */
-	public function general( $args ) {
+	public function unmature( $args ) {
 		$this->update_site_status( $args, 'mature', 0 );
 	}
 
 	/**
-	 * Set one or more sites to public.
+	 * Set one or more sites as public.
 	 *
 	 * ## OPTIONS
 	 *
@@ -709,7 +707,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Set one or more sites to private.
+	 * Set one or more sites as private.
 	 *
 	 * ## OPTIONS
 	 *
@@ -745,9 +743,9 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		} else if ( $pref == 'public' && $value == 0 ) {
 			$action = 'marked as private';
 		} else if ( $pref == 'mature' && $value == 1 ) {
-			$action = 'set to mature';
+			$action = 'marked as mature';
 		} else if ( $pref == 'mature' && $value == 0 ) {
-			$action = 'marked for general audience';
+			$action = 'marked as unmature';
 		}
 
 		foreach ( $ids as $site_id ) {
