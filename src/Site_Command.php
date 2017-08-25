@@ -680,8 +680,6 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     $ wp site general 123
 	 *     Success: Site 123 marked as unmature.
-	 *
-	 * @subcommand unmature
 	 */
 	public function unmature( $args ) {
 		$this->update_site_status( $args, 'mature', 0 );
