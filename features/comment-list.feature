@@ -29,3 +29,12 @@ Feature: List WordPress comments
       """
       {COMMENT_ID}
       """
+
+  Scenario: Count comments
+    Given a WP install
+
+    When I run `wp comment list --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
