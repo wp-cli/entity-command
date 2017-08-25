@@ -309,10 +309,10 @@ Feature: Manage sites in a multisite installation
       | blog_id      | mature |
       | {FIRST_SITE} | 1    |
 
-    When I run `wp site general {FIRST_SITE}`
+    When I run `wp site unmature {FIRST_SITE}`
     Then STDOUT should be:
       """
-      Success: Site {FIRST_SITE} marked for general audience.
+      Success: Site {FIRST_SITE} marked as unmature.
       """
 
     When I run `wp site list --fields=blog_id,mature`
@@ -320,7 +320,7 @@ Feature: Manage sites in a multisite installation
       | blog_id      | mature |
       | {FIRST_SITE} | 0    |
 
-    When I run `wp site general 1`
+    When I run `wp site unmature 1`
     Then STDERR should be:
       """
       Warning: You are not allowed to change the main site.
