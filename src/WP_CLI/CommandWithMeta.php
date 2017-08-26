@@ -34,8 +34,9 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * [--orderby=<fields>]
 	 * : Set orderby which field.
 	 * ---
-	 * default: meta_key
+	 * default: meta_id
 	 * options:
+	 *  - meta_id
 	 *  - meta_key
 	 *  - meta_value
 	 * ---
@@ -79,13 +80,50 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 					"{$this->meta_type}_id" => $object_id,
 					'meta_key'              => $key,
 					'meta_value'            => $item_value,
-					);
-
+				);
 			}
 
 		}
 
-		print_r( $items );
+		$order   = Utils\get_flag_value( $assoc_args, 'order' );
+		$orderby = Utils\get_flag_value( $assoc_args, 'orderby' );
+
+		// Sort array.
+		if ( 'meta_key' === $orderby ) { // Sort by meta_key.
+			if ( 'asc' === $order ) {
+				usort( $items, function( $a, $b ) {
+					if ( $a->meta_key == $b->meta_key ) {
+						return 0;
+					}
+					return ( $a->meta_key < $b->meta_key ) ? -1 : 1;
+				});
+			} else {
+				usort( $items, function( $a, $b ) {
+					if ( $a->meta_key == $b->meta_key ) {
+						return 0;
+					}
+					return ( $a->meta_key > $b->meta_key ) ? -1 : 1;
+				});
+			}
+		} elseif ( 'meta_value' === $orderby ) { // Sort by meta_value.
+			if ( 'asc' === $order ) {
+				usort( $items, function( $a, $b ) {
+					if ( $a->meta_value == $b->meta_value ) {
+						return 0;
+					}
+					return ( $a->meta_value < $b->meta_value ) ? -1 : 1;
+				});
+			} else {
+				usort( $items, function( $a, $b ) {
+					if ( $a->meta_value == $b->meta_value ) {
+						return 0;
+					}
+					return ( $a->meta_value > $b->meta_value ) ? -1 : 1;
+				});
+			}
+		} elseif ( 'meta_id' === $orderby && 'desc' === $order ) { // Sort by default descending.
+			krsort( $items );
+		}
 
 		if ( ! empty( $assoc_args['fields'] ) ) {
 			$fields = explode( ',', $assoc_args['fields'] );
