@@ -60,6 +60,25 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 *   - yaml
 	 * ---
 	 *
+	 * [--orderby=<fields>]
+	 * : Set orderby which field.
+	 * ---
+	 * default: id
+	 * options:
+	 *  - id
+	 *  - meta_key
+	 *  - meta_value
+	 * ---
+	 *
+	 * [--order=<order>]
+	 * : Set ascending or descending order.
+	 * ---
+	 * default: asc
+	 * options:
+	 *  - asc
+	 *  - desc
+	 * ---
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # List user meta
