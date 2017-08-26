@@ -61,7 +61,7 @@ Feature: Manage user custom fields
     When I run `wp user meta list 1 --format=json --keys=nickname,foo --fields=meta_key,meta_value`
     Then STDOUT should be JSON containing:
       """
-      [{"meta_key":"foo","meta_value":["1","2"]},{"meta_key":"nickname","meta_value":"admin"}]
+      [{"meta_key":"nickname","meta_value":"admin"},{"meta_key":"foo","meta_value":["1","2"]}]
       """
 
     When I run `wp user meta list 1 --keys=nickname,foo`
