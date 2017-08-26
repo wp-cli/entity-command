@@ -34,9 +34,9 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * [--orderby=<fields>]
 	 * : Set orderby which field.
 	 * ---
-	 * default: meta_id
+	 * default: id
 	 * options:
-	 *  - meta_id
+	 *  - id
 	 *  - meta_key
 	 *  - meta_value
 	 * ---
@@ -121,7 +121,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 					return ( $a->meta_value > $b->meta_value ) ? -1 : 1;
 				});
 			}
-		} elseif ( 'meta_id' === $orderby && 'desc' === $order ) { // Sort by default descending.
+		} elseif ( 'id' === $orderby && 'desc' === $order ) { // Sort by default descending.
 			krsort( $items );
 		}
 
