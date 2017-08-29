@@ -1,5 +1,6 @@
 <?php
 
+use WP_CLI\Entity\RecursiveDataStructureTraverser;
 use WP_CLI\Utils;
 
 /**
@@ -268,6 +269,128 @@ class Site_Option_Command extends WP_CLI_Command {
 			WP_CLI::error( "Could not delete '$key' site option. Does it exist?" );
 		} else {
 			WP_CLI::success( "Deleted '$key' site option." );
+		}
+	}
+
+	/**
+	 * Get a nested value from an option.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <key>
+	 * : The option name.
+	 *
+	 * <key-path>...
+	 * : The name(s) of the keys within the value to locate the value to pluck.
+	 *
+	 * [--format=<format>]
+	 * : The output format of the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 *   - yaml
+	 */
+	public function pluck( $args, $assoc_args ) {
+		list( $key ) = $args;
+
+		$value = get_site_option( $key );
+
+		if ( false === $value ) {
+			WP_CLI::halt( 1 );
+		}
+
+		$key_path = array_map( function( $key ) {
+			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
+				return (int) $key;
+			}
+			return $key;
+		}, array_slice( $args, 1 ) );
+
+		$traverser = new RecursiveDataStructureTraverser( $value );
+
+		try {
+			$value = $traverser->get( $key_path );
+		} catch ( \Exception $e ) {
+			die( 1 );
+		}
+
+		WP_CLI::print_value( $value, $assoc_args );
+	}
+
+	/**
+	 * Update a nested value in an option.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <action>
+	 * : Patch action to perform.
+	 * ---
+	 * options:
+	 *   - insert
+	 *   - update
+	 *   - delete
+	 * ---
+	 *
+	 * <key>
+	 * : The option name.
+	 *
+	 * <key-path>...
+	 * : The name(s) of the keys within the value to locate the value to patch.
+	 *
+	 * [<value>]
+	 * : The new value. If omitted, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
+	 */
+	public function patch( $args, $assoc_args ) {
+		list( $action, $key ) = $args;
+		$key_path = array_map( function( $key ) {
+			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
+				return (int) $key;
+			}
+			return $key;
+		}, array_slice( $args, 2 ) );
+
+		if ( 'delete' == $action ) {
+			$patch_value = null;
+		} elseif ( \WP_CLI\Entity\Utils::has_stdin() ) {
+			$stdin_value = WP_CLI::get_value_from_arg_or_stdin( $args, -1 );
+			$patch_value = WP_CLI::read_value( trim( $stdin_value ), $assoc_args );
+		} else {
+			// Take the patch value as the last positional argument. Mutates $key_path to be 1 element shorter!
+			$patch_value = WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
+		}
+
+		/* Need to make a copy of $current_value here as it is modified by reference */
+		$old_value = $current_value = sanitize_option( $key, get_site_option( $key ) );
+
+		$traverser = new RecursiveDataStructureTraverser( $current_value );
+
+		try {
+			$traverser->$action( $key_path, $patch_value );
+		} catch ( \Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
+
+		$patched_value = sanitize_option( $key, $traverser->value() );
+
+		if ( $patched_value === $old_value ) {
+			WP_CLI::success( "Value passed for '$key' site option is unchanged." );
+		} else {
+			if ( update_site_option( $key, $patched_value ) ) {
+				WP_CLI::success( "Updated '$key' site option." );
+			} else {
+				WP_CLI::error( "Could not update site option '$key'." );
+			}
 		}
 	}
 
