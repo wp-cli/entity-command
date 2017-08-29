@@ -421,6 +421,7 @@ class Option_Command extends WP_CLI_Command {
 	 *   - plaintext
 	 *   - json
 	 *   - yaml
+	 * ---
 	 */
 	public function pluck( $args, $assoc_args ) {
 		list( $key ) = $args;
