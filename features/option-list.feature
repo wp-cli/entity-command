@@ -38,22 +38,11 @@ Feature: List WordPress options
     When I run `wp option add sample_test_field_one sample_test_field_value_one`
     And I run `wp option add sample_test_field_two sample_test_field_value_two`
     And I run `wp option list --search="sample_test_field_*" --format=csv`
-    And I run `wp option list --search="sample_test_field_*" --format=csv --orderby=option_name --order=asc`
-    And I run `wp option list --search="sample_test_field_*" --format=csv --orderby=option_value --order=asc`
     Then STDOUT should be:
       """
       option_name,option_value
       sample_test_field_one,sample_test_field_value_one
       sample_test_field_two,sample_test_field_value_two
-      """
-
-    When I run `wp option list --search="sample_test_field_*" --format=csv --orderby=option_value --order=desc`
-    And I run `wp option list --search="sample_test_field_*" --format=csv --orderby=option_name --order=desc`
-    Then STDOUT should be:
-      """
-      option_name,option_value
-      sample_test_field_two,sample_test_field_value_two
-      sample_test_field_one,sample_test_field_value_one
       """
 
     When I run `wp option list --search="sample_test_field_*" --exclude="*field_one" --format=csv`
