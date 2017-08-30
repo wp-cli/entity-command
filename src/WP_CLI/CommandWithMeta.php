@@ -89,42 +89,14 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$orderby = Utils\get_flag_value( $assoc_args, 'orderby' );
 
 		if ( 'id' !== $orderby ) {
+
 			usort( $items, function ( $a, $b ) use ( $orderby, $order ) {
 				// Sort array.
-				if ( 'meta_key' === $orderby ) { // Sort by meta_key.
-					if ( 'asc' === $order ) {
-
-						if ( $a->meta_key == $b->meta_key ) {
-							return 0;
-						}
-						return ( $a->meta_key < $b->meta_key ) ? -1 : 1;
-
-					} else {
-
-						if ( $a->meta_key == $b->meta_key ) {
-							return 0;
-						}
-						return ( $a->meta_key > $b->meta_key ) ? -1 : 1;
-
-					}
-				} elseif ( 'meta_value' === $orderby ) { // Sort by meta_value.
-					if ( 'asc' === $order ) {
-
-						if ( $a->meta_value == $b->meta_value ) {
-							return 0;
-						}
-						return ( $a->meta_value < $b->meta_value ) ? -1 : 1;
-
-					} else {
-
-						if ( $a->meta_value == $b->meta_value ) {
-							return 0;
-						}
-						return ( $a->meta_value > $b->meta_value ) ? -1 : 1;
-
-					}
-				}
+				return 'asc' === $order
+						? $a->$orderby > $b->$orderby
+						: $a->$orderby < $b->$orderby;
 			});
+
 		} elseif ( 'id' === $orderby && 'desc' === $order ) { // Sort by default descending.
 			krsort( $items );
 		}
