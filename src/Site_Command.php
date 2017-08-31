@@ -265,7 +265,12 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		$site_url = trailingslashit( $blog->siteurl );
 
-		WP_CLI::confirm( "Are you sure you want to delete the '$site_url' site?", $assoc_args );
+		if ( $blog_id == BLOG_ID_CURRENT_SITE && ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'delete-root' ) ) {
+			WP_CLI::line( WP_CLI::colorize( "%R'$site_url' is the root site. Pass the --delete-root flag to delete it.%n" ), $assoc_args );
+			return;
+		} else {
+			WP_CLI::confirm( "Are you sure you want to delete the '$site_url' site?", $assoc_args );
+		}
 
 		wpmu_delete_blog( $blog->blog_id, ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
