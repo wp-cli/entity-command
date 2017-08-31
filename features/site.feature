@@ -56,17 +56,17 @@ Feature: Manage sites in a multisite installation
       http://example.com/first/
       """
 
+    When I run `wp site delete 1`
+    Then STDOUT should be:
+      """
+      'http://example.com/' is the root site. Pass the --delete-root flag to delete it.
+      """
+
     When I run `wp site delete {SITE_ID} --yes`
     Then STDOUT should be:
       """
       Success: The site at 'http://example.com/first/' was deleted.
       """
-
-    When I run `wp site delete 1`
-    Then STDOUT should be:
-    """
-    'http://example.com/' is the root site. Pass the --delete-root flag to delete it.
-    """
 
     When I try the previous command again
     Then the return code should be 1
