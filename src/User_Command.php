@@ -1017,4 +1017,44 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 	}
 
+	/**
+	 * Mark as spam one or more users.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of users to mark as spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp user spam 123
+	 *     Success: User 123 marked as spam.
+	 */
+	public function spam( $args, $assoc_args ) {
+		global $wpdb;
+		$user_ids = $args;
+
+		foreach ( $user_ids as $user_id ) {
+
+			$add_spam = $wpdb->update(
+					$wpdb->users,
+					array(
+						'spam' => 1,
+					),
+					array(
+						'ID' => $user_id,
+					),
+					array( '%d' ),
+					array( '%d' )
+				);
+
+			if ( ! is_wp_error( $add_spam ) ) {
+				WP_CLI::success( "User $user_id marked as spam." );
+			} else {
+				WP_CLI::error( "There was an error, probably that user doesn't exist." );
+			}
+		}
+
+	}
+
 }
