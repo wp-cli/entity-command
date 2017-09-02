@@ -1036,6 +1036,19 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		foreach ( $user_ids as $user_id ) {
 
+			// Do not mark super user as spam.
+			if ( is_super_admin( $user_id ) ) {
+				WP_CLI::warning( "Sorry!! Super-user can not be set as spam." );
+				continue;
+			}
+
+			// Show warning if user is already marked as spam.
+			if ( $this->is_user_as_sapm( $user_id ) ) {
+				WP_CLI::warning( "User {$user_id} already marked as spam." );
+				continue;
+			}
+
+			// Set user as spam.
 			$add_spam = $wpdb->update(
 					$wpdb->users,
 					array(
@@ -1052,9 +1065,27 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				WP_CLI::success( "User $user_id marked as spam." );
 			} else {
 				WP_CLI::error( "There was an error, probably that user doesn't exist." );
+				continue;
 			}
 		}
 
+	}
+
+	/**
+	 * Check if user is already set as spam or not.
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool        Return true if user is already reported as spam.
+	 */
+	public function is_user_as_sapm( $user_id = 0 ) {
+		if ( 0 === $user_id ) {
+			WP_CLI::error( "There was an error, probably that user doesn't exist." );
+		}
+
+		global $wpdb;
+		$is_user_spam = $wpdb->get_var( $wpdb->prepare( "SELECT `spam` FROM {$wpdb->users} WHERE `ID` = %d LIMIT 0, 1", $user_id ) );
+
+		return ( '0' !== $is_user_spam ) ? true : false;
 	}
 
 }
