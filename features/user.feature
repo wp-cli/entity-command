@@ -322,3 +322,18 @@ Feature: Manage WordPress users
       """
       testuser4@example.com
       """
+
+  Scenario: Set user as spam
+    Given a WP install
+
+    When I run `wp user create bobjones bob@example.com --role=author --porcelain`
+    And save STDOUT as {BOB_ID}
+
+    When I run `wp user get bobjones`
+    Then STDOUT should not be empty
+
+    When I run `wp user spam {BOB_ID}`
+    Then STDOUT should be:
+      """
+      Success: User {BOB_ID} marked as spam.
+      """
