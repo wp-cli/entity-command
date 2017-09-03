@@ -325,15 +325,19 @@ Feature: Manage WordPress users
 
   Scenario: Set user as spam
     Given a WP multisite install
-
-    When I run `wp user create bumblebee bbee@example.com --role=author --porcelain`
+    And I run `wp user create bumblebee bbee@example.com --role=author --porcelain`
     And save STDOUT as {BBEE_ID}
-
-    When I run `wp user get bumblebee`
+    And I run `wp user get bumblebee`
     Then STDOUT should not be empty
 
     When I run `wp user spam {BBEE_ID}`
     Then STDOUT should be:
       """
       Success: User {BBEE_ID} marked as spam.
+      """
+
+    When I try the previous command again
+    Then STDERR should be:
+      """
+      Warning: User {BBEE_ID} already marked as spam.
       """
