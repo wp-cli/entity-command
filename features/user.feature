@@ -326,14 +326,20 @@ Feature: Manage WordPress users
   Scenario: Set user as spam
     Given a WP install
 
-    When I run `wp user create bobjones bob@example.com --role=author --porcelain`
-    And save STDOUT as {BOB_ID}
+    When I run `wp user create bumblebee bbee@example.com --role=author --porcelain`
+    And save STDOUT as {BBEE_ID}
 
-    When I run `wp user get bobjones`
+    When I run `wp user get bumblebee`
     Then STDOUT should not be empty
 
-    When I run `wp user spam {BOB_ID}`
+    When I run `wp user spam {BBEE_ID}`
     Then STDOUT should be:
       """
-      Success: User {BOB_ID} marked as spam.
+      Success: User {BBEE_ID} marked as spam.
+      """
+
+    When I try the previous command again
+    Then STDOUT should be:
+      """
+      Warning: User {BBEE_ID} already marked as spam.
       """
