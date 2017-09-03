@@ -1034,19 +1034,24 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		global $wpdb;
 		$user_ids = $args;
 
+		// If site is not multisite, then stop execution.
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'Sorry! this command is for multisite only.' );
+		}
+
 		foreach ( $user_ids as $user_id ) {
 
 			$user = get_userdata( $user_id );
 
 			// If no user found, then show warning.
 			if ( empty( $user ) ) {
-				WP_CLI::warning( sprintf( __( 'User %d doesn\'t exist.' ), esc_html( $user_id ) ) );
+				WP_CLI::warning( sprintf( 'User %d doesn\'t exist.', esc_html( $user_id ) ) );
 				continue;
 			}
 
 			// Super admin should not be marked as spam.
 			if ( is_super_admin( $user->ID ) ) {
-				WP_CLI::warning( sprintf( __( 'User cannot be modified. The user %d is a network administrator.' ), esc_html( $user->ID ) ) );
+				WP_CLI::warning( sprintf( 'User cannot be modified. The user %d is a network administrator.', esc_html( $user->ID ) ) );
 				continue;
 			}
 
