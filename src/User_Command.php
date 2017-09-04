@@ -42,6 +42,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	public function __construct() {
 		$this->fetcher = new \WP_CLI\Fetchers\User;
+		$this->sitefetcher = new \WP_CLI\Fetchers\Site;
 	}
 
 	/**
@@ -1064,9 +1065,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			// Make that user's blog as spam too.
 			$blogs = get_blogs_of_user( $user_id, true );
 			foreach ( (array) $blogs as $details ) {
+				$site = $this->sitefetcher->get_check( $details->site_id );
 
 				// Main blog shouldn't a spam !
-				if ( $details->userblog_id != get_network()->site_id ) {
+				if ( $details->userblog_id != $site->blog_id ) {
 					update_blog_status( $details->userblog_id, 'spam', '1' );
 				}
 			}
