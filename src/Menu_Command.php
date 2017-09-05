@@ -3,7 +3,9 @@
 use WP_CLI\Utils;
 
 /**
- * List, create, assign, and delete menus.
+ * Lists, creates, assigns, and deletes the active theme's navigation menus.
+ *
+ * See the [Navigation Menus](https://developer.wordpress.org/themes/functionality/navigation-menus/) reference in the Theme Handbook.
  *
  * ## EXAMPLES
  *
