@@ -56,7 +56,7 @@ class Site_Option_Command extends WP_CLI_Command {
 		$value = get_site_option( $key );
 
 		if ( false === $value ) {
-			WP_CLI::halt(1);
+			WP_CLI::halt( 1 );
 		}
 
 		WP_CLI::print_value( $value, $assoc_args );
@@ -159,8 +159,8 @@ class Site_Option_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 
 		global $wpdb;
-		$pattern = '%';
-		$fields = array( 'meta_key', 'meta_value' );
+		$pattern    = '%';
+		$fields     = array( 'meta_key', 'meta_value' );
 		$size_query = ",LENGTH(meta_value) AS `size_bytes`";
 
 		if ( isset( $assoc_args['search'] ) ) {
@@ -175,13 +175,13 @@ class Site_Option_Command extends WP_CLI_Command {
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
-			$fields = array( 'size_bytes' );
+			$fields     = array( 'size_bytes' );
 			$size_query = ",SUM(LENGTH(meta_value)) AS `size_bytes`";
 		}
 
 		$query = $wpdb->prepare(
 			"SELECT `meta_id`, `site_id`, `meta_key`,`meta_value`" . $size_query
-				. " FROM `$wpdb->sitemeta` WHERE `meta_key` LIKE %s",
+			. " FROM `$wpdb->sitemeta` WHERE `meta_key` LIKE %s",
 			$pattern
 		);
 
@@ -235,7 +235,7 @@ class Site_Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
-		$value = sanitize_option( $key, $value );
+		$value     = sanitize_option( $key, $value );
 		$old_value = sanitize_option( $key, get_site_option( $key ) );
 
 		if ( $value === $old_value ) {
@@ -301,10 +301,11 @@ class Site_Option_Command extends WP_CLI_Command {
 			WP_CLI::halt( 1 );
 		}
 
-		$key_path = array_map( function( $key ) {
+		$key_path = array_map( function ( $key ) {
 			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
 				return (int) $key;
 			}
+
 			return $key;
 		}, array_slice( $args, 1 ) );
 
@@ -353,17 +354,18 @@ class Site_Option_Command extends WP_CLI_Command {
 	 */
 	public function patch( $args, $assoc_args ) {
 		list( $action, $key ) = $args;
-		$key_path = array_map( function( $key ) {
+		$key_path = array_map( function ( $key ) {
 			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
 				return (int) $key;
 			}
+
 			return $key;
 		}, array_slice( $args, 2 ) );
 
 		if ( 'delete' == $action ) {
 			$patch_value = null;
 		} elseif ( \WP_CLI\Entity\Utils::has_stdin() ) {
-			$stdin_value = WP_CLI::get_value_from_arg_or_stdin( $args, -1 );
+			$stdin_value = WP_CLI::get_value_from_arg_or_stdin( $args, - 1 );
 			$patch_value = WP_CLI::read_value( trim( $stdin_value ), $assoc_args );
 		} else {
 			// Take the patch value as the last positional argument. Mutates $key_path to be 1 element shorter!
@@ -398,7 +400,7 @@ class Site_Option_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		// Remove notices in 4.0 and support backwards compatibility
-		if( method_exists( $wpdb, 'esc_like' ) ) {
+		if ( method_exists( $wpdb, 'esc_like' ) ) {
 			// 4.0
 			$old = $wpdb->esc_like( $old );
 		} else {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Manage taxonomies.
  *
@@ -112,8 +113,9 @@ class Taxonomy_Command extends WP_CLI_Command {
 
 		$taxonomies = get_taxonomies( $assoc_args, 'objects' );
 
-		$taxonomies = array_map( function( $taxonomy ) {
+		$taxonomies = array_map( function ( $taxonomy ) {
 			$taxonomy->object_type = implode( ', ', $taxonomy->object_type );
+
 			return $taxonomy;
 		}, $taxonomies );
 
