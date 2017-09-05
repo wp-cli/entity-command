@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage network custom fields.
+ * Manages meta fields for multisite networks.
  *
  * ## EXAMPLES
  *
