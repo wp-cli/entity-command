@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage posts.
+ * Manages posts, content, and meta.
  *
  * ## EXAMPLES
  *
