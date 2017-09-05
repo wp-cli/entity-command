@@ -565,7 +565,7 @@ class Term_Command extends WP_CLI_Command {
 			} else {
 				$created[] = $term['term_id'];
 				$previous_term_id = $term['term_id'];
-				if ( 'ids' === $format ) {
+				if ( 'ids' == $format ) {
 					echo $term['term_id'];
 					if ( $i < $max_id + $count ) {
 						echo ' ';

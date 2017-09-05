@@ -134,7 +134,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			}
 			$assoc_args['blog_id'] = 0;
 			if ( isset( $assoc_args['fields'] ) ) {
-				$fields = explode( ',', $assoc_args['fields'] );
+				$fields               = explode( ',', $assoc_args['fields'] );
 				$assoc_args['fields'] = array_diff( $fields, array( 'roles' ) );
 			} else {
 				$assoc_args['fields'] = array_diff( $this->obj_fields, array( 'roles' ) );
@@ -150,8 +150,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$assoc_args['count_total'] = false;
-		$assoc_args = self::process_csv_arguments_to_arrays( $assoc_args );
-		$users = get_users( $assoc_args );
+		$assoc_args                = self::process_csv_arguments_to_arrays( $assoc_args );
+		$users                     = get_users( $assoc_args );
 
 		if ( 'ids' == $formatter->format ) {
 			echo implode( ' ', $users );
@@ -159,11 +159,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$formatter->display_items( $users );
 		} else {
 			$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
-				if ( !is_object( $user ) )
+				if ( ! is_object( $user ) ) {
 					return $user;
+				}
 
 				$user->roles = implode( ',', $user->roles );
-				$user->url = get_author_posts_url( $user->ID, $user->user_nicename );
+				$user->url   = get_author_posts_url( $user->ID, $user->user_nicename );
+
 				return $user;
 			} );
 
@@ -206,8 +208,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     $ wp user get bob --format=json > bob.json
 	 */
 	public function get( $args, $assoc_args ) {
-		$user = $this->fetcher->get_check( $args[0] );
-		$user_data = $user->to_array();
+		$user               = $this->fetcher->get_check( $args[0] );
+		$user_data          = $user->to_array();
 		$user_data['roles'] = implode( ', ', $user->roles );
 
 		$formatter = $this->get_formatter( $assoc_args );
@@ -247,14 +249,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Removed user 578 from http://example.com
 	 */
 	public function delete( $args, $assoc_args ) {
-		$network = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
+		$network  = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
 		$reassign = \WP_CLI\Utils\get_flag_value( $assoc_args, 'reassign' );
 
 		if ( $network && $reassign ) {
-			WP_CLI::error('Reassigning content to a different user is not supported on multisite.');
+			WP_CLI::error( 'Reassigning content to a different user is not supported on multisite.' );
 		}
 
-		if ( !$reassign ) {
+		if ( ! $reassign ) {
 			WP_CLI::confirm( '--reassign parameter not passed. All associated posts will be deleted. Proceed?', $assoc_args );
 		}
 
@@ -264,10 +266,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user_id = $user->ID;
 
 			if ( $network ) {
-				$r = wpmu_delete_user( $user_id );
+				$r       = wpmu_delete_user( $user_id );
 				$message = "Deleted user $user_id.";
 			} else {
-				$r = wp_delete_user( $user_id, $reassign );
+				$r       = wp_delete_user( $user_id, $reassign );
 				$message = "Removed user $user_id from " . home_url() . ".";
 			}
 
@@ -354,14 +356,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( "The '{$user->user_login}' username is already registered." );
 		}
 
-		if ( !is_email( $user->user_email ) ) {
+		if ( ! is_email( $user->user_email ) ) {
 			WP_CLI::error( "The '{$user->user_email}' email address is invalid." );
 		}
 
 		$user->user_registered = \WP_CLI\Utils\get_flag_value(
 			$assoc_args,
 			'user_registered',
-			strftime( "%F %T", current_time('timestamp') )
+			strftime( "%F %T", current_time( 'timestamp' ) )
 		);
 
 		$user->display_name = \WP_CLI\Utils\get_flag_value( $assoc_args, 'display_name', false );
@@ -373,11 +375,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
 		} else {
-			$user->user_pass = wp_generate_password(24);
-			$generated_pass = true;
+			$user->user_pass = wp_generate_password( 24 );
+			$generated_pass  = true;
 		}
 
-		$user->role = \WP_CLI\Utils\get_flag_value( $assoc_args, 'role', get_option('default_role') );
+		$user->role = \WP_CLI\Utils\get_flag_value( $assoc_args, 'role', get_option( 'default_role' ) );
 		self::validate_role( $user->role );
 
 		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
@@ -395,7 +397,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				WP_CLI::error( "Unknown error creating new user." );
 			}
 			$user->ID = $user_id;
-			$user_id = wp_update_user( $user );
+			$user_id  = wp_update_user( $user );
 			if ( is_wp_error( $user_id ) ) {
 				WP_CLI::error( $user_id );
 			}
@@ -423,8 +425,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::line( $user_id );
 		} else {
 			WP_CLI::success( "Created user $user_id." );
-			if ( isset( $generated_pass ) )
+			if ( isset( $generated_pass ) ) {
 				WP_CLI::line( "Password: $user->user_pass" );
+			}
 		}
 	}
 
@@ -535,9 +538,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	public function generate( $args, $assoc_args ) {
 		global $blog_id;
 
-		$defaults = array(
+		$defaults   = array(
 			'count' => 100,
-			'role' => get_option('default_role'),
+			'role'  => get_option( 'default_role' ),
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
@@ -548,8 +551,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$user_count = count_users();
-		$total = $user_count['total_users'];
-		$limit = $assoc_args['count'] + $total;
+		$total      = $user_count['total_users'];
+		$limit      = $assoc_args['count'] + $total;
 
 		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
 
@@ -558,16 +561,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating users', $assoc_args['count'] );
 		}
 
-		for ( $i = $total; $i < $limit; $i++ ) {
+		for ( $i = $total; $i < $limit; $i ++ ) {
 			$login = sprintf( 'user_%d_%d', $blog_id, $i );
-			$name = "User $i";
+			$name  = "User $i";
 
 			$user_id = wp_insert_user( array(
-				'user_login' => $login,
-				'user_pass' => $login,
-				'nickname' => $name,
+				'user_login'   => $login,
+				'user_pass'    => $login,
+				'nickname'     => $name,
 				'display_name' => $name,
-				'role' => $role,
+				'role'         => $role,
 			) );
 
 			if ( false === $role ) {
@@ -577,7 +580,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			if ( 'progress' === $format ) {
 				$notify->tick();
-			} else if ( 'ids' === $format ) {
+			} else if ( 'ids' == $format ) {
 				echo $user_id;
 				if ( $i < $limit - 1 ) {
 					echo ' ';
@@ -612,15 +615,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	public function set_role( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 
-		$role = \WP_CLI\Utils\get_flag_value( $args, 1, get_option('default_role') );
+		$role = \WP_CLI\Utils\get_flag_value( $args, 1, get_option( 'default_role' ) );
 
 		self::validate_role( $role );
 
 		// Multisite
-		if ( function_exists( 'add_user_to_blog' ) )
+		if ( function_exists( 'add_user_to_blog' ) ) {
 			add_user_to_blog( get_current_blog_id(), $user->ID, $role );
-		else
+		} else {
 			$user->set_role( $role );
+		}
 
 		WP_CLI::success( "Added {$user->user_login} ({$user->ID}) to " . site_url() . " as {$role}." );
 	}
@@ -686,10 +690,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::success( sprintf( "Removed '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
 		} else {
 			// Multisite
-			if ( function_exists( 'remove_user_from_blog' ) )
+			if ( function_exists( 'remove_user_from_blog' ) ) {
 				remove_user_from_blog( $user->ID, get_current_blog_id() );
-			else
+			} else {
 				$user->remove_all_caps();
+			}
 
 			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() . "." );
 		}
@@ -721,7 +726,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	public function add_cap( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 		if ( $user ) {
-			$cap  = $args[1];
+			$cap = $args[1];
 			$user->add_cap( $cap );
 
 			WP_CLI::success( sprintf( "Added '%s' capability for %s (%d).", $cap, $user->user_login, $user->ID ) );
@@ -805,8 +810,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				foreach ( $active_user_cap_list as $cap ) {
 					WP_CLI::line( $cap );
 				}
-			}
-			else {
+			} else {
 				$output_caps = array();
 				foreach ( $active_user_cap_list as $cap ) {
 					$output_cap = new stdClass;
@@ -866,8 +870,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$filename = $args[0];
 
 		if ( 0 === stripos( $filename, 'http://' ) || 0 === stripos( $filename, 'https://' ) ) {
-			$response = wp_remote_head( $filename );
-			$response_code = (string)wp_remote_retrieve_response_code( $response );
+			$response      = wp_remote_head( $filename );
+			$response_code = (string) wp_remote_retrieve_response_code( $response );
 			if ( in_array( $response_code[0], array( 4, 5 ) ) ) {
 				WP_CLI::error( "Couldn't access remote CSV file (HTTP {$response_code} response)." );
 			}
@@ -881,18 +885,18 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		foreach ( new \WP_CLI\Iterators\CSV( $filename ) as $i => $new_user ) {
 			$defaults = array(
-				'role' => get_option('default_role'),
-				'user_pass' => wp_generate_password(),
+				'role'            => get_option( 'default_role' ),
+				'user_pass'       => wp_generate_password(),
 				'user_registered' => strftime( "%F %T", time() ),
-				'display_name' => false,
+				'display_name'    => false,
 			);
 			$new_user = array_merge( $defaults, $new_user );
 
 			$secondary_roles = array();
 			if ( ! empty( $new_user['roles'] ) ) {
-				$roles = array_map( 'trim', explode( ',', $new_user['roles'] ) );
+				$roles        = array_map( 'trim', explode( ',', $new_user['roles'] ) );
 				$invalid_role = false;
-				foreach( $roles as $role ) {
+				foreach ( $roles as $role ) {
 					if ( is_null( get_role( $role ) ) ) {
 						WP_CLI::warning( "{$new_user['user_login']} has an invalid role." );
 						$invalid_role = true;
@@ -903,7 +907,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 					continue;
 				}
 				$new_user['role'] = array_shift( $roles );
-				$secondary_roles = $roles;
+				$secondary_roles  = $roles;
 			} else if ( 'none' === $new_user['role'] ) {
 				$new_user['role'] = false;
 			} elseif ( is_null( get_role( $new_user['role'] ) ) ) {
@@ -914,7 +918,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			// User already exists and we just need to add them to the site if they aren't already there
 			$existing_user = get_user_by( 'email', $new_user['user_email'] );
 
-			if ( !$existing_user ) {
+			if ( ! $existing_user ) {
 				$existing_user = get_user_by( 'login', $new_user['user_login'] );
 			}
 
@@ -926,14 +930,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			} else if ( $existing_user ) {
 
 				$new_user['ID'] = $existing_user->ID;
-				$user_id = wp_update_user( $new_user );
+				$user_id        = wp_update_user( $new_user );
 
-				if ( !in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) && is_multisite() && $new_user['role'] ) {
+				if ( ! in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) && is_multisite() && $new_user['role'] ) {
 					add_user_to_blog( get_current_blog_id(), $existing_user->ID, $new_user['role'] );
 					WP_CLI::log( "{$existing_user->user_login} added as {$new_user['role']}." );
 				}
 
-			// Create the user
+				// Create the user
 			} else {
 				unset( $new_user['ID'] ); // Unset else it will just return the ID
 
@@ -949,7 +953,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 						continue;
 					}
 					$new_user['ID'] = $user_id;
-					$user_id = wp_update_user( $new_user );
+					$user_id        = wp_update_user( $new_user );
 					if ( is_wp_error( $user_id ) ) {
 						WP_CLI::warning( $user_id );
 						continue;
@@ -973,11 +977,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			}
 
 			$user = get_user_by( 'id', $user_id );
-			foreach( $secondary_roles as $secondary_role ) {
+			foreach ( $secondary_roles as $secondary_role ) {
 				$user->add_role( $secondary_role );
 			}
 
-			if ( !empty( $existing_user ) ) {
+			if ( ! empty( $existing_user ) ) {
 				WP_CLI::success( $new_user['user_login'] . " updated." );
 			} else {
 				WP_CLI::success( $new_user['user_login'] . " created." );

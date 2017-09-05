@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Manage post types.
  *
