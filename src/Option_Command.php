@@ -4,7 +4,11 @@ use WP_CLI\Entity\RecursiveDataStructureTraverser;
 use WP_CLI\Utils;
 
 /**
- * Manage options.
+ * Retrieves and sets site options, including plugin and WordPress settings.
+ *
+ * See the [Plugin Settings API](https://developer.wordpress.org/plugins/settings/settings-api/) and the 
+[Theme Options](https://developer.wordpress.org/themes/customize-api/) for more information on adding customized options.
+
  *
  * ## EXAMPLES
  *
