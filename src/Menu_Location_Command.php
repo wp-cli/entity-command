@@ -74,7 +74,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 
 		$formatter = new \WP_CLI\Formatter( $assoc_args, array( 'location', 'description' ) );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$ids = array_map(
 				function($o) {
 					return $o->location;

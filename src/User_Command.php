@@ -153,7 +153,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$assoc_args = self::process_csv_arguments_to_arrays( $assoc_args );
 		$users = get_users( $assoc_args );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			echo implode( ' ', $users );
 		} else if ( 'count' === $formatter->format ) {
 			$formatter->display_items( $users );

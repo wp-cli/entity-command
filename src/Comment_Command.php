@@ -319,7 +319,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	public function list_( $_, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$assoc_args['fields'] = 'comment_ID';
 		}
 
@@ -350,7 +350,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		if ( 'count' === $formatter->format ) {
 			echo $comments;
 		} else {
-			if ( 'ids' == $formatter->format ) {
+			if ( 'ids' === $formatter->format ) {
 				$comments = wp_list_pluck( $comments, 'comment_ID' );
 			} elseif ( is_array( $comments ) ) {
 				$comments = array_map( function( $comment ){
