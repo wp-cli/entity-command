@@ -369,7 +369,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		if ( !$user_id ) { // Create a new user with a random password
 			$password = wp_generate_password( 12, false );
 			$user_id = wpmu_create_user( $base, $password, $email );
-			if ( false == $user_id ) {
+			if ( false === $user_id ) {
 				WP_CLI::error( "Can't create user." );
 			}
 			else {
@@ -724,25 +724,25 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	private function update_site_status( $ids, $pref, $value ) {
-		if ( $pref == 'archived' && $value == 1 ) {
+		if ( $pref === 'archived' && $value === 1 ) {
 			$action = 'archived';
-		} else if ( $pref == 'archived' && $value == 0) {
+		} else if ( $pref === 'archived' && $value === 0) {
 			$action = 'unarchived';
-		} else if ( $pref == 'deleted' && $value == 1 ) {
+		} else if ( $pref === 'deleted' && $value === 1 ) {
 			$action = 'deactivated';
-		} else if ( $pref == 'deleted' && $value == 0 ) {
+		} else if ( $pref === 'deleted' && $value === 0 ) {
 			$action = 'activated';
-		} else if ( $pref == 'spam' && $value == 1 ) {
+		} else if ( $pref === 'spam' && $value === 1 ) {
 			$action = 'marked as spam';
-		} else if ( $pref == 'spam' && $value == 0 ) {
+		} else if ( $pref === 'spam' && $value === 0 ) {
 			$action = 'removed from spam';
-		} else if ( $pref == 'public' && $value == 1 ) {
+		} else if ( $pref === 'public' && $value === 1 ) {
 			$action = 'marked as public';
-		} else if ( $pref == 'public' && $value == 0 ) {
+		} else if ( $pref === 'public' && $value === 0 ) {
 			$action = 'marked as private';
-		} else if ( $pref == 'mature' && $value == 1 ) {
+		} else if ( $pref === 'mature' && $value === 1 ) {
 			$action = 'marked as mature';
-		} else if ( $pref == 'mature' && $value == 0 ) {
+		} else if ( $pref === 'mature' && $value === 0 ) {
 			$action = 'marked as unmature';
 		}
 
@@ -756,7 +756,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 			$old_value = get_blog_status( $site->blog_id, $pref );
 
-			if ( $value == $old_value ) {
+			if ( $value === $old_value ) {
 				WP_CLI::warning( "Site {$site->blog_id} already {$action}." );
 				continue;
 			}

@@ -157,7 +157,7 @@ class Term_Command extends WP_CLI_Command {
 			return $term;
 		}, $terms );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$terms = wp_list_pluck( $terms, 'term_id' );
 			echo implode( ' ', $terms );
 		} else {

@@ -103,7 +103,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			return $item;
 		}, $items );
 
-		if ( ! empty( $assoc_args['format'] ) && 'ids' == $assoc_args['format'] ) {
+		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
 			$items = array_map( function( $item ) {
 				return $item->db_id;
 			}, $items );
@@ -403,7 +403,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		$assoc_args['url'] = \WP_CLI\Utils\get_flag_value( $assoc_args, 'link' );
 
 		// Need to persist the menu item data. See https://core.trac.wordpress.org/ticket/28138
-		if ( 'update' == $method ) {
+		if ( 'update' === $method ) {
 
 			$menu_item_obj = get_post( $menu_item_db_id );
 			$menu_item_obj = wp_setup_nav_menu_item( $menu_item_obj );
@@ -461,9 +461,9 @@ class Menu_Item_Command extends WP_CLI_Command {
 		if ( is_wp_error( $ret ) ) {
 			WP_CLI::error( $ret->get_error_message() );
 		} else if ( ! $ret ) {
-			if ( 'add' == $method ) {
+			if ( 'add' === $method ) {
 				WP_CLI::error( "Couldn't add menu item." );
-			} else if ( 'update' == $method ) {
+			} else if ( 'update' === $method ) {
 				WP_CLI::error( "Couldn't update menu item." );
 			}
 		} else {
@@ -481,12 +481,12 @@ class Menu_Item_Command extends WP_CLI_Command {
 				wp_set_object_terms( $ret, array( (int)$menu->term_id ), 'nav_menu' );
 			}
 
-			if ( 'add' == $method && ! empty( $assoc_args['porcelain'] ) ) {
+			if ( 'add' === $method && ! empty( $assoc_args['porcelain'] ) ) {
 				WP_CLI::line( $ret );
 			} else {
-				if ( 'add' == $method ) {
+				if ( 'add' === $method ) {
 					WP_CLI::success( "Menu item added." );
-				} else if ( 'update' == $method ) {
+				} else if ( 'update' === $method ) {
 					WP_CLI::success( "Menu item updated." );
 				}
 			}

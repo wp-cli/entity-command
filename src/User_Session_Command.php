@@ -153,7 +153,7 @@ class User_Session_Command extends WP_CLI_Command {
 		$manager   = WP_Session_Tokens::get_instance( $user->ID );
 		$sessions  = $this->get_all_sessions( $manager );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			echo implode( ' ', array_keys( $sessions ) );
 		} else {
 			$formatter->display_items( $sessions );

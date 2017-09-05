@@ -375,7 +375,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$query_args['post_type'] = explode( ',', $query_args['post_type'] );
 		}
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
 			$query = new WP_Query( $query_args );
 			echo implode( ' ', $query->posts );
