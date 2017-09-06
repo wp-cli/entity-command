@@ -327,17 +327,24 @@ Feature: Manage WordPress users
     Given a WP multisite install
     And I run `wp user create bumblebee bbee@example.com --role=author --porcelain`
     And save STDOUT as {BBEE_ID}
+    And I run `wp user create oprime oprime@example.com --role=author --porcelain`
+    And save STDOUT as {OP_ID}
     And I run `wp user get bumblebee`
     Then STDOUT should not be empty
+    And I run `wp user get oprime`
+    Then STDOUT should not be empty
 
-    When I run `wp user spam {BBEE_ID}`
+    When I run `wp user spam {BBEE_ID} {OP_ID}`
     Then STDOUT should be:
       """
-      Success: User {BBEE_ID} marked as spam.
+      User {BBEE_ID} marked as spam.
+      User {OP_ID} marked as spam.
+      Success: Spamed 2 of 2 users.
       """
 
     When I try the previous command again
     Then STDERR should be:
       """
       Warning: User {BBEE_ID} already marked as spam.
+      Warning: User {OP_ID} already marked as spam.
       """
