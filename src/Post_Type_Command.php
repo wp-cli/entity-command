@@ -1,6 +1,6 @@
 <?php
 /**
- * Manage post types.
+ * Retrieves details on the site's registered post-types.
  *
  * ## EXAMPLES
  *
