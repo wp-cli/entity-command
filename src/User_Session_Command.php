@@ -59,7 +59,7 @@ class User_Session_Command extends WP_CLI_Command {
 	 *     Success: Destroyed all sessions.
 	 *
 	 *     # Destroy all sessions for all users.
-	 *     $ wp user list --field=ID | xargs wp user session destroy --all
+	 *     $ wp user list --field=ID | xargs -n 1 wp user session destroy --all
 	 *     Success: Destroyed all sessions.
 	 *     Success: Destroyed all sessions.
 	 */
