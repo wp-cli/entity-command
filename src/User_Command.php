@@ -1,5 +1,7 @@
 <?php
 
+use \WP_CLI\Utils;
+
 /**
  * Manage users.
  *
@@ -1064,8 +1066,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( 'spam' === $pref && '1' === $value ) {
 			$action = 'marked as spam';
+			$verb = 'spam';
 		} elseif ( 'spam' === $pref && '0' === $value  ) {
 			$action = 'removed from spam';
+			$verb = 'unspam';
+		}
+
+		$successes = $errors = 0;
+		$users = $this->fetcher->get_many( $user_ids );
+		if ( count( $users ) < count( $user_ids ) ) {
+			$errors = count( $user_ids ) - count( $users );
 		}
 
 		foreach ( $user_ids as $user_id ) {
@@ -1103,7 +1113,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			// Set status and show message.
 			update_user_status( $user_id, $pref, $value );
-			WP_CLI::success( "User {$user_id} {$action}." );
+			WP_CLI::log( "User {$user_id} {$action}." );
+			$successes++;
+		}
+
+		if ( ! $this->chained_command ) {
+			Utils\report_batch_operation_results( 'user', $verb, count( $user_ids ), $successes, $errors );
 		}
 
 	}
