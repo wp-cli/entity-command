@@ -1031,13 +1031,41 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     $ wp user spam 123
 	 *     Success: User 123 marked as spam.
 	 */
-	public function spam( $args, $assoc_args ) {
-		global $wpdb;
-		$user_ids = $args;
+	public function spam( $args ) {
+		$this->update_msuser_status( $args, 'spam', '1' );
+	}
+
+	/**
+	 * Mark one or more users as spam.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of users to mark as spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp user unspam 123
+	 *     Success: User 123 removed from spam.
+	 */
+	public function unspam( $args ) {
+		$this->update_msuser_status( $args, 'spam', '0' );
+	}
+
+	/**
+	 * Common command for updating user data.
+	 */
+	private function update_msuser_status( $user_ids, $pref, $value ) {
 
 		// If site is not multisite, then stop execution.
 		if ( ! is_multisite() ) {
 			WP_CLI::error( 'Sorry! this command is for multisite only.' );
+		}
+
+		if ( 'spam' === $pref && '1' === $value ) {
+			$action = 'marked as spam';
+		} elseif ( 'spam' === $pref && '0' === $value  ) {
+			$action = 'removed from spam';
 		}
 
 		foreach ( $user_ids as $user_id ) {
@@ -1057,8 +1085,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			}
 
 			// Skip if user is already marked as spam and show warning.
-			if ( '1' === $user->spam ) {
-				WP_CLI::warning( "User {$user_id} already marked as spam." );
+			if ( $value === $user->spam ) {
+				WP_CLI::warning( "User {$user_id} already {$action}." );
 				continue;
 			}
 
@@ -1069,15 +1097,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 				// Main blog shouldn't a spam !
 				if ( $details->userblog_id != $site->blog_id ) {
-					update_blog_status( $details->userblog_id, 'spam', '1' );
+					update_blog_status( $details->userblog_id, $pref, $value );
 				}
 			}
 
 			// Set status and show message.
-			if ( update_user_status( $user_id, 'spam', '1' ) ) {
-				WP_CLI::success( "User {$user_id} marked as spam." );
-			}
-
+			update_user_status( $user_id, $pref, $value );
+			WP_CLI::success( "User {$user_id} {$action}." );
 		}
 
 	}
