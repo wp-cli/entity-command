@@ -3,7 +3,7 @@
 use WP_CLI\Utils;
 
 /**
- * Manage comments.
+ * Creates, updates, deletes, and moderates comments.
  *
  * ## EXAMPLES
  *
