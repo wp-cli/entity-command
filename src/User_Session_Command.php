@@ -19,7 +19,7 @@
 class User_Session_Command extends WP_CLI_Command {
 
 	private $fields = array(
-		'token',
+		'verifier',
 		'login_time',
 		'expiration_time',
 		'ip',
@@ -38,8 +38,8 @@ class User_Session_Command extends WP_CLI_Command {
 	 * <user>
 	 * : User ID, user email, or user login.
 	 *
-	 * [<token>]
-	 * : The token of the session to destroy. Defaults to the most recently created session.
+	 * [<verifier>]
+	 * : The verifier of the session to destroy. Defaults to the most recently created session.
 	 *
 	 * [--all]
 	 * : Destroy all of the user's sessions.
@@ -65,12 +65,12 @@ class User_Session_Command extends WP_CLI_Command {
 	 */
 	public function destroy( $args, $assoc_args ) {
 		$user    = $this->fetcher->get_check( $args[0] );
-		$token   = \WP_CLI\Utils\get_flag_value( $args, 1, null );
+		$verifier = \WP_CLI\Utils\get_flag_value( $args, 1, null );
 		$all     = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
 		$manager = WP_Session_Tokens::get_instance( $user->ID );
 
-		if ( $token && $all ) {
-			WP_CLI::error( 'The --all flag cannot be specified along with a session token.' );
+		if ( $verifier && $all ) {
+			WP_CLI::error( 'The --all flag cannot be specified along with a session verifier.' );
 		}
 
 		if ( $all ) {
@@ -81,19 +81,19 @@ class User_Session_Command extends WP_CLI_Command {
 
 		$sessions = $this->get_all_sessions( $manager );
 
-		if ( ! $token ) {
+		if ( ! $verifier ) {
 			if ( empty( $sessions ) ) {
 				WP_CLI::success( 'No sessions to destroy.' );
 			}
 			$last = end( $sessions );
-			$token = $last['token'];
+			$verifier = $last['verifier'];
 		}
 
-		if ( ! isset( $sessions[ $token ] ) ) {
+		if ( ! isset( $sessions[ $verifier ] ) ) {
 			WP_CLI::error( 'Session not found.' );
 		}
 
-		$this->destroy_session( $manager, $token );
+		$this->destroy_session( $manager, $verifier );
 		$remaining = count( $manager->get_all() );
 
 		WP_CLI::success( sprintf( 'Destroyed session. %s remaining.', $remaining ) );
@@ -166,8 +166,8 @@ class User_Session_Command extends WP_CLI_Command {
 		$get_sessions->setAccessible( true );
 		$sessions = $get_sessions->invoke( $manager );
 
-		array_walk( $sessions, function( & $session, $token ) {
-			$session['token']           = $token;
+		array_walk( $sessions, function( & $session, $verifier ) {
+			$session['verifier']        = $verifier;
 			$session['login_time']      = date( 'Y-m-d H:i:s', $session['login'] );
 			$session['expiration_time'] = date( 'Y-m-d H:i:s', $session['expiration'] );
 		} );
@@ -175,10 +175,10 @@ class User_Session_Command extends WP_CLI_Command {
 		return $sessions;
 	}
 
-	protected function destroy_session( WP_Session_Tokens $manager, $token ) {
+	protected function destroy_session( WP_Session_Tokens $manager, $verifier ) {
 		$update_session = new ReflectionMethod( $manager, 'update_session' );
 		$update_session->setAccessible( true );
-		return $update_session->invoke( $manager, $token, null );
+		return $update_session->invoke( $manager, $verifier, null );
 	}
 
 	private function get_formatter( &$assoc_args ) {
