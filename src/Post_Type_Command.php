@@ -2,6 +2,8 @@
 /**
  * Retrieves details on the site's registered post-types.
  *
+ * Get details on WordPress built-in and [custom post types](https://developer.wordpress.org/plugins/post-types/).
+ *
  * ## EXAMPLES
  *
  *     # Get details about a post type
