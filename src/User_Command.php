@@ -1,5 +1,7 @@
 <?php
 
+use \WP_CLI\Utils;
+
 /**
  * Manage users.
  *
@@ -42,6 +44,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 	public function __construct() {
 		$this->fetcher = new \WP_CLI\Fetchers\User;
+		$this->sitefetcher = new \WP_CLI\Fetchers\Site;
 	}
 
 	/**
@@ -1015,6 +1018,109 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		} else {
 			wp_new_user_notification( $user_id, $password );
 		}
+	}
+
+	/**
+	 * Mark one or more users as spam.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of users to mark as spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp user spam 123
+	 *     Success: User 123 marked as spam.
+	 */
+	public function spam( $args ) {
+		$this->update_msuser_status( $args, 'spam', '1' );
+	}
+
+	/**
+	 * Mark one or more users as spam.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of users to mark as spam.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp user unspam 123
+	 *     Success: User 123 removed from spam.
+	 */
+	public function unspam( $args ) {
+		$this->update_msuser_status( $args, 'spam', '0' );
+	}
+
+	/**
+	 * Common command for updating user data.
+	 */
+	private function update_msuser_status( $user_ids, $pref, $value ) {
+
+		// If site is not multisite, then stop execution.
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite install.' );
+		}
+
+		if ( 'spam' === $pref && '1' === $value ) {
+			$action = 'marked as spam';
+			$verb = 'spam';
+		} elseif ( 'spam' === $pref && '0' === $value  ) {
+			$action = 'removed from spam';
+			$verb = 'unspam';
+		}
+
+		$successes = $errors = 0;
+		$users = $this->fetcher->get_many( $user_ids );
+		if ( count( $users ) < count( $user_ids ) ) {
+			$errors = count( $user_ids ) - count( $users );
+		}
+
+		foreach ( $user_ids as $user_id ) {
+
+			$user = get_userdata( $user_id );
+
+			// If no user found, then show warning.
+			if ( empty( $user ) ) {
+				WP_CLI::warning( sprintf( 'User %d doesn\'t exist.', esc_html( $user_id ) ) );
+				continue;
+			}
+
+			// Super admin should not be marked as spam.
+			if ( is_super_admin( $user->ID ) ) {
+				WP_CLI::warning( sprintf( 'User cannot be modified. The user %d is a network administrator.', esc_html( $user->ID ) ) );
+				continue;
+			}
+
+			// Skip if user is already marked as spam and show warning.
+			if ( $value === $user->spam ) {
+				WP_CLI::warning( "User {$user_id} already {$action}." );
+				continue;
+			}
+
+			// Make that user's blog as spam too.
+			$blogs = get_blogs_of_user( $user_id, true );
+			foreach ( (array) $blogs as $details ) {
+				$site = $this->sitefetcher->get_check( $details->site_id );
+
+				// Main blog shouldn't a spam !
+				if ( $details->userblog_id != $site->blog_id ) {
+					update_blog_status( $details->userblog_id, $pref, $value );
+				}
+			}
+
+			// Set status and show message.
+			update_user_status( $user_id, $pref, $value );
+			WP_CLI::log( "User {$user_id} {$action}." );
+			$successes++;
+		}
+
+		if ( ! $this->chained_command ) {
+			Utils\report_batch_operation_results( 'user', $verb, count( $user_ids ), $successes, $errors );
+		}
+
 	}
 
 }
