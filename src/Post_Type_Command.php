@@ -1,8 +1,8 @@
 <?php
 /**
- * Retrieves details on the site's registered post-types.
+ * Retrieves details on the site's registered post types.
  *
- * Get details on WordPress' built-in and [custom post types](https://developer.wordpress.org/plugins/post-types/).
+ * Get information on the WordPress' built-in and the site's [custom post types](https://developer.wordpress.org/plugins/post-types/).
  *
  * ## EXAMPLES
  *
