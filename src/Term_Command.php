@@ -3,7 +3,7 @@
 use WP_CLI\Utils;
 
 /**
- * Manages taxonomy terms and term meta, including create, delete, and list.
+ * Manages taxonomy terms and term meta, with create, delete, and list commands.
  *
  * See reference for [taxonomies and their terms](https://codex.wordpress.org/Taxonomies).
  *
