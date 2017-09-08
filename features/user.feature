@@ -323,7 +323,7 @@ Feature: Manage WordPress users
       testuser4@example.com
       """
 
-  Scenario: Set user as spam
+  Scenario: Mark/remove a user from spam
     Given a WP multisite install
     And I run `wp user create bumblebee bbee@example.com --role=author --porcelain`
     And save STDOUT as {BBEE_ID}
@@ -334,17 +334,32 @@ Feature: Manage WordPress users
     And I run `wp user get oprime`
     Then STDOUT should not be empty
 
-    When I run `wp user spam {BBEE_ID} {OP_ID}`
+    When I run `wp user spam {BBEE_ID}`
     Then STDOUT should be:
       """
       User {BBEE_ID} marked as spam.
-      User {OP_ID} marked as spam.
-      Success: Spamed 2 of 2 users.
+      Success: Spamed 1 of 1 users.
       """
 
     When I try the previous command again
     Then STDERR should be:
       """
       Warning: User {BBEE_ID} already marked as spam.
-      Warning: User {OP_ID} already marked as spam.
       """
+    And STDOUT should be:
+      """
+      Success: User already spamed.
+      """
+
+    When I try `wp user spam {OP_ID} 9999`
+    Then STDOUT should be:
+      """
+      User {OP_ID} marked as spam.
+      """
+    And STDERR should be:
+      """
+      Warning: Invalid user ID, email or login: '9999'
+      Warning: User 9999 doesn't exist.
+      Error: Only spamed 1 of 2 users.
+      """
+    And the return code should be 1
