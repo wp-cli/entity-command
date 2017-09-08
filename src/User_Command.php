@@ -1061,7 +1061,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		// If site is not multisite, then stop execution.
 		if ( ! is_multisite() ) {
-			WP_CLI::error( 'Sorry! this command is for multisite only.' );
+			WP_CLI::error( 'This is not a multisite install.' );
 		}
 
 		if ( 'spam' === $pref && '1' === $value ) {
