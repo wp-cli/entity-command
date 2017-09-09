@@ -1031,24 +1031,26 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user spam 123
-	 *     Success: User 123 marked as spam.
+	 *     User 123 marked as spam.
+	 *     Success: Spamed 1 of 1 users.
 	 */
 	public function spam( $args ) {
 		$this->update_msuser_status( $args, 'spam', '1' );
 	}
 
 	/**
-	 * Mark one or more users as spam.
+	 * Remove one or more users from spam.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <id>...
-	 * : One or more IDs of users to mark as spam.
+	 * : One or more IDs of users to remove from spam.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user unspam 123
-	 *     Success: User 123 removed from spam.
+	 *     User 122 removed from spam.
+	 *     Success: Unspamed 1 of 1 users.
 	 */
 	public function unspam( $args ) {
 		$this->update_msuser_status( $args, 'spam', '0' );
