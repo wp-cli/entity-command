@@ -1049,7 +1049,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user unspam 123
-	 *     User 122 removed from spam.
+	 *     User 123 removed from spam.
 	 *     Success: Unspamed 1 of 1 users.
 	 */
 	public function unspam( $args ) {
