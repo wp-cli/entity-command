@@ -56,11 +56,12 @@ Feature: Manage sites in a multisite installation
       http://example.com/first/
       """
 
-    When I run `wp site delete 1`
-    Then STDOUT should be:
+    When I try `wp site delete 1`
+    Then STDERR should be:
       """
-      'http://example.com/' is the root site. Pass the --delete-root flag to delete it.
+      Error: You can't delete root blog.
       """
+    And the return code should be 1
 
     When I run `wp site delete {SITE_ID} --yes`
     Then STDOUT should be:
