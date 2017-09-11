@@ -251,26 +251,25 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
 		} else {
 			if ( empty( $args ) ) {
-				WP_CLI::error( "Need to specify a blog id." );
+				WP_CLI::error( 'Need to specify a blog id.' );
 			}
 
 			$blog_id = $args[0];
 
+			if ( is_main_site( $blog_id ) ) {
+				WP_CLI::error( 'You can\'t delete root blog.' );
+			}
+
 			$blog = get_blog_details( $blog_id );
 		}
 
-		if ( !$blog ) {
-			WP_CLI::error( "Site not found." );
+		if ( ! $blog ) {
+			WP_CLI::error( 'Site not found.' );
 		}
 
 		$site_url = trailingslashit( $blog->siteurl );
 
-		if ( $blog_id == BLOG_ID_CURRENT_SITE && ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'delete-root' ) ) {
-			WP_CLI::line( WP_CLI::colorize( "%R'$site_url' is the root site. Pass the --delete-root flag to delete it.%n" ), $assoc_args );
-			return;
-		} else {
-			WP_CLI::confirm( "Are you sure you want to delete the '$site_url' site?", $assoc_args );
-		}
+		WP_CLI::confirm( "Are you sure you want to delete the '$site_url' site?", $assoc_args );
 
 		wpmu_delete_blog( $blog->blog_id, ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
