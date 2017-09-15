@@ -251,16 +251,20 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
 		} else {
 			if ( empty( $args ) ) {
-				WP_CLI::error( "Need to specify a blog id." );
+				WP_CLI::error( 'Need to specify a blog id.' );
 			}
 
 			$blog_id = $args[0];
 
+			if ( is_main_site( $blog_id ) ) {
+				WP_CLI::error( 'You cannot delete the root site.' );
+			}
+
 			$blog = get_blog_details( $blog_id );
 		}
 
-		if ( !$blog ) {
-			WP_CLI::error( "Site not found." );
+		if ( ! $blog ) {
+			WP_CLI::error( 'Site not found.' );
 		}
 
 		$site_url = trailingslashit( $blog->siteurl );
