@@ -56,6 +56,13 @@ Feature: Manage sites in a multisite installation
       http://example.com/first/
       """
 
+    When I try `wp site delete 1`
+    Then STDERR should be:
+      """
+      Error: You cannot delete the root site.
+      """
+    And the return code should be 1
+
     When I run `wp site delete {SITE_ID} --yes`
     Then STDOUT should be:
       """
