@@ -59,7 +59,7 @@ Feature: Manage sites in a multisite installation
     When I try `wp site delete 1`
     Then STDERR should be:
       """
-      Error: You can't delete root blog.
+      Error: You cannot delete the root site.
       """
     And the return code should be 1
 

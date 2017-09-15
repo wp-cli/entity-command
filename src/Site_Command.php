@@ -257,7 +257,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			$blog_id = $args[0];
 
 			if ( is_main_site( $blog_id ) ) {
-				WP_CLI::error( 'You can\'t delete root blog.' );
+				WP_CLI::error( 'You cannot delete the root site.' );
 			}
 
 			$blog = get_blog_details( $blog_id );
