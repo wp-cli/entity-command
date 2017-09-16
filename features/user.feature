@@ -338,7 +338,7 @@ Feature: Manage WordPress users
     Then STDOUT should be:
       """
       User {BBEE_ID} marked as spam.
-      Success: Spamed 1 of 1 users.
+      Success: Spammed 1 of 1 users.
       """
 
     When I try the previous command again
@@ -348,7 +348,7 @@ Feature: Manage WordPress users
       """
     And STDOUT should be:
       """
-      Success: User already spamed.
+      Success: User already spammed.
       """
 
     When I try `wp user spam {OP_ID} 9999`
@@ -360,6 +360,6 @@ Feature: Manage WordPress users
       """
       Warning: Invalid user ID, email or login: '9999'
       Warning: User 9999 doesn't exist.
-      Error: Only spamed 1 of 2 users.
+      Error: Only spammed 1 of 2 users.
       """
     And the return code should be 1
