@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Perform site-wide operations.
+ * Performs site-wide operations on a multisite install.
  *
  * ## EXAMPLES
  *
