@@ -13,7 +13,7 @@ This package implements the following commands:
 
 ### wp comment
 
-Manage comments.
+Creates, updates, deletes, and moderates comments.
 
 ~~~
 wp comment
@@ -72,7 +72,7 @@ wp comment meta
 
 ### wp menu
 
-List, create, assign, and delete menus.
+Lists, creates, assigns, and deletes the active theme's navigation menus.
 
 ~~~
 wp menu
@@ -182,7 +182,7 @@ wp network meta
 
 ### wp option
 
-Manage options.
+Retrieves and sets site options, including plugin and WordPress settings.
 
 ~~~
 wp option
@@ -471,7 +471,7 @@ wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
 
 ### wp post
 
-Manage posts.
+Manages posts, content, and meta.
 
 ~~~
 wp post
@@ -543,7 +543,7 @@ wp post term
 
 ### wp post-type
 
-Manage post types.
+Retrieves details on the site's registered post-types.
 
 ~~~
 wp post-type
@@ -570,7 +570,7 @@ wp post-type
 
 ### wp site
 
-Perform site-wide operations.
+Performs site-wide operations on a multisite install.
 
 ~~~
 wp site
@@ -639,7 +639,7 @@ WP_CLI::add_hook( 'after_invoke:site empty', function(){
 
 ### wp taxonomy
 
-Manage taxonomies.
+Retrieves information about registered taxonomies.
 
 ~~~
 wp taxonomy
@@ -665,7 +665,7 @@ wp taxonomy
 
 ### wp term
 
-Manage terms.
+Manages taxonomy terms and term meta, including create, delete, and list.
 
 ~~~
 wp term
@@ -732,7 +732,7 @@ wp term meta
 
 ### wp user
 
-Manage users.
+Manages users, along with their roles, capabilities, and meta.
 
 ~~~
 wp user
