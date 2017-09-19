@@ -31,6 +31,24 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * [--format=<format>]
 	 * : Accepted values: table, csv, json, count. Default: table
 	 *
+	 * [--orderby=<fields>]
+	 * : Set orderby which field.
+	 * ---
+	 * default: id
+	 * options:
+	 *  - id
+	 *  - meta_key
+	 *  - meta_value
+	 * ---
+	 *
+	 * [--order=<order>]
+	 * : Set ascending or descending order.
+	 * ---
+	 * default: asc
+	 * options:
+	 *  - asc
+	 *  - desc
+	 * ---
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -62,10 +80,25 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 					"{$this->meta_type}_id" => $object_id,
 					'meta_key'              => $key,
 					'meta_value'            => $item_value,
-					);
-
+				);
 			}
 
+		}
+
+		$order   = Utils\get_flag_value( $assoc_args, 'order' );
+		$orderby = Utils\get_flag_value( $assoc_args, 'orderby' );
+
+		if ( 'id' !== $orderby ) {
+
+			usort( $items, function ( $a, $b ) use ( $orderby, $order ) {
+				// Sort array.
+				return 'asc' === $order
+						? $a->$orderby > $b->$orderby
+						: $a->$orderby < $b->$orderby;
+			});
+
+		} elseif ( 'id' === $orderby && 'desc' === $order ) { // Sort by default descending.
+			krsort( $items );
 		}
 
 		if ( ! empty( $assoc_args['fields'] ) ) {

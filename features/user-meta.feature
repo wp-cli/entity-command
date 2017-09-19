@@ -75,3 +75,39 @@ Feature: Manage user custom fields
       | user_id | meta_key | meta_value     |
       | 1       | nickname | admin          |
       | 1       | foo      | ["1","2"]      |
+
+    When I run `wp user meta list admin --keys=nickname,foo --orderby=id --order=asc`
+    Then STDOUT should be a table containing rows:
+      | user_id | meta_key | meta_value     |
+      | 1       | nickname | admin          |
+      | 1       | foo      | ["1","2"]      |
+
+    When I run `wp user meta list admin --keys=nickname,foo --orderby=id --order=desc`
+    Then STDOUT should be a table containing rows:
+      | user_id | meta_key | meta_value     |
+      | 1       | foo      | ["1","2"]      |
+      | 1       | nickname | admin          |
+
+    When I run `wp user meta list admin --keys=nickname,foo --orderby=meta_key --order=asc`
+    Then STDOUT should be a table containing rows:
+      | user_id | meta_key | meta_value     |
+      | 1       | foo      | ["1","2"]      |
+      | 1       | nickname | admin          |
+
+    When I run `wp user meta list admin --keys=nickname,foo --orderby=meta_key --order=desc`
+    Then STDOUT should be a table containing rows:
+      | user_id | meta_key | meta_value     |
+      | 1       | nickname | admin          |
+      | 1       | foo      | ["1","2"]      |
+
+    When I run `wp user meta list admin --keys=nickname,foo --orderby=meta_value --order=asc`
+    Then STDOUT should be a table containing rows:
+      | user_id | meta_key | meta_value     |
+      | 1       | nickname | admin          |
+      | 1       | foo      | ["1","2"]      |
+
+    When I run `wp user meta list admin --keys=nickname,foo --orderby=meta_value --order=desc`
+    Then STDOUT should be a table containing rows:
+      | user_id | meta_key | meta_value     |
+      | 1       | foo      | ["1","2"]      |
+      | 1       | nickname | admin          |

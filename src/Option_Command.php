@@ -171,6 +171,25 @@ class Option_Command extends WP_CLI_Command {
 	 *   - total_bytes
 	 * ---
 	 *
+	 * [--orderby=<fields>]
+	 * : Set orderby which field.
+	 * ---
+	 * default: option_id
+	 * options:
+	 *  - option_id
+	 *  - option_name
+	 *  - option_value
+	 * ---
+	 *
+	 * [--order=<order>]
+	 * : Set ascending or descending order.
+	 * ---
+	 * default: asc
+	 * options:
+	 *  - asc
+	 *  - desc
+	 * ---
+	 *
 	 * ## AVAILABLE FIELDS
 	 *
 	 * This field will be displayed by default for each matching option:
@@ -222,6 +241,7 @@ class Option_Command extends WP_CLI_Command {
 		$fields = array( 'option_name', 'option_value' );
 		$size_query = ",LENGTH(option_value) AS `size_bytes`";
 		$autoload_query = '';
+		$sort = Utils\get_flag_value( $assoc_args, 'order' );
 
 		if ( isset( $assoc_args['search'] ) ) {
 			$pattern = self::esc_like( $assoc_args['search'] );
@@ -276,6 +296,21 @@ class Option_Command extends WP_CLI_Command {
 
 		$results = $wpdb->get_results( "SELECT `option_name`,`option_value`,`autoload`" . $size_query
 					. " FROM `$wpdb->options` {$where}" );
+
+		$orderby = \WP_CLI\Utils\get_flag_value( $assoc_args, 'orderby' );
+		$order   = \WP_CLI\Utils\get_flag_value( $assoc_args, 'order' );
+
+		// Sort result.
+		if ( 'option_id' !== $orderby ) {
+			usort( $results, function ( $a, $b ) use ( $orderby, $order ) {
+				// Sort array.
+				return 'asc' === $order
+						? $a->$orderby > $b->$orderby
+						: $a->$orderby < $b->$orderby;
+			});
+		} elseif ( 'option_id' === $orderby && 'desc' === $order ) { // Sort by default descending.
+			krsort( $results );
+		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			WP_CLI::line( $results[0]->size_bytes );
