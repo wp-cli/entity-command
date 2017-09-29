@@ -102,6 +102,10 @@ class User_Session_Command extends WP_CLI_Command {
 	/**
 	 * List sessions for the given user.
 	 *
+	 * Note: The `token` field does not return the actual token, but a hash of
+	 * it. The real token is not persisted and can only be found in the
+	 * corresponding cookies on the client side.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <user>
