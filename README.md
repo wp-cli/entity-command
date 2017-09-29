@@ -78,6 +78,8 @@ Lists, creates, assigns, and deletes the active theme's navigation menus.
 wp menu
 ~~~
 
+See the [Navigation Menus](https://developer.wordpress.org/themes/functionality/navigation-menus/) reference in the Theme Handbook.
+
 **EXAMPLES**
 
     # Create a new menu
@@ -187,6 +189,8 @@ Retrieves and sets site options, including plugin and WordPress settings.
 ~~~
 wp option
 ~~~
+
+See the [Plugin Settings API](https://developer.wordpress.org/plugins/settings/settings-api/) and the [Theme Options](https://developer.wordpress.org/themes/customize-api/) for more information on adding customized options.
 
 **EXAMPLES**
 
@@ -324,7 +328,7 @@ wp option get <key> [--format=<format>]
 List options and their values.
 
 ~~~
-wp option list [--search=<pattern>] [--exclude=<pattern>] [--autoload=<value>] [--transients] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp option list [--search=<pattern>] [--exclude=<pattern>] [--autoload=<value>] [--transients] [--field=<field>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
 ~~~
 
 **OPTIONS**
@@ -358,6 +362,25 @@ wp option list [--search=<pattern>] [--exclude=<pattern>] [--autoload=<value>] [
 		  - count
 		  - yaml
 		  - total_bytes
+		---
+
+	[--orderby=<fields>]
+		Set orderby which field.
+		---
+		default: option_id
+		options:
+		 - option_id
+		 - option_name
+		 - option_value
+		---
+
+	[--order=<order>]
+		Set ascending or descending order.
+		---
+		default: asc
+		options:
+		 - asc
+		 - desc
 		---
 
 **AVAILABLE FIELDS**
@@ -543,11 +566,13 @@ wp post term
 
 ### wp post-type
 
-Retrieves details on the site's registered post-types.
+Retrieves details on the site's registered post types.
 
 ~~~
 wp post-type
 ~~~
+
+Get information on WordPress' built-in and the site's [custom post types](https://developer.wordpress.org/plugins/post-types/).
 
 **EXAMPLES**
 
@@ -645,6 +670,8 @@ Retrieves information about registered taxonomies.
 wp taxonomy
 ~~~
 
+See references for [built-in taxonomies](https://developer.wordpress.org/themes/basics/categories-tags-custom-taxonomies/) and [custom taxonomies](https://developer.wordpress.org/plugins/taxonomies/working-with-custom-taxonomies/).
+
 **EXAMPLES**
 
     # List all taxonomies with 'post' object type.
@@ -665,11 +692,13 @@ wp taxonomy
 
 ### wp term
 
-Manages taxonomy terms and term meta, including create, delete, and list.
+Manages taxonomy terms and term meta, with create, delete, and list commands.
 
 ~~~
 wp term
 ~~~
+
+See reference for [taxonomies and their terms](https://codex.wordpress.org/Taxonomies).
 
 **EXAMPLES**
 
@@ -737,6 +766,8 @@ Manages users, along with their roles, capabilities, and meta.
 ~~~
 wp user
 ~~~
+
+See references for [Roles and Capabilities](https://codex.wordpress.org/Roles_and_Capabilities) and [WP User class](https://codex.wordpress.org/Class_Reference/WP_User).
 
 **EXAMPLES**
 
