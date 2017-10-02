@@ -46,9 +46,6 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *   Passing `-` as the filename will cause post content to
 	 *   be read from STDIN.
 	 *
-	 * [--<field>=<value>]
-	 * : Associative args for the new post. See wp_insert_post().
-	 *
 	 * [--edit]
 	 * : Immediately open system's editor to write or edit post content.
 	 *
@@ -106,9 +103,6 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *   Passing `-` as the filename will cause post content to
 	 *   be read from STDIN.
-	 *
-	 * --<field>=<value>
-	 * : One or more fields to update. See wp_insert_post().
 	 *
 	 * [--defer-term-counting]
 	 * : Recalculate term count in batch, for a performance boost.
