@@ -538,7 +538,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 			$args = array(
 				'post_type' => $post_type,
-				'post_title' => ! empty( $post_title && $i === $total ) ? "$label" : "$label $i",
+				'post_title' => ! empty( $post_title ) && $i === $total ? "$label" : "$label $i",
 				'post_status' => $post_status,
 				'post_author' => $post_author,
 				'post_parent' => $current_parent,
