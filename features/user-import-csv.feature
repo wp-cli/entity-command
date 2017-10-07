@@ -135,3 +135,45 @@ Feature: Import users from CSV
       | display_name      | roles                |
       | Bob Jones         | contributor          |
       | Bill Jones        | administrator,author |
+
+  Scenario: Importing users from STDIN
+    Given a WP install
+    And a users.csv file:
+      """
+      user_login,user_email,display_name,role
+      bobjones,bobjones@example.com,Bob Jones,contributor
+      newuser1,newuser1@example.com,New User,author
+      admin,admin@example.com,Existing User,administrator
+      """
+
+    When I try `wp user import-csv -`
+    Then STDERR should be:
+      """
+      Error: Unable to read content from STDIN.
+      """
+
+    When I run `cat users.csv | wp user import-csv -`
+    Then STDOUT should be:
+      """
+      Success: bobjones created.
+      Success: newuser1 created.
+      Success: admin updated.
+      """
+    And an email should not be sent
+
+    When I run `wp user list --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp user list --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      [{
+        "user_login":"admin",
+        "display_name":"Existing User",
+        "user_email":"admin@example.com",
+        "roles":"administrator"
+      }]
+      """
