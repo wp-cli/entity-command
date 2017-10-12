@@ -95,7 +95,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : The date when the post was last modified. Default is the current time.
 	 *
 	 * [--post_modified_gmt=<post_modified_gmt>]
-	 * : The date when the post was last modified in the GMT timezone. Default is the current time..
+	 * : The date when the post was last modified in the GMT timezone. Default is the current time.
 	 *
 	 * [--post_parent=<post_parent>]
 	 * : Set this for the post it belongs to, if any. Default 0.
@@ -108,6 +108,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--guid=<guid>]
 	 * : Global Unique ID for referencing the post. Default empty.
+	 *.
+	 * [--<field>=<value>]
+	 * : Associative args for the new post. See wp_insert_post().
 	 *
 	 * [--edit]
 	 * : Immediately open system's editor to write or edit post content.
@@ -219,7 +222,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : The date when the post was last modified. Default is the current time.
 	 *
 	 * [--post_modified_gmt=<post_modified_gmt>]
-	 * : The date when the post was last modified in the GMT timezone. Default is the current time..
+	 * : The date when the post was last modified in the GMT timezone. Default is the current time.
 	 *
 	 * [--post_parent=<post_parent>]
 	 * : Set this for the post it belongs to, if any.
@@ -232,6 +235,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--guid=<guid>]
 	 * : Global Unique ID for referencing the post.
+	 *
+	 * [--<field>=<value>]
+	 * : Associative args for the new post. See wp_insert_post().
 	 *
 	 * [--defer-term-counting]
 	 * : Recalculate term count in batch, for a performance boost.
