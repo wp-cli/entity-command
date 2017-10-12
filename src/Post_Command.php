@@ -46,67 +46,67 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *   Passing `-` as the filename will cause post content to
 	 *   be read from STDIN.
 	 *
-	 * [--<post_author>=<post_author>]
+	 * [--post_author=<post_author>]
 	 * : The ID of the user who added the post.
 	 *
-	 * [--<post_date>=<post_date>]
-	 * : The date of the post..
+	 * [--post_date=<post_date>]
+	 * : The date of the post.
 	 *
-	 * [--<post_date_gmt>=<post_date_gmt>]
+	 * [--post_date_gmt=<post_date_gmt>]
 	 * : The date of the post in the GMT timezone.
 	 *
-	 * [--<post_content>=<post_content>]
+	 * [--post_content=<post_content>]
 	 * : The post content. Default empty.
 	 *
-	 * [--<post_content_filtered>=<post_content_filtered>]
+	 * [--post_content_filtered=<post_content_filtered>]
 	 * : The filtered post content. Default empty.
 	 *
-	 * [--<post_title>=<post_title>]
+	 * [--post_title=<post_title>]
 	 * : The post title. Default empty.
 	 *
-	 * [--<post_excerpt>=<post_excerpt>]
+	 * [--post_excerpt=<post_excerpt>]
 	 * : The post excerpt. Default empty.
 	 *
-	 * [--<post_status>=<post_status>]
+	 * [--post_status=<post_status>]
 	 * : The post status. Default 'draft'.
 	 *
-	 * [--<post_type>=<post_type>]
+	 * [--post_type=<post_type>]
 	 * : The post type. Default 'post'.
 	 *
-	 * [--<comment_status>=<comment_status>]
+	 * [--comment_status=<comment_status>]
 	 * : Whether the post can accept comments. Accepts 'open' or 'closed'.
 	 *
-	 * [--<ping_status>=<ping_status>]
+	 * [--ping_status=<ping_status>]
 	 * : Whether the post can accept pings. Accepts 'open' or 'closed'.
 	 *
-	 * [--<post_password>=<post_password>]
+	 * [--post_password=<post_password>]
 	 * : The password to access the post. Default empty.
 	 *
-	 * [--<post_name>=<post_name>]
+	 * [--post_name=<post_name>]
 	 * : The post name. Default is the sanitized post title when creating a new post.
 	 *
-	 * [--<to_ping>=<to_ping>]
+	 * [--to_ping=<to_ping>]
 	 * : Space or carriage return-separated list of URLs to ping. Default empty.
 	 *
-	 * [--<pinged>=<pinged>]
+	 * [-<pinged=<pinged>]
 	 * : Space or carriage return-separated list of URLs that have been pinged. Default empty.
 	 *
-	 * [--<post_modified>=<post_modified>]
+	 * [--post_modified=<post_modified>]
 	 * : The date when the post was last modified. Default is the current time.
 	 *
-	 * [--<post_modified_gmt>=<post_modified_gmt>]
+	 * [--post_modified_gmt=<post_modified_gmt>]
 	 * : The date when the post was last modified in the GMT timezone. Default is the current time..
 	 *
-	 * [--<post_parent>=<post_parent>]
+	 * [--post_parent=<post_parent>]
 	 * : Set this for the post it belongs to, if any. Default 0.
 	 *
-	 * [--<menu_order>=<menu_order>]
+	 * [--menu_order=<menu_order>]
 	 * : The order the post should be displayed in. Default 0.
 	 *
-	 * [--<post_mime_type>=<post_mime_type>]
+	 * [--post_mime_type=<post_mime_type>]
 	 * : The mime type of the post. Default empty.
 	 *
-	 * [--<guid>=<guid>]
+	 * [--guid=<guid>]
 	 * : Global Unique ID for referencing the post. Default empty.
 	 *
 	 * [--edit]
@@ -167,70 +167,70 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *   Passing `-` as the filename will cause post content to
 	 *   be read from STDIN.
 	 *
-	 * [--<ID>=<ID>]
+	 * [--ID=<ID>]
 	 * : The post ID.
 	 *
-	 * [--<post_author>=<post_author>]
+	 * [--post_author=<post_author>]
 	 * : The ID of the user who added the post.
 	 *
-	 * [--<post_date>=<post_date>]
+	 * [--post_date=<post_date>]
 	 * : The date of the post..
 	 *
-	 * [--<post_date_gmt>=<post_date_gmt>]
+	 * [--post_date_gmt=<post_date_gmt>]
 	 * : The date of the post in the GMT timezone.
 	 *
-	 * [--<post_content>=<post_content>]
+	 * [--post_content=<post_content>]
 	 * : The post content.
 	 *
-	 * [--<post_content_filtered>=<post_content_filtered>]
+	 * [--post_content_filtered=<post_content_filtered>]
 	 * : The filtered post content.
 	 *
-	 * [--<post_title>=<post_title>]
+	 * [--post_title=<post_title>]
 	 * : The post title.
 	 *
-	 * [--<post_excerpt>=<post_excerpt>]
+	 * [--post_excerpt=<post_excerpt>]
 	 * : The post excerpt.
 	 *
-	 * [--<post_status>=<post_status>]
+	 * [--post_status=<post_status>]
 	 * : The post status.
 	 *
-	 * [--<post_type>=<post_type>]
+	 * [--post_type=<post_type>]
 	 * : The post type. Default 'post'.
 	 *
-	 * [--<comment_status>=<comment_status>]
+	 * [--comment_status=<comment_status>]
 	 * : Whether the post can accept comments. Accepts 'open' or 'closed'.
 	 *
-	 * [--<ping_status>=<ping_status>]
+	 * [--ping_status=<ping_status>]
 	 * : Whether the post can accept pings. Accepts 'open' or 'closed'.
 	 *
-	 * [--<post_password>=<post_password>]
+	 * [--post_password=<post_password>]
 	 * : The password to access the post. Default empty.
 	 *
-	 * [--<post_name>=<post_name>]
+	 * [--post_name=<post_name>]
 	 * : The post name.
 	 *
-	 * [--<to_ping>=<to_ping>]
+	 * [--to_ping=<to_ping>]
 	 * : Space or carriage return-separated list of URLs to ping.
 	 *
-	 * [--<pinged>=<pinged>]
+	 * [--pinged=<pinged>]
 	 * : Space or carriage return-separated list of URLs that have been pinged.
 	 *
-	 * [--<post_modified>=<post_modified>]
+	 * [--post_modified=<post_modified>]
 	 * : The date when the post was last modified. Default is the current time.
 	 *
-	 * [--<post_modified_gmt>=<post_modified_gmt>]
+	 * [--post_modified_gmt=<post_modified_gmt>]
 	 * : The date when the post was last modified in the GMT timezone. Default is the current time..
 	 *
-	 * [--<post_parent>=<post_parent>]
+	 * [--post_parent=<post_parent>]
 	 * : Set this for the post it belongs to, if any.
 	 *
-	 * [--<menu_order>=<menu_order>]
+	 * [--menu_order=<menu_order>]
 	 * : The order the post should be displayed in.
 	 *
-	 * [--<post_mime_type>=<post_mime_type>]
+	 * [--post_mime_type=<post_mime_type>]
 	 * : The mime type of the post.
 	 *
-	 * [--<guid>=<guid>]
+	 * [--guid=<guid>]
 	 * : Global Unique ID for referencing the post.
 	 *
 	 * [--defer-term-counting]
