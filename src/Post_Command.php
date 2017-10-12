@@ -46,9 +46,6 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *   Passing `-` as the filename will cause post content to
 	 *   be read from STDIN.
 	 *
-	 * [--<ID>=<ID>]
-	 * : The post ID.
-	 *
 	 * [--<post_author>=<post_author>]
 	 * : The ID of the user who added the post.
 	 *
