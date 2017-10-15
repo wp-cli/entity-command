@@ -25,7 +25,7 @@ Feature: Create a new site on a WP multisite
     When I run `wp core multisite-install --url=localhost/dev/ --title=Test --admin_user=admin --admin_email=admin@example.org`
     Then STDOUT should contain:
       """
-      Success: Network installed. Don't forget to set up rewrite rules.
+      Success: Network installed. Don't forget to set up rewrite rules
       """
 
     When I run `wp site list --fields=blog_id,url`
