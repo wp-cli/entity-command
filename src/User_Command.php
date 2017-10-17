@@ -888,7 +888,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		add_filter( 'send_password_change_email', '__return_false' );
 		add_filter( 'send_email_change_email', '__return_false' );
 
-		if ( '-' === $filename && WP_CLI\Entity\Utils::has_stdin() ) {
+		if ( '-' === $filename ) {
 			$file_object = new NoRewindIterator( new SplFileObject( "php://stdin" ) );
 			$file_object->setFlags( SplFileObject::READ_CSV );
 			$csv_data = array();
