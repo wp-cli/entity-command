@@ -296,13 +296,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : The email address of the user to create.
 	 *
 	 * [--role=<role>]
-	 * : The role of the user to create. Default: default role
+	 * : The role of the user to create. Default: default role. Possible values
+	 * include 'administrator', 'editor', 'author', 'contributor', 'subscriber'.
 	 *
 	 * [--user_pass=<password>]
-	 * : The user password. Default: randomly generated
+	 * : The user password. Default: randomly generated.
 	 *
 	 * [--user_registered=<yyyy-mm-dd-hh-ii-ss>]
-	 * : The date the user registered. Default: current date
+	 * : The date the user registered. Default: current date.
 	 *
 	 * [--display_name=<name>]
 	 * : The display name.
