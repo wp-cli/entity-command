@@ -14,7 +14,6 @@ WP_CLI::add_command( 'comment meta', 'Comment_Meta_Command' );
 WP_CLI::add_command( 'menu', 'Menu_Command' );
 WP_CLI::add_command( 'menu item', 'Menu_Item_Command' );
 WP_CLI::add_command( 'menu location', 'Menu_Location_Command' );
-WP_CLI::add_command( 'network', 'Network_Namespace' );
 WP_CLI::add_command( 'network meta', 'Network_Meta_Command', array(
 	'before_invoke' => function () {
 		if ( !is_multisite() ) {
@@ -55,3 +54,7 @@ WP_CLI::add_command( 'user session', 'User_Session_Command', array(
 );
 
 WP_CLI::add_command( 'user term', 'User_Term_Command' );
+
+if ( class_exists( 'WP_CLI\Dispatcher\CommandNamespace' ) ) {
+	WP_CLI::add_command( 'network', 'Network_Namespace' );
+}
