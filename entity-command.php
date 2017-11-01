@@ -54,3 +54,7 @@ WP_CLI::add_command( 'user session', 'User_Session_Command', array(
 );
 
 WP_CLI::add_command( 'user term', 'User_Term_Command' );
+
+if ( class_exists( 'WP_CLI\Dispatcher\CommandNamespace' ) ) {
+	WP_CLI::add_command( 'network', 'Network_Namespace' );
+}
