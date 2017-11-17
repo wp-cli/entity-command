@@ -78,7 +78,7 @@ Feature: Manage WordPress terms
       """
     And the return code should be 0
 
-    When I run the previous command again
+    When I try the previous command again
     Then STDOUT should be:
       """
       Success: Term already deleted.
@@ -89,7 +89,7 @@ Feature: Manage WordPress terms
       """
     And the return code should be 0
 
-    When I run `wp term delete post_tag {TERM_ID} {TERM_ID_TWO}`
+    When I try `wp term delete post_tag {TERM_ID} {TERM_ID_TWO}`
     Then STDOUT should be:
       """
       Deleted post_tag {TERM_ID_TWO}.

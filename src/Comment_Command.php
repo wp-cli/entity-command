@@ -163,6 +163,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating comments', $assoc_args['count'] );
 		}
 
+		$comment_post_ID = empty( $assoc_args['post_id'] ) ? 1 : $assoc_args['post_id'];
 		$comment_count = wp_count_comments();
 		$total = (int )$comment_count->total_comments;
 		$limit = $total + $assoc_args['count'];
@@ -170,7 +171,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		for ( $i = $total; $i < $limit; $i++ ) {
 			$comment_id = wp_insert_comment( array(
 				'comment_content'       => "Comment {$i}",
-				'comment_post_ID'       => $assoc_args['post_id'],
+				'comment_post_ID'       => $comment_post_ID,
 				) );
 			if ( 'progress' === $format ) {
 				$notify->tick();

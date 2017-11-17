@@ -22,11 +22,13 @@ Feature: Create a new site on a WP multisite
       Success: Generated 'wp-config.php' file.
       """
 
-    When I run `wp core multisite-install --url=localhost/dev/ --title=Test --admin_user=admin --admin_email=admin@example.org`
+    # Old versions of WP can generate wpdb database errors if the WP tables don't exist, so STDERR may or may not be empty
+    When I try `wp core multisite-install --url=localhost/dev/ --title=Test --admin_user=admin --admin_email=admin@example.org`
     Then STDOUT should contain:
       """
       Success: Network installed. Don't forget to set up rewrite rules
       """
+    And the return code should be 0
 
     When I run `wp site list --fields=blog_id,url`
     Then STDOUT should be a table containing rows:
