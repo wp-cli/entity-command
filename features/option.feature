@@ -48,7 +48,7 @@ Feature: Manage WordPress options
     When I run `wp option add auto_opt --autoload=no 'bar'`
     Then STDOUT should not be empty
 
-    When I run `wp option list --search='auto_opt' --autoload`
+    When I run `wp option list --search='auto_opt' --autoload=off`
     Then STDOUT should not be empty
 
     When I run `wp option list | grep -q "str_opt"`
@@ -65,6 +65,7 @@ Feature: Manage WordPress options
 
     When I try `wp option get str_opt`
     Then the return code should be 1
+    And STDERR should be empty
 
     # Integer values
     When I run `wp option update blog_public 1`
@@ -216,3 +217,40 @@ Feature: Manage WordPress options
       """
       Success: Value passed for 'home' option is unchanged.
       """
+
+  Scenario: Bad values for autoload
+    Given a WP install
+    When I run `wp option add str_opt 'bar'`
+    Then STDOUT should not be empty
+
+    When I try `wp option list --search='auto_opt' --autoload`
+    Then STDOUT should not be empty
+	And STDERR should be:
+      """
+      Warning: --autoload parameter needs a value
+      """
+    And the return code should be 0
+
+    When I try `wp option list --search='auto_opt' --autoload=no`
+    Then STDOUT should be empty
+	And STDERR should be:
+      """
+      Error: Value of '--autoload' should be on or off.
+      """
+    And the return code should be 1
+
+    When I try `wp option add str_opt_foo 'bar' --autoload`
+    Then STDOUT should not be empty
+	And STDERR should be:
+      """
+      Warning: --autoload parameter needs a value
+      """
+    And the return code should be 0
+
+    When I try `wp option add str_opt_foo 'bar' --autoload=off`
+    Then STDOUT should be empty
+	And STDERR should contain:
+      """
+      Error: Parameter errors:
+      """
+    And the return code should be 1

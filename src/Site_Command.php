@@ -195,10 +195,11 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			);
 
 			$files_to_unlink = $directories_to_delete = array();
+			$is_main_site = is_main_site();
 			foreach ( $files as $fileinfo ) {
 				$realpath = $fileinfo->getRealPath();
 				// Don't clobber subsites when operating on the main site
-				if ( is_main_site() && false !== stripos( $realpath, '/sites/' ) ) {
+				if ( $is_main_site && false !== stripos( $realpath, '/sites/' ) ) {
 					continue;
 				}
 				if ( $fileinfo->isDir() ) {
@@ -211,9 +212,11 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 				unlink( $file );
 			}
 			foreach( $directories_to_delete as $directory ) {
-				rmdir( $directory );
+				// Directory could be main sites directory '/sites' which may be non-empty.
+				@rmdir( $directory ); // @codingStandardsIgnoreLine
 			}
-			rmdir( $upload_dir['basedir'] );
+			// May be non-empty if '/sites' still around.
+			@rmdir( $upload_dir['basedir'] ); // @codingStandardsIgnoreLine
 		}
 
 		WP_CLI::success( "The site at '" . site_url() . "' was emptied." );
