@@ -52,9 +52,10 @@ Feature: Import users from CSV
       """
 
     When I try `wp user import-csv user-invalid.csv`
-    Then STDERR should be:
+	# Message changed from "Only lowercase..." to "Usernames can contain only lowercase..." in `wpmu_validate_user_signup()` WP 4.4 https://core.trac.wordpress.org/ticket/33336
+    Then STDERR should contain:
       """
-      Warning: Usernames can only contain lowercase letters (a-z) and numbers.
+      lowercase letters (a-z) and numbers
       """
     And the return code should be 0
 

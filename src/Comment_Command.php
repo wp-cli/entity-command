@@ -69,6 +69,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 				if ( !$post ) {
 					return new WP_Error( 'no_post', "Can't find post $post_id." );
 				}
+			} else {
+				// Make sure it's set for older WP versions else get undefined PHP notice.
+				$params['comment_post_ID'] = 0;
 			}
 
 			// We use wp_insert_comment() instead of wp_new_comment() to stay at a low level and
@@ -163,7 +166,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating comments', $assoc_args['count'] );
 		}
 
-		$comment_post_ID = empty( $assoc_args['post_id'] ) ? 1 : $assoc_args['post_id'];
+		// Make sure comment_post_ID set for older WP versions else get undefined PHP notice.
+		$comment_post_ID = isset( $assoc_args['post_id'] ) ? $assoc_args['post_id'] : 0;
+
 		$comment_count = wp_count_comments();
 		$total = (int )$comment_count->total_comments;
 		$limit = $total + $assoc_args['count'];
