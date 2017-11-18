@@ -176,7 +176,7 @@ Feature: Manage sites in a multisite installation
       Success: Site {FIRST_SITE} unarchived.
       """
 
-    When I try `wp site list --fields=blog_id,archived`
+    When I run `wp site list --fields=blog_id,archived`
     Then STDOUT should be a table containing rows:
       | blog_id      | archived |
       | {FIRST_SITE} | 0        |

@@ -22,6 +22,7 @@ Feature: Manage WordPress taxonomies
       """
       Error: Taxonomy invalid-taxonomy doesn't exist.
       """
+    And the return code should be 1
 
     When I run `wp taxonomy get category`
     Then STDOUT should be a table containing rows:

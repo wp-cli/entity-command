@@ -18,6 +18,7 @@ Feature: Manage term custom fields
       """
       Error: Could not find the term with ID 999999.
       """
+    And the return code should be 1
 
     When I run `wp term meta set 1 foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty

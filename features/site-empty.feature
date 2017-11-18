@@ -15,6 +15,7 @@ Feature: Empty a WordPress site of its data
       """
       Error: This is not a multisite install.
       """
+    And the return code should be 1
 
     When I run `wp post create --post_title='Test post' --post_content='Test content.' --porcelain`
     Then STDOUT should be:

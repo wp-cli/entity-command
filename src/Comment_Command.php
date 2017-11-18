@@ -429,6 +429,16 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
+	 * Warn if `$_SERVER['SERVER_NAME']` not set as used in email from-address sent to post author in `wp_notify_postauthor()`.
+	 */
+	private function check_server_name() {
+		if ( empty( $_SERVER['SERVER_NAME'] ) ) {
+			WP_CLI::warning( '`$_SERVER[\'SERVER_NAME\']` not set. Setting to \'example.com\'. Notification email sent to post author may appear to come from \'example.com\'.' );
+			$_SERVER['SERVER_NAME'] = 'example.com';
+		}
+	}
+
+	/**
 	 * Trash a comment.
 	 *
 	 * ## OPTIONS
@@ -523,6 +533,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Approved comment 1337.
 	 */
 	public function approve( $args, $assoc_args ) {
+		$this->check_server_name();
 		foreach( $args as $id ) {
 			$this->set_status( $id, 'approve', "Approved" );
 		}
@@ -543,6 +554,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Unapproved comment 1337.
 	 */
 	public function unapprove( $args, $assoc_args ) {
+		$this->check_server_name();
 		foreach( $args as $id ) {
 			$this->set_status( $id, 'hold', "Unapproved" );
 		}

@@ -10,16 +10,17 @@ Feature: Recount terms on a taxonomy
       """
       Warning: Taxonomy some-fake-taxonomy does not exist.
       """
+    And the return code should be 0
 
   Scenario: Term recount with a valid taxonomy
-    When I try `wp term recount category`
+    When I run `wp term recount category`
     Then STDOUT should be:
       """
       Success: Updated category term count.
       """
 
   Scenario: Term recount with a multiple taxonomies
-    When I try `wp term recount category post_tag`
+    When I run `wp term recount category post_tag`
     Then STDOUT should be:
       """
       Success: Updated category term count.
