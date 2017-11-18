@@ -62,6 +62,7 @@ Feature: Manage WordPress menus
       Warning: Couldn't delete menu 'Your menu'.
       Error: No menus deleted.
       """
+    And the return code should be 1
 
     When I run `wp menu create "My Menu"`
     And I run `wp menu list --fields=name,slug`

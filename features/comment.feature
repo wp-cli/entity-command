@@ -46,6 +46,7 @@ Feature: Manage WordPress comments
       """
       Error: Invalid comment ID.
       """
+    And the return code should be 1
 
     When I run `wp comment create --comment_post_ID=1`
     And I run `wp comment create --comment_post_ID=1`
@@ -67,6 +68,7 @@ Feature: Manage WordPress comments
       """
       Error: Invalid comment ID.
       """
+    And the return code should be 1
 
   Scenario: Get details about an existing comment
     When I run `wp comment get 1`
@@ -154,7 +156,7 @@ Feature: Manage WordPress comments
     Given I run `wp comment create --comment_post_ID=1 --comment_approved=0 --porcelain`
     And save STDOUT as {COMMENT_ID}
 
-    When I run `wp comment approve {COMMENT_ID}`
+    When I run `wp comment approve {COMMENT_ID} --url=www.example.com`
     Then STDOUT should contain:
       """
       Approved comment {COMMENT_ID}
@@ -166,11 +168,45 @@ Feature: Manage WordPress comments
       1
       """
 
-    When I run `wp comment unapprove {COMMENT_ID}`
+    When I run `wp comment unapprove {COMMENT_ID} --url=www.example.com`
     Then STDOUT should contain:
       """
       Unapproved comment {COMMENT_ID}
       """
+
+    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I try `wp comment approve {COMMENT_ID}`
+    Then STDOUT should contain:
+      """
+      Approved comment {COMMENT_ID}
+      """
+    And STDERR should contain:
+      """
+      Warning: `$_SERVER['SERVER_NAME']` not set. Setting to 'example.com'. Notification email sent to post author may appear to come from 'example.com'.
+      """
+    And the return code should be 0
+
+    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I try `wp comment unapprove {COMMENT_ID}`
+    Then STDOUT should contain:
+      """
+      Unapproved comment {COMMENT_ID}
+      """
+    And STDERR should contain:
+      """
+      Warning: `$_SERVER['SERVER_NAME']` not set. Setting to 'example.com'. Notification email sent to post author may appear to come from 'example.com'.
+      """
+    And the return code should be 0
 
     When I run `wp comment get --field=comment_approved {COMMENT_ID}`
     Then STDOUT should be:
@@ -184,7 +220,7 @@ Feature: Manage WordPress comments
     And I run `wp comment create --porcelain`
     And save STDOUT as {COMMENT_ID}
 
-    When I run `wp comment unapprove {COMMENT_ID}`
+    When I run `wp comment unapprove {COMMENT_ID} --url=www.example.com`
     Then STDOUT should contain:
       """
       Unapproved comment {COMMENT_ID}
@@ -196,7 +232,7 @@ Feature: Manage WordPress comments
       10
       """
 
-    When I run `wp comment approve {COMMENT_ID}`
+    When I run `wp comment approve {COMMENT_ID} --url=www.example.com`
     Then STDOUT should contain:
       """
       Approved comment {COMMENT_ID}

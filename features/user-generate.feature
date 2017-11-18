@@ -18,7 +18,17 @@ Feature: Generate WP users
       """
 
     When I try `wp user list --field=ID | xargs wp user delete invalid-user --yes`
-    And I run `wp user list --format=count`
+    Then STDOUT should contain:
+      """
+      Success: Removed user
+      """
+    And STDERR should be:
+      """
+      Warning: Invalid user ID, email or login: 'invalid-user'
+      """
+    And the return code should be 0
+
+    When I run `wp user list --format=count`
     Then STDOUT should be:
       """
       0

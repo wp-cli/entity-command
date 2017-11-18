@@ -101,6 +101,7 @@ Feature: Manage WordPress users
 
     When I try `wp user get bobjones`
     Then STDERR should not be empty
+    And the return code should be 1
 
   Scenario: Create new users on multisite
     Given a WP multisite install
@@ -110,6 +111,7 @@ Feature: Manage WordPress users
       """
       lowercase letters (a-z) and numbers
       """
+    And the return code should be 1
 
     When I run `wp user create bobjones bobjones@example.com --display_name="Bob Jones"`
     Then STDOUT should not be empty
@@ -136,18 +138,21 @@ Feature: Manage WordPress users
       """
       Role doesn't exist
       """
+    And the return code should be 1
 
     When I try `wp user set-role 1 edit`
     Then STDERR should contain:
       """
       Role doesn't exist
       """
+    And the return code should be 1
 
     When I try `wp user remove-role 1 edit`
     Then STDERR should contain:
       """
       Role doesn't exist
       """
+    And the return code should be 1
 
     When I run `wp user set-role 1 author`
     Then STDOUT should not be empty
@@ -350,6 +355,7 @@ Feature: Manage WordPress users
       """
       Success: User already spammed.
       """
+    And the return code should be 0
 
     When I try `wp user spam {OP_ID} 9999`
     Then STDOUT should be:

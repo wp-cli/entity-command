@@ -17,6 +17,7 @@ Feature: Manage post custom fields
       """
       Error: Could not find the post with ID 999999.
       """
+    And the return code should be 1
 
     When I run `wp post-meta set 1 foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty
@@ -116,6 +117,7 @@ Feature: Manage post custom fields
       """
       Error: Please specify a meta key, or use the --all flag.
       """
+    And the return code should be 1
 
     When I run `wp post meta delete 1 --all`
     Then STDOUT should contain:

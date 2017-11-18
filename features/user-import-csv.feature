@@ -15,6 +15,7 @@ Feature: Import users from CSV
       """
       Error: Missing file: users-incorrect.csv
       """
+    And the return code should be 1
 
     When I run `wp user import-csv users.csv`
     Then STDOUT should not be empty
@@ -51,10 +52,11 @@ Feature: Import users from CSV
       """
 
     When I try `wp user import-csv user-invalid.csv`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
-      lowercase letters (a-z) and numbers
+      Warning: Usernames can only contain lowercase letters (a-z) and numbers.
       """
+    And the return code should be 0
 
     When I run `wp user import-csv user-valid.csv`
     Then STDOUT should not be empty
@@ -151,6 +153,7 @@ Feature: Import users from CSV
       """
       Error: Unable to read content from STDIN.
       """
+    And the return code should be 1
 
     When I run `cat users.csv | wp user import-csv -`
     Then STDOUT should be:

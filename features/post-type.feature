@@ -16,6 +16,7 @@ Feature: Manage WordPress post types
       """
       Error: Post type invalid-post-type doesn't exist.
       """
+    And the return code should be 1
 
     When I run `wp post-type get page`
     Then STDOUT should be a table containing rows:

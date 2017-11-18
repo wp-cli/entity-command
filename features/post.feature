@@ -88,7 +88,7 @@ Feature: Manage WordPress posts
       """
     And the return code should be 0
 
-    When I try `EDITOR='ex -i NONE -c %s/content/bunkum -c wq' wp post edit {POST_ID}`
+    When I run `EDITOR='ex -i NONE -c %s/content/bunkum -c wq' wp post edit {POST_ID}`
     Then STDERR should be empty
     Then STDOUT should contain:
       """
@@ -155,6 +155,7 @@ Feature: Manage WordPress posts
       """
       Error: Unable to read content from 'invalid-file.html'.
       """
+    And the return code should be 1
 
   Scenario: Creating/listing posts
     When I run `wp post create --post_title='Publish post' --post_content='Publish post content' --post_status='publish' --porcelain`

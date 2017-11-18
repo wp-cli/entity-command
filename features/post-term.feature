@@ -37,6 +37,7 @@ Feature: Manage post term
       """
       Error: Invalid taxonomy foo2.
       """
+    And the return code should be 1
 
     When I run `wp post term set 1 category new`
     Then STDOUT should be:
@@ -214,3 +215,4 @@ Feature: Manage post term
       """
       Error: No need to specify terms while removing all terms.
       """
+    And the return code should be 1

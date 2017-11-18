@@ -10,6 +10,7 @@ Feature: Manage WordPress terms
 
     When I try the previous command again
     Then STDERR should not be empty
+    And the return code should be 1
 
     When I run `wp term list post_tag --format=json`
     Then STDOUT should be JSON containing:
@@ -54,6 +55,7 @@ Feature: Manage WordPress terms
       """
       Error: Taxonomy nonexistent_taxonomy doesn't exist.
       """
+    And the return code should be 1
 
   Scenario: Creating/deleting a term
     When I run `wp term create post_tag 'Test delete term' --slug=test-delete --description='This is a test term to be deleted' --porcelain`
@@ -107,6 +109,7 @@ Feature: Manage WordPress terms
       """
       Error: Parent term does not exist.
       """
+    And the return code should be 1
 
   Scenario: Filter terms by term_id
     When I run `wp term generate category --count=10`
