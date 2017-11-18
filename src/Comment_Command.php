@@ -128,7 +128,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * ---
 	 *
 	 * [--post_id=<post-id>]
-	 * : Assign comments to a specific post.
+	 * : Assign comments to a specific post. Defaults to post_id 1.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -167,7 +167,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		// Make sure comment_post_ID set for older WP versions else get undefined PHP notice.
-		$comment_post_ID = isset( $assoc_args['post_id'] ) ? $assoc_args['post_id'] : 0;
+		$comment_post_ID = isset( $assoc_args['post_id'] ) ? $assoc_args['post_id'] : 1;
 
 		$comment_count = wp_count_comments();
 		$total = (int )$comment_count->total_comments;
