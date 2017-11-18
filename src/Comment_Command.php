@@ -128,7 +128,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 * ---
 	 *
 	 * [--post_id=<post-id>]
-	 * : Assign comments to a specific post. Defaults to post_id 1.
+	 * : Assign comments to a specific post.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -155,7 +155,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 
 		$defaults = array(
 			'count'    => 100,
-			'post_id'  => null,
+			'post_id'  => 0,
 		);
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
@@ -166,9 +166,6 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating comments', $assoc_args['count'] );
 		}
 
-		// Make sure comment_post_ID set for older WP versions else get undefined PHP notice.
-		$comment_post_ID = isset( $assoc_args['post_id'] ) ? $assoc_args['post_id'] : 1;
-
 		$comment_count = wp_count_comments();
 		$total = (int )$comment_count->total_comments;
 		$limit = $total + $assoc_args['count'];
@@ -176,7 +173,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 		for ( $i = $total; $i < $limit; $i++ ) {
 			$comment_id = wp_insert_comment( array(
 				'comment_content'       => "Comment {$i}",
-				'comment_post_ID'       => $comment_post_ID,
+				'comment_post_ID'       => $assoc_args['post_id'],
 				) );
 			if ( 'progress' === $format ) {
 				$notify->tick();
@@ -438,7 +435,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	private function check_server_name() {
 		if ( empty( $_SERVER['SERVER_NAME'] ) ) {
-			WP_CLI::warning( '`$_SERVER[\'SERVER_NAME\']` not set. Setting to \'example.com\'. Notification email sent to post author may appear to come from \'example.com\'.' );
+			WP_CLI::warning( 'Site url not set - defaulting to \'example.com\'. Any notification emails sent to post author may appear to come from \'example.com\'.' );
 			$_SERVER['SERVER_NAME'] = 'example.com';
 		}
 	}
@@ -478,6 +475,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Untrashed comment 1337.
 	 */
 	public function untrash( $args, $assoc_args ) {
+		$this->check_server_name();
 		foreach( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Untrashed', 'Failed untrashing' );
 		}
@@ -518,6 +516,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Unspammed comment 1337.
 	 */
 	public function unspam( $args, $assoc_args ) {
+		$this->check_server_name();
 		foreach( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Unspammed', 'Failed unspamming' );
 		}
