@@ -46,6 +46,7 @@ Feature: Manage WordPress comments
       """
       Error: Invalid comment ID.
       """
+    And the return code should be 1
 
     When I run `wp comment create --comment_post_ID=1`
     And I run `wp comment create --comment_post_ID=1`
@@ -67,6 +68,7 @@ Feature: Manage WordPress comments
       """
       Error: Invalid comment ID.
       """
+    And the return code should be 1
 
   Scenario: Get details about an existing comment
     When I run `wp comment get 1`
@@ -154,11 +156,20 @@ Feature: Manage WordPress comments
     Given I run `wp comment create --comment_post_ID=1 --comment_approved=0 --porcelain`
     And save STDOUT as {COMMENT_ID}
 
-    When I run `wp comment approve {COMMENT_ID}`
-    Then STDOUT should contain:
+	# With site url set.
+    When I run `wp comment approve {COMMENT_ID} --url=www.example.com`
+    Then STDOUT should be:
       """
-      Approved comment {COMMENT_ID}
+      Success: Approved comment {COMMENT_ID}.
       """
+
+    When I try the previous command again
+    Then STDERR should be:
+      """
+      Error: Could not update comment status
+      """
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I run `wp comment get --field=comment_approved {COMMENT_ID}`
     Then STDOUT should be:
@@ -166,10 +177,10 @@ Feature: Manage WordPress comments
       1
       """
 
-    When I run `wp comment unapprove {COMMENT_ID}`
-    Then STDOUT should contain:
+    When I run `wp comment unapprove {COMMENT_ID} --url=www.example.com`
+    Then STDOUT should be:
       """
-      Unapproved comment {COMMENT_ID}
+      Success: Unapproved comment {COMMENT_ID}.
       """
 
     When I run `wp comment get --field=comment_approved {COMMENT_ID}`
@@ -178,16 +189,40 @@ Feature: Manage WordPress comments
       0
       """
 
+	# Without site url set.
+    When I try `wp comment approve {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      Success: Approved comment {COMMENT_ID}.
+      """
+    And STDERR should be:
+      """
+      Warning: Site url not set - defaulting to 'example.com'. Any notification emails sent to post author may appear to come from 'example.com'.
+      """
+    And the return code should be 0
+
+    When I try `wp comment unapprove {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      Success: Unapproved comment {COMMENT_ID}.
+      """
+    And STDERR should be:
+      """
+      Warning: Site url not set - defaulting to 'example.com'. Any notification emails sent to post author may appear to come from 'example.com'.
+      """
+    And the return code should be 0
+
   Scenario: Approving/unapproving comments with multidigit comment ID
     Given I run `wp comment delete $(wp comment list --field=ID)`
     And I run `wp comment generate --count=10 --quiet`
-    And I run `wp comment create --porcelain`
+    And I run `wp comment create --comment_post_ID=1 --porcelain`
     And save STDOUT as {COMMENT_ID}
 
-    When I run `wp comment unapprove {COMMENT_ID}`
-    Then STDOUT should contain:
+	# With site url set.
+    When I run `wp comment unapprove {COMMENT_ID} --url=www.example.com`
+    Then STDOUT should be:
       """
-      Unapproved comment {COMMENT_ID}
+      Success: Unapproved comment {COMMENT_ID}.
       """
 
     When I run `wp comment list --format=count --status=approve`
@@ -196,10 +231,10 @@ Feature: Manage WordPress comments
       10
       """
 
-    When I run `wp comment approve {COMMENT_ID}`
-    Then STDOUT should contain:
+    When I run `wp comment approve {COMMENT_ID} --url=www.example.com`
+    Then STDOUT should be:
       """
-      Approved comment {COMMENT_ID}
+      Success: Approved comment {COMMENT_ID}.
       """
 
     When I run `wp comment list --format=count --status=approve`
@@ -208,16 +243,40 @@ Feature: Manage WordPress comments
       11
       """
 
+	# Without site url set.
+    When I try `wp comment unapprove {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      Success: Unapproved comment {COMMENT_ID}.
+      """
+    And STDERR should be:
+      """
+      Warning: Site url not set - defaulting to 'example.com'. Any notification emails sent to post author may appear to come from 'example.com'.
+      """
+    And the return code should be 0
+
+    When I try `wp comment approve {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      Success: Approved comment {COMMENT_ID}.
+      """
+    And STDERR should be:
+      """
+      Warning: Site url not set - defaulting to 'example.com'. Any notification emails sent to post author may appear to come from 'example.com'.
+      """
+    And the return code should be 0
+
   Scenario: Spam/unspam comments with multidigit comment ID
     Given I run `wp comment delete $(wp comment list --field=ID)`
     And I run `wp comment generate --count=10 --quiet`
-    And I run `wp comment create --porcelain`
+    And I run `wp comment create --comment_post_ID=1 --porcelain`
     And save STDOUT as {COMMENT_ID}
 
+	# With site url set.
     When I run `wp comment spam {COMMENT_ID}`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
-      Marked as spam comment {COMMENT_ID}.
+      Success: Marked as spam comment {COMMENT_ID}.
       """
 
     When I run `wp comment list --format=count --status=spam`
@@ -226,10 +285,10 @@ Feature: Manage WordPress comments
       1
       """
 
-    When I run `wp comment unspam {COMMENT_ID}`
-    Then STDOUT should contain:
+    When I run `wp comment unspam {COMMENT_ID} --url=www.example.com`
+    Then STDOUT should be:
       """
-      Unspammed comment {COMMENT_ID}.
+      Success: Unspammed comment {COMMENT_ID}.
       """
 
     When I run `wp comment list --format=count --status=spam`
@@ -238,14 +297,33 @@ Feature: Manage WordPress comments
       0
       """
 
+	# Without site url set.
+    When I run `wp comment spam {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      Success: Marked as spam comment {COMMENT_ID}.
+      """
+
+    When I try `wp comment unspam {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      Success: Unspammed comment {COMMENT_ID}.
+      """
+    And STDERR should be:
+      """
+      Warning: Site url not set - defaulting to 'example.com'. Any notification emails sent to post author may appear to come from 'example.com'.
+      """
+    And the return code should be 0
+
   Scenario: Trash/untrash comments with multidigit comment ID
     Given I run `wp comment delete $(wp comment list --field=ID) --force`
     And I run `wp comment generate --count=10 --quiet`
-    And I run `wp comment create --porcelain`
+    And I run `wp comment create --comment_post_ID=1 --porcelain`
     And save STDOUT as {COMMENT_ID}
 
+	# With site url set.
     When I run `wp comment trash {COMMENT_ID}`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
       Success: Trashed comment {COMMENT_ID}.
       """
@@ -256,10 +334,10 @@ Feature: Manage WordPress comments
       1
       """
 
-    When I run `wp comment untrash {COMMENT_ID}`
-    Then STDOUT should contain:
+    When I run `wp comment untrash {COMMENT_ID} --url=www.example.com`
+    Then STDOUT should be:
       """
-      Untrashed comment {COMMENT_ID}.
+      Success: Untrashed comment {COMMENT_ID}.
       """
 
     When I run `wp comment list --format=count --status=trash`
@@ -267,6 +345,24 @@ Feature: Manage WordPress comments
       """
       0
       """
+
+	# Without site url set.
+    When I run `wp comment trash {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      Success: Trashed comment {COMMENT_ID}.
+      """
+
+    When I try `wp comment untrash {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      Success: Untrashed comment {COMMENT_ID}.
+      """
+    And STDERR should be:
+      """
+      Warning: Site url not set - defaulting to 'example.com'. Any notification emails sent to post author may appear to come from 'example.com'.
+      """
+    And the return code should be 0
 
   Scenario: Make sure WordPress receives the slashed data it expects
     When I run `wp comment create --comment_content='My\Comment' --porcelain`
@@ -286,3 +382,16 @@ Feature: Manage WordPress comments
       """
       My\New\Comment
       """
+
+  @require-wp-4.4
+  Scenario: Approving/unapproving/unspamming/untrashing (approved) comments with no comment post id should not produce PHP notices for WP >= 4.4
+    Given I run `wp comment create --comment_approved=0 --porcelain`
+    And save STDOUT as {COMMENT_ID}
+    When I run `wp comment approve {COMMENT_ID} --url=www.example.com`
+    And I run `wp comment unapprove {COMMENT_ID} --url=www.example.com`
+
+    Given I run `wp comment approve {COMMENT_ID} --url=www.example.com`
+    When I run `wp comment spam {COMMENT_ID} --url=www.example.com`
+    And I run `wp comment unspam {COMMENT_ID} --url=www.example.com`
+    And I run `wp comment trash {COMMENT_ID} --url=www.example.com`
+    And I run `wp comment untrash {COMMENT_ID} --url=www.example.com`

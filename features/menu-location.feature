@@ -35,6 +35,7 @@ Feature: Manage WordPress menu locations
       """
       Error: Invalid menu secondary-menu.
       """
+    And the return code should be 1
 
     When I run `wp menu create "Secondary Menu"`
     And I try `wp menu location assign secondary-menu secondary`
@@ -42,6 +43,7 @@ Feature: Manage WordPress menu locations
       """
       Error: Invalid location secondary.
       """
+    And the return code should be 1
 
     When I run `wp menu location assign secondary-menu primary`
     Then STDOUT should be:

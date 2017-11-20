@@ -17,6 +17,7 @@ Feature: Manage comment custom fields
       """
       Error: Could not find the comment with ID 999999.
       """
+    And the return code should be 1
 
     When I run `wp comment-meta set 1 foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty
@@ -42,6 +43,7 @@ Feature: Manage comment custom fields
       Error: Parameter errors:
        unknown -- hi parameter
       """
+    And the return code should be 1
 
     When I run `wp comment meta add 1 foo '"-- hi"' --format=json`
     Then STDOUT should contain:

@@ -1147,10 +1147,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$successes++;
 		}
 
-		if ( ! $this->chained_command ) {
-			Utils\report_batch_operation_results( 'user', $verb, count( $user_ids ), $successes, $errors );
-		}
-
+		Utils\report_batch_operation_results( 'user', $verb, count( $user_ids ), $successes, $errors );
 	}
 
 }
