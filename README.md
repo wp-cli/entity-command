@@ -180,8 +180,6 @@ wp network meta
 
 
 
-
-
 ### wp option
 
 Retrieves and sets site options, including plugin and WordPress settings.
