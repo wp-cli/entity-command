@@ -1,0 +1,62 @@
+# Used by Probot Settings: https://probot.github.io/apps/settings/
+repository:
+  description: Manage WordPress core entities.
+  labels:
+    - name: scope:documentation
+      color: 0e8a16
+    - name: scope:testing
+      color: 5319e7
+    - name: good-first-issue
+      color: eb6420
+    - name: state:unconfirmed
+      color: bfe5bf
+    - name: state:unsupported
+      color: bfe5bf
+    - name: command:comment
+      color: c5def5
+    - name: command:comment-meta
+      color: c5def5
+    - name: command:menu
+      color: c5def5
+    - name: command:menu-item
+      color: c5def5
+    - name: command:menu-location
+      color: c5def5
+    - name: command:network-meta
+      color: c5def5
+    - name: command:option
+      color: c5def5
+    - name: command:option-add
+      color: c5def5
+    - name: command:option-delete
+      color: c5def5
+    - name: command:option-get
+      color: c5def5
+    - name: command:option-list
+      color: c5def5
+    - name: command:option-update
+      color: c5def5
+    - name: command:post
+      color: c5def5
+    - name: command:post-meta
+      color: c5def5
+    - name: command:post-term
+      color: c5def5
+    - name: command:post-type
+      color: c5def5
+    - name: command:site
+      color: c5def5
+    - name: command:site-empty
+      color: c5def5
+    - name: command:taxonomy
+      color: c5def5
+    - name: command:term
+      color: c5def5
+    - name: command:term-meta
+      color: c5def5
+    - name: command:user
+      color: c5def5
+    - name: command:user-meta
+      color: c5def5
+    - name: command:user-term
+      color: c5def5

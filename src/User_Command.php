@@ -296,13 +296,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * : The email address of the user to create.
 	 *
 	 * [--role=<role>]
-	 * : The role of the user to create. Default: default role
+	 * : The role of the user to create. Default: default role. Possible values
+	 * include 'administrator', 'editor', 'author', 'contributor', 'subscriber'.
 	 *
 	 * [--user_pass=<password>]
-	 * : The user password. Default: randomly generated
+	 * : The user password. Default: randomly generated.
 	 *
 	 * [--user_registered=<yyyy-mm-dd-hh-ii-ss>]
-	 * : The date the user registered. Default: current date
+	 * : The date the user registered. Default: current date.
 	 *
 	 * [--display_name=<name>]
 	 * : The display name.
@@ -836,7 +837,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <file>
-	 * : The local or remote CSV file of users to import.
+	 * : The local or remote CSV file of users to import. If '-', then reads from STDIN.
 	 *
 	 * [--send-email]
 	 * : Send an email to new users with their account details.
@@ -876,7 +877,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			if ( in_array( $response_code[0], array( 4, 5 ) ) ) {
 				WP_CLI::error( "Couldn't access remote CSV file (HTTP {$response_code} response)." );
 			}
-		} else if ( ! file_exists( $filename ) ) {
+		} elseif ( '-' === $filename ) {
+			if ( ! WP_CLI\Entity\Utils::has_stdin() ) {
+				\WP_CLI::error( "Unable to read content from STDIN." );
+			}
+		} elseif ( ! file_exists( $filename ) ) {
 			WP_CLI::error( sprintf( "Missing file: %s", $filename ) );
 		}
 
@@ -884,7 +889,28 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		add_filter( 'send_password_change_email', '__return_false' );
 		add_filter( 'send_email_change_email', '__return_false' );
 
-		foreach ( new \WP_CLI\Iterators\CSV( $filename ) as $i => $new_user ) {
+		if ( '-' === $filename ) {
+			$file_object = new NoRewindIterator( new SplFileObject( "php://stdin" ) );
+			$file_object->setFlags( SplFileObject::READ_CSV );
+			$csv_data = array();
+			$indexes = array();
+			foreach ( $file_object as $line ) {
+				if ( empty( $line[0] ) ) {
+					continue;
+				} elseif ( empty( $indexes ) ) {
+					$indexes = $line;
+					continue;
+				}
+				foreach ( $indexes as $n => $key ) {
+					$data[ $key ] = $line[ $n ];
+				}
+				$csv_data[] = $data;
+			}
+		} else {
+			$csv_data = new \WP_CLI\Iterators\CSV( $filename );
+		}
+
+		foreach ( $csv_data as $i => $new_user ) {
 			$defaults = array(
 				'role' => get_option('default_role'),
 				'user_pass' => wp_generate_password(),
@@ -1121,10 +1147,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$successes++;
 		}
 
-		if ( ! $this->chained_command ) {
-			Utils\report_batch_operation_results( 'user', $verb, count( $user_ids ), $successes, $errors );
-		}
-
+		Utils\report_batch_operation_results( 'user', $verb, count( $user_ids ), $successes, $errors );
 	}
 
 }

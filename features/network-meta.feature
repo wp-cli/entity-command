@@ -3,7 +3,7 @@ Feature: Manage network-wide custom fields.
   Scenario: Non-multisite
     Given a WP install
 
-    When I try `wp network-meta`
+    When I run `wp network-meta`
     Then STDOUT should contain:
       """
       usage: wp network meta
@@ -15,3 +15,4 @@ Feature: Manage network-wide custom fields.
       """
       This is not a multisite install.
       """
+    And the return code should be 1

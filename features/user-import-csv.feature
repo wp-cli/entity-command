@@ -15,6 +15,7 @@ Feature: Import users from CSV
       """
       Error: Missing file: users-incorrect.csv
       """
+    And the return code should be 1
 
     When I run `wp user import-csv users.csv`
     Then STDOUT should not be empty
@@ -51,10 +52,12 @@ Feature: Import users from CSV
       """
 
     When I try `wp user import-csv user-invalid.csv`
+	# Message changed from "Only lowercase..." to "Usernames can contain only lowercase..." in `wpmu_validate_user_signup()` WP 4.4 https://core.trac.wordpress.org/ticket/33336
     Then STDERR should contain:
       """
       lowercase letters (a-z) and numbers
       """
+    And the return code should be 0
 
     When I run `wp user import-csv user-valid.csv`
     Then STDOUT should not be empty
@@ -135,3 +138,46 @@ Feature: Import users from CSV
       | display_name      | roles                |
       | Bob Jones         | contributor          |
       | Bill Jones        | administrator,author |
+
+  Scenario: Importing users from STDIN
+    Given a WP install
+    And a users.csv file:
+      """
+      user_login,user_email,display_name,role
+      bobjones,bobjones@example.com,Bob Jones,contributor
+      newuser1,newuser1@example.com,New User,author
+      admin,admin@example.com,Existing User,administrator
+      """
+
+    When I try `wp user import-csv -`
+    Then STDERR should be:
+      """
+      Error: Unable to read content from STDIN.
+      """
+    And the return code should be 1
+
+    When I run `cat users.csv | wp user import-csv -`
+    Then STDOUT should be:
+      """
+      Success: bobjones created.
+      Success: newuser1 created.
+      Success: admin updated.
+      """
+    And an email should not be sent
+
+    When I run `wp user list --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp user list --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      [{
+        "user_login":"admin",
+        "display_name":"Existing User",
+        "user_email":"admin@example.com",
+        "roles":"administrator"
+      }]
+      """
