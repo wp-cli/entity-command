@@ -8,6 +8,8 @@ Feature: Manage sites in a multisite installation
       """
       Network with id 1000 does not exist.
       """
+    And STDOUT should be empty
+    And the return code should be 1
 
   Scenario: Create a subdomain site
     Given a WP multisite subdomain install
@@ -61,6 +63,7 @@ Feature: Manage sites in a multisite installation
       """
       Error: You cannot delete the root site.
       """
+    And STDOUT should be empty
     And the return code should be 1
 
     When I run `wp site delete {SITE_ID} --yes`
@@ -151,7 +154,7 @@ Feature: Manage sites in a multisite installation
       | blog_id      | archived |
       | {FIRST_SITE} | 1        |
 
-    When I run `wp site archive {FIRST_SITE} {SECOND_SITE}`
+    When I try `wp site archive {FIRST_SITE} {SECOND_SITE}`
     Then STDERR should be:
       """
       Warning: Site {FIRST_SITE} already archived.
@@ -160,6 +163,7 @@ Feature: Manage sites in a multisite installation
       """
       Success: Site {SECOND_SITE} archived.
       """
+    And the return code should be 0
 
     When I run `wp site list --fields=blog_id,archived`
     Then STDOUT should be a table containing rows:
@@ -182,6 +186,8 @@ Feature: Manage sites in a multisite installation
       """
       Warning: You are not allowed to change the main site.
       """
+    And STDOUT should be empty
+    And the return code should be 0
 
   Scenario: Activate/deactivate a site
     Given a WP multisite install
@@ -201,7 +207,7 @@ Feature: Manage sites in a multisite installation
       | blog_id      | deleted |
       | {FIRST_SITE} | 1       |
 
-    When I run `wp site deactivate {FIRST_SITE} {SECOND_SITE}`
+    When I try `wp site deactivate {FIRST_SITE} {SECOND_SITE}`
     Then STDERR should be:
       """
       Warning: Site {FIRST_SITE} already deactivated.
@@ -210,6 +216,7 @@ Feature: Manage sites in a multisite installation
       """
       Success: Site {SECOND_SITE} deactivated.
       """
+    And the return code should be 0
 
     When I run `wp site list --fields=blog_id,deleted`
     Then STDOUT should be a table containing rows:
@@ -227,11 +234,13 @@ Feature: Manage sites in a multisite installation
       | blog_id      | deleted |
       | {FIRST_SITE} | 0       |
 
-    When I run `wp site deactivate 1`
+    When I try `wp site deactivate 1`
     Then STDERR should be:
       """
       Warning: You are not allowed to change the main site.
       """
+    And STDOUT should be empty
+    And the return code should be 0
 
   Scenario: Mark/remove a site from spam
     Given a WP multisite install
@@ -251,7 +260,7 @@ Feature: Manage sites in a multisite installation
       | blog_id      | spam |
       | {FIRST_SITE} | 1    |
 
-    When I run `wp site spam {FIRST_SITE} {SECOND_SITE}`
+    When I try `wp site spam {FIRST_SITE} {SECOND_SITE}`
     Then STDERR should be:
       """
       Warning: Site {FIRST_SITE} already marked as spam.
@@ -260,6 +269,7 @@ Feature: Manage sites in a multisite installation
       """
       Success: Site {SECOND_SITE} marked as spam.
       """
+    And the return code should be 0
 
     When I run `wp site list --fields=blog_id,spam`
     Then STDOUT should be a table containing rows:
@@ -277,11 +287,13 @@ Feature: Manage sites in a multisite installation
       | blog_id      | spam |
       | {FIRST_SITE} | 0    |
 
-    When I run `wp site spam 1`
+    When I try `wp site spam 1`
     Then STDERR should be:
       """
       Warning: You are not allowed to change the main site.
       """
+    And STDOUT should be empty
+    And the return code should be 0
 
   Scenario: Mark/remove a site as mature
     Given a WP multisite install
@@ -301,7 +313,7 @@ Feature: Manage sites in a multisite installation
       | blog_id      | mature |
       | {FIRST_SITE} | 1    |
 
-    When I run `wp site mature {FIRST_SITE} {SECOND_SITE}`
+    When I try `wp site mature {FIRST_SITE} {SECOND_SITE}`
     Then STDERR should be:
       """
       Warning: Site {FIRST_SITE} already marked as mature.
@@ -310,6 +322,7 @@ Feature: Manage sites in a multisite installation
       """
       Success: Site {SECOND_SITE} marked as mature.
       """
+    And the return code should be 0
 
     When I run `wp site list --fields=blog_id,mature`
     Then STDOUT should be a table containing rows:
@@ -327,11 +340,13 @@ Feature: Manage sites in a multisite installation
       | blog_id      | mature |
       | {FIRST_SITE} | 0    |
 
-    When I run `wp site unmature 1`
+    When I try `wp site unmature 1`
     Then STDERR should be:
       """
       Warning: You are not allowed to change the main site.
       """
+    And STDOUT should be empty
+    And the return code should be 0
 
   Scenario: Set/Unset a site as public
     Given a WP multisite install
@@ -351,7 +366,7 @@ Feature: Manage sites in a multisite installation
       | blog_id      | public |
       | {FIRST_SITE} | 0    |
 
-    When I run `wp site private {FIRST_SITE} {SECOND_SITE}`
+    When I try `wp site private {FIRST_SITE} {SECOND_SITE}`
     Then STDERR should be:
       """
       Warning: Site {FIRST_SITE} already marked as private.
@@ -360,6 +375,7 @@ Feature: Manage sites in a multisite installation
       """
       Success: Site {SECOND_SITE} marked as private.
       """
+    And the return code should be 0
 
     When I run `wp site list --fields=blog_id,public`
     Then STDOUT should be a table containing rows:
@@ -377,11 +393,13 @@ Feature: Manage sites in a multisite installation
       | blog_id      | public |
       | {FIRST_SITE} | 1    |
 
-    When I run `wp site private 1`
+    When I try `wp site private 1`
     Then STDERR should be:
       """
       Warning: You are not allowed to change the main site.
       """
+    And STDOUT should be empty
+    And the return code should be 0
 
   Scenario: Permit CLI operations against archived and suspended sites
     Given a WP multisite install

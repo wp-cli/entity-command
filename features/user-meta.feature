@@ -17,6 +17,7 @@ Feature: Manage user custom fields
       """
       Error: Invalid user ID, email or login: '2'
       """
+    And the return code should be 1
 
     When I run `wp user-meta set admin foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty

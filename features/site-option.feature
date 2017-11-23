@@ -118,12 +118,14 @@ Feature: Manage WordPress site options
       """
       Error: This is not a multisite install.
       """
+    And the return code should be 1
 
     When I try `wp site option add str_opt 'bar'`
     Then STDERR should be:
       """
       Error: This is not a multisite install.
       """
+    And the return code should be 1
 
   Scenario: Filter options by `--site_id`
     Given a WP multisite install
