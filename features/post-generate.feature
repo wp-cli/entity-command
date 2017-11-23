@@ -41,4 +41,11 @@ Feature: Generate new WordPress posts
       """
       Success:
       """
-
+  Scenario: Generating post and output title
+    When I run `wp post generate --count=1 --post_title=Howdy!`
+    And I run `wp post list --field=post_title --posts_per_page=1`
+    Then STDOUT should contain:
+      """
+      Howdy!
+      """
+    And STDERR should be empty
