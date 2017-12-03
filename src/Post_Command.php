@@ -630,6 +630,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'post_author' => false,
 			'post_date' => current_time( 'mysql' ),
 			'post_content' => '',
+			'post_title' => '',
 		);
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
 
@@ -650,7 +651,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		// Get the total number of posts.
 		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_type ) );
 
-		$label = get_post_type_object( $post_type )->labels->singular_name;
+		$label = ! empty( $post_title ) ? $post_title : get_post_type_object( $post_type )->labels->singular_name;
 
 		$hierarchical = get_post_type_object( $post_type )->hierarchical;
 
@@ -686,11 +687,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 			$args = array(
 				'post_type' => $post_type,
-				'post_title' => "$label $i",
+				'post_title' => ! empty( $post_title ) && $i === $total ? "$label" : "$label $i",
 				'post_status' => $post_status,
 				'post_author' => $post_author,
 				'post_parent' => $current_parent,
-				'post_name' => "post-$i",
+				'post_name' => ! empty( $post_title  ) ? sanitize_title( $post_title . ( $i === $total ) ? '' : '-$i' ) : "post-$i",
 				'post_date' => $post_date,
 				'post_content' => $post_content,
 			);
