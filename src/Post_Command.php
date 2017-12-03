@@ -567,17 +567,18 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * ---
 	 * default: publish
 	 * ---
+	 * 
+	 * [--post_title=<post_title>]		
+	 * : The post title.		
+	 * ---		
+	 * default:		
+	 * ---	
 	 *
 	 * [--post_author=<login>]
 	 * : The author of the generated posts.
 	 * ---
 	 * default:
 	 * ---
-	 * [--post_title=<post_title>]		
-	 * : The post title.		
-	 * ---		
-	 * default:		
-	 * ---		
 	 *
 	 * [--post_date=<yyyy-mm-dd-hh-ii-ss>]
 	 * : The date of the generated posts. Default: current date
