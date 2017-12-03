@@ -66,7 +66,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--post_type=<post_type>]
 	 * : The post type. Default 'post'.
 	 * 
-	 * [-comment_status=<comment_status>]
+	 * [--comment_status=<comment_status>]
 	 * : Whether the post can accept comments. Accepts 'open' or 'closed'. Default is the value of 'default_comment_status' option.
 	 * 
 	 * [--ping_status=<ping_status>]
@@ -203,7 +203,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--post_type=<post_type>]
 	 * : The post type. Default 'post'.
 	 * 
-	 * [-comment_status=<comment_status>]
+	 * [--comment_status=<comment_status>]
 	 * : Whether the post can accept comments. Accepts 'open' or 'closed'. Default is the value of 'default_comment_status' option.
 	 * 
 	 * [--ping_status=<ping_status>]
