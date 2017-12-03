@@ -133,6 +133,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--porcelain]
 	 * : Output just the new post id.
 	 *
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Create post and schedule for future
@@ -567,12 +568,12 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * ---
 	 * default: publish
 	 * ---
-	 * 
-	 * [--post_title=<post_title>]		
-	 * : The post title.		
-	 * ---		
-	 * default:		
-	 * ---	
+	 *
+	 * [--post_title=<post_title>]
+	 * : The post title.
+	 * ---
+	 * default:
+	 * ---
 	 *
 	 * [--post_author=<login>]
 	 * : The author of the generated posts.
