@@ -1957,6 +1957,402 @@ wp post
 
 
 
+### wp post create
+
+Create a new post.
+
+~~~
+wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_date_gmt=<post_date_gmt>] [--post_content=<post_content>] [--post_content_filtered=<post_content_filtered>] [--post_title=<post_title>] [--post_excerpt=<post_excerpt>] [--post_status=<post_status>] [--post_type=<post_type>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--post_password=<post_password>] [--post_name=<post_name>] [--to_ping=<to_ping>] [--pinged=<pinged>] [--post_modified=<post_modified>] [--post_modified_gmt=<post_modified_gmt>] [--post_parent=<post_parent>] [--menu_order=<menu_order>] [--post_mime_type=<post_mime_type>] [--guid=<guid>] [--post_category=<post_category>] [--tags_input=<tags_input>] [--tax_input=<tax_input>] [--meta_input=<meta_input>] [<file>] [--<field>=<value>] [--edit] [--porcelain]
+~~~
+
+**OPTIONS**
+
+	[--post_author=<post_author>]
+		The ID of the user who added the post. Default is the current user ID.
+
+	[--post_date=<post_date>]
+		The date of the post. Default is the current time.
+
+	[--post_date_gmt=<post_date_gmt>]
+		The date of the post in the GMT timezone. Default is the value of $post_date.
+
+	[--post_content=<post_content>]
+		The post content. Default empty.
+
+	[--post_content_filtered=<post_content_filtered>]
+		The filtered post content. Default empty.
+
+	[--post_title=<post_title>]
+		The post title. Default empty.
+
+	[--post_excerpt=<post_excerpt>]
+		The post excerpt. Default empty.
+
+	[--post_status=<post_status>]
+		The post status. Default 'draft'.
+
+	[--post_type=<post_type>]
+		The post type. Default 'post'.
+
+	[--comment_status=<comment_status>]
+		Whether the post can accept comments. Accepts 'open' or 'closed'. Default is the value of 'default_comment_status' option.
+
+	[--ping_status=<ping_status>]
+		Whether the post can accept pings. Accepts 'open' or 'closed'. Default is the value of 'default_ping_status' option.
+
+	[--post_password=<post_password>]
+		The password to access the post. Default empty.
+
+	[--post_name=<post_name>]
+		The post name. Default is the sanitized post title when creating a new post.
+
+	[--to_ping=<to_ping>]
+		Space or carriage return-separated list of URLs to ping. Default empty.
+
+	[--pinged=<pinged>]
+		Space or carriage return-separated list of URLs that have been pinged. Default empty.
+
+	[--post_modified=<post_modified>]
+		The date when the post was last modified. Default is the current time.
+
+	[--post_modified_gmt=<post_modified_gmt>]
+		The date when the post was last modified in the GMT timezone. Default is the current time.
+
+	[--post_parent=<post_parent>]
+		Set this for the post it belongs to, if any. Default 0.
+
+	[--menu_order=<menu_order>]
+		The order the post should be displayed in. Default 0.
+
+	[--post_mime_type=<post_mime_type>]
+		The mime type of the post. Default empty.
+
+	[--guid=<guid>]
+		Global Unique ID for referencing the post. Default empty.
+
+	[--post_category=<post_category>]
+		Array of category names, slugs, or IDs. Defaults to value of the 'default_category' option.
+
+	[--tags_input=<tags_input>]
+		Array of tag names, slugs, or IDs. Default empty.
+
+	[--tax_input=<tax_input>]
+		Array of taxonomy terms keyed by their taxonomy name. Default empty.
+
+	[--meta_input=<meta_input>]
+		Array of post meta values keyed by their post meta key. Default empty.
+
+	[<file>]
+		Read post content from <file>. If this value is present, the
+		    `--post_content` argument will be ignored.
+
+  Passing `-` as the filename will cause post content to
+  be read from STDIN.
+
+	[--<field>=<value>]
+		Associative args for the new post. See wp_insert_post().
+
+	[--edit]
+		Immediately open system's editor to write or edit post content.
+
+  If content is read from a file, from STDIN, or from the `--post_content`
+  argument, that text will be loaded into the editor.
+
+	[--porcelain]
+		Output just the new post id.
+
+
+**EXAMPLES**
+
+    # Create post and schedule for future
+    $ wp post create --post_type=page --post_title='A future post' --post_status=future --post_date='2020-12-01 07:00:00'
+    Success: Created post 1921.
+
+    # Create post with content from given file
+    $ wp post create ./post-content.txt --post_category=201,345 --post_title='Post from file'
+    Success: Created post 1922.
+
+
+
+### wp post delete
+
+Delete an existing post.
+
+~~~
+wp post delete <id>... [--force] [--defer-term-counting]
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of posts to delete.
+
+	[--force]
+		Skip the trash bin.
+
+	[--defer-term-counting]
+		Recalculate term count in batch, for a performance boost.
+
+**EXAMPLES**
+
+    # Delete post skipping trash
+    $ wp post delete 123 --force
+    Success: Deleted post 123.
+
+    # Delete all pages
+    $ wp post delete $(wp post list --post_type='page' --format=ids)
+    Success: Trashed post 1164.
+    Success: Trashed post 1186.
+
+    # Delete all posts in the trash
+    $ wp post delete $(wp post list --post_status=trash --format=ids)
+    Success: Trashed post 1268.
+    Success: Trashed post 1294.
+
+
+
+### wp post edit
+
+Launch system editor to edit post content.
+
+~~~
+wp post edit <id>
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to edit.
+
+**EXAMPLES**
+
+    # Launch system editor to edit post
+    $ wp post edit 123
+
+
+
+### wp post generate
+
+Generate some posts.
+
+~~~
+wp post generate [--count=<number>] [--post_type=<type>] [--post_status=<status>] [--post_title=<post_title>] [--post_author=<login>] [--post_date=<yyyy-mm-dd-hh-ii-ss>] [--post_content] [--max_depth=<number>] [--format=<format>]
+~~~
+
+Creates a specified number of new posts with dummy data.
+
+**OPTIONS**
+
+	[--count=<number>]
+		How many posts to generate?
+		---
+		default: 100
+		---
+
+	[--post_type=<type>]
+		The type of the generated posts.
+		---
+		default: post
+		---
+
+	[--post_status=<status>]
+		The status of the generated posts.
+		---
+		default: publish
+		---
+
+	[--post_title=<post_title>]
+		The post title.
+		---
+		default:
+		---
+
+	[--post_author=<login>]
+		The author of the generated posts.
+		---
+		default:
+		---
+
+	[--post_date=<yyyy-mm-dd-hh-ii-ss>]
+		The date of the generated posts. Default: current date
+
+	[--post_content]
+		If set, the command reads the post_content from STDIN.
+
+	[--max_depth=<number>]
+		For hierarchical post types, generate child posts down to a certain depth.
+		---
+		default: 1
+		---
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: progress
+		options:
+		  - progress
+		  - ids
+		---
+
+**EXAMPLES**
+
+    # Generate posts.
+    $ wp post generate --count=10 --post_type=page --post_date=1999-01-04
+    Generating posts  100% [================================================] 0:01 / 0:04
+
+    # Generate posts with fetched content.
+    $ curl http://loripsum.net/api/5 | wp post generate --post_content --count=10
+      % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                     Dload  Upload   Total   Spent    Left  Speed
+    100  2509  100  2509    0     0    616      0  0:00:04  0:00:04 --:--:--   616
+    Generating posts  100% [================================================] 0:01 / 0:04
+
+    # Add meta to every generated posts.
+    $ wp post generate --format=ids | xargs -d ' ' -I % wp post meta add % foo bar
+    Success: Added custom field.
+    Success: Added custom field.
+    Success: Added custom field.
+
+
+
+### wp post get
+
+Get details about a post.
+
+~~~
+wp post get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to get.
+
+	[--field=<field>]
+		Instead of returning the whole post, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Save the post content to a file
+    $ wp post get 123 --field=content > file.txt
+
+
+
+### wp post list
+
+Get a list of posts.
+
+~~~
+wp post list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--<field>=<value>]
+		One or more args to pass to WP_Query.
+
+	[--field=<field>]
+		Prints the value of a single field for each post.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - ids
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each post:
+
+* ID
+* post_title
+* post_name
+* post_date
+* post_status
+
+These fields are optionally available:
+
+* post_author
+* post_date_gmt
+* post_content
+* post_excerpt
+* comment_status
+* ping_status
+* post_password
+* to_ping
+* pinged
+* post_modified
+* post_modified_gmt
+* post_content_filtered
+* post_parent
+* guid
+* menu_order
+* post_type
+* post_mime_type
+* comment_count
+* filter
+* url
+
+**EXAMPLES**
+
+    # List post
+    $ wp post list --field=ID
+    568
+    829
+    1329
+    1695
+
+    # List posts in JSON
+    $ wp post list --post_type=post --posts_per_page=5 --format=json
+    [{"ID":1,"post_title":"Hello world!","post_name":"hello-world","post_date":"2015-06-20 09:00:10","post_status":"publish"},{"ID":1178,"post_title":"Markup: HTML Tags and Formatting","post_name":"markup-html-tags-and-formatting","post_date":"2013-01-11 20:22:19","post_status":"draft"}]
+
+    # List all pages
+    $ wp post list --post_type=page --fields=post_title,post_status
+    +-------------+-------------+
+    | post_title  | post_status |
+    +-------------+-------------+
+    | Sample Page | publish     |
+    +-------------+-------------+
+
+    # List ids of all pages and posts
+    $ wp post list --post_type=page,post --format=ids
+    15 25 34 37 198
+
+    # List given posts
+    $ wp post list --post__in=1,3
+    +----+--------------+-------------+---------------------+-------------+
+    | ID | post_title   | post_name   | post_date           | post_status |
+    +----+--------------+-------------+---------------------+-------------+
+    | 3  | Lorem Ipsum  | lorem-ipsum | 2016-06-01 14:34:36 | publish     |
+    | 1  | Hello world! | hello-world | 2016-06-01 14:31:12 | publish     |
+    +----+--------------+-------------+---------------------+-------------+
+
+
+
 ### wp post meta
 
 Manage post custom fields.
@@ -2225,6 +2621,246 @@ wp post term
 
 
 
+### wp post term add
+
+Add a term to an object.
+
+~~~
+wp post term add <id> <taxonomy> <term>... [--by=<field>]
+~~~
+
+Append the term to the existing set of terms on the object.
+
+	<id>
+		The ID of the object.
+
+	<taxonomy>
+		The name of the taxonomy type to be added.
+
+	<term>...
+		The slug of the term or terms to be added.
+
+	[--by=<field>]
+		Explicitly handle the term value as a slug or id.
+		---
+		options:
+		  - slug
+		  - id
+		---
+
+
+
+### wp post term list
+
+List all terms associated with an object.
+
+~~~
+wp post term list <id> <taxonomy>... [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+	<id>
+		ID for the object.
+
+	<taxonomy>...
+		One or more taxonomies to list.
+
+	[--field=<field>]
+		Prints the value of a single field for each term.
+
+	[--fields=<fields>]
+		Limit the output to specific row fields.
+
+	[--format=<format>]
+		Accepted values: table, csv, json, count, ids. Default: table
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each term:
+
+* term_id
+* name
+* slug
+* taxonomy
+
+These fields are optionally available:
+
+* term_taxonomy_id
+* description
+* term_group
+* parent
+* count
+
+
+
+### wp post term remove
+
+Remove a term from an object.
+
+~~~
+wp post term remove <id> <taxonomy> [<term>...] [--by=<field>] [--all]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	<taxonomy>
+		The name of the term's taxonomy.
+
+	[<term>...]
+		The name of the term or terms to be removed from the object.
+
+	[--by=<field>]
+		Explicitly handle the term value as a slug or id.
+		---
+		options:
+		  - slug
+		  - id
+		---
+
+	[--all]
+		Remove all terms from the object.
+
+
+
+### wp post term set
+
+Set object terms.
+
+~~~
+wp post term set <id> <taxonomy> <term>... [--by=<field>]
+~~~
+
+Replaces existing terms on the object.
+
+	<id>
+		The ID of the object.
+
+	<taxonomy>
+		The name of the taxonomy type to be updated.
+
+	<term>...
+		The slug of the term or terms to be updated.
+
+	[--by=<field>]
+		Explicitly handle the term value as a slug or id.
+		---
+		options:
+		  - slug
+		  - id
+		---
+
+
+
+### wp post update
+
+Update one or more existing posts.
+
+~~~
+wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [--post_date_gmt=<post_date_gmt>] [--post_content=<post_content>] [--post_content_filtered=<post_content_filtered>] [--post_title=<post_title>] [--post_excerpt=<post_excerpt>] [--post_status=<post_status>] [--post_type=<post_type>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--post_password=<post_password>] [--post_name=<post_name>] [--to_ping=<to_ping>] [--pinged=<pinged>] [--post_modified=<post_modified>] [--post_modified_gmt=<post_modified_gmt>] [--post_parent=<post_parent>] [--menu_order=<menu_order>] [--post_mime_type=<post_mime_type>] [--guid=<guid>] [--post_category=<post_category>] [--tags_input=<tags_input>] [--tax_input=<tax_input>] [--meta_input=<meta_input>] [<file>] --<field>=<value> [--defer-term-counting]
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of posts to update.
+
+	[--post_author=<post_author>]
+		The ID of the user who added the post. Default is the current user ID.
+
+	[--post_date=<post_date>]
+		The date of the post. Default is the current time.
+
+	[--post_date_gmt=<post_date_gmt>]
+		The date of the post in the GMT timezone. Default is the value of $post_date.
+
+	[--post_content=<post_content>]
+		The post content. Default empty.
+
+	[--post_content_filtered=<post_content_filtered>]
+		The filtered post content. Default empty.
+
+	[--post_title=<post_title>]
+		The post title. Default empty.
+
+	[--post_excerpt=<post_excerpt>]
+		The post excerpt. Default empty.
+
+	[--post_status=<post_status>]
+		The post status. Default 'draft'.
+
+	[--post_type=<post_type>]
+		The post type. Default 'post'.
+
+	[--comment_status=<comment_status>]
+		Whether the post can accept comments. Accepts 'open' or 'closed'. Default is the value of 'default_comment_status' option.
+
+	[--ping_status=<ping_status>]
+		Whether the post can accept pings. Accepts 'open' or 'closed'. Default is the value of 'default_ping_status' option.
+
+	[--post_password=<post_password>]
+		The password to access the post. Default empty.
+
+	[--post_name=<post_name>]
+		The post name. Default is the sanitized post title when creating a new post.
+
+	[--to_ping=<to_ping>]
+		Space or carriage return-separated list of URLs to ping. Default empty.
+
+	[--pinged=<pinged>]
+		Space or carriage return-separated list of URLs that have been pinged. Default empty.
+
+	[--post_modified=<post_modified>]
+		The date when the post was last modified. Default is the current time.
+
+	[--post_modified_gmt=<post_modified_gmt>]
+		The date when the post was last modified in the GMT timezone. Default is the current time.
+
+	[--post_parent=<post_parent>]
+		Set this for the post it belongs to, if any. Default 0.
+
+	[--menu_order=<menu_order>]
+		The order the post should be displayed in. Default 0.
+
+	[--post_mime_type=<post_mime_type>]
+		The mime type of the post. Default empty.
+
+	[--guid=<guid>]
+		Global Unique ID for referencing the post. Default empty.
+
+	[--post_category=<post_category>]
+		Array of category names, slugs, or IDs. Defaults to value of the 'default_category' option.
+
+	[--tags_input=<tags_input>]
+		Array of tag names, slugs, or IDs. Default empty.
+
+	[--tax_input=<tax_input>]
+		Array of taxonomy terms keyed by their taxonomy name. Default empty.
+
+	[--meta_input=<meta_input>]
+		Array of post meta values keyed by their post meta key. Default empty.
+
+	[<file>]
+		Read post content from <file>. If this value is present, the
+		    `--post_content` argument will be ignored.
+
+  Passing `-` as the filename will cause post content to
+  be read from STDIN.
+
+	--<field>=<value>
+		One or more fields to update. See wp_insert_post().
+
+	[--defer-term-counting]
+		Recalculate term count in batch, for a performance boost.
+
+**EXAMPLES**
+
+    $ wp post update 123 --post_name=something --post_status=draft
+    Success: Updated post 123.
+
+
+
 ### wp post-type
 
 Retrieves details on the site's registered post types.
@@ -2240,6 +2876,112 @@ Get information on WordPress' built-in and the site's [custom post types](https:
     # Get details about a post type
     $ wp post-type get page --fields=name,label,hierarchical --format=json
     {"name":"page","label":"Pages","hierarchical":true}
+
+    # List post types with 'post' capability type
+    $ wp post-type list --capability_type=post --fields=name,public
+    +---------------+--------+
+    | name          | public |
+    +---------------+--------+
+    | post          | 1      |
+    | attachment    | 1      |
+    | revision      |        |
+    | nav_menu_item |        |
+    +---------------+--------+
+
+
+
+### wp post-type get
+
+Get details about a registered post type.
+
+~~~
+wp post-type get <post-type> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<post-type>
+		Post type slug
+
+	[--field=<field>]
+		Instead of returning the whole taxonomy, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Get details about the 'page' post type.
+    $ wp post-type get page --fields=name,label,hierarchical --format=json
+    {"name":"page","label":"Pages","hierarchical":true}
+
+
+
+### wp post-type list
+
+List registered post types.
+
+~~~
+wp post-type list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--<field>=<value>]
+		Filter by one or more fields (see get_post_types() first parameter for a list of available fields).
+
+	[--field=<field>]
+		Prints the value of a single field for each post type.
+
+	[--fields=<fields>]
+		Limit the output to specific post type fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each term:
+
+* name
+* label
+* description
+* hierarchical
+* public
+* capability_type
+
+There are no optionally available fields.
+
+**EXAMPLES**
+
+    # List registered post types
+    $ wp post-type list --format=csv
+    name,label,description,hierarchical,public,capability_type
+    post,Posts,,,1,post
+    page,Pages,,1,1,page
+    attachment,Media,,,1,post
+    revision,Revisions,,,,post
+    nav_menu_item,"Navigation Menu Items",,,,post
 
     # List post types with 'post' capability type
     $ wp post-type list --capability_type=post --fields=name,public
@@ -2276,6 +3018,131 @@ wp site
     # Delete site
     $ wp site delete 123
     Are you sure you want to delete the 'http://www.example.com/example' site? [y/n] y
+    Success: The site at 'http://www.example.com/example' was deleted.
+
+
+
+### wp site activate
+
+Activate one or more sites.
+
+~~~
+wp site activate <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of sites to activate.
+
+**EXAMPLES**
+
+    $ wp site activate 123
+    Success: Site 123 activated.
+
+
+
+### wp site archive
+
+Archive one or more sites.
+
+~~~
+wp site archive <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of sites to archive.
+
+**EXAMPLES**
+
+    $ wp site archive 123
+    Success: Site 123 archived.
+
+
+
+### wp site create
+
+Create a site in a multisite install.
+
+~~~
+wp site create --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
+~~~
+
+**OPTIONS**
+
+	--slug=<slug>
+		Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
+
+	[--title=<title>]
+		Title of the new site. Default: prettified slug.
+
+	[--email=<email>]
+		Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included.
+
+	[--network_id=<network-id>]
+		Network to associate new site with. Defaults to current network (typically 1).
+
+	[--private]
+		If set, the new site will be non-public (not indexed)
+
+	[--porcelain]
+		If set, only the site id will be output on success.
+
+**EXAMPLES**
+
+    $ wp site create --slug=example
+    Success: Site 3 created: http://www.example.com/example/
+
+
+
+### wp site deactivate
+
+Deactivate one or more sites.
+
+~~~
+wp site deactivate <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of sites to deactivate.
+
+**EXAMPLES**
+
+    $ wp site deactivate 123
+    Success: Site 123 deactivated.
+
+
+
+### wp site delete
+
+Delete a site in a multisite install.
+
+~~~
+wp site delete [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
+~~~
+
+**OPTIONS**
+
+	[<site-id>]
+		The id of the site to delete. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the blog to be deleted. Subdomain on subdomain installs, directory on subdirectory installs.
+
+	[--yes]
+		Answer yes to the confirmation message.
+
+	[--keep-tables]
+		Delete the blog from the list, but don't drop it's tables.
+
+**EXAMPLES**
+
+    $ wp site delete 123
+    Are you sure you want to delete the http://www.example.com/example site? [y/n] y
     Success: The site at 'http://www.example.com/example' was deleted.
 
 
@@ -2320,6 +3187,245 @@ WP_CLI::add_hook( 'after_invoke:site empty', function(){
     $ wp site empty
     Are you sure you want to empty the site at http://www.example.com of all posts, comments, and terms? [y/n] y
     Success: The site at 'http://www.example.com' was emptied.
+
+
+
+### wp site list
+
+List all sites in a multisite install.
+
+~~~
+wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--network=<id>]
+		The network to which the sites belong.
+
+	[--<field>=<value>]
+		Filter by one or more fields (see "Available Fields" section). However,
+		'url' isn't an available filter, because it's created from domain + path.
+
+	[--site__in=<value>]
+		Only list the sites with these blog_id values (comma-separated).
+
+	[--field=<field>]
+		Prints the value of a single field for each site.
+
+	[--fields=<fields>]
+		Comma-separated list of fields to show.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - count
+		  - ids
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each site:
+
+* blog_id
+* url
+* last_updated
+* registered
+
+These fields are optionally available:
+
+* site_id
+* domain
+* path
+* public
+* archived
+* mature
+* spam
+* deleted
+* lang_id
+
+**EXAMPLES**
+
+    # Output a simple list of site URLs
+    $ wp site list --field=url
+    http://www.example.com/
+    http://www.example.com/subdir/
+
+
+
+### wp site mature
+
+Set one or more sites as mature.
+
+~~~
+wp site mature <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of sites to set as mature.
+
+**EXAMPLES**
+
+    $ wp site mature 123
+    Success: Site 123 marked as mature.
+
+
+
+### wp site option
+
+Manage site options in a multisite install.
+
+~~~
+wp site option
+~~~
+
+**EXAMPLES**
+
+    # Get site registration
+    $ wp site option get registration
+    none
+
+    # Add site option
+    $ wp site option add my_option foobar
+    Success: Added 'my_option' site option.
+
+    # Update site option
+    $ wp site option update my_option '{"foo": "bar"}' --format=json
+    Success: Updated 'my_option' site option.
+
+    # Delete site option
+    $ wp site option delete my_option
+    Success: Deleted 'my_option' site option.
+
+
+
+
+
+### wp site private
+
+Set one or more sites as private.
+
+~~~
+wp site private <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of sites to set as private.
+
+**EXAMPLES**
+
+    $ wp site private 123
+    Success: Site 123 marked as private.
+
+
+
+### wp site public
+
+Set one or more sites as public.
+
+~~~
+wp site public <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of sites to set as public.
+
+**EXAMPLES**
+
+    $ wp site public 123
+    Success: Site 123 marked as public.
+
+
+
+### wp site spam
+
+Mark one or more sites as spam.
+
+~~~
+wp site spam <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of sites to be marked as spam.
+
+**EXAMPLES**
+
+    $ wp site spam 123
+    Success: Site 123 marked as spam.
+
+
+
+### wp site unarchive
+
+Unarchive one or more sites.
+
+~~~
+wp site unarchive <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of sites to unarchive.
+
+**EXAMPLES**
+
+    $ wp site unarchive 123
+    Success: Site 123 unarchived.
+
+
+
+### wp site unmature
+
+Set one or more sites as unmature.
+
+~~~
+wp site unmature <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of sites to set as unmature.
+
+**EXAMPLES**
+
+    $ wp site general 123
+    Success: Site 123 marked as unmature.
+
+
+
+### wp site unspam
+
+Remove one or more sites from spam.
+
+~~~
+wp site unspam <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of sites to remove from spam.
+
+**EXAMPLES**
+
+    $ wp site unspam 123
+    Success: Site 123 removed from spam.
 
 
 
@@ -3440,6 +4546,140 @@ wp user term
     # Set user terms
     $ wp user term set 123 test category
     Success: Set terms.
+
+
+
+
+
+### wp user term add
+
+Add a term to an object.
+
+~~~
+wp user term add <id> <taxonomy> <term>... [--by=<field>]
+~~~
+
+Append the term to the existing set of terms on the object.
+
+	<id>
+		The ID of the object.
+
+	<taxonomy>
+		The name of the taxonomy type to be added.
+
+	<term>...
+		The slug of the term or terms to be added.
+
+	[--by=<field>]
+		Explicitly handle the term value as a slug or id.
+		---
+		options:
+		  - slug
+		  - id
+		---
+
+
+
+### wp user term list
+
+List all terms associated with an object.
+
+~~~
+wp user term list <id> <taxonomy>... [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+	<id>
+		ID for the object.
+
+	<taxonomy>...
+		One or more taxonomies to list.
+
+	[--field=<field>]
+		Prints the value of a single field for each term.
+
+	[--fields=<fields>]
+		Limit the output to specific row fields.
+
+	[--format=<format>]
+		Accepted values: table, csv, json, count, ids. Default: table
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each term:
+
+* term_id
+* name
+* slug
+* taxonomy
+
+These fields are optionally available:
+
+* term_taxonomy_id
+* description
+* term_group
+* parent
+* count
+
+
+
+### wp user term remove
+
+Remove a term from an object.
+
+~~~
+wp user term remove <id> <taxonomy> [<term>...] [--by=<field>] [--all]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	<taxonomy>
+		The name of the term's taxonomy.
+
+	[<term>...]
+		The name of the term or terms to be removed from the object.
+
+	[--by=<field>]
+		Explicitly handle the term value as a slug or id.
+		---
+		options:
+		  - slug
+		  - id
+		---
+
+	[--all]
+		Remove all terms from the object.
+
+
+
+### wp user term set
+
+Set object terms.
+
+~~~
+wp user term set <id> <taxonomy> <term>... [--by=<field>]
+~~~
+
+Replaces existing terms on the object.
+
+	<id>
+		The ID of the object.
+
+	<taxonomy>
+		The name of the taxonomy type to be updated.
+
+	<term>...
+		The slug of the term or terms to be updated.
+
+	[--by=<field>]
+		Explicitly handle the term value as a slug or id.
+		---
+		options:
+		  - slug
+		  - id
+		---
 
 ## Installing
 
