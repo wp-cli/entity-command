@@ -151,6 +151,15 @@
             "term recount",
             "term update",
             "user",
+            "user add-cap",
+            "user add-role",
+            "user create",
+            "user delete",
+            "user generate",
+            "user get",
+            "user import-csv",
+            "user list",
+            "user list-caps",
             "user meta",
             "user meta add",
             "user meta delete",
@@ -159,11 +168,20 @@
             "user meta patch",
             "user meta pluck",
             "user meta update",
+            "user remove-cap",
+            "user remove-role",
+            "user session",
+            "user session destroy",
+            "user session list",
+            "user set-role",
+            "user spam",
             "user term",
             "user term add",
             "user term list",
             "user term remove",
-            "user term set"
+            "user term set",
+            "user unspam",
+            "user update"
         ]
     }
 }
