@@ -4239,6 +4239,412 @@ See references for [Roles and Capabilities](https://codex.wordpress.org/Roles_an
 
 
 
+### wp user add-cap
+
+Add a capability to a user.
+
+~~~
+wp user add-cap <user> <cap>
+~~~
+
+**OPTIONS**
+
+	<user>
+		User ID, user email, or user login.
+
+	<cap>
+		The capability to add.
+
+**EXAMPLES**
+
+    # Add a capability for a user
+    $ wp user add-cap john create_premium_item
+    Success: Added 'create_premium_item' capability for john (16).
+
+    # Add a capability for a user
+    $ wp user add-cap 15 edit_product
+    Success: Added 'edit_product' capability for johndoe (15).
+
+
+
+### wp user add-role
+
+Add a role for a user.
+
+~~~
+wp user add-role <user> <role>
+~~~
+
+**OPTIONS**
+
+	<user>
+		User ID, user email, or user login.
+
+	<role>
+		Add the specified role to the user.
+
+**EXAMPLES**
+
+    $ wp user add-role 12 author
+    Success: Added 'author' role for johndoe (12).
+
+
+
+### wp user create
+
+Create a new user.
+
+~~~
+wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--display_name=<name>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--send-email] [--porcelain]
+~~~
+
+**OPTIONS**
+
+	<user-login>
+		The login of the user to create.
+
+	<user-email>
+		The email address of the user to create.
+
+	[--role=<role>]
+		The role of the user to create. Default: default role. Possible values
+		include 'administrator', 'editor', 'author', 'contributor', 'subscriber'.
+
+	[--user_pass=<password>]
+		The user password. Default: randomly generated.
+
+	[--user_registered=<yyyy-mm-dd-hh-ii-ss>]
+		The date the user registered. Default: current date.
+
+	[--display_name=<name>]
+		The display name.
+
+	[--user_nicename=<nice_name>]
+		A string that contains a URL-friendly name for the user. The default is the user's username.
+
+	[--user_url=<url>]
+		A string containing the user's URL for the user's web site.
+
+	[--user_email=<email>]
+		A string containing the user's email address.
+
+	[--nickname=<nickname>]
+		The user's nickname, defaults to the user's username.
+
+	[--first_name=<first_name>]
+		The user's first name.
+
+	[--last_name=<last_name>]
+		The user's last name.
+
+	[--description=<description>]
+		A string containing content about the user.
+
+	[--rich_editing=<rich_editing>]
+		A string for whether to enable the rich editor or not. False if not empty.
+
+	[--send-email]
+		Send an email to the user with their new account details.
+
+	[--porcelain]
+		Output just the new user id.
+
+**EXAMPLES**
+
+    # Create user
+    $ wp user create bob bob@example.com --role=author
+    Success: Created user 3.
+    Password: k9**&I4vNH(&
+
+    # Create user without showing password upon success
+    $ wp user create ann ann@example.com --porcelain
+    4
+
+
+
+### wp user delete
+
+Delete one or more users from the current site.
+
+~~~
+wp user delete <user>... [--network] [--reassign=<user-id>] [--yes]
+~~~
+
+On multisite, `wp user delete` only removes the user from the current
+site. Include `--network` to also remove the user from the database, but
+make sure to reassign their posts prior to deleting the user.
+
+**OPTIONS**
+
+	<user>...
+		The user login, user email, or user ID of the user(s) to delete.
+
+	[--network]
+		On multisite, delete the user from the entire network.
+
+	[--reassign=<user-id>]
+		User ID to reassign the posts to.
+
+	[--yes]
+		Answer yes to any confirmation prompts.
+
+**EXAMPLES**
+
+    # Delete user 123 and reassign posts to user 567
+    $ wp user delete 123 --reassign=567
+    Success: Removed user 123 from http://example.com
+
+    # Delete all contributors and reassign their posts to user 2
+    $ wp user delete $(wp user list --role=contributor --field=ID) --reassign=2
+    Success: Removed user 813 from http://example.com
+    Success: Removed user 578 from http://example.com
+
+
+
+### wp user generate
+
+Generate some users.
+
+~~~
+wp user generate [--count=<number>] [--role=<role>] [--format=<format>]
+~~~
+
+Creates a specified number of new users with dummy data.
+
+**OPTIONS**
+
+	[--count=<number>]
+		How many users to generate?
+		---
+		default: 100
+		---
+
+	[--role=<role>]
+		The role of the generated users. Default: default role from WP
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: progress
+		options:
+		  - progress
+		  - ids
+		---
+
+**EXAMPLES**
+
+    # Add meta to every generated users.
+    $ wp user generate --format=ids --count=3 | xargs -d ' ' -I % wp user meta add % foo bar
+    Success: Added custom field.
+    Success: Added custom field.
+    Success: Added custom field.
+
+
+
+### wp user get
+
+Get details about a user.
+
+~~~
+wp user get <user> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<user>
+		User ID, user email, or user login.
+
+	[--field=<field>]
+		Instead of returning the whole user, returns the value of a single field.
+
+	[--fields=<fields>]
+		Get a specific subset of the user's fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Get user
+    $ wp user get 12 --field=login
+    supervisor
+
+    # Get user and export to JSON file
+    $ wp user get bob --format=json > bob.json
+
+
+
+### wp user import-csv
+
+Import users from a CSV file.
+
+~~~
+wp user import-csv <file> [--send-email] [--skip-update]
+~~~
+
+If the user already exists (matching the email address or login), then
+the user is updated unless the `--skip-update` flag is used.
+
+**OPTIONS**
+
+	<file>
+		The local or remote CSV file of users to import. If '-', then reads from STDIN.
+
+	[--send-email]
+		Send an email to new users with their account details.
+
+	[--skip-update]
+		Don't update users that already exist.
+
+**EXAMPLES**
+
+    # Import users from local CSV file
+    $ wp user import-csv /path/to/users.csv
+    Success: bobjones created
+    Success: newuser1 created
+    Success: existinguser created
+
+    # Import users from remote CSV file
+    $ wp user import-csv http://example.com/users.csv
+
+    Sample users.csv file:
+
+    user_login,user_email,display_name,role
+    bobjones,bobjones@example.com,Bob Jones,contributor
+    newuser1,newuser1@example.com,New User,author
+    existinguser,existinguser@example.com,Existing User,administrator
+
+
+
+### wp user list
+
+List users.
+
+~~~
+wp user list [--role=<role>] [--<field>=<value>] [--network] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+Display WordPress users based on all arguments supported by
+[WP_User_Query()](https://developer.wordpress.org/reference/classes/wp_user_query/prepare_query/).
+
+**OPTIONS**
+
+	[--role=<role>]
+		Only display users with a certain role.
+
+	[--<field>=<value>]
+		Control output by one or more arguments of WP_User_Query().
+
+	[--network]
+		List all users in the network for multisite.
+
+	[--field=<field>]
+		Prints the value of a single field for each user.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - ids
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each user:
+
+* ID
+* user_login
+* display_name
+* user_email
+* user_registered
+* roles
+
+These fields are optionally available:
+
+* user_pass
+* user_nicename
+* user_url
+* user_activation_key
+* user_status
+* spam
+* deleted
+* caps
+* cap_key
+* allcaps
+* filter
+* url
+
+**EXAMPLES**
+
+    # List user IDs
+    $ wp user list --field=ID
+    1
+
+    # List users with administrator role
+    $ wp user list --role=administrator --format=csv
+    ID,user_login,display_name,user_email,user_registered,roles
+    1,supervisor,supervisor,supervisor@gmail.com,"2016-06-03 04:37:00",administrator
+
+    # List users with only given fields
+    $ wp user list --fields=display_name,user_email --format=json
+    [{"display_name":"supervisor","user_email":"supervisor@gmail.com"}]
+
+    # List users ordered by the 'last_activity' meta value.
+    $ wp user list --meta_key=last_activity --orderby=meta_value_num
+
+
+
+### wp user list-caps
+
+List all capabilities for a user.
+
+~~~
+wp user list-caps <user> [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<user>
+		User ID, user email, or login.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: list
+		options:
+		  - list
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    $ wp user list-caps 21
+    edit_product
+    create_premium_item
+
+
+
 ### wp user meta
 
 Manage user custom fields.
@@ -4533,6 +4939,217 @@ wp user meta update <user> <key> <value> [--format=<format>]
 
 
 
+### wp user remove-cap
+
+Remove a user's capability.
+
+~~~
+wp user remove-cap <user> <cap>
+~~~
+
+**OPTIONS**
+
+	<user>
+		User ID, user email, or user login.
+
+	<cap>
+		The capability to be removed.
+
+**EXAMPLES**
+
+    $ wp user remove-cap 11 publish_newsletters
+    Success: Removed 'publish_newsletters' cap for supervisor (11).
+
+
+
+### wp user remove-role
+
+Remove a user's role.
+
+~~~
+wp user remove-role <user> [<role>]
+~~~
+
+**OPTIONS**
+
+	<user>
+		User ID, user email, or user login.
+
+	[<role>]
+		A specific role to remove.
+
+**EXAMPLES**
+
+    $ wp user remove-role 12 author
+    Success: Removed 'author' role for johndoe (12).
+
+
+
+### wp user session
+
+Manage a user's sessions.
+
+~~~
+wp user session
+~~~
+
+**EXAMPLES**
+
+    # List a user's sessions.
+    $ wp user session list admin@example.com --format=csv
+    login_time,expiration_time,ip,ua
+    "2016-01-01 12:34:56","2016-02-01 12:34:56",127.0.0.1,"Mozilla/5.0..."
+
+    # Destroy the most recent session of the given user.
+    $ wp user session destroy admin
+    Success: Destroyed session. 3 sessions remaining.
+
+
+
+
+
+### wp user session destroy
+
+Destroy a session for the given user.
+
+~~~
+wp user session destroy <user> [<token>] [--all]
+~~~
+
+**OPTIONS**
+
+	<user>
+		User ID, user email, or user login.
+
+	[<token>]
+		The token of the session to destroy. Defaults to the most recently created session.
+
+	[--all]
+		Destroy all of the user's sessions.
+
+**EXAMPLES**
+
+    # Destroy the most recent session of the given user.
+    $ wp user session destroy admin
+    Success: Destroyed session. 3 sessions remaining.
+
+    # Destroy a specific session of the given user.
+    $ wp user session destroy admin e073ad8540a9c2...
+    Success: Destroyed session. 2 sessions remaining.
+
+    # Destroy all the sessions of the given user.
+    $ wp user session destroy admin --all
+    Success: Destroyed all sessions.
+
+    # Destroy all sessions for all users.
+    $ wp user list --field=ID | xargs -n 1 wp user session destroy --all
+    Success: Destroyed all sessions.
+    Success: Destroyed all sessions.
+
+
+
+### wp user session list
+
+List sessions for the given user.
+
+~~~
+wp user session list <user> [--fields=<fields>] [--format=<format>]
+~~~
+
+Note: The `token` field does not return the actual token, but a hash of
+it. The real token is not persisted and can only be found in the
+corresponding cookies on the client side.
+
+**OPTIONS**
+
+	<user>
+		User ID, user email, or user login.
+
+	[--fields=<fields>]
+		Limit the output to specific fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		  - ids
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each session:
+
+* token
+* login_time
+* expiration_time
+* ip
+* ua
+
+These fields are optionally available:
+
+* expiration
+* login
+
+**EXAMPLES**
+
+    # List a user's sessions.
+    $ wp user session list admin@example.com --format=csv
+    login_time,expiration_time,ip,ua
+    "2016-01-01 12:34:56","2016-02-01 12:34:56",127.0.0.1,"Mozilla/5.0..."
+
+
+
+### wp user set-role
+
+Set the user role.
+
+~~~
+wp user set-role <user> [<role>]
+~~~
+
+**OPTIONS**
+
+	<user>
+		User ID, user email, or user login.
+
+	[<role>]
+		Make the user have the specified role. If not passed, the default role is
+		used.
+
+**EXAMPLES**
+
+    $ wp user set-role 12 author
+    Success: Added johndoe (12) to http://example.com as author.
+
+
+
+### wp user spam
+
+Mark one or more users as spam.
+
+~~~
+wp user spam <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of users to mark as spam.
+
+**EXAMPLES**
+
+    $ wp user spam 123
+    User 123 marked as spam.
+    Success: Spamed 1 of 1 users.
+
+
+
 ### wp user term
 
 Manage user terms.
@@ -4680,6 +5297,90 @@ Replaces existing terms on the object.
 		  - slug
 		  - id
 		---
+
+
+
+### wp user unspam
+
+Remove one or more users from spam.
+
+~~~
+wp user unspam <id>...
+~~~
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of users to remove from spam.
+
+**EXAMPLES**
+
+    $ wp user unspam 123
+    User 123 removed from spam.
+    Success: Unspamed 1 of 1 users.
+
+
+
+### wp user update
+
+Update an existing user.
+
+~~~
+wp user update <user>... [--user_pass=<password>] [--user_login=<login>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--display_name=<display_name>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--role=<role>] --<field>=<value>
+~~~
+
+**OPTIONS**
+
+	<user>...
+		The user login, user email or user ID of the user(s) to update.
+
+	[--user_pass=<password>]
+		A string that contains the plain text password for the user.
+
+	[--user_login=<login>]
+		A string that contains the user's username for logging in.
+
+	[--user_nicename=<nice_name>]
+		A string that contains a URL-friendly name for the user. The default is the user's username.
+
+	[--user_url=<url>]
+		A string containing the user's URL for the user's web site.
+
+	[--user_email=<email>]
+		A string containing the user's email address.
+
+	[--display_name=<display_name>]
+		A string that will be shown on the site. Defaults to user's username.
+
+	[--nickname=<nickname>]
+		The user's nickname, defaults to the user's username.
+
+	[--first_name=<first_name>]
+		The user's first name.
+
+	[--last_name=<last_name>]
+		The user's last name.
+
+	[--description=<description>]
+		A string containing content about the user.
+
+	[--rich_editing=<rich_editing>]
+		A string for whether to enable the rich editor or not. False if not empty.
+
+	[--user_registered=<yyyy-mm-dd-hh-ii-ss>]
+		The date the user registered.
+
+	[--role=<role>]
+		A string used to set the user's role.
+
+	--<field>=<value>
+		One or more fields to update. For accepted fields, see wp_update_user().
+
+**EXAMPLES**
+
+    # Update user
+    $ wp user update 123 --display_name=Mary --user_pass=marypass
+    Success: Updated user 123.
 
 ## Installing
 
