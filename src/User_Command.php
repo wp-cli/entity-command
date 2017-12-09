@@ -50,7 +50,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * List users.
+	 * Lists users.
 	 *
 	 * Display WordPress users based on all arguments supported by
 	 * [WP_User_Query()](https://developer.wordpress.org/reference/classes/wp_user_query/prepare_query/).
@@ -177,7 +177,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get details about a user.
+	 * Gets details about a user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -220,7 +220,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Delete one or more users from the current site.
+	 * Deletes one or more users from the current site.
 	 *
 	 * On multisite, `wp user delete` only removes the user from the current
 	 * site. Include `--network` to also remove the user from the database, but
@@ -285,7 +285,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Create a new user.
+	 * Creates a new user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -435,7 +435,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Update an existing user.
+	 * Updates an existing user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -506,7 +506,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Generate some users.
+	 * Generates some users.
 	 *
 	 * Creates a specified number of new users with dummy data.
 	 *
@@ -597,7 +597,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Set the user role.
+	 * Sets the user role.
 	 *
 	 * ## OPTIONS
 	 *
@@ -632,7 +632,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Add a role for a user.
+	 * Adds a role for a user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -662,7 +662,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Remove a user's role.
+	 * Removes a user's role.
 	 *
 	 * ## OPTIONS
 	 *
@@ -702,7 +702,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Add a capability to a user.
+	 * Adds a capability to a user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -735,7 +735,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Remove a user's capability.
+	 * Removes a user's capability.
 	 *
 	 * ## OPTIONS
 	 *
@@ -763,7 +763,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * List all capabilities for a user.
+	 * Lists all capabilities for a user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -829,7 +829,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Import users from a CSV file.
+	 * Imports users from a CSV file.
 	 *
 	 * If the user already exists (matching the email address or login), then
 	 * the user is updated unless the `--skip-update` flag is used.
@@ -1017,7 +1017,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Check whether the role is valid
+	 * Checks whether the role is valid
 	 *
 	 * @param string
 	 */
@@ -1030,7 +1030,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Acommodate three different behaviors for wp_new_user_notification()
+	 * Acommodates three different behaviors for wp_new_user_notification()
 	 * - 4.3.1 and above: expect second argument to be deprecated
 	 * - 4.3: Second argument was repurposed as $notify
 	 * - Below 4.3: Send the password in the notification
@@ -1049,7 +1049,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Mark one or more users as spam.
+	 * Marks one or more users as spam.
 	 *
 	 * ## OPTIONS
 	 *
@@ -1067,7 +1067,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Remove one or more users from spam.
+	 * Removes one or more users from spam.
 	 *
 	 * ## OPTIONS
 	 *
