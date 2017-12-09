@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage user terms.
+ * Adds, updates, removes, and lists user terms.
  *
  * ## EXAMPLES
  *
