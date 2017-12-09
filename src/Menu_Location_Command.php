@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage a menu's assignment to locations.
+ * Assigns, removes, and lists a menu's locations.
  *
  * ## EXAMPLES
  *
