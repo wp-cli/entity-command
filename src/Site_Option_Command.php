@@ -4,7 +4,7 @@ use WP_CLI\Entity\RecursiveDataStructureTraverser;
 use WP_CLI\Utils;
 
 /**
- * Manage site options in a multisite install.
+ * Adds, updates, deletes, and lists site options in a multisite install.
  *
  * ## EXAMPLES
  *
