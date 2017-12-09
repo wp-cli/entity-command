@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage network custom fields.
+ * Gets, adds, updates, deletes, and lists network custom fields.
  *
  * ## EXAMPLES
  *
