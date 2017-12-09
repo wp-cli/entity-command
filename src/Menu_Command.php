@@ -44,7 +44,7 @@ class Menu_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * Create a new menu.
+	 * Creates a new menu.
 	 *
 	 * ## OPTIONS
 	 *
@@ -79,7 +79,7 @@ class Menu_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete one or more menus.
+	 * Deletes one or more menus.
 	 *
 	 * ## OPTIONS
 	 *
@@ -109,7 +109,7 @@ class Menu_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get a list of menus.
+	 * Gets a list of menus.
 	 *
 	 * ## OPTIONS
 	 *
