@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage comment custom fields.
+ * Adds, updates, deletes, and lists and comment custom fields.
  *
  * ## EXAMPLES
  *
