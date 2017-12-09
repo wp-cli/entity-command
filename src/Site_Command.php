@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Performs site-wide operations on a multisite install.
+ * Creates, deletes, empties, moderates, and lists one or more sites on a multisite install.
  *
  * ## EXAMPLES
  *
