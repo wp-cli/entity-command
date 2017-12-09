@@ -1030,7 +1030,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Acommodates three different behaviors for wp_new_user_notification()
+	 * Accommodates three different behaviors for wp_new_user_notification()
 	 * - 4.3.1 and above: expect second argument to be deprecated
 	 * - 4.3: Second argument was repurposed as $notify
 	 * - Below 4.3: Send the password in the notification
