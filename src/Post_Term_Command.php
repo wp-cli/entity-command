@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage post terms.
+ * Adds, updates, removes, and lists post terms.
  *
  * ## EXAMPLES
  *
