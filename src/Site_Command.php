@@ -136,7 +136,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Empty a site of its content (posts, comments, terms, and meta).
+	 * Empties a site of its content (posts, comments, terms, and meta).
 	 *
 	 * Truncates posts, comments, and terms tables to empty a site of its
 	 * content. Doesn't affect site configuration (options) or users.
@@ -223,7 +223,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Delete a site in a multisite install.
+	 * Deletes a site in a multisite install.
 	 *
 	 * ## OPTIONS
 	 *
@@ -280,7 +280,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Create a site in a multisite install.
+	 * Creates a site in a multisite install.
 	 *
 	 * ## OPTIONS
 	 *
@@ -410,7 +410,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get network data for a given id.
+	 * Gets network data for a given id.
 	 *
 	 * @param int     $network_id
 	 * @return bool|array False if no network found with given id, array otherwise
@@ -431,7 +431,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * List all sites in a multisite install.
+	 * Lists all sites in a multisite install.
 	 *
 	 * ## OPTIONS
 	 *
@@ -555,7 +555,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Archive one or more sites.
+	 * Archives one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -572,7 +572,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Unarchive one or more sites.
+	 * Unarchives one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -589,7 +589,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Activate one or more sites.
+	 * Activates one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -606,7 +606,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Deactivate one or more sites.
+	 * Deactivates one or more sites.
 	 *
 	 * ## OPTIONS
 	 *
@@ -623,7 +623,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Mark one or more sites as spam.
+	 * Marks one or more sites as spam.
 	 *
 	 * ## OPTIONS
 	 *
@@ -640,7 +640,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Remove one or more sites from spam.
+	 * Removes one or more sites from spam.
 	 *
 	 * ## OPTIONS
 	 *
@@ -659,7 +659,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Set one or more sites as mature.
+	 * Sets one or more sites as mature.
 	 *
 	 * ## OPTIONS
 	 *
@@ -676,7 +676,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Set one or more sites as unmature.
+	 * Sets one or more sites as immature.
 	 *
 	 * ## OPTIONS
 	 *
@@ -693,7 +693,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Set one or more sites as public.
+	 * Sets one or more sites as public.
 	 *
 	 * ## OPTIONS
 	 *
@@ -712,7 +712,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Set one or more sites as private.
+	 * Sets one or more sites as private.
 	 *
 	 * ## OPTIONS
 	 *
