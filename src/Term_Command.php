@@ -49,7 +49,7 @@ class Term_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * List terms in a taxonomy.
+	 * Lists terms in a taxonomy.
 	 *
 	 * ## OPTIONS
 	 *
@@ -168,7 +168,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Create a new term.
+	 * Creates a new term.
 	 *
 	 * ## OPTIONS
 	 *
@@ -230,7 +230,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get details about a term.
+	 * Gets details about a term.
 	 *
 	 * ## OPTIONS
 	 *
@@ -299,7 +299,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update an existing term.
+	 * Updates an existing term.
 	 *
 	 * ## OPTIONS
 	 *
@@ -377,7 +377,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete an existing term.
+	 * Deletes an existing term.
 	 *
 	 * Errors if the term doesn't exist, or there was a problem in deleting it.
 	 *
@@ -458,7 +458,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Generate some terms.
+	 * Generates some terms.
 	 *
 	 * Creates a specified number of new terms with dummy data.
 	 *
@@ -589,7 +589,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Recalculate number of posts assigned to each term.
+	 * Recalculates number of posts assigned to each term.
 	 *
 	 * In instances where manual updates are made to the terms assigned to
 	 * posts in the database, the number of posts associated with a term
