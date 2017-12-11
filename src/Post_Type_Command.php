@@ -35,7 +35,7 @@ class Post_Type_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * List registered post types.
+	 * Lists registered post types.
 	 *
 	 * ## OPTIONS
 	 *
@@ -106,7 +106,7 @@ class Post_Type_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get details about a registered post type.
+	 * Gets details about a registered post type.
 	 *
 	 * ## OPTIONS
 	 *

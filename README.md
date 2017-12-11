@@ -42,7 +42,7 @@ wp comment
 
 ### wp comment approve
 
-Approve a comment.
+Approves a comment.
 
 ~~~
 wp comment approve <id>...
@@ -63,7 +63,7 @@ wp comment approve <id>...
 
 ### wp comment count
 
-Count comments, on whole blog or on a given post.
+Counts comments, on whole blog or on a given post.
 
 ~~~
 wp comment count [<post-id>]
@@ -100,7 +100,7 @@ wp comment count [<post-id>]
 
 ### wp comment create
 
-Create a new comment.
+Creates a new comment.
 
 ~~~
 wp comment create [--<field>=<value>] [--porcelain]
@@ -124,7 +124,7 @@ wp comment create [--<field>=<value>] [--porcelain]
 
 ### wp comment delete
 
-Delete a comment.
+Deletes a comment.
 
 ~~~
 wp comment delete <id>... [--force]
@@ -153,7 +153,7 @@ wp comment delete <id>... [--force]
 
 ### wp comment exists
 
-Verify whether a comment exists.
+Verifies whether a comment exists.
 
 ~~~
 wp comment exists <id>
@@ -176,7 +176,7 @@ Displays a success message if the comment does exist.
 
 ### wp comment generate
 
-Generate some number of new dummy comments.
+Generates some number of new dummy comments.
 
 ~~~
 wp comment generate [--count=<number>] [--post_id=<post-id>] [--format=<format>]
@@ -220,7 +220,7 @@ Creates a specified number of new comments with dummy data.
 
 ### wp comment get
 
-Get data of a single comment.
+Gets the data of a single comment.
 
 ~~~
 wp comment get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -258,7 +258,7 @@ wp comment get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
 
 ### wp comment list
 
-Get a list of comments.
+Gets a list of comments.
 
 ~~~
 wp comment list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -342,7 +342,7 @@ These fields are optionally available:
 
 ### wp comment meta
 
-Manage comment custom fields.
+Adds, updates, deletes, and lists comment custom fields.
 
 ~~~
 wp comment meta
@@ -592,7 +592,7 @@ wp comment meta update <id> <key> [<value>] [--format=<format>]
 
 ### wp comment recount
 
-Recalculate the comment_count value for one or more posts.
+Recalculates the comment_count value for one or more posts.
 
 ~~~
 wp comment recount <id>...
@@ -613,7 +613,7 @@ wp comment recount <id>...
 
 ### wp comment spam
 
-Mark a comment as spam.
+Marks a comment as spam.
 
 ~~~
 wp comment spam <id>...
@@ -634,7 +634,7 @@ wp comment spam <id>...
 
 ### wp comment status
 
-Get status of a comment.
+Gets the status of a comment.
 
 ~~~
 wp comment status <id>
@@ -655,7 +655,7 @@ wp comment status <id>
 
 ### wp comment trash
 
-Trash a comment.
+Trashes a comment.
 
 ~~~
 wp comment trash <id>...
@@ -676,7 +676,7 @@ wp comment trash <id>...
 
 ### wp comment unapprove
 
-Unapprove a comment.
+Unapproves a comment.
 
 ~~~
 wp comment unapprove <id>...
@@ -697,7 +697,7 @@ wp comment unapprove <id>...
 
 ### wp comment unspam
 
-Unmark a comment as spam.
+Unmarks a comment as spam.
 
 ~~~
 wp comment unspam <id>...
@@ -718,7 +718,7 @@ wp comment unspam <id>...
 
 ### wp comment untrash
 
-Untrash a comment.
+Untrashes a comment.
 
 ~~~
 wp comment untrash <id>...
@@ -739,7 +739,7 @@ wp comment untrash <id>...
 
 ### wp comment update
 
-Update one or more comments.
+Updates one or more comments.
 
 ~~~
 wp comment update <id>... --<field>=<value>
@@ -798,7 +798,7 @@ See the [Navigation Menus](https://developer.wordpress.org/themes/functionality/
 
 ### wp menu create
 
-Create a new menu.
+Creates a new menu.
 
 ~~~
 wp menu create <menu-name> [--porcelain]
@@ -821,7 +821,7 @@ wp menu create <menu-name> [--porcelain]
 
 ### wp menu delete
 
-Delete one or more menus.
+Deletes one or more menus.
 
 ~~~
 wp menu delete <menu>...
@@ -867,7 +867,7 @@ wp menu item
 
 ### wp menu item add-custom
 
-Add a custom menu item.
+Adds a custom menu item.
 
 ~~~
 wp menu item add-custom <menu> <title> <link> [--description=<description>] [--attr-title=<attr-title>] [--target=<target>] [--classes=<classes>] [--position=<position>] [--parent-id=<parent-id>] [--porcelain]
@@ -914,7 +914,7 @@ wp menu item add-custom <menu> <title> <link> [--description=<description>] [--a
 
 ### wp menu item add-post
 
-Add a post as a menu item.
+Adds a post as a menu item.
 
 ~~~
 wp menu item add-post <menu> <post-id> [--title=<title>] [--link=<link>] [--description=<description>] [--attr-title=<attr-title>] [--target=<target>] [--classes=<classes>] [--position=<position>] [--parent-id=<parent-id>] [--porcelain]
@@ -964,7 +964,7 @@ wp menu item add-post <menu> <post-id> [--title=<title>] [--link=<link>] [--desc
 
 ### wp menu item add-term
 
-Add a taxonomy term as a menu item.
+Adds a taxonomy term as a menu item.
 
 ~~~
 wp menu item add-term <menu> <taxonomy> <term-id> [--title=<title>] [--link=<link>] [--description=<description>] [--attr-title=<attr-title>] [--target=<target>] [--classes=<classes>] [--position=<position>] [--parent-id=<parent-id>] [--porcelain]
@@ -1017,7 +1017,7 @@ wp menu item add-term <menu> <taxonomy> <term-id> [--title=<title>] [--link=<lin
 
 ### wp menu item delete
 
-Delete one or more items from a menu.
+Deletes one or more items from a menu.
 
 ~~~
 wp menu item delete <db-id>...
@@ -1037,7 +1037,7 @@ wp menu item delete <db-id>...
 
 ### wp menu item list
 
-Get a list of items associated with a menu.
+Gets a list of items associated with a menu.
 
 ~~~
 wp menu item list <menu> [--fields=<fields>] [--format=<format>]
@@ -1101,7 +1101,7 @@ These fields are optionally available:
 
 ### wp menu item update
 
-Update a menu item.
+Updates a menu item.
 
 ~~~
 wp menu item update <db-id> [--title=<title>] [--link=<link>] [--description=<description>] [--attr-title=<attr-title>] [--target=<target>] [--classes=<classes>] [--position=<position>] [--parent-id=<parent-id>]
@@ -1145,7 +1145,7 @@ wp menu item update <db-id> [--title=<title>] [--link=<link>] [--description=<de
 
 ### wp menu list
 
-Get a list of menus.
+Gets a list of menus.
 
 ~~~
 wp menu list [--fields=<fields>] [--format=<format>]
@@ -1201,7 +1201,7 @@ These fields are optionally available:
 
 ### wp menu location
 
-Manage a menu's assignment to locations.
+Assigns, removes, and lists a menu's locations.
 
 ~~~
 wp menu location
@@ -1232,7 +1232,7 @@ wp menu location
 
 ### wp menu location assign
 
-Assign a location to a menu.
+Assigns a location to a menu.
 
 ~~~
 wp menu location assign <menu> <location>
@@ -1255,7 +1255,7 @@ wp menu location assign <menu> <location>
 
 ### wp menu location list
 
-List locations for the current theme.
+Lists locations for the current theme.
 
 ~~~
 wp menu location list [--format=<format>]
@@ -1297,7 +1297,7 @@ These fields will be displayed by default for each location:
 
 ### wp menu location remove
 
-Remove a location from a menu.
+Removes a location from a menu.
 
 ~~~
 wp menu location remove <menu> <location>
@@ -1320,7 +1320,7 @@ wp menu location remove <menu> <location>
 
 ### wp network meta
 
-Manage network custom fields.
+Gets, adds, updates, deletes, and lists network custom fields.
 
 ~~~
 wp network meta
@@ -1588,7 +1588,7 @@ See the [Plugin Settings API](https://developer.wordpress.org/plugins/settings/s
 
 ### wp option add
 
-Add a new option value.
+Adds a new option value.
 
 ~~~
 wp option add <key> [<value>] [--format=<format>] [--autoload=<autoload>]
@@ -1631,7 +1631,7 @@ Errors if the option already exists.
 
 ### wp option delete
 
-Delete an option.
+Deletes an option.
 
 ~~~
 wp option delete <key>
@@ -1652,7 +1652,7 @@ wp option delete <key>
 
 ### wp option get
 
-Get the value for an option.
+Gets the value for an option.
 
 ~~~
 wp option get <key> [--format=<format>]
@@ -1699,7 +1699,7 @@ wp option get <key> [--format=<format>]
 
 ### wp option list
 
-List options and their values.
+Lists options and their values.
 
 ~~~
 wp option list [--search=<pattern>] [--exclude=<pattern>] [--autoload=<value>] [--transients] [--field=<field>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
@@ -1802,7 +1802,7 @@ These fields are optionally available:
 
 ### wp option patch
 
-Update a nested value in an option.
+Updates a nested value in an option.
 
 ~~~
 wp option patch <action> <key> <key-path>... [<value>] [--format=<format>]
@@ -1841,7 +1841,7 @@ wp option patch <action> <key> <key-path>... [<value>] [--format=<format>]
 
 ### wp option pluck
 
-Get a nested value from an option.
+Gets a nested value from an option.
 
 ~~~
 wp option pluck <key> <key-path>... [--format=<format>]
@@ -1869,7 +1869,7 @@ wp option pluck <key> <key-path>... [--format=<format>]
 
 ### wp option update
 
-Update an option value.
+Updates an option value.
 
 ~~~
 wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
@@ -1959,7 +1959,7 @@ wp post
 
 ### wp post create
 
-Create a new post.
+Creates a new post.
 
 ~~~
 wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_date_gmt=<post_date_gmt>] [--post_content=<post_content>] [--post_content_filtered=<post_content_filtered>] [--post_title=<post_title>] [--post_excerpt=<post_excerpt>] [--post_status=<post_status>] [--post_type=<post_type>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--post_password=<post_password>] [--post_name=<post_name>] [--to_ping=<to_ping>] [--pinged=<pinged>] [--post_modified=<post_modified>] [--post_modified_gmt=<post_modified_gmt>] [--post_parent=<post_parent>] [--menu_order=<menu_order>] [--post_mime_type=<post_mime_type>] [--guid=<guid>] [--post_category=<post_category>] [--tags_input=<tags_input>] [--tax_input=<tax_input>] [--meta_input=<meta_input>] [<file>] [--<field>=<value>] [--edit] [--porcelain]
@@ -2076,7 +2076,7 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
 
 ### wp post delete
 
-Delete an existing post.
+Deletes an existing post.
 
 ~~~
 wp post delete <id>... [--force] [--defer-term-counting]
@@ -2113,7 +2113,7 @@ wp post delete <id>... [--force] [--defer-term-counting]
 
 ### wp post edit
 
-Launch system editor to edit post content.
+Launches system editor to edit post content.
 
 ~~~
 wp post edit <id>
@@ -2133,7 +2133,7 @@ wp post edit <id>
 
 ### wp post generate
 
-Generate some posts.
+Generates some posts.
 
 ~~~
 wp post generate [--count=<number>] [--post_type=<type>] [--post_status=<status>] [--post_title=<post_title>] [--post_author=<login>] [--post_date=<yyyy-mm-dd-hh-ii-ss>] [--post_content] [--max_depth=<number>] [--format=<format>]
@@ -2217,7 +2217,7 @@ Creates a specified number of new posts with dummy data.
 
 ### wp post get
 
-Get details about a post.
+Gets details about a post.
 
 ~~~
 wp post get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -2254,7 +2254,7 @@ wp post get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
 
 ### wp post list
 
-Get a list of posts.
+Gets a list of posts.
 
 ~~~
 wp post list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -2355,7 +2355,7 @@ These fields are optionally available:
 
 ### wp post meta
 
-Manage post custom fields.
+Adds, updates, deletes, and lists post custom fields.
 
 ~~~
 wp post meta
@@ -2605,7 +2605,7 @@ wp post meta update <id> <key> [<value>] [--format=<format>]
 
 ### wp post term
 
-Manage post terms.
+Adds, updates, removes, and lists post terms.
 
 ~~~
 wp post term
@@ -2755,7 +2755,7 @@ Replaces existing terms on the object.
 
 ### wp post update
 
-Update one or more existing posts.
+Updates one or more existing posts.
 
 ~~~
 wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [--post_date_gmt=<post_date_gmt>] [--post_content=<post_content>] [--post_content_filtered=<post_content_filtered>] [--post_title=<post_title>] [--post_excerpt=<post_excerpt>] [--post_status=<post_status>] [--post_type=<post_type>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--post_password=<post_password>] [--post_name=<post_name>] [--to_ping=<to_ping>] [--pinged=<pinged>] [--post_modified=<post_modified>] [--post_modified_gmt=<post_modified_gmt>] [--post_parent=<post_parent>] [--menu_order=<menu_order>] [--post_mime_type=<post_mime_type>] [--guid=<guid>] [--post_category=<post_category>] [--tags_input=<tags_input>] [--tax_input=<tax_input>] [--meta_input=<meta_input>] [<file>] --<field>=<value> [--defer-term-counting]
@@ -2892,7 +2892,7 @@ Get information on WordPress' built-in and the site's [custom post types](https:
 
 ### wp post-type get
 
-Get details about a registered post type.
+Gets details about a registered post type.
 
 ~~~
 wp post-type get <post-type> [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -2930,7 +2930,7 @@ wp post-type get <post-type> [--field=<field>] [--fields=<fields>] [--format=<fo
 
 ### wp post-type list
 
-List registered post types.
+Lists registered post types.
 
 ~~~
 wp post-type list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -2998,7 +2998,7 @@ There are no optionally available fields.
 
 ### wp site
 
-Performs site-wide operations on a multisite install.
+Creates, deletes, empties, moderates, and lists one or more sites on a multisite install.
 
 ~~~
 wp site
@@ -3024,7 +3024,7 @@ wp site
 
 ### wp site activate
 
-Activate one or more sites.
+Activates one or more sites.
 
 ~~~
 wp site activate <id>...
@@ -3044,7 +3044,7 @@ wp site activate <id>...
 
 ### wp site archive
 
-Archive one or more sites.
+Archives one or more sites.
 
 ~~~
 wp site archive <id>...
@@ -3064,7 +3064,7 @@ wp site archive <id>...
 
 ### wp site create
 
-Create a site in a multisite install.
+Creates a site in a multisite install.
 
 ~~~
 wp site create --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
@@ -3099,7 +3099,7 @@ wp site create --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<
 
 ### wp site deactivate
 
-Deactivate one or more sites.
+Deactivates one or more sites.
 
 ~~~
 wp site deactivate <id>...
@@ -3119,7 +3119,7 @@ wp site deactivate <id>...
 
 ### wp site delete
 
-Delete a site in a multisite install.
+Deletes a site in a multisite install.
 
 ~~~
 wp site delete [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
@@ -3149,7 +3149,7 @@ wp site delete [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
 
 ### wp site empty
 
-Empty a site of its content (posts, comments, terms, and meta).
+Empties a site of its content (posts, comments, terms, and meta).
 
 ~~~
 wp site empty [--uploads] [--yes]
@@ -3192,7 +3192,7 @@ WP_CLI::add_hook( 'after_invoke:site empty', function(){
 
 ### wp site list
 
-List all sites in a multisite install.
+Lists all sites in a multisite install.
 
 ~~~
 wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -3261,7 +3261,7 @@ These fields are optionally available:
 
 ### wp site mature
 
-Set one or more sites as mature.
+Sets one or more sites as mature.
 
 ~~~
 wp site mature <id>...
@@ -3281,7 +3281,7 @@ wp site mature <id>...
 
 ### wp site option
 
-Manage site options in a multisite install.
+Adds, updates, deletes, and lists site options in a multisite install.
 
 ~~~
 wp site option
@@ -3311,7 +3311,7 @@ wp site option
 
 ### wp site private
 
-Set one or more sites as private.
+Sets one or more sites as private.
 
 ~~~
 wp site private <id>...
@@ -3331,7 +3331,7 @@ wp site private <id>...
 
 ### wp site public
 
-Set one or more sites as public.
+Sets one or more sites as public.
 
 ~~~
 wp site public <id>...
@@ -3351,7 +3351,7 @@ wp site public <id>...
 
 ### wp site spam
 
-Mark one or more sites as spam.
+Marks one or more sites as spam.
 
 ~~~
 wp site spam <id>...
@@ -3371,7 +3371,7 @@ wp site spam <id>...
 
 ### wp site unarchive
 
-Unarchive one or more sites.
+Unarchives one or more sites.
 
 ~~~
 wp site unarchive <id>...
@@ -3391,7 +3391,7 @@ wp site unarchive <id>...
 
 ### wp site unmature
 
-Set one or more sites as unmature.
+Sets one or more sites as immature.
 
 ~~~
 wp site unmature <id>...
@@ -3411,7 +3411,7 @@ wp site unmature <id>...
 
 ### wp site unspam
 
-Remove one or more sites from spam.
+Removes one or more sites from spam.
 
 ~~~
 wp site unspam <id>...
@@ -3459,7 +3459,7 @@ See references for [built-in taxonomies](https://developer.wordpress.org/themes/
 
 ### wp taxonomy get
 
-Get details about a registered taxonomy.
+Gets details about a registered taxonomy.
 
 ~~~
 wp taxonomy get <taxonomy> [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -3507,7 +3507,7 @@ wp taxonomy get <taxonomy> [--field=<field>] [--fields=<fields>] [--format=<form
 
 ### wp taxonomy list
 
-List registered taxonomies.
+Lists registered taxonomies.
 
 ~~~
 wp taxonomy list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -3612,7 +3612,7 @@ See reference for [taxonomies and their terms](https://codex.wordpress.org/Taxon
 
 ### wp term create
 
-Create a new term.
+Creates a new term.
 
 ~~~
 wp term create <taxonomy> <term> [--slug=<slug>] [--description=<description>] [--parent=<term-id>] [--porcelain]
@@ -3648,7 +3648,7 @@ wp term create <taxonomy> <term> [--slug=<slug>] [--description=<description>] [
 
 ### wp term delete
 
-Delete an existing term.
+Deletes an existing term.
 
 ~~~
 wp term delete <taxonomy> <term>... [--by=<field>]
@@ -3696,7 +3696,7 @@ Errors if the term doesn't exist, or there was a problem in deleting it.
 
 ### wp term generate
 
-Generate some terms.
+Generates some terms.
 
 ~~~
 wp term generate <taxonomy> [--count=<number>] [--max_depth=<number>] [--format=<format>]
@@ -3746,7 +3746,7 @@ Creates a specified number of new terms with dummy data.
 
 ### wp term get
 
-Get details about a term.
+Gets details about a term.
 
 ~~~
 wp term get <taxonomy> <term> [--by=<field>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -3800,7 +3800,7 @@ wp term get <taxonomy> <term> [--by=<field>] [--field=<field>] [--fields=<fields
 
 ### wp term list
 
-List terms in a taxonomy.
+Lists terms in a taxonomy.
 
 ~~~
 wp term list <taxonomy>... [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -3874,7 +3874,7 @@ These fields are optionally available:
 
 ### wp term meta
 
-Manage term custom fields.
+Adds, updates, deletes, and lists term custom fields.
 
 ~~~
 wp term meta
@@ -4124,7 +4124,7 @@ wp term meta update <id> <key> [<value>] [--format=<format>]
 
 ### wp term recount
 
-Recalculate number of posts assigned to each term.
+Recalculates number of posts assigned to each term.
 
 ~~~
 wp term recount <taxonomy>...
@@ -4161,7 +4161,7 @@ to bring the count back to the correct value.
 
 ### wp term update
 
-Update an existing term.
+Updates an existing term.
 
 ~~~
 wp term update <taxonomy> <term> [--by=<field>] [--name=<name>] [--slug=<slug>] [--description=<description>] [--parent=<term-id>]
@@ -4241,7 +4241,7 @@ See references for [Roles and Capabilities](https://codex.wordpress.org/Roles_an
 
 ### wp user add-cap
 
-Add a capability to a user.
+Adds a capability to a user.
 
 ~~~
 wp user add-cap <user> <cap>
@@ -4269,7 +4269,7 @@ wp user add-cap <user> <cap>
 
 ### wp user add-role
 
-Add a role for a user.
+Adds a role for a user.
 
 ~~~
 wp user add-role <user> <role>
@@ -4292,7 +4292,7 @@ wp user add-role <user> <role>
 
 ### wp user create
 
-Create a new user.
+Creates a new user.
 
 ~~~
 wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--display_name=<name>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--send-email] [--porcelain]
@@ -4364,7 +4364,7 @@ wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>
 
 ### wp user delete
 
-Delete one or more users from the current site.
+Deletes one or more users from the current site.
 
 ~~~
 wp user delete <user>... [--network] [--reassign=<user-id>] [--yes]
@@ -4403,7 +4403,7 @@ make sure to reassign their posts prior to deleting the user.
 
 ### wp user generate
 
-Generate some users.
+Generates some users.
 
 ~~~
 wp user generate [--count=<number>] [--role=<role>] [--format=<format>]
@@ -4443,7 +4443,7 @@ Creates a specified number of new users with dummy data.
 
 ### wp user get
 
-Get details about a user.
+Gets details about a user.
 
 ~~~
 wp user get <user> [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -4484,7 +4484,7 @@ wp user get <user> [--field=<field>] [--fields=<fields>] [--format=<format>]
 
 ### wp user import-csv
 
-Import users from a CSV file.
+Imports users from a CSV file.
 
 ~~~
 wp user import-csv <file> [--send-email] [--skip-update]
@@ -4526,7 +4526,7 @@ the user is updated unless the `--skip-update` flag is used.
 
 ### wp user list
 
-List users.
+Lists users.
 
 ~~~
 wp user list [--role=<role>] [--<field>=<value>] [--network] [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -4613,7 +4613,7 @@ These fields are optionally available:
 
 ### wp user list-caps
 
-List all capabilities for a user.
+Lists all capabilities for a user.
 
 ~~~
 wp user list-caps <user> [--format=<format>]
@@ -4647,7 +4647,7 @@ wp user list-caps <user> [--format=<format>]
 
 ### wp user meta
 
-Manage user custom fields.
+Adds, updates, deletes, and lists user custom fields.
 
 ~~~
 wp user meta
@@ -4683,7 +4683,7 @@ wp user meta
 
 ### wp user meta add
 
-Add a meta field.
+Adds a meta field.
 
 ~~~
 wp user meta add <user> <key> <value> [--format=<format>]
@@ -4713,7 +4713,7 @@ wp user meta add <user> <key> <value> [--format=<format>]
 
 ### wp user meta delete
 
-Delete a meta field.
+Deletes a meta field.
 
 ~~~
 wp user meta delete <user> <key> [<value>]
@@ -4740,7 +4740,7 @@ wp user meta delete <user> <key> [<value>]
 
 ### wp user meta get
 
-Get meta field value.
+Gets meta field value.
 
 ~~~
 wp user meta get <user> <key> [--format=<format>]
@@ -4775,7 +4775,7 @@ wp user meta get <user> <key> [--format=<format>]
 
 ### wp user meta list
 
-List all metadata associated with a user.
+Lists all metadata associated with a user.
 
 ~~~
 wp user meta list <user> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
@@ -4911,7 +4911,7 @@ wp user meta pluck <id> <key> <key-path>... [--format=<format>]
 
 ### wp user meta update
 
-Update a meta field.
+Updates a meta field.
 
 ~~~
 wp user meta update <user> <key> <value> [--format=<format>]
@@ -4941,7 +4941,7 @@ wp user meta update <user> <key> <value> [--format=<format>]
 
 ### wp user remove-cap
 
-Remove a user's capability.
+Removes a user's capability.
 
 ~~~
 wp user remove-cap <user> <cap>
@@ -4964,7 +4964,7 @@ wp user remove-cap <user> <cap>
 
 ### wp user remove-role
 
-Remove a user's role.
+Removes a user's role.
 
 ~~~
 wp user remove-role <user> [<role>]
@@ -4987,7 +4987,7 @@ wp user remove-role <user> [<role>]
 
 ### wp user session
 
-Manage a user's sessions.
+Destroys and lists a user's sessions.
 
 ~~~
 wp user session
@@ -5107,7 +5107,7 @@ These fields are optionally available:
 
 ### wp user set-role
 
-Set the user role.
+Sets the user role.
 
 ~~~
 wp user set-role <user> [<role>]
@@ -5131,7 +5131,7 @@ wp user set-role <user> [<role>]
 
 ### wp user spam
 
-Mark one or more users as spam.
+Marks one or more users as spam.
 
 ~~~
 wp user spam <id>...
@@ -5152,7 +5152,7 @@ wp user spam <id>...
 
 ### wp user term
 
-Manage user terms.
+Adds, updates, removes, and lists user terms.
 
 ~~~
 wp user term
@@ -5302,7 +5302,7 @@ Replaces existing terms on the object.
 
 ### wp user unspam
 
-Remove one or more users from spam.
+Removes one or more users from spam.
 
 ~~~
 wp user unspam <id>...
@@ -5323,7 +5323,7 @@ wp user unspam <id>...
 
 ### wp user update
 
-Update an existing user.
+Updates an existing user.
 
 ~~~
 wp user update <user>... [--user_pass=<password>] [--user_login=<login>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--display_name=<display_name>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--role=<role>] --<field>=<value>
