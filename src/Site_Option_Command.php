@@ -4,7 +4,7 @@ use WP_CLI\Entity\RecursiveDataStructureTraverser;
 use WP_CLI\Utils;
 
 /**
- * Manage site options in a multisite install.
+ * Adds, updates, deletes, and lists site options in a multisite install.
  *
  * ## EXAMPLES
  *
@@ -27,7 +27,7 @@ use WP_CLI\Utils;
 class Site_Option_Command extends WP_CLI_Command {
 
 	/**
-	 * Get a site option.
+	 * Gets a site option.
 	 *
 	 * ## OPTIONS
 	 *
@@ -63,7 +63,7 @@ class Site_Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add a site option.
+	 * Adds a site option.
 	 *
 	 * ## OPTIONS
 	 *
@@ -102,7 +102,7 @@ class Site_Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * List site options.
+	 * Lists site options.
 	 *
 	 * ## OPTIONS
 	 *
@@ -202,7 +202,7 @@ class Site_Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a site option.
+	 * Updates a site option.
 	 *
 	 * ## OPTIONS
 	 *
@@ -250,7 +250,7 @@ class Site_Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete a site option.
+	 * Deletes a site option.
 	 *
 	 * ## OPTIONS
 	 *
@@ -273,7 +273,7 @@ class Site_Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get a nested value from an option.
+	 * Gets a nested value from an option.
 	 *
 	 * ## OPTIONS
 	 *
@@ -320,7 +320,7 @@ class Site_Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a nested value in an option.
+	 * Updates a nested value in an option.
 	 *
 	 * ## OPTIONS
 	 *

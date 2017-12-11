@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage user custom fields.
+ * Adds, updates, deletes, and lists user custom fields.
  *
  * ## EXAMPLES
  *
@@ -35,7 +35,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	}
 
 	/**
-	 * List all metadata associated with a user.
+	 * Lists all metadata associated with a user.
 	 *
 	 * ## OPTIONS
 	 *
@@ -99,7 +99,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	}
 
 	/**
-	 * Get meta field value.
+	 * Gets meta field value.
 	 *
 	 * ## OPTIONS
 	 *
@@ -132,7 +132,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	}
 
 	/**
-	 * Delete a meta field.
+	 * Deletes a meta field.
 	 *
 	 * ## OPTIONS
 	 *
@@ -157,7 +157,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	}
 
 	/**
-	 * Add a meta field.
+	 * Adds a meta field.
 	 *
 	 * ## OPTIONS
 	 *
@@ -185,7 +185,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	}
 
 	/**
-	 * Update a meta field.
+	 * Updates a meta field.
 	 *
 	 * ## OPTIONS
 	 *
@@ -215,7 +215,7 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	}
 
 	/**
-	 * Replace user_login value with user ID
+	 * Replaces user_login value with user ID
 	 * user meta is a special case that also supports user_login
 	 *
 	 * @param array

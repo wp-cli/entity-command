@@ -30,7 +30,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	);
 
 	/**
-	 * Get a list of items associated with a menu.
+	 * Gets a list of items associated with a menu.
 	 *
 	 * ## OPTIONS
 	 *
@@ -115,7 +115,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add a post as a menu item.
+	 * Adds a post as a menu item.
 	 *
 	 * ## OPTIONS
 	 *
@@ -173,7 +173,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add a taxonomy term as a menu item.
+	 * Adds a taxonomy term as a menu item.
 	 *
 	 * ## OPTIONS
 	 *
@@ -235,7 +235,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add a custom menu item.
+	 * Adds a custom menu item.
 	 *
 	 * ## OPTIONS
 	 *
@@ -286,7 +286,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a menu item.
+	 * Updates a menu item.
 	 *
 	 * ## OPTIONS
 	 *
@@ -340,7 +340,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete one or more items from a menu.
+	 * Deletes one or more items from a menu.
 	 *
 	 * ## OPTIONS
 	 *

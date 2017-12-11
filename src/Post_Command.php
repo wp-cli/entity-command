@@ -35,7 +35,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Create a new post.
+	 * Creates a new post.
 	 *
 	 * ## OPTIONS
 	 * 
@@ -169,7 +169,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Update one or more existing posts.
+	 * Updates one or more existing posts.
 	 *
 	 * ## OPTIONS
 	 *
@@ -292,7 +292,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Launch system editor to edit post content.
+	 * Launches system editor to edit post content.
 	 *
 	 * ## OPTIONS
 	 *
@@ -323,7 +323,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get details about a post.
+	 * Gets details about a post.
 	 *
 	 * ## OPTIONS
 	 *
@@ -367,7 +367,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Delete an existing post.
+	 * Deletes an existing post.
 	 *
 	 * ## OPTIONS
 	 *
@@ -418,7 +418,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Get a list of posts.
+	 * Gets a list of posts.
 	 *
 	 * ## OPTIONS
 	 *
@@ -545,7 +545,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Generate some posts.
+	 * Generates some posts.
 	 *
 	 * Creates a specified number of new posts with dummy data.
 	 *

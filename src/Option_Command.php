@@ -31,7 +31,7 @@ use WP_CLI\Utils;
 class Option_Command extends WP_CLI_Command {
 
 	/**
-	 * Get the value for an option.
+	 * Gets the value for an option.
 	 *
 	 * ## OPTIONS
 	 *
@@ -83,7 +83,7 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Add a new option value.
+	 * Adds a new option value.
 	 *
 	 * Errors if the option already exists.
 	 *
@@ -138,7 +138,7 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * List options and their values.
+	 * Lists options and their values.
 	 *
 	 * ## OPTIONS
 	 *
@@ -326,7 +326,7 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update an option value.
+	 * Updates an option value.
 	 *
 	 * ## OPTIONS
 	 *
@@ -416,7 +416,7 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Delete an option.
+	 * Deletes an option.
 	 *
 	 * ## OPTIONS
 	 *
@@ -440,7 +440,7 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Get a nested value from an option.
+	 * Gets a nested value from an option.
 	 *
 	 * ## OPTIONS
 	 *
@@ -488,7 +488,7 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Update a nested value in an option.
+	 * Updates a nested value in an option.
 	 *
 	 * ## OPTIONS
 	 *

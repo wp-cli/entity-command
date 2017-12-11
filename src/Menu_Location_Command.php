@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manage a menu's assignment to locations.
+ * Assigns, removes, and lists a menu's locations.
  *
  * ## EXAMPLES
  *
@@ -25,7 +25,7 @@
 class Menu_Location_Command extends WP_CLI_Command {
 
 	/**
-	 * List locations for the current theme.
+	 * Lists locations for the current theme.
 	 *
 	 * ## OPTIONS
 	 *
@@ -87,7 +87,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Assign a location to a menu.
+	 * Assigns a location to a menu.
 	 *
 	 * ## OPTIONS
 	 *
@@ -127,7 +127,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Remove a location from a menu.
+	 * Removes a location from a menu.
 	 *
 	 * ## OPTIONS
 	 *
