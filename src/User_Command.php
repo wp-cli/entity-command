@@ -445,9 +445,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--user_pass=<password>]
 	 * : A string that contains the plain text password for the user.
 	 *
-	 * [--user_login=<login>]
-	 * : A string that contains the user's username for logging in.
-	 *
 	 * [--user_nicename=<nice_name>]
 	 * : A string that contains a URL-friendly name for the user. The default is the user's username.
 	 *

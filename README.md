@@ -5326,7 +5326,7 @@ wp user unspam <id>...
 Updates an existing user.
 
 ~~~
-wp user update <user>... [--user_pass=<password>] [--user_login=<login>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--display_name=<display_name>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--role=<role>] --<field>=<value>
+wp user update <user>... [--user_pass=<password>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--display_name=<display_name>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--role=<role>] --<field>=<value>
 ~~~
 
 **OPTIONS**
@@ -5336,9 +5336,6 @@ wp user update <user>... [--user_pass=<password>] [--user_login=<login>] [--user
 
 	[--user_pass=<password>]
 		A string that contains the plain text password for the user.
-
-	[--user_login=<login>]
-		A string that contains the user's username for logging in.
 
 	[--user_nicename=<nice_name>]
 		A string that contains a URL-friendly name for the user. The default is the user's username.
