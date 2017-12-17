@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Creates, deletes, empties, moderates, and lists one or more sites on a multisite install.
+ * Creates, deletes, empties, moderates, and lists one or more sites on a multisite installation.
  *
  * ## EXAMPLES
  *
@@ -223,7 +223,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Deletes a site in a multisite install.
+	 * Deletes a site in a multisite installation.
 	 *
 	 * ## OPTIONS
 	 *
@@ -247,7 +247,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	function delete( $args, $assoc_args ) {
 		if ( !is_multisite() ) {
-			WP_CLI::error( 'This is not a multisite install.' );
+			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 
 		if ( isset( $assoc_args['slug'] ) ) {
@@ -280,7 +280,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Creates a site in a multisite install.
+	 * Creates a site in a multisite installation.
 	 *
 	 * ## OPTIONS
 	 *
@@ -309,7 +309,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function create( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
-			WP_CLI::error( 'This is not a multisite install.' );
+			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 
 		global $wpdb, $current_site;
@@ -431,7 +431,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Lists all sites in a multisite install.
+	 * Lists all sites in a multisite installation.
 	 *
 	 * ## OPTIONS
 	 *
@@ -496,7 +496,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function list_( $_, $assoc_args ) {
 		if ( !is_multisite() ) {
-			WP_CLI::error( 'This is not a multisite install.' );
+			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 
 		global $wpdb;
