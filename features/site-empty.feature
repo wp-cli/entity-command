@@ -13,7 +13,7 @@ Feature: Empty a WordPress site of its data
     When I try `wp site url 1`
     Then STDERR should be:
       """
-      Error: This is not a multisite install.
+      Error: This is not a multisite installation.
       """
     And the return code should be 1
 

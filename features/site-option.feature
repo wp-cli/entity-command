@@ -116,14 +116,14 @@ Feature: Manage WordPress site options
     When I try `wp site option get str_opt`
     Then STDERR should be:
       """
-      Error: This is not a multisite install.
+      Error: This is not a multisite installation.
       """
     And the return code should be 1
 
     When I try `wp site option add str_opt 'bar'`
     Then STDERR should be:
       """
-      Error: This is not a multisite install.
+      Error: This is not a multisite installation.
       """
     And the return code should be 1
 
