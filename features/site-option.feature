@@ -110,8 +110,8 @@ Feature: Manage WordPress site options
       }
       """
 
-  Scenario: Error on single installation
-    Given a WP installation
+  Scenario: Error on single install
+    Given a WP install
 
     When I try `wp site option get str_opt`
     Then STDERR should be:
@@ -128,7 +128,7 @@ Feature: Manage WordPress site options
     And the return code should be 1
 
   Scenario: Filter options by `--site_id`
-    Given a WP multisite installation
+    Given a WP multisite install
 
     When I run `wp db query "INSERT INTO wp_sitemeta (site_id,meta_key,meta_value) VALUES (2,'wp_cli_test_option','foobar');"`
     Then the return code should be 0
