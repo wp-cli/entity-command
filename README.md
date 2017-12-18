@@ -2998,7 +2998,7 @@ There are no optionally available fields.
 
 ### wp site
 
-Creates, deletes, empties, moderates, and lists one or more sites on a multisite install.
+Creates, deletes, empties, moderates, and lists one or more sites on a multisite installation.
 
 ~~~
 wp site
@@ -3064,7 +3064,7 @@ wp site archive <id>...
 
 ### wp site create
 
-Creates a site in a multisite install.
+Creates a site in a multisite installation.
 
 ~~~
 wp site create --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
@@ -3119,7 +3119,7 @@ wp site deactivate <id>...
 
 ### wp site delete
 
-Deletes a site in a multisite install.
+Deletes a site in a multisite installation.
 
 ~~~
 wp site delete [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
@@ -3192,7 +3192,7 @@ WP_CLI::add_hook( 'after_invoke:site empty', function(){
 
 ### wp site list
 
-Lists all sites in a multisite install.
+Lists all sites in a multisite installation.
 
 ~~~
 wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
