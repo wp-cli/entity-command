@@ -1,7 +1,7 @@
 Feature: Manage WordPress site options
 
   Scenario: Site Option CRUD
-    Given a WP multisite install
+    Given a WP multisite installation
 
     # String values
     When I run `wp site option add str_opt 'bar'`
@@ -111,24 +111,24 @@ Feature: Manage WordPress site options
       """
 
   Scenario: Error on single install
-    Given a WP install
+    Given a WP installation
 
     When I try `wp site option get str_opt`
     Then STDERR should be:
       """
-      Error: This is not a multisite install.
+      Error: This is not a multisite installation.
       """
     And the return code should be 1
 
     When I try `wp site option add str_opt 'bar'`
     Then STDERR should be:
       """
-      Error: This is not a multisite install.
+      Error: This is not a multisite installation.
       """
     And the return code should be 1
 
   Scenario: Filter options by `--site_id`
-    Given a WP multisite install
+    Given a WP multisite installation
 
     When I run `wp db query "INSERT INTO wp_sitemeta (site_id,meta_key,meta_value) VALUES (2,'wp_cli_test_option','foobar');"`
     Then the return code should be 0
