@@ -30,7 +30,7 @@ WP_CLI::add_command( 'site', 'Site_Command' );
 WP_CLI::add_command( 'site option', 'Site_Option_Command', array(
 	'before_invoke' => function() {
 		if ( !is_multisite() ) {
-			WP_CLI::error( 'This is not a multisite install.' );
+			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 	}
 ) );
