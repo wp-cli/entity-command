@@ -170,6 +170,7 @@
             "user meta update",
             "user remove-cap",
             "user remove-role",
+            "user reset-password",
             "user session",
             "user session destroy",
             "user session list",
