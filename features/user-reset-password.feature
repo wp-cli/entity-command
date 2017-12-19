@@ -1,5 +1,6 @@
 Feature: Reset passwords for one or more WordPress users.
 
+  @require-wp-4.3
   Scenario: Reset the password of a WordPress user
     Given a WP installation
 
@@ -20,6 +21,7 @@ Feature: Reset passwords for one or more WordPress users.
       {ORIGINAL_PASSWORD}
       """
 
+  @require-wp-4.3
   Scenario: Reset the password of a WordPress user, but skip emailing them
     Given a WP installation
 
