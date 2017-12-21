@@ -5001,6 +5001,14 @@ wp user reset-password <user>... [--skip-email]
 	[--skip-email]
 		Don't send an email notification to the affected user(s).
 
+**EXAMPLES**
+
+    # Reset the password for two users and send them the change email.
+    $ wp user reset-password admin editor
+    Reset password for admin.
+    Reset password for editor.
+    Success: Passwords reset.
+
 
 
 ### wp user session
