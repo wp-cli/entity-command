@@ -11,7 +11,7 @@ Feature: Reset passwords for one or more WordPress users.
     Then STDOUT should contain:
       """
       Reset password for admin.
-      Success: Passwords reset.
+      Success: Password reset.
       """
     And an email should be sent
 
@@ -32,7 +32,7 @@ Feature: Reset passwords for one or more WordPress users.
     Then STDOUT should contain:
       """
       Reset password for admin.
-      Success: Passwords reset.
+      Success: Password reset.
       """
     And an email should not be sent
 
