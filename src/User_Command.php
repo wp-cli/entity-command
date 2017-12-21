@@ -1040,7 +1040,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $skip_email ) {
 			remove_filter( 'send_password_change_email', '__return_false' );
 		}
-		WP_CLI::success( 'Passwords reset.' );
+		WP_CLI::success( count( $users ) > 1 ? 'Passwords reset.' : 'Password reset.' );
 	}
 
 	/**
