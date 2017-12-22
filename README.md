@@ -4985,6 +4985,32 @@ wp user remove-role <user> [<role>]
 
 
 
+### wp user reset-password
+
+Resets the password for one or more users.
+
+~~~
+wp user reset-password <user>... [--skip-email]
+~~~
+
+**OPTIONS**
+
+	<user>...
+		one or more user logins or IDs.
+
+	[--skip-email]
+		Don't send an email notification to the affected user(s).
+
+**EXAMPLES**
+
+    # Reset the password for two users and send them the change email.
+    $ wp user reset-password admin editor
+    Reset password for admin.
+    Reset password for editor.
+    Success: Passwords reset.
+
+
+
 ### wp user session
 
 Destroys and lists a user's sessions.

@@ -290,6 +290,8 @@ labels:
     color: c5def5
   - name: command:user-remove-role
     color: c5def5
+  - name: command:user-reset-password
+    color: c5def5
   - name: command:user-session
     color: c5def5
   - name: command:user-session-destroy
