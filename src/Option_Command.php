@@ -239,7 +239,7 @@ class Option_Command extends WP_CLI_Command {
 
 		global $wpdb;
 		$pattern = '%';
-		$exclude = '';
+		$exclude = '%_transient_%';
 		$fields = array( 'option_name', 'option_value' );
 		$size_query = ",LENGTH(option_value) AS `size_bytes`";
 		$autoload_query = '';
