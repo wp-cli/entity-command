@@ -239,7 +239,15 @@ class Option_Command extends WP_CLI_Command {
 
 		global $wpdb;
 		$pattern = '%';
+
+		// By default, we don't want to show transient data.
 		$exclude = '%_transient_%';
+
+		// Show transient
+		if ( true === Utils\get_flag_value( $assoc_args, 'transients', null ) ) {
+			$exclude = '';
+		}
+
 		$fields = array( 'option_name', 'option_value' );
 		$size_query = ",LENGTH(option_value) AS `size_bytes`";
 		$autoload_query = '';
