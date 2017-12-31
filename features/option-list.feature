@@ -57,6 +57,10 @@ Feature: List WordPress options
       """
       sample_test_field_one
       """
+    And STDOUT should not contain:
+      """
+      _transient
+      """
 
     When I run `wp option list --exclude="sample_test_field_one"`
     Then STDOUT should not contain:
