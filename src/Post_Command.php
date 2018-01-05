@@ -393,8 +393,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     # Delete all posts in the trash
 	 *     $ wp post delete $(wp post list --post_status=trash --format=ids)
-	 *     Success: Trashed post 1268.
-	 *     Success: Trashed post 1294.
+	 *     Success: Deleted post 1268.
+	 *     Success: Deleted post 1294.
 	 */
 	public function delete( $args, $assoc_args ) {
 		$defaults = array(
