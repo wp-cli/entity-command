@@ -747,12 +747,24 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     $ wp user remove-cap 11 publish_newsletters
 	 *     Success: Removed 'publish_newsletters' cap for supervisor (11).
 	 *
+	 *     $ wp user remove-cap 11 publish_posts
+	 *     Error: The 'publish_posts' cap for supervisor (11) is inherited from a role.
+	 *
+	 *     $ wp user remove-cap 11 nonexistent_cap
+	 *     Error: No such 'nonexistent_cap' cap for supervisor (11).
+	 *
 	 * @subcommand remove-cap
 	 */
 	public function remove_cap( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 		if ( $user ) {
 			$cap = $args[1];
+			if ( ! isset( $user->caps[ $cap ] ) ) {
+				if ( isset( $user->allcaps[ $cap ] ) ) {
+					WP_CLI::error( sprintf( "The '%s' cap for %s (%d) is inherited from a role.", $cap, $user->user_login, $user->ID ) );
+				}
+				WP_CLI::error( sprintf( "No such '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
+			}
 			$user->remove_cap( $cap );
 
 			WP_CLI::success( sprintf( "Removed '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
