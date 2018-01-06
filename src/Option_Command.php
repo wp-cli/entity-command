@@ -277,11 +277,14 @@ class Option_Command extends WP_CLI_Command {
 			}
 		}
 
+		// By default we don't want to display transients.
+		$show_transients = Utils\get_flag_value( $assoc_args, 'transients', false );
+
 		$transients_query = '';
-		if ( true === Utils\get_flag_value( $assoc_args, 'transients', null ) ) {
+		if ( $show_transients ) {
 			$transients_query = " AND option_name LIKE '\_transient\_%'
 			OR option_name LIKE '\_site\_transient\_%'";
-		} else if ( false === Utils\get_flag_value( $assoc_args, 'transients', null ) ) {
+		} else {
 			$transients_query = " AND option_name NOT LIKE '\_transient\_%'
 			AND option_name NOT LIKE '\_site\_transient\_%'";
 		}
