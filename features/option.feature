@@ -64,8 +64,10 @@ Feature: Manage WordPress options
       """
 
     When I try `wp option get str_opt`
-    Then the return code should be 1
-    And STDERR should be empty
+    Then STDERR should be:
+      """
+      Error: Could not get 'str_opt' option. Does it exist?
+      """
 
     # Integer values
     When I run `wp option update blog_public 1`

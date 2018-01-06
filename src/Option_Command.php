@@ -76,7 +76,7 @@ class Option_Command extends WP_CLI_Command {
 		$value = get_option( $key );
 
 		if ( false === $value ) {
-			WP_CLI::halt( 1 );
+			WP_CLI::error( "Could not get '$key' option. Does it exist?" );
 		}
 
 		WP_CLI::print_value( $value, $assoc_args );
