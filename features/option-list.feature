@@ -57,6 +57,10 @@ Feature: List WordPress options
       """
       sample_test_field_one
       """
+    And STDOUT should not contain:
+      """
+      _transient
+      """
 
     When I run `wp option list --exclude="sample_test_field_one"`
     Then STDOUT should not contain:
@@ -115,5 +119,23 @@ Feature: List WordPress options
       option_name,option_value
       sample_test_field_two,sample_test_field_value_two
       sample_test_field_one,sample_test_field_value_one
+      """
+
+  Scenario: Default list option without transient
+    Given a WP install
+    And I run `wp transient set wp_transient_flag wp_transient_flag`
+
+    When I run `wp option list`
+    Then STDOUT should not contain:
+      """
+      wp_transient_flag
+      """
+    And STDOUT should not contain:
+      """
+      _transient
+      """
+    And STDOUT should contain:
+      """
+      siteurl
       """
 
