@@ -196,6 +196,38 @@ Feature: Manage WordPress users
       Success: Removed 'edit_vip_product' cap for admin (1).
       """
 
+    And I try the previous command again
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: No such 'edit_vip_product' cap for admin (1).
+      """
+    And STDOUT should be empty
+
+    When I run `wp user list-caps 1`
+    Then STDOUT should not contain:
+      """
+      edit_vip_product
+      """
+    And STDOUT should contain:
+      """
+      publish_posts
+      """
+
+    When I try `wp user remove-cap 1 publish_posts`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: The 'publish_posts' cap for admin (1) is inherited from a role.
+      """
+    And STDOUT should be empty
+
+    And I run `wp user list-caps 1`
+    Then STDOUT should contain:
+      """
+      publish_posts
+      """
+
   Scenario: Show password when creating a user
     Given a WP install
 
