@@ -161,7 +161,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( isset( $assoc_args['post_category'] ) ) {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 			foreach ( $assoc_args['post_category'] as $post_category ) {
-				$post_category = ( 0 !== intval( $post_category ) ) ? intval( $post_category ) : $post_category;
+				$post_category = ( true === is_numeric( $post_category ) ) ? intval( $post_category ) : $post_category;
 				$category_id = category_exists( $post_category );
 				$category_ids[] = ( null !== $category_id ? $category_id : $post_category );
 			}
@@ -290,7 +290,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( isset( $assoc_args['post_category'] ) ) {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 			foreach ( $assoc_args['post_category'] as $post_category ) {
-				$post_category = ( 0 !== intval( $post_category ) ) ? intval( $post_category ) : $post_category;
+				$post_category = ( true === is_numeric( $post_category ) ) ? intval( $post_category ) : $post_category;
 				$category_id = category_exists( $post_category );
 				$category_ids[] = ( null !== $category_id ? $category_id : $post_category );
 			}
