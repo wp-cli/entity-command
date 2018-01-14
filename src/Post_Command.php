@@ -160,7 +160,13 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( isset( $assoc_args['post_category'] ) ) {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
+			foreach ( $assoc_args['post_category'] as $post_category ) {
+				$post_category = ( 0 !== intval( $post_category ) ) ? intval( $post_category ) : $post_category;
+				$category_id = category_exists( $post_category );
+				$category_ids[] = ( null !== $category_id ? $category_id : $post_category );
+			}
 		}
+		$assoc_args['post_category'] = $category_ids;
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create( $args, $assoc_args, function ( $params ) {
@@ -283,7 +289,13 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( isset( $assoc_args['post_category'] ) ) {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
+			foreach ( $assoc_args['post_category'] as $post_category ) {
+				$post_category = ( 0 !== intval( $post_category ) ) ? intval( $post_category ) : $post_category;
+				$category_id = category_exists( $post_category );
+				$category_ids[] = ( null !== $category_id ? $category_id : $post_category );
+			}
 		}
+		$assoc_args['post_category'] = $category_ids;
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $args, $assoc_args, function ( $params ) {
