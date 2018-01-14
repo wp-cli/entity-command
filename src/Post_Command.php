@@ -165,8 +165,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				$category_id = category_exists( $post_category );
 				$category_ids[] = ( null !== $category_id ? $category_id : $post_category );
 			}
+			$assoc_args['post_category'] = $category_ids;
 		}
-		$assoc_args['post_category'] = $category_ids;
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create( $args, $assoc_args, function ( $params ) {
@@ -294,8 +294,8 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				$category_id = category_exists( $post_category );
 				$category_ids[] = ( null !== $category_id ? $category_id : $post_category );
 			}
+			$assoc_args['post_category'] = $category_ids;
 		}
-		$assoc_args['post_category'] = $category_ids;
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $args, $assoc_args, function ( $params ) {
