@@ -159,13 +159,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( isset( $assoc_args['post_category'] ) ) {
-			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
-			foreach ( $assoc_args['post_category'] as $post_category ) {
-				$post_category = ( true === is_numeric( $post_category ) ) ? intval( $post_category ) : $post_category;
-				$category_id = category_exists( $post_category );
-				$category_ids[] = ( null !== $category_id ? $category_id : $post_category );
-			}
-			$assoc_args['post_category'] = $category_ids;
+			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
@@ -288,13 +282,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( isset( $assoc_args['post_category'] ) ) {
-			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
-			foreach ( $assoc_args['post_category'] as $post_category ) {
-				$post_category = ( true === is_numeric( $post_category ) ) ? intval( $post_category ) : $post_category;
-				$category_id = category_exists( $post_category );
-				$category_ids[] = ( null !== $category_id ? $category_id : $post_category );
-			}
-			$assoc_args['post_category'] = $category_ids;
+			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
@@ -759,5 +747,28 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$readfile = 'php://stdin';
 		}
 		return file_get_contents( $readfile );
+	}
+
+	/**
+	 * Get category id if given name/slug
+	 *
+	 * @param string $arg Supplied argument.
+	 * @return array
+	 */
+	private function get_category_ids( $arg ) {
+		$categoires = explode( ',', $arg );
+
+		foreach ( $categoires as $post_category ) {
+			$post_category = ( true === is_numeric( $post_category ) ) ? intval( $post_category ) : $post_category;
+
+			$category_id    = category_exists( $post_category );
+			if ( null === $category_id ) {
+				$category_ids[] = $post_category;
+				WP_CLI::warning( "Unable to set $post_category as post category" );
+			} else {
+				$category_ids[] = $category_id;
+			}
+		}
+		return $category_ids;
 	}
 }

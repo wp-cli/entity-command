@@ -29,6 +29,28 @@ Feature: Manage WordPress posts
     When I try the previous command again
     Then the return code should be 1
 
+    When I run `wp term create category "First Category" --porcelain`
+    And save STDOUT as {TERM_ID}
+    And I run `wp term create category "Second Category" --porcelain`
+    And save STDOUT as {SECOND_TERM_ID}
+
+    When I run `wp post create --post_title="Test category" --post_category="First Category" --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_category={SECOND_TERM_ID}`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post update {POST_ID} --post_category=test --porcelain`
+    Then STDOUT should be:
+      """
+      Warning: Unable to set test as post category
+      Success: Updated post {POST_ID}.
+      """
+
   Scenario: Creating/getting/editing posts
     Given a content.html file:
       """
