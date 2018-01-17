@@ -47,23 +47,13 @@ Feature: Manage WordPress posts
     When I try `wp post update {POST_ID} --post_category=test`
     Then STDERR should be:
       """
-      Warning: Unable to set test as post category
-      """
-    And STDOUT should be:
-      """
-      Success: Updated post {POST_ID}.
+      Error: No such post category 'test'.
       """
 
     When I try `wp post create --post_title="Test category two" --post_category={SECOND_TERM_ID},Test --porcelain`
-    Then STDOUT should be a number
-    And save STDOUT as {POST_ID_TWO}
     Then STDERR should be:
       """
-      Warning: Unable to set Test as post category
-      """
-    And STDOUT should be:
-      """
-      {POST_ID_TWO}
+      Error: No such post category 'Test'.
       """
 
   Scenario: Creating/getting/editing posts
