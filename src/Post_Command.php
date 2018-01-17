@@ -760,13 +760,14 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		foreach ( $categoires as $post_category ) {
 			if ( trim( $post_category ) !== '' ) {
-				$post_category = ( true === is_numeric( $post_category ) ) ? intval( $post_category ) : $post_category;
-
-				$category_id = category_exists( $post_category );
-
-				if ( null === $category_id ) {
+				if ( is_numeric( $post_category ) && (int) $post_category ) {
+					$category_id = category_exists( (int) $post_category );
+				} else {
+					$category_id = category_exists( $post_category );
+				}
+				if ( ! $category_id ) {
 					$category_ids[] = $post_category;
-					WP_CLI::warning( "Unable to set $post_category as post category" );
+					WP_CLI::error( "No such post category '$post_category'." );
 				} else {
 					$category_ids[] = $category_id;
 				}
