@@ -29,6 +29,7 @@ Feature: Manage WordPress posts
     When I try the previous command again
     Then the return code should be 1
 
+  Scenario: Setting post categories
     When I run `wp term create category "First Category" --porcelain`
     And save STDOUT as {TERM_ID}
     And I run `wp term create category "Second Category" --porcelain`
@@ -38,19 +39,109 @@ Feature: Manage WordPress posts
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
+    When I run `wp post term list {POST_ID} category --field=term_id`
+    Then STDOUT should be:
+      """
+      {TERM_ID}
+      """
+
     When I run `wp post update {POST_ID} --post_category={SECOND_TERM_ID}`
     Then STDOUT should be:
       """
       Success: Updated post {POST_ID}.
       """
 
+    When I run `wp post term list {POST_ID} category --field=term_id`
+    Then STDOUT should be:
+      """
+      {SECOND_TERM_ID}
+      """
+
+    When I run `wp post update {POST_ID} --post_category='Uncategorized,{TERM_ID},Second Category'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post term list {POST_ID} category --field=term_id`
+    And save STDOUT as {MULTI_CATEGORIES_STDOUT}
+    Then STDOUT should contain:
+      """
+      {TERM_ID}
+      """
+    And STDOUT should contain:
+      """
+      {SECOND_TERM_ID}
+      """
+    And STDOUT should contain:
+      """
+      1
+      """
+
+    # Blank categories with non-blank ignored.
+    When I run `wp post update {POST_ID} --post_category='Uncategorized, ,{TERM_ID},Second Category,'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post term list {POST_ID} category --field=term_id`
+    Then STDOUT should be:
+      """
+      {MULTI_CATEGORIES_STDOUT}
+      """
+
+    # Zero category same as default Uncategorized (1) category.
+    When I try `wp post update {POST_ID} --post_category=0`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post term list {POST_ID} category --field=term_id`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # Blank category/categories same as default Uncategorized (1) category.
+    When I try `wp post update {POST_ID} --post_category=,`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post term list {POST_ID} category --field=term_id`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # Null category same as no categories.
+    When I try `wp post update {POST_ID} --post_category=' '`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post term list {POST_ID} category --field=term_id`
+    Then STDOUT should be empty
+
+    # Non-existent category.
     When I try `wp post update {POST_ID} --post_category=test`
     Then STDERR should be:
       """
       Error: No such post category 'test'.
       """
 
-    When I try `wp post create --post_title="Test category two" --post_category={SECOND_TERM_ID},Test --porcelain`
+    When I try `wp post create --post_title="Non-existent Category" --post_category={SECOND_TERM_ID},Test --porcelain`
+    Then STDERR should be:
+      """
+      Error: No such post category 'Test'.
+      """
+
+    # Error on first non-existent category found.
+    When I try `wp post create --post_title="More than one non-existent Category" --post_category={SECOND_TERM_ID},Test,Bad --porcelain`
     Then STDERR should be:
       """
       Error: No such post category 'Test'.
