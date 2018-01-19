@@ -162,6 +162,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 		}
 
+		$array_arguments = array( 'tax_input', 'meta_input' );
+		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create( $args, $assoc_args, function ( $params ) {
 			return wp_insert_post( $params, true );
