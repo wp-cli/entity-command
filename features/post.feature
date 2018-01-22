@@ -232,3 +232,22 @@ Feature: Manage WordPress posts
       """
       var isEmailValid = /^\S+@\S+.\S+$/.test(email);
       """
+
+  Scenario: Creating/updating posts with meta keys
+    When I run `wp post create --post_title='Test Post' --post_content='Test post content' --meta_input='{"key1":"value1","key2":"value2"}' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post meta list {POST_ID} --format=table`
+    Then STDOUT should be a table containing rows:
+      | post_id   | meta_key | meta_value |
+      | {POST_ID} | key1     | value1     |
+      | {POST_ID} | key2     | value2     |
+
+    When I run `wp post update {POST_ID} --meta_input='{"key2":"value2b","key3":"value3"}'`
+    And I run `wp post meta list {POST_ID} --format=table`
+    Then STDOUT should be a table containing rows:
+      | post_id   | meta_key | meta_value |
+      | {POST_ID} | key1     | value1     |
+      | {POST_ID} | key2     | value2b    |
+      | {POST_ID} | key3     | value3     |
