@@ -143,6 +143,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     # Create post with content from given file
 	 *     $ wp post create ./post-content.txt --post_category=201,345 --post_title='Post from file'
 	 *     Success: Created post 1922.
+	 *
+	 *     # Create a post with multiple meta values.
+	 *     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
+	 *     Success: Created post 1923.
 	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! empty( $args[0] ) ) {
@@ -270,6 +274,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp post update 123 --post_name=something --post_status=draft
+	 *     Success: Updated post 123.
+	 *
+	 *     # Update a post with multiple meta values.
+	 *     $ wp post update 123 --meta_input='{"key1":"value1","key2":"value2"}
 	 *     Success: Updated post 123.
 	 */
 	public function update( $args, $assoc_args ) {
