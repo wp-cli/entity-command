@@ -112,7 +112,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Array of taxonomy terms keyed by their taxonomy name. Default empty.
 	 *
 	 * [--meta_input=<meta_input>]
-	 * : Array of post meta values keyed by their post meta key. Default empty.
+	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
 	 *
 	 * [<file>]
 	 * : Read post content from <file>. If this value is present, the
@@ -162,7 +162,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 		}
 
-		$array_arguments = array( 'tax_input', 'meta_input' );
+		$array_arguments = array( 'meta_input' );
 		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		$assoc_args = wp_slash( $assoc_args );
@@ -252,7 +252,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Array of taxonomy terms keyed by their taxonomy name. Default empty.
 	 *
 	 * [--meta_input=<meta_input>]
-	 * : Array of post meta values keyed by their post meta key. Default empty.
+	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
 	 *
 	 * [<file>]
 	 * : Read post content from <file>. If this value is present, the
@@ -287,6 +287,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( isset( $assoc_args['post_category'] ) ) {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 		}
+
+		$array_arguments = array( 'meta_input' );
+		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $args, $assoc_args, function ( $params ) {
