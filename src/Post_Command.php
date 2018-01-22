@@ -112,7 +112,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Array of taxonomy terms keyed by their taxonomy name. Default empty.
 	 *
 	 * [--meta_input=<meta_input>]
-	 * : Array of post meta values keyed by their post meta key. Default empty.
+	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
 	 *
 	 * [<file>]
 	 * : Read post content from <file>. If this value is present, the
@@ -143,6 +143,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     # Create post with content from given file
 	 *     $ wp post create ./post-content.txt --post_category=201,345 --post_title='Post from file'
 	 *     Success: Created post 1922.
+	 *
+	 *     # Create a post with multiple meta values.
+	 *     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
+	 *     Success: Created post 1923.
 	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! empty( $args[0] ) ) {
@@ -161,6 +165,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( isset( $assoc_args['post_category'] ) ) {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 		}
+
+		$array_arguments = array( 'meta_input' );
+		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create( $args, $assoc_args, function ( $params ) {
@@ -249,7 +256,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : Array of taxonomy terms keyed by their taxonomy name. Default empty.
 	 *
 	 * [--meta_input=<meta_input>]
-	 * : Array of post meta values keyed by their post meta key. Default empty.
+	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
 	 *
 	 * [<file>]
 	 * : Read post content from <file>. If this value is present, the
@@ -268,6 +275,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     $ wp post update 123 --post_name=something --post_status=draft
 	 *     Success: Updated post 123.
+	 *
+	 *     # Update a post with multiple meta values.
+	 *     $ wp post update 123 --meta_input='{"key1":"value1","key2":"value2"}
+	 *     Success: Updated post 123.
 	 */
 	public function update( $args, $assoc_args ) {
 
@@ -284,6 +295,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		if ( isset( $assoc_args['post_category'] ) ) {
 			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
 		}
+
+		$array_arguments = array( 'meta_input' );
+		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $args, $assoc_args, function ( $params ) {
