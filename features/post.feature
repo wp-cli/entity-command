@@ -233,6 +233,7 @@ Feature: Manage WordPress posts
       var isEmailValid = /^\S+@\S+.\S+$/.test(email);
       """
 
+  @require-wp-4.4
   Scenario: Creating/updating posts with meta keys
     When I run `wp post create --post_title='Test Post' --post_content='Test post content' --meta_input='{"key1":"value1","key2":"value2"}' --porcelain`
     Then STDOUT should be a number
