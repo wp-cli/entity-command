@@ -163,7 +163,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( isset( $assoc_args['post_category'] ) ) {
-			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
+			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
 		$array_arguments = array( 'meta_input' );
@@ -293,7 +293,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( isset( $assoc_args['post_category'] ) ) {
-			$assoc_args['post_category'] = explode( ',', $assoc_args['post_category'] );
+			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
 		$array_arguments = array( 'meta_input' );
@@ -761,5 +761,32 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$readfile = 'php://stdin';
 		}
 		return file_get_contents( $readfile );
+	}
+
+	/**
+	 * Resolves post_category arg into an array of category ids.
+	 *
+	 * @param string $arg Supplied argument.
+	 * @return array
+	 */
+	private function get_category_ids( $arg ) {
+
+		$categories   = explode( ',', $arg );
+		$category_ids = array();
+		foreach ( $categories as $post_category ) {
+			if ( trim( $post_category ) ) {
+				if ( is_numeric( $post_category ) && (int) $post_category ) {
+					$category_id = category_exists( (int) $post_category );
+				} else {
+					$category_id = category_exists( $post_category );
+				}
+				if ( ! $category_id ) {
+					WP_CLI::error( "No such post category '$post_category'." );
+				}
+				$category_ids[] = $category_id;
+			}
+		}
+		// If no category ids found, return exploded array for compat with previous WP-CLI versions.
+		return $category_ids ? $category_ids : $categories;
 	}
 }
