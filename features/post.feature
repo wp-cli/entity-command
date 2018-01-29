@@ -370,3 +370,37 @@ Feature: Manage WordPress posts
       | {POST_ID} | key1     | value1     |
       | {POST_ID} | key2     | value2b    |
       | {POST_ID} | key3     | value3     |
+
+  @less-than-wp-4.4
+  Scenario: Creating/updating posts with meta keys for WP < 4.4 has no effect so should give warning
+    When I try `wp post create --post_title='Test Post' --post_content='Test post content' --meta_input='{"key1":"value1","key2":"value2"}' --porcelain`
+    Then the return code should be 0
+    And STDOUT should be a number
+    And save STDOUT as {POST_ID}
+    And STDERR should be:
+      """
+      Warning: The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect.
+      """
+
+    When I run `wp post meta list {POST_ID} --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I try `wp post update {POST_ID} --meta_input='{"key2":"value2b","key3":"value3"}'`
+    Then the return code should be 0
+    And STDERR should be:
+      """
+      Warning: The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect.
+      """
+    And STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post meta list {POST_ID} --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
