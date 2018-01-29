@@ -166,6 +166,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
+		if ( isset( $assoc_args['meta_input'] ) && \WP_CLI\Utils\wp_version_compare( '4.4', '<' ) ) {
+			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
+		}
+
 		$array_arguments = array( 'meta_input' );
 		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
@@ -294,6 +298,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( isset( $assoc_args['post_category'] ) ) {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
+		}
+
+		if ( isset( $assoc_args['meta_input'] ) && \WP_CLI\Utils\wp_version_compare( '4.4', '<' ) ) {
+			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
 		}
 
 		$array_arguments = array( 'meta_input' );
