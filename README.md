@@ -2040,7 +2040,7 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
 		Array of taxonomy terms keyed by their taxonomy name. Default empty.
 
 	[--meta_input=<meta_input>]
-		Array of post meta values keyed by their post meta key. Default empty.
+		Array in JSON format of post meta values keyed by their post meta key. Default empty.
 
 	[<file>]
 		Read post content from <file>. If this value is present, the
@@ -2071,6 +2071,10 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
     # Create post with content from given file
     $ wp post create ./post-content.txt --post_category=201,345 --post_title='Post from file'
     Success: Created post 1922.
+
+    # Create a post with multiple meta values.
+    $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
+    Success: Created post 1923.
 
 
 
@@ -2106,8 +2110,8 @@ wp post delete <id>... [--force] [--defer-term-counting]
 
     # Delete all posts in the trash
     $ wp post delete $(wp post list --post_status=trash --format=ids)
-    Success: Trashed post 1268.
-    Success: Trashed post 1294.
+    Success: Deleted post 1268.
+    Success: Deleted post 1294.
 
 
 
@@ -2839,7 +2843,7 @@ wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [
 		Array of taxonomy terms keyed by their taxonomy name. Default empty.
 
 	[--meta_input=<meta_input>]
-		Array of post meta values keyed by their post meta key. Default empty.
+		Array in JSON format of post meta values keyed by their post meta key. Default empty.
 
 	[<file>]
 		Read post content from <file>. If this value is present, the
@@ -2857,6 +2861,10 @@ wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [
 **EXAMPLES**
 
     $ wp post update 123 --post_name=something --post_status=draft
+    Success: Updated post 123.
+
+    # Update a post with multiple meta values.
+    $ wp post update 123 --meta_input='{"key1":"value1","key2":"value2"}
     Success: Updated post 123.
 
 
@@ -4959,6 +4967,12 @@ wp user remove-cap <user> <cap>
 
     $ wp user remove-cap 11 publish_newsletters
     Success: Removed 'publish_newsletters' cap for supervisor (11).
+
+    $ wp user remove-cap 11 publish_posts
+    Error: The 'publish_posts' cap for supervisor (11) is inherited from a role.
+
+    $ wp user remove-cap 11 nonexistent_cap
+    Error: No such 'nonexistent_cap' cap for supervisor (11).
 
 
 
