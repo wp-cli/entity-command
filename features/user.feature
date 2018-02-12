@@ -64,6 +64,27 @@ Feature: Manage WordPress users
     When I run `wp user delete {USER_ID} --yes`
     Then STDOUT should not be empty
 
+    When I run `wp user create testuser3 testuser3@example.com --user_pass=testuser3pass`
+    Then STDOUT should not contain:
+       """
+       Password:
+       """
+
+    # Check with valid password.
+    When I run `wp user check-password testuser3 testuser3pass`
+    Then the return code should be 0
+
+    # Check with invalid password.
+    When I try `wp user check-password testuser3 invalidpass`
+    Then the return code should be 1
+
+    When I try `wp user check-password invaliduser randomstring`
+    Then STDERR should contain:
+      """
+      Invalid user ID, email or login: 'invaliduser'
+      """
+    And the return code should be 1
+
   Scenario: Reassigning user posts
     Given a WP multisite install
 
