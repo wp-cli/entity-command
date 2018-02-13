@@ -1198,12 +1198,12 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
-	 * Checks if given user credentials are valid or not.
+	 * Checks if a user's password is valid or not.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <user>
-	 * : The user login or user email of the user to check credentials.
+	 * : The user login, user email or user ID of the user to check credentials for.
 	 *
 	 * <user_pass>
 	 * : A string that contains the plain text password for the user.
