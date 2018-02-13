@@ -1197,4 +1197,41 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		Utils\report_batch_operation_results( 'user', $verb, count( $user_ids ), $successes, $errors );
 	}
 
+	/**
+	 * Checks if a user's password is valid or not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : The user login, user email or user ID of the user to check credentials for.
+	 *
+	 * <user_pass>
+	 * : A string that contains the plain text password for the user.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check whether given credentials are valid; exit status 0 if valid, otherwise 1
+	 *     $ wp user check-password admin adminpass
+	 *     $ echo $?
+	 *     1
+	 *
+	 *     # Bash script for checking whether given credentials are valid or not
+	 *     if ! $(wp user check-password admin adminpass); then
+	 *      notify-send "Invalid Credentials";
+	 *     fi
+	 *
+	 * @subcommand check-password
+	 */
+	public function check_password( $args ) {
+
+		$user      = $this->fetcher->get_check( $args[0] );
+		$user_pass = $args[1];
+
+		if ( wp_check_password( $user_pass, $user->data->user_pass, $user->ID ) ) {
+			WP_CLI::halt( 0 );
+		} else {
+			WP_CLI::halt( 1 );
+		}
+	}
+
 }
