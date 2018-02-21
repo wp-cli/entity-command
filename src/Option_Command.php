@@ -73,7 +73,7 @@ class Option_Command extends WP_CLI_Command {
 	public function get( $args, $assoc_args ) {
 		list( $key ) = $args;
 
-		$value = get_option( $key );
+		$value = get_option( $key, false );
 
 		if ( false === $value ) {
 			WP_CLI::error( "Could not get '$key' option. Does it exist?" );
@@ -466,7 +466,7 @@ class Option_Command extends WP_CLI_Command {
 	public function pluck( $args, $assoc_args ) {
 		list( $key ) = $args;
 
-		$value = get_option( $key );
+		$value = get_option( $key, false );
 
 		if ( false === $value ) {
 			WP_CLI::halt( 1 );
