@@ -372,6 +372,9 @@ class Site_Option_Command extends WP_CLI_Command {
 
 		/* Need to make a copy of $current_value here as it is modified by reference */
 		$old_value = $current_value = sanitize_option( $key, get_site_option( $key ) );
+		if ( is_object( $current_value ) ) {
+			$old_value = clone $current_value;
+		}
 
 		$traverser = new RecursiveDataStructureTraverser( $current_value );
 
