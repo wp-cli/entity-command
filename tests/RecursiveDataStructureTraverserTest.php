@@ -87,6 +87,19 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
+	function it_can_update_an_integer_object_value() {
+		$object = (object) array(
+			'test_mode' => 0,
+		);
+		$this->assertEquals( 0, $object->test_mode );
+
+		$traverser = new RecursiveDataStructureTraverser( $object );
+		$traverser->update( array( 'test_mode' ), 1 );
+
+		$this->assertEquals( 1, $object->test_mode );
+	}
+
+	/** @test */
 	function it_can_delete_a_nested_array_value() {
 		$array = array(
 			'foo' => array(

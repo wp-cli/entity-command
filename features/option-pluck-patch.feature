@@ -269,3 +269,33 @@ Feature: Option commands have pluck and patch.
       """
       [ "new", "bar" ]
       """
+
+  @patch @pluck
+  Scenario: An object value can be updated
+    Given a WP install
+    And a setup.php file:
+      """
+      <?php
+      $option = new stdClass;
+      $option->test_mode = 0;
+      $ret = update_option( 'wp_cli_test', $option );
+      """
+    And I run `wp eval-file setup.php`
+
+    When I run `wp option pluck wp_cli_test test_mode`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp option patch update wp_cli_test test_mode 1`
+    Then STDOUT should be:
+      """
+      Success: Updated 'wp_cli_test' option.
+      """
+
+    When I run `wp option pluck wp_cli_test test_mode`
+    Then STDOUT should be:
+      """
+      1
+      """

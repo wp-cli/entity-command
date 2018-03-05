@@ -390,6 +390,9 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		/* Need to make a copy of $current_meta_value here as it is modified by reference */
 		$current_meta_value = $old_meta_value = sanitize_meta( $meta_key, get_metadata( $this->meta_type, $object_id, $meta_key, true ), $this->meta_type );
+		if ( is_object( $current_meta_value ) ) {
+			$old_meta_value = clone $current_meta_value;
+		}
 
 		$traverser = new RecursiveDataStructureTraverser( $current_meta_value );
 
