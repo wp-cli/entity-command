@@ -313,7 +313,135 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		} );
 	}
 
-	/**
+      /**
+       * Create a duplicate post.
+       *
+       * ## OPTIONS
+       *
+       * <id>...
+       * : Id of post to be duplicated.
+       *
+       * [--post_title=<post_title>]
+       * : The post title. Default from given post id.
+       *
+       *  [--meta_input=<meta_input>]
+       * : Array in JSON format of post meta values keyed by their post meta key. Default from given post id.
+       *
+       * [--post_date=<post_date>]
+       * : The date of the post. Default is the current time.
+       *
+       * [--post_date_gmt=<post_date_gmt>]
+       * : The date of the post in the GMT timezone. Default is the value of $post_date.
+       *
+       * [--post_content=<post_content>]
+       * : The post content. Default from given post id.
+       *
+       * [--post_excerpt=<post_excerpt>]
+       * : The post excerpt. Default from given post id.
+       *
+       * [--post_status=<post_status>]
+       * : The post status. Default from given post id.
+       *
+       * [--post_type=<post_type>]
+       * : The post type. Default from given post id.
+       *
+       * [--comment_status=<comment_status>]
+       * : Whether the post can accept comments. Accepts 'open' or 'closed'. Default is the value of 'default_comment_status' option.
+       *
+       * [--ping_status=<ping_status>]
+       * : Whether the post can accept pings. Accepts 'open' or 'closed'. Default from given post id.
+       *
+       * [--post_password=<post_password>]
+       * : The password to access the post. Default from given post id.
+       *
+       * [--post_name=<post_name>]
+       * : The post name. Default from given post id.
+       *
+       * [--post_modified=<post_modified>]
+       * : The date when the post was last modified. Default is the current time.
+       *
+       * [--post_modified_gmt=<post_modified_gmt>]
+       * : The date when the post was last modified in the GMT timezone. Default is the current time.
+       *
+       * [--post_parent=<post_parent>]
+       * : Set this for the post it belongs to, if any. Default from given post id.
+       *
+       * [--menu_order=<menu_order>]
+       * : The order the post should be displayed in. Default from given post id.
+       *
+       * [--post_mime_type=<post_mime_type>]
+       * : The mime type of the post. Default from given post id..
+       *
+       * [--guid=<guid>]
+       * : Global Unique ID for referencing the post. Default empty.
+       *
+       * [--post_category=<post_category>]
+       * : Array of category names, slugs, or IDs. Defaults to values from given post id.
+       *
+       * [--tags_input=<tags_input>]
+       * : Array of tag names, slugs, or IDs. Default from given post id.
+       *
+       * [--tax_input=<tax_input>]
+       * : Array of taxonomy terms keyed by their taxonomy name. Default from given post id.
+       *
+       * [--meta_input=<meta_input>]
+       * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
+       *
+       * [--porcelain]
+       * : Output just the new post id.
+       *
+       *
+       * ## EXAMPLES
+       *
+       *     # Create duplicate post from existing post's id
+       *     $ wp post duplicate 78
+       *     Success: Created post 758.
+       *
+       *     # Create duplicate post and schedule for future
+       *     $ wp post duplicate --post_type=page --post_title='A future post' --post_status=future --post_date='2020-12-01 07:00:00'
+       *     Success: Created post 1921.
+       *
+       *     # Create a duplicate post with multiple meta values.
+       *     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
+       *     Success: Created post 1923.
+       */
+      public function duplicate( $args, $assoc_args ) {
+            $post     = $this->fetcher->get_check( $args[0] );
+            $post_arr = get_object_vars( $post );
+            $post_id  = $post->ID;
+            unset( $post_arr['post_date'] );
+            unset( $post_arr['post_date_gmt'] );
+            unset( $post_arr['guid'] );
+            if ( isset( $assoc_args['post_category'] ) ) {
+                  $assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
+            }
+            if ( isset( $assoc_args['meta_input'] ) && \WP_CLI\Utils\wp_version_compare( '4.4', '<' ) ) {
+                  WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
+            }
+            $meta_type = 'post';
+            if ( empty( $assoc_args['meta_input'] ) ) {
+                  $metadata = get_metadata( $meta_type, $post_id );
+                  $items    = array();
+                  foreach ( $metadata as $key => $values ) {
+                        foreach ( $values as $item_value ) {
+                              $item_value    = maybe_unserialize( $item_value );
+                              $items[ $key ] = $item_value;
+                        }
+                  }
+                  $assoc_args['meta_input'] = $items;
+            } else {
+                  $array_arguments = array( 'meta_input' );
+                  $assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+            }
+            $assoc_args = array_merge( $post_arr, $assoc_args );
+            $assoc_args = wp_slash( $assoc_args );
+            parent::_create( $args, $assoc_args, function ( $params ) {
+                  return wp_insert_post( $params, true );
+            } );
+      }
+
+
+      /**
 	 * Launches system editor to edit post content.
 	 *
 	 * ## OPTIONS
