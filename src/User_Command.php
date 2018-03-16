@@ -481,6 +481,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * --<field>=<value>
 	 * : One or more fields to update. For accepted fields, see wp_update_user().
 	 *
+	 * [--skip-email]
+	 * : Don't send an email notification to the user.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Update user
@@ -496,6 +499,11 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$user_ids = array();
 		foreach ( $this->fetcher->get_many( $args ) as $user ) {
 			$user_ids[] = $user->ID;
+		}
+
+		if ( isset( $assoc_args['skip-email'] ) ) {
+			add_filter( 'send_email_change_email', '__return_false' );
+			add_filter( 'send_password_change_email', '__return_false' );
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
