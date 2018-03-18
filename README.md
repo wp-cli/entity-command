@@ -1719,6 +1719,9 @@ wp option list [--search=<pattern>] [--exclude=<pattern>] [--autoload=<value>] [
 	[--transients]
 		List only transients. Use `--no-transients` to ignore all transients.
 
+	[--unserialize]
+		Unserialize option values in output.
+
 	[--field=<field>]
 		Prints the value of a single field.
 
