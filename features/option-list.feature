@@ -135,3 +135,16 @@ Feature: List WordPress options
       siteurl
       """
 
+  Scenario: Using the `--unserialize` flag
+    Given a WP install
+
+    When I run `wp option add --format=json sample_test_field_one '{"value": 1}'`
+    And I run `wp option list --search="sample_test_field_*" --format=yaml`
+    Then STDOUT should be:
+      """
+      ---
+      -
+        option_name: sample_test_field_one
+        option_value:
+          value: 1
+      """

@@ -154,6 +154,9 @@ class Option_Command extends WP_CLI_Command {
 	 * [--transients]
 	 * : List only transients. Use `--no-transients` to ignore all transients.
 	 *
+	 * [--unserialize]
+	 * : Unserialize option values in output.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field.
 	 *
@@ -315,6 +318,12 @@ class Option_Command extends WP_CLI_Command {
 			});
 		} elseif ( 'option_id' === $orderby && 'desc' === $order ) { // Sort by default descending.
 			krsort( $results );
+		}
+
+		if ( true === Utils\get_flag_value( $assoc_args, 'unserialize', null ) ) {
+			foreach ($results as $k => &$v) {
+				if ( !empty($v->option_value) ) $v->option_value = maybe_unserialize($v->option_value);
+			}
 		}
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
