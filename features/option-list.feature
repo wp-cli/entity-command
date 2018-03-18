@@ -143,7 +143,7 @@ Feature: List WordPress options
     Then STDOUT should be:
       """
       ---
-      -
+      - 
         option_name: sample_test_field_one
         option_value:
           value: 1
