@@ -139,7 +139,7 @@ Feature: List WordPress options
     Given a WP install
 
     When I run `wp option add --format=json sample_test_field_one '{"value": 1}'`
-    And I run `wp option list --search="sample_test_field_*" --format=yaml`
+    And I run `wp option list --search="sample_test_field_*" --format=yaml --unserialize`
     Then STDOUT should be:
       """
       ---
