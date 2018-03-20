@@ -321,8 +321,10 @@ class Option_Command extends WP_CLI_Command {
 		}
 
 		if ( true === Utils\get_flag_value( $assoc_args, 'unserialize', null ) ) {
-			foreach ($results as $k => &$v) {
-				if ( !empty($v->option_value) ) $v->option_value = maybe_unserialize($v->option_value);
+			foreach ( $results as $k => &$v ) {
+				if ( ! empty( $v->option_value ) ) {
+					$v->option_value = maybe_unserialize( $v->option_value );
+				}
 			}
 		}
 
