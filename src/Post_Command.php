@@ -77,10 +77,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * [--post_name=<post_name>]
 	 * : The post name. Default is the sanitized post title when creating a new post.
-       *
-       * [--from-post=<post_id>]
-       * : The post id of a post to be duplicated.
-       *
+	 *
+	 * [--from-post=<post_id>]
+	 * : The post id of a post to be duplicated.
+	 *
 	 * [--to_ping=<to_ping>]
 	 * : Space or carriage return-separated list of URLs to ping. Default empty.
 	 *
@@ -150,11 +150,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     # Create a post with multiple meta values.
 	 *     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
 	 *     Success: Created post 1923.
-       *
-       *     # Create a duplicate post with same post data.
-       *     $ wp post create --from-post=123 --post_title='Different Title'
-       *     Success: Created post 2350.
-       */
+	 *
+	 *     # Create a duplicate post with same post data.
+	 *     $ wp post create --from-post=123 --post_title='Different Title'
+	 *     Success: Created post 2350.
+	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! empty( $args[0] ) ) {
 			$assoc_args['post_content'] = $this->read_from_file_or_stdin( $args[0] );
@@ -181,19 +181,25 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
             if( isset( $assoc_args['from-post'] ) ) {
-                  $post     = $this->fetcher->get_check( $assoc_args['from-post'] );
-                  $post_arr = get_object_vars( $post );
-                  $post_id  = $post_arr['ID'];
-                  unset( $post_arr['post_date'] );
-                  unset( $post_arr['post_date_gmt'] );
-                  unset( $post_arr['guid'] );
+				$post     = $this->fetcher->get_check( $assoc_args['from-post'] );
+				$post_arr = get_object_vars( $post );
+				$post_id  = $post_arr['ID'];
+				unset( $post_arr['post_date'] );
+				unset( $post_arr['post_date_gmt'] );
+				unset( $post_arr['guid'] );
+				unset( $post_arr['ID'] );
 
-                  if ( empty( $assoc_args['meta_input'] ) ) {
-                        $assoc_args['meta_input'] = $this->get_metadata( $post_id );
-                  }
-
-                  $assoc_args = array_merge( $post_arr, $assoc_args );
-            }
+				if ( empty( $assoc_args['meta_input'] ) ) {
+					$assoc_args['meta_input'] = $this->get_metadata( $post_id );
+				}
+				if ( empty( $assoc_args['post_category'] ) ) {
+					$post_arr['post_category'] = $this->get_category( $post_id );
+				}
+				if ( empty( $assoc_args['tags_input'] ) ) {
+					$post_arr['tags_input'] = $this->get_tags( $post_id );
+				}
+				$assoc_args = array_merge( $post_arr, $assoc_args );
+			}
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create( $args, $assoc_args, function ( $params ) {
@@ -820,21 +826,59 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		return $category_ids ? $category_ids : $categories;
 	}
 
-      /**
-       * Get post metadata.
-       *
-       * @param $post_id id of the post.
-       * @return array
-       */
-      private function get_metadata( $post_id = null ) {
-            $metadata = get_metadata( 'post', $post_id );
-            $items    = array();
-            foreach ( $metadata as $key => $values ) {
-                  foreach ( $values as $item_value ) {
-                        $item_value    = maybe_unserialize( $item_value );
-                        $items[ $key ] = $item_value;
-                  }
-            }
-            return $items;
-      }
+	/**
+	 * Get post metadata.
+	 *
+	 * @param $post_id id of the post.
+	 *
+	 * @return array
+	 */
+	private function get_metadata( $post_id ) {
+		$metadata = get_metadata( 'post', $post_id );
+		$items    = array();
+		foreach ( $metadata as $key => $values ) {
+			foreach ( $values as $item_value ) {
+				$item_value  = maybe_unserialize( $item_value );
+				$items[$key] = $item_value;
+			}
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Get Categories of a post.
+	 *
+	 * @param $post_id postid of the post.
+	 *
+	 * @return array
+	 */
+	private function get_category( $post_id ) {
+		$category_data = get_the_category( $post_id );
+		$category_arr  = array();
+		foreach ( $category_data as $cat ) {
+			array_push( $category_arr, $cat->term_id );
+		}
+
+		return $category_arr;
+	}
+
+	/**
+	 * Get Tags of a post.
+	 *
+	 * @param $post_id postid of the post.
+	 *
+	 * @return array
+	 */
+	private function get_tags( $post_id ) {
+		$tag_data = get_the_tags( $post_id );
+		$tag_arr  = array();
+		if ( $tag_data ) {
+			foreach ( $tag_data as $tag ) {
+				array_push( $tag_arr, $tag->slug );
+			}
+		}
+
+		return $tag_arr;
+	}
 }
