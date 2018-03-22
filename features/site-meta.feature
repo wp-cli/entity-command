@@ -1,19 +1,36 @@
-Feature: Manage site-wide custom fields.
+Feature: Manage site custom fields
 
   @require-wp-5.0
-  Scenario: Non-multisite
-    Given a WP install
+  Scenario: Site meta CRUD
+    Given a WP multisite installation
 
-    When I run `wp site-meta`
-    Then STDOUT should contain:
+    When I run `wp site meta add 1 foo 'bar'`
+    Then STDOUT should not be empty
+
+    When I run `wp site meta get 1 foo`
+    Then STDOUT should be:
       """
-      usage: wp site meta
+      bar
       """
 
-    When I try `wp site-meta get 1 test`
-    Then STDOUT should be empty
-    And STDERR should contain:
+    When I try `wp site meta get 999999 foo`
+    Then STDERR should be:
       """
-      This is not a multisite install.
+      Error: Could not find the site with ID 999999.
       """
     And the return code should be 1
+
+    When I run `wp site meta set 1 foo '[ "1", "2" ]' --format=json`
+    Then STDOUT should not be empty
+
+    When I run `wp site meta get 1 foo --format=json`
+    Then STDOUT should be:
+      """
+      ["1","2"]
+      """
+
+    When I run `wp site meta delete 1 foo`
+    Then STDOUT should not be empty
+
+    When I try `wp site meta get 1 foo`
+    Then the return code should be 1
