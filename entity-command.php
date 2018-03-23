@@ -32,9 +32,6 @@ WP_CLI::add_command( 'site meta', 'Site_Meta_Command', array(
 		if ( !is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite installation.' );
 		}
-		if ( \WP_CLI\Utils\wp_version_compare( '5.0', '<' ) ) {
-			WP_CLI::error( "Requires WordPress 5.0 or greater." );
-		}
 		if( function_exists('is_site_meta_supported') && !is_site_meta_supported() ){
 			WP_CLI::error( sprintf( 'The %s table is not installed. Please run the network database upgrade.', $GLOBALS['wpdb']->blogmeta ) );
 		}
