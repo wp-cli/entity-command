@@ -25,7 +25,7 @@ Feature: Create Duplicate WordPress post from existing posts.
       """
       {TERM_ID}
       """
-
+  @require-wp-4.4
   Scenario: Generate duplicate post with post metadata.
 	When I run `wp post create --post_title='Test Post' --meta_input='{"key1":"value1","key2":"value2"}' --porcelain`
 	Then save STDOUT as {POST_ID}
@@ -38,6 +38,7 @@ Feature: Create Duplicate WordPress post from existing posts.
 	  | post_id             | meta_key | meta_value |
 	  | {DUPLICATE_POST_ID} | key1     | value1     |
 	  | {DUPLICATE_POST_ID} | key2     | value2     |
+
 
   Scenario: Generate duplicate page.
 	When I run `wp post create --post_type="page" --post_title="Test Page" --post_content="Page Content" --porcelain`
