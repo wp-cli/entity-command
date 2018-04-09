@@ -107,9 +107,10 @@ class Option_Command extends WP_CLI_Command {
 	 * [--autoload=<autoload>]
 	 * : Should this option be automatically loaded.
 	 * ---
+	 * default: yes
 	 * options:
-	 *   - 'yes'
-	 *   - 'no'
+	 *   - yes
+	 *   - no
 	 * ---
 	 *
 	 * ## EXAMPLES
@@ -343,8 +344,8 @@ class Option_Command extends WP_CLI_Command {
 	 * : Requires WP 4.2. Should this option be automatically loaded.
 	 * ---
 	 * options:
-	 *   - 'yes'
-	 *   - 'no'
+	 *   - yes
+	 *   - no
 	 * ---
 	 *
 	 * [--format=<format>]
