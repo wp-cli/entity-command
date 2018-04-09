@@ -29,7 +29,16 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 *   - count
+	 * ---
 	 *
 	 * [--orderby=<fields>]
 	 * : Set orderby which field.
@@ -124,7 +133,14 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * : The name of the meta field to get.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, json. Default: table
+	 * : Get value in a particular format.
+	 * ---
+	 * default: var_export
+	 * options:
+	 *   - var_export
+	 *   - json
+	 *   - yaml
+	 * ---
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
