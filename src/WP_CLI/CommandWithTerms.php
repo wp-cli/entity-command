@@ -48,7 +48,17 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * : Limit the output to specific row fields.
 	 *
 	 * [--format=<format>]
-	 * : Accepted values: table, csv, json, count, ids. Default: table
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 *   - count
+	 *   - ids
+	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
