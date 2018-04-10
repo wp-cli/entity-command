@@ -441,7 +441,14 @@ wp comment meta get <id> <key> [--format=<format>]
 		The name of the meta field to get.
 
 	[--format=<format>]
-		Accepted values: table, json. Default: table
+		Get value in a particular format.
+		---
+		default: var_export
+		options:
+		  - var_export
+		  - json
+		  - yaml
+		---
 
 
 
@@ -465,7 +472,16 @@ wp comment meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>
 		Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
 
 	[--format=<format>]
-		Accepted values: table, csv, json, count. Default: table
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
 
 	[--orderby=<fields>]
 		Set orderby which field.
@@ -1407,7 +1423,14 @@ wp network meta get <id> <key> [--format=<format>]
 		The name of the meta field to get.
 
 	[--format=<format>]
-		Accepted values: table, json. Default: table
+		Get value in a particular format.
+		---
+		default: var_export
+		options:
+		  - var_export
+		  - json
+		  - yaml
+		---
 
 
 
@@ -1431,7 +1454,16 @@ wp network meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>
 		Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
 
 	[--format=<format>]
-		Accepted values: table, csv, json, count. Default: table
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
 
 	[--orderby=<fields>]
 		Set orderby which field.
@@ -1702,7 +1734,7 @@ wp option get <key> [--format=<format>]
 Lists options and their values.
 
 ~~~
-wp option list [--search=<pattern>] [--exclude=<pattern>] [--autoload=<value>] [--transients] [--field=<field>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
+wp option list [--search=<pattern>] [--exclude=<pattern>] [--autoload=<value>] [--transients] [--unserialize] [--field=<field>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
 ~~~
 
 **OPTIONS**
@@ -2461,7 +2493,14 @@ wp post meta get <id> <key> [--format=<format>]
 		The name of the meta field to get.
 
 	[--format=<format>]
-		Accepted values: table, json. Default: table
+		Get value in a particular format.
+		---
+		default: var_export
+		options:
+		  - var_export
+		  - json
+		  - yaml
+		---
 
 
 
@@ -2485,7 +2524,16 @@ wp post meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [
 		Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
 
 	[--format=<format>]
-		Accepted values: table, csv, json, count. Default: table
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
 
 	[--orderby=<fields>]
 		Set orderby which field.
@@ -2678,7 +2726,17 @@ wp post term list <id> <taxonomy>... [--field=<field>] [--fields=<fields>] [--fo
 		Limit the output to specific row fields.
 
 	[--format=<format>]
-		Accepted values: table, csv, json, count, ids. Default: table
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		  - ids
+		---
 
 **AVAILABLE FIELDS**
 
@@ -3984,7 +4042,14 @@ wp term meta get <id> <key> [--format=<format>]
 		The name of the meta field to get.
 
 	[--format=<format>]
-		Accepted values: table, json. Default: table
+		Get value in a particular format.
+		---
+		default: var_export
+		options:
+		  - var_export
+		  - json
+		  - yaml
+		---
 
 
 
@@ -4008,7 +4073,16 @@ wp term meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [
 		Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
 
 	[--format=<format>]
-		Accepted values: table, csv, json, count. Default: table
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
 
 	[--orderby=<fields>]
 		Set orderby which field.
@@ -4712,7 +4786,13 @@ wp user meta add <user> <key> <value> [--format=<format>]
 		The new metadata value.
 
 	[--format=<format>]
-		The serialization format for the value. Default is plaintext.
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
 
 **EXAMPLES**
 
@@ -4940,7 +5020,13 @@ wp user meta update <user> <key> <value> [--format=<format>]
 		The new metadata value.
 
 	[--format=<format>]
-		The serialization format for the value. Default is plaintext.
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
 
 **EXAMPLES**
 
@@ -5261,7 +5347,17 @@ wp user term list <id> <taxonomy>... [--field=<field>] [--fields=<fields>] [--fo
 		Limit the output to specific row fields.
 
 	[--format=<format>]
-		Accepted values: table, csv, json, count, ids. Default: table
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		  - ids
+		---
 
 **AVAILABLE FIELDS**
 

@@ -171,7 +171,13 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * : The new metadata value.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value. Default is plaintext.
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
@@ -199,7 +205,13 @@ class User_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * : The new metadata value.
 	 *
 	 * [--format=<format>]
-	 * : The serialization format for the value. Default is plaintext.
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
