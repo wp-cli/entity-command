@@ -8,7 +8,7 @@ then
 	phpunit
 fi
 
-if [ $WP_VERSION -eq "latest" ]; then
+if [ $WP_VERSION = "latest" ]; then
 	WP_VERSION=$(curl -s https://api.wordpress.org/core/version-check/1.7/ | jq -r ".offers[0].current")
 fi
 
