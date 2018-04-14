@@ -4380,7 +4380,7 @@ wp user add-role <user> <role>
 Creates a new user.
 
 ~~~
-wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--display_name=<name>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--send-email] [--porcelain]
+wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--display_name=<name>] [--user_nicename=<nice_name>] [--user_url=<url>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--send-email] [--porcelain]
 ~~~
 
 **OPTIONS**
@@ -4409,9 +4409,6 @@ wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>
 
 	[--user_url=<url>]
 		A string containing the user's URL for the user's web site.
-
-	[--user_email=<email>]
-		A string containing the user's email address.
 
 	[--nickname=<nickname>]
 		The user's nickname, defaults to the user's username.
