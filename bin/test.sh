@@ -9,7 +9,7 @@ then
 fi
 
 if [ $WP_VERSION = "latest" ]; then
-	WP_VERSION=$(curl -s https://api.wordpress.org/core/version-check/1.7/ | jq -r ".offers[0].current")
+	export WP_VERSION=$(curl -s https://api.wordpress.org/core/version-check/1.7/ | jq -r ".offers[0].current")
 fi
 
 # Run the functional tests
