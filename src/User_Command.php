@@ -314,9 +314,6 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--user_url=<url>]
 	 * : A string containing the user's URL for the user's web site.
 	 *
-	 * [--user_email=<email>]
-	 * : A string containing the user's email address.
-	 *
 	 * [--nickname=<nickname>]
 	 * : The user's nickname, defaults to the user's username.
 	 *
