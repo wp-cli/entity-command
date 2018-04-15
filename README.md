@@ -1965,7 +1965,7 @@ wp post
 Creates a new post.
 
 ~~~
-wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_date_gmt=<post_date_gmt>] [--post_content=<post_content>] [--post_content_filtered=<post_content_filtered>] [--post_title=<post_title>] [--post_excerpt=<post_excerpt>] [--post_status=<post_status>] [--post_type=<post_type>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--post_password=<post_password>] [--post_name=<post_name>] [--to_ping=<to_ping>] [--pinged=<pinged>] [--post_modified=<post_modified>] [--post_modified_gmt=<post_modified_gmt>] [--post_parent=<post_parent>] [--menu_order=<menu_order>] [--post_mime_type=<post_mime_type>] [--guid=<guid>] [--post_category=<post_category>] [--tags_input=<tags_input>] [--tax_input=<tax_input>] [--meta_input=<meta_input>] [<file>] [--<field>=<value>] [--edit] [--porcelain]
+wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_date_gmt=<post_date_gmt>] [--post_content=<post_content>] [--post_content_filtered=<post_content_filtered>] [--post_title=<post_title>] [--post_excerpt=<post_excerpt>] [--post_status=<post_status>] [--post_type=<post_type>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--post_password=<post_password>] [--post_name=<post_name>] [--from-post=<post_id>] [--to_ping=<to_ping>] [--pinged=<pinged>] [--post_modified=<post_modified>] [--post_modified_gmt=<post_modified_gmt>] [--post_parent=<post_parent>] [--menu_order=<menu_order>] [--post_mime_type=<post_mime_type>] [--guid=<guid>] [--post_category=<post_category>] [--tags_input=<tags_input>] [--tax_input=<tax_input>] [--meta_input=<meta_input>] [<file>] [--<field>=<value>] [--edit] [--porcelain]
 ~~~
 
 **OPTIONS**
@@ -2008,6 +2008,9 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
 
 	[--post_name=<post_name>]
 		The post name. Default is the sanitized post title when creating a new post.
+
+	[--from-post=<post_id>]
+		Post id of a post to be duplicated.
 
 	[--to_ping=<to_ping>]
 		Space or carriage return-separated list of URLs to ping. Default empty.
@@ -2078,6 +2081,10 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
     # Create a post with multiple meta values.
     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
     Success: Created post 1923.
+
+	# Create a duplicate post from existing posts.
+	$ wp post create --from-post=123 --post_title='Different Title'
+	Success: Created post 2350.
 
 
 
