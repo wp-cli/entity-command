@@ -79,7 +79,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * : The post name. Default is the sanitized post title when creating a new post.
 	 *
 	 * [--from-post=<post_id>]
-	 * : The post id of a post to be duplicated.
+	 * : Post id of a post to be duplicated.
 	 *
 	 * [--to_ping=<to_ping>]
 	 * : Space or carriage return-separated list of URLs to ping. Default empty.
@@ -151,7 +151,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
 	 *     Success: Created post 1923.
 	 *
-	 *     # Create a duplicate post with same post data.
+	 *     # Create a duplicate post from existing posts.
 	 *     $ wp post create --from-post=123 --post_title='Different Title'
 	 *     Success: Created post 2350.
 	 */
@@ -178,28 +178,28 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$array_arguments = array( 'meta_input' );
-		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+		$assoc_args = \WP_CLI\Utils\parse_shell_arrays($assoc_args, $array_arguments);
 
-            if( isset( $assoc_args['from-post'] ) ) {
-				$post     = $this->fetcher->get_check( $assoc_args['from-post'] );
-				$post_arr = get_object_vars( $post );
-				$post_id  = $post_arr['ID'];
-				unset( $post_arr['post_date'] );
-				unset( $post_arr['post_date_gmt'] );
-				unset( $post_arr['guid'] );
-				unset( $post_arr['ID'] );
+		if (isset($assoc_args['from-post'])) {
+			$post = $this->fetcher->get_check($assoc_args['from-post']);
+			$post_arr = get_object_vars($post);
+			$post_id = $post_arr['ID'];
+			unset($post_arr['post_date']);
+			unset($post_arr['post_date_gmt']);
+			unset($post_arr['guid']);
+			unset($post_arr['ID']);
 
-				if ( empty( $assoc_args['meta_input'] ) ) {
-					$assoc_args['meta_input'] = $this->get_metadata( $post_id );
-				}
-				if ( empty( $assoc_args['post_category'] ) ) {
-					$post_arr['post_category'] = $this->get_category( $post_id );
-				}
-				if ( empty( $assoc_args['tags_input'] ) ) {
-					$post_arr['tags_input'] = $this->get_tags( $post_id );
-				}
-				$assoc_args = array_merge( $post_arr, $assoc_args );
+			if (empty($assoc_args['meta_input'])) {
+				$assoc_args['meta_input'] = $this->get_metadata($post_id);
 			}
+			if (empty($assoc_args['post_category'])) {
+				$post_arr['post_category'] = $this->get_category($post_id);
+			}
+			if (empty($assoc_args['tags_input'])) {
+				$post_arr['tags_input'] = $this->get_tags($post_id);
+			}
+			$assoc_args = array_merge($post_arr, $assoc_args);
+		}
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create( $args, $assoc_args, function ( $params ) {
