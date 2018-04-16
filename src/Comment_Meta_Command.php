@@ -23,8 +23,7 @@
  */
 class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	protected $meta_type = 'comment';
-
-
+	
 	protected function add_metadata( $object_id, $meta_key, $meta_value, $unique = false ) {
 		return add_comment_meta( $object_id, $meta_key, $meta_value, $unique );
 	}
