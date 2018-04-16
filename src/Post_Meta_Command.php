@@ -47,7 +47,7 @@ class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 		return get_post_meta( $object_id, $meta_key, $single );
 	}
 
-	protected function delete_metadata( $meta_type, $object_id, $meta_key, $meta_value = '', $delete_all = false ) {
+	protected function delete_metadata( $object_id, $meta_key, $meta_value = '', $delete_all = false ) {
 		return delete_post_meta( $object_id, $meta_key, $meta_value, $delete_all );
 	}
 }

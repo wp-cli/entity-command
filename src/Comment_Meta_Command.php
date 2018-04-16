@@ -37,7 +37,7 @@ class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 		return get_comment_meta( $object_id, $meta_key, $single );
 	}
 
-	protected function delete_metadata( $meta_type, $object_id, $meta_key, $meta_value = '', $delete_all = false ) {
+	protected function delete_metadata( $object_id, $meta_key, $meta_value = '', $delete_all = false ) {
 		return delete_comment_meta( $object_id, $meta_key, $meta_value, $delete_all );
 	}
 
