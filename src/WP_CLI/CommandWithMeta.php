@@ -1,4 +1,4 @@
-$this->update_metadata( <?php
+<?php
 
 namespace WP_CLI;
 
