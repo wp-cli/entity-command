@@ -34,4 +34,20 @@ class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 		$post = $fetcher->get_check( $object_id );
 		return $post->ID;
 	}
+
+	protected function add_metadata( $object_id, $meta_key, $meta_value, $unique = false ) {
+		return add_post_meta( $object_id, $meta_key, $meta_value, $unique );
+	}
+
+	protected function update_metadata( $object_id, $meta_key, $meta_value, $prev_value = '' ) {
+		return update_post_meta( $object_id, $meta_key, $meta_value, $prev_value );
+	}
+
+	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
+		return get_post_meta( $object_id, $meta_key, $single );
+	}
+
+	protected function delete_metadata( $meta_type, $object_id, $meta_key, $meta_value = '', $delete_all = false ) {
+		return delete_post_meta( $object_id, $meta_key, $meta_value, $delete_all );
+	}
 }
