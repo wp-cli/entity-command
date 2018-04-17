@@ -20,7 +20,7 @@ Feature: Empty a WordPress site of its data
     When I run `wp post create --post_title='Test post' --post_content='Test content.' --porcelain`
     Then STDOUT should be:
       """
-      4
+      5
       """
 
     When I run `wp term create post_tag 'Test term' --slug=test --description='This is a test term'`
