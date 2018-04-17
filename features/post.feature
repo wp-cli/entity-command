@@ -311,6 +311,7 @@ Feature: Manage WordPress posts
     Then STDOUT should be:
       """
       Sample Page
+      Privacy Policy
       """
 
     When I run `wp post list --post_type=any --fields=post_title,post_name,post_status --format=csv --orderby=post_title --order=ASC`
