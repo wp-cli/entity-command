@@ -223,7 +223,7 @@ Feature: Manage WordPress posts
     Then STDOUT should be:
       """
       http://example.com/?p=1
-      http://example.com/?p=3
+      http://example.com/?p={POST_ID}
       """
 
   Scenario: Update a post from file or STDIN
@@ -308,7 +308,7 @@ Feature: Manage WordPress posts
       """
 
     When I run `wp post list --post_type='page' --field=title`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       Sample Page
       """
