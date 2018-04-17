@@ -223,7 +223,7 @@ Feature: Manage WordPress posts
     Then STDOUT should be:
       """
       http://example.com/?p=1
-      http://example.com/?p=3
+      http://example.com/?p=4
       """
 
   Scenario: Update a post from file or STDIN
