@@ -434,18 +434,57 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Wrapper method for add_metadata that can be overridden in sub classes
+	 *
+	 * @param $object_id
+	 * @param $meta_key
+	 * @param $meta_value
+	 * @param bool $unique
+	 *
+	 * @return mixed
+	 */
 	protected function add_metadata( $object_id, $meta_key, $meta_value, $unique = false ) {
 		return add_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, $unique );
 	}
 
+	/**
+	 * Wrapper method for update_metadata that can be overridden in sub classes
+	 *
+	 * @param $object_id
+	 * @param $meta_key
+	 * @param $meta_value
+	 * @param string $prev_value
+	 *
+	 * @return mixed
+	 */
 	protected function update_metadata( $object_id, $meta_key, $meta_value, $prev_value = '' ) {
 		return update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, $prev_value );
 	}
 
+	/**
+	 * Wrapper method for get_metadata that can be overridden in sub classes
+	 *
+	 * @param $object_id
+	 * @param string $meta_key
+	 * @param bool $single
+	 *
+	 * @return mixed
+	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
 		return get_metadata( $this->meta_type, $object_id, $meta_key, $single );
 	}
 
+	/**
+	 * Wrapper method for delete_metadata that can be overridden in sub classes
+	 *
+	 * @param $object_id
+	 * @param $meta_key
+	 * @param string $meta_value
+	 * @param bool $delete_all
+	 *
+	 * @return mixed
+	 */
 	protected function delete_metadata( $object_id, $meta_key, $meta_value = '', $delete_all = false ) {
 		return delete_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, $delete_all );
 	}
