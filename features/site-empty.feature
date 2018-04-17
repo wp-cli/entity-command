@@ -17,10 +17,10 @@ Feature: Empty a WordPress site of its data
       """
     And the return code should be 1
 
-    When I run `wp post create --post_title='Test post' --post_content='Test content.' --porcelain`
-    Then STDOUT should be:
+    When I run `wp post create --post_title='Test post' --post_content='Test content.'`
+    Then STDOUT should contain:
       """
-      5
+      Success: Created post
       """
 
     When I run `wp term create post_tag 'Test term' --slug=test --description='This is a test term'`
