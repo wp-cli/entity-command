@@ -7,8 +7,17 @@ Feature: Create Duplicate WordPress post from existing posts.
 	When I run `wp term create category "Test Category" --porcelain`
 	Then save STDOUT as {TERM_ID}
 
+	When I run `wp term create post_tag "Test Tag" --porcelain`
+	Then save STDOUT as {TAG_ID}
+
 	When I run `wp post create --post_title='Test Duplicate Post' --post_category={TERM_ID} --porcelain`
 	And save STDOUT as {POST_ID}
+
+	When I run `wp post term add {POST_ID} post_tag {TAG_ID} --by=id`
+	Then STDOUT should contain:
+      """*
+      Success: Added term.
+      """
 
 	When I run `wp post create --from-post={POST_ID} --porcelain`
 	Then STDOUT should be a number
@@ -25,6 +34,13 @@ Feature: Create Duplicate WordPress post from existing posts.
       """
       {TERM_ID}
       """
+
+	When I run `wp post term list {DUPLICATE_POST_ID} post_tag --field=term_id`
+	Then STDOUT should be:
+      """
+      {TAG_ID}
+      """
+
   @require-wp-4.4
   Scenario: Generate duplicate post with post metadata.
 	When I run `wp post create --post_title='Test Post' --meta_input='{"key1":"value1","key2":"value2"}' --porcelain`
