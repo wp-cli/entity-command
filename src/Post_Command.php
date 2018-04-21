@@ -178,27 +178,27 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$array_arguments = array( 'meta_input' );
-		$assoc_args = \WP_CLI\Utils\parse_shell_arrays($assoc_args, $array_arguments);
+		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
-		if (isset($assoc_args['from-post'])) {
-			$post = $this->fetcher->get_check($assoc_args['from-post']);
-			$post_arr = get_object_vars($post);
-			$post_id = $post_arr['ID'];
-			unset($post_arr['post_date']);
-			unset($post_arr['post_date_gmt']);
-			unset($post_arr['guid']);
-			unset($post_arr['ID']);
+		if ( isset( $assoc_args['from-post'] ) ) {
+			$post     = $this->fetcher->get_check( $assoc_args['from-post'] );
+			$post_arr = get_object_vars( $post );
+			$post_id  = $post_arr['ID'];
+			unset( $post_arr['post_date'] );
+			unset( $post_arr['post_date_gmt'] );
+			unset( $post_arr['guid'] );
+			unset( $post_arr['ID'] );
 
-			if (empty($assoc_args['meta_input'])) {
-				$assoc_args['meta_input'] = $this->get_metadata($post_id);
+			if ( empty( $assoc_args['meta_input'] ) ) {
+				$assoc_args['meta_input'] = $this->get_metadata( $post_id );
 			}
-			if (empty($assoc_args['post_category'])) {
-				$post_arr['post_category'] = $this->get_category($post_id);
+			if ( empty( $assoc_args['post_category'] ) ) {
+				$post_arr['post_category'] = $this->get_category( $post_id );
 			}
-			if (empty($assoc_args['tags_input'])) {
-				$post_arr['tags_input'] = $this->get_tags($post_id);
+			if ( empty( $assoc_args['tags_input'] ) ) {
+				$post_arr['tags_input'] = $this->get_tags( $post_id );
 			}
-			$assoc_args = array_merge($post_arr, $assoc_args);
+			$assoc_args = array_merge( $post_arr, $assoc_args );
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
