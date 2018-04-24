@@ -829,7 +829,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Get post metadata.
 	 *
-	 * @param $post_id id of the post.
+	 * @param $post_id ID of the post.
 	 *
 	 * @return array
 	 */
@@ -849,7 +849,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Get Categories of a post.
 	 *
-	 * @param $post_id postid of the post.
+	 * @param $post_id ID of the post.
 	 *
 	 * @return array
 	 */
@@ -866,7 +866,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Get Tags of a post.
 	 *
-	 * @param $post_id postid of the post.
+	 * @param $post_id ID of the post.
 	 *
 	 * @return array
 	 */
