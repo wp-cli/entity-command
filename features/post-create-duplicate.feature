@@ -15,7 +15,7 @@ Feature: Create Duplicate WordPress post from existing posts.
 
 	When I run `wp post term add {POST_ID} post_tag {TAG_ID} --by=id`
 	Then STDOUT should contain:
-      """*
+      """
       Success: Added term.
       """
 
