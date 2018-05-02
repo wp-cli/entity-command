@@ -797,4 +797,26 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		// If no category ids found, return exploded array for compat with previous WP-CLI versions.
 		return $category_ids ? $category_ids : $categories;
 	}
+
+	/**
+	 * Verifies whether a post exists.
+	 *
+	 * Displays a success message if the post does exist.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check whether post exists.
+	 *     $ wp post exists 1337
+	 *     Success: Comment with ID 1337 exists.
+	 */
+	public function exists( $args ) {
+		if ( $this->fetcher->get( $args[0] ) ) {
+			WP_CLI::success( "Post with ID $args[0] exists." );
+		}
+	}
 }
