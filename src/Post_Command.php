@@ -812,7 +812,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 *     # Check whether post exists.
 	 *     $ wp post exists 1337
-	 *     Success: Comment with ID 1337 exists.
+	 *     Success: Post with ID 1337 exists.
 	 */
 	public function exists( $args ) {
 		if ( $this->fetcher->get( $args[0] ) ) {
