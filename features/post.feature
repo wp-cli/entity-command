@@ -8,6 +8,12 @@ Feature: Manage WordPress posts
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
+    When I run `wp post exists {POST_ID}`
+    Then STDOUT should be:
+      """
+    Success: Post with ID {POST_ID} exists.
+      """
+
     When I run `wp post update {POST_ID} --post_title='Updated post'`
     Then STDOUT should be:
       """
