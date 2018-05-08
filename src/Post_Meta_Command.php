@@ -102,15 +102,10 @@ class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 *                           this check. For backward compatibility, it is
 	 *                           not possible to pass an empty string to delete
 	 *                           those entries with an empty string for a value.
-	 * @param bool $delete_all   Optional, default is false. If true, delete
-	 *                           matching metadata entries for all objects,
-	 *                           ignoring the specified object_id. Otherwise,
-	 *                           only delete matching metadata entries for the
-	 *                           specified object_id.
 	 *
 	 * @return bool True on successful delete, false on failure.
 	 */
-	protected function delete_metadata( $object_id, $meta_key, $meta_value = '', $delete_all = false ) {
-		return delete_post_meta( $object_id, $meta_key, $meta_value, $delete_all );
+	protected function delete_metadata( $object_id, $meta_key, $meta_value = '' ) {
+		return delete_post_meta( $object_id, $meta_key, $meta_value );
 	}
 }
