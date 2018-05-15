@@ -68,7 +68,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		$object_id = $this->check_object_id( $object_id );
 
-		$metadata = get_metadata( $this->meta_type, $object_id );
+		$metadata = $this->get_metadata( $object_id );
 		if ( ! $metadata ) {
 			$metadata = array();
 		}
@@ -147,7 +147,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		$object_id = $this->check_object_id( $object_id );
 
-		$value = get_metadata( $this->meta_type, $object_id, $meta_key, true );
+		$value = $this->get_metadata( $object_id, $meta_key, true );
 
 		if ( '' === $value )
 			die(1);
@@ -186,8 +186,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		if ( Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$errors = false;
-			foreach( get_metadata( $this->meta_type, $object_id ) as $meta_key => $values ) {
-				$success = delete_metadata( $this->meta_type, $object_id, $meta_key );
+			foreach( $this->get_metadata( $object_id ) as $meta_key => $values ) {
+				$success = $this->delete_metadata( $object_id, $meta_key );
 				if ( $success ) {
 					WP_CLI::log( "Deleted '{$meta_key}' custom field." );
 				} else {
@@ -201,7 +201,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 				WP_CLI::success( 'Deleted all custom fields.' );
 			}
 		} else {
-			$success = delete_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
+			$success = $this->delete_metadata( $object_id, $meta_key, $meta_value );
 			if ( $success ) {
 				WP_CLI::success( "Deleted custom field." );
 			} else {
@@ -242,7 +242,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$object_id = $this->check_object_id( $object_id );
 
 		$meta_value = wp_slash( $meta_value );
-		$success = add_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
+		$success = $this->add_metadata( $object_id, $meta_key, $meta_value );
 
 		if ( $success ) {
 			WP_CLI::success( "Added custom field." );
@@ -285,13 +285,13 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$object_id = $this->check_object_id( $object_id );
 
 		$meta_value = sanitize_meta( $meta_key, $meta_value, $this->meta_type );
-		$old_value = sanitize_meta( $meta_key, get_metadata( $this->meta_type, $object_id, $meta_key, true ), $this->meta_type );
+		$old_value = sanitize_meta( $meta_key, $this->get_metadata( $object_id, $meta_key, true ), $this->meta_type );
 
 		if ( $meta_value === $old_value ) {
 			WP_CLI::success( "Value passed for custom field '$meta_key' is unchanged." );
 		} else {
 			$meta_value = wp_slash( $meta_value );
-			$success = update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value );
+			$success = $this->update_metadata( $object_id, $meta_key, $meta_value );
 
 			if ( $success ) {
 				WP_CLI::success( "Updated custom field '$meta_key'." );
@@ -336,7 +336,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 			return $key;
 		}, array_slice( $args, 2 ) );
 
-		$value = get_metadata( $this->meta_type, $object_id, $meta_key, true );
+		$value = $this->get_metadata( $object_id, $meta_key, true );
 
 		$traverser = new RecursiveDataStructureTraverser( $value );
 
@@ -405,7 +405,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		}
 
 		/* Need to make a copy of $current_meta_value here as it is modified by reference */
-		$current_meta_value = $old_meta_value = sanitize_meta( $meta_key, get_metadata( $this->meta_type, $object_id, $meta_key, true ), $this->meta_type );
+		$current_meta_value = $old_meta_value = sanitize_meta( $meta_key, $this->get_metadata( $object_id, $meta_key, true ), $this->meta_type );
 		if ( is_object( $current_meta_value ) ) {
 			$old_meta_value = clone $current_meta_value;
 		}
@@ -424,7 +424,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 			WP_CLI::success( "Value passed for custom field '$meta_key' is unchanged." );
 		} else {
 			$slashed = wp_slash( $patched_meta_value );
-			$success = update_metadata( $this->meta_type, $object_id, $meta_key, $slashed );
+			$success = $this->update_metadata( $object_id, $meta_key, $slashed );
 
 			if ( $success ) {
 				WP_CLI::success( "Updated custom field '$meta_key'." );
@@ -432,6 +432,80 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 				WP_CLI::error( "Failed to update custom field '$meta_key'." );
 			}
 		}
+	}
+
+	/**
+	 * Wrapper method for add_metadata that can be overridden in sub classes.
+	 *
+	 * @param int    $object_id  ID of the object the metadata is for.
+	 * @param string $meta_key   Metadata key to use.
+	 * @param mixed  $meta_value Metadata value. Must be serializable if
+	 *                           non-scalar.
+	 * @param bool   $unique     Optional, default is false. Whether the
+	 *                           specified metadata key should be unique for the
+	 *                           object. If true, and the object already has a
+	 *                           value for the specified metadata key, no change
+	 *                           will be made.
+	 *
+	 * @return int|false The meta ID on success, false on failure.
+	 */
+	protected function add_metadata( $object_id, $meta_key, $meta_value, $unique = false ) {
+		return add_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, $unique );
+	}
+
+	/**
+	 * Wrapper method for update_metadata that can be overridden in sub classes.
+	 *
+	 * @param int    $object_id  ID of the object the metadata is for.
+	 * @param string $meta_key   Metadata key to use.
+	 * @param mixed  $meta_value Metadata value. Must be serializable if
+	 *                           non-scalar.
+	 * @param mixed  $prev_value Optional. If specified, only update existing
+	 *                           metadata entries with the specified value.
+	 *                           Otherwise, update all entries.
+	 *
+	 * @return int|bool Meta ID if the key didn't exist, true on successful
+	 *                  update, false on failure.
+	 */
+	protected function update_metadata( $object_id, $meta_key, $meta_value, $prev_value = '' ) {
+		return update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, $prev_value );
+	}
+
+	/**
+	 * Wrapper method for get_metadata that can be overridden in sub classes.
+	 *
+	 * @param int    $object_id ID of the object the metadata is for.
+	 * @param string $meta_key  Optional. Metadata key. If not specified,
+	 *                          retrieve all metadata for the specified object.
+	 * @param bool   $single    Optional, default is false. If true, return only
+	 *                          the first value of the specified meta_key. This
+	 *                          parameter has no effect if meta_key is not
+	 *                          specified.
+	 *
+	 * @return mixed Single metadata value, or array of values.
+	 */
+	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
+		return get_metadata( $this->meta_type, $object_id, $meta_key, $single );
+	}
+
+	/**
+	 * Wrapper method for delete_metadata that can be overridden in sub classes.
+	 *
+	 * @param int    $object_id  ID of the object metadata is for
+	 * @param string $meta_key   Metadata key
+	 * @param mixed $meta_value  Optional. Metadata value. Must be serializable
+	 *                           if non-scalar. If specified, only delete
+	 *                           metadata entries with this value. Otherwise,
+	 *                           delete all entries with the specified meta_key.
+	 *                           Pass `null, `false`, or an empty string to skip
+	 *                           this check. For backward compatibility, it is
+	 *                           not possible to pass an empty string to delete
+	 *                           those entries with an empty string for a value.
+	 *
+	 * @return bool True on successful delete, false on failure.
+	 */
+	protected function delete_metadata( $object_id, $meta_key, $meta_value = '' ) {
+		return delete_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, false );
 	}
 
 	/**
