@@ -34,7 +34,7 @@ class Site_Meta_Command extends \WP_CLI\CommandWithMeta {
 		$site = $fetcher->get_check( $object_id );
 		return $site->blog_id;
 	}
-
+	
 	/**
 	 * Wrapper method for add_metadata that can be overridden in sub classes.
 	 *
