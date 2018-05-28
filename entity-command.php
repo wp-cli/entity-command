@@ -27,6 +27,16 @@ WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
 WP_CLI::add_command( 'post term', 'Post_Term_Command' );
 WP_CLI::add_command( 'post-type', 'Post_Type_Command' );
 WP_CLI::add_command( 'site', 'Site_Command' );
+WP_CLI::add_command( 'site meta', 'Site_Meta_Command', array(
+	'before_invoke' => function() {
+		if ( !is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite installation.' );
+		}
+		if( function_exists('is_site_meta_supported') && !is_site_meta_supported() ){
+			WP_CLI::error( sprintf( 'The %s table is not installed. Please run the network database upgrade.', $GLOBALS['wpdb']->blogmeta ) );
+		}
+	}
+) );
 WP_CLI::add_command( 'site option', 'Site_Option_Command', array(
 	'before_invoke' => function() {
 		if ( !is_multisite() ) {
