@@ -2114,9 +2114,9 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
     Success: Created post 1923.
 
-	# Create a duplicate post from existing posts.
-	$ wp post create --from-post=123 --post_title='Different Title'
-	Success: Created post 2350.
+    # Create a duplicate post from existing posts.
+    $ wp post create --from-post=123 --post_title='Different Title'
+    Success: Created post 2350.
 
 
 
@@ -3357,7 +3357,7 @@ wp site mature <id>...
 
 ### wp site option
 
-Adds, updates, deletes, and lists site options in a multisite install.
+Adds, updates, deletes, and lists site options in a multisite installation.
 
 ~~~
 wp site option
