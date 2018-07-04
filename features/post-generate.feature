@@ -75,16 +75,16 @@ Feature: Generate new WordPress posts
       """
 
   Scenario: Generating posts with post_date argument with time
-    When I run `wp post generate --count=1 --post_date="2018-07-02 00:00:00"`
+    When I run `wp post generate --count=1 --post_date="2018-07-02 02:21:05"`
     And I run `wp post list --field=post_date`
     Then STDOUT should contain:
       """
-      2018-07-02 00:00:00
+      2018-07-02 02:21:05
       """
     And I run `wp post list --field=post_date_gmt`
     Then STDOUT should contain:
       """
-      2018-07-02 00:00:00
+      2018-07-02 02:21:05
       """
 
   Scenario: Generating posts with post_date_gmt argument without time
@@ -101,16 +101,16 @@ Feature: Generate new WordPress posts
       """
 
   Scenario: Generating posts with post_date_gmt argument with time
-    When I run `wp post generate --count=1 --post_date_gmt="2018-07-04 00:00:00"`
+    When I run `wp post generate --count=1 --post_date_gmt="2018-07-04 12:34:56"`
     And I run `wp post list --field=post_date`
     Then STDOUT should contain:
       """
-      2018-07-04 00:00:00
+      2018-07-04 12:34:56
       """
     And I run `wp post list --field=post_date_gmt`
     Then STDOUT should contain:
       """
-      2018-07-04 00:00:00
+      2018-07-04 12:34:56
       """
 
   Scenario: Generating posts with post_date argument with hyphenated time
