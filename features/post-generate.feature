@@ -60,3 +60,55 @@ Feature: Generate new WordPress posts
       howdy-3
       """
     And STDERR should be empty
+
+  Scenario: Generating posts with post_date argument without time
+    When I run `wp post generate --count=1 --post_date="2018-07-01"`
+    And I run `wp post list --field=post_date`
+    Then STDOUT should contain:
+      """
+      2018-07-01 00:00:00
+      """
+    And I run `wp post list --field=post_date_gmt`
+    Then STDOUT should contain:
+      """
+      2018-07-01 00:00:00
+      """
+
+  Scenario: Generating posts with post_date argument with time
+    When I run `wp post generate --count=1 --post_date="2018-07-02 00:00:00"`
+    And I run `wp post list --field=post_date`
+    Then STDOUT should contain:
+      """
+      2018-07-02 00:00:00
+      """
+    And I run `wp post list --field=post_date_gmt`
+    Then STDOUT should contain:
+      """
+      2018-07-02 00:00:00
+      """
+
+  Scenario: Generating posts with post_date_gmt argument without time
+    When I run `wp post generate --count=1 --post_date_gmt="2018-07-03"`
+    And I run `wp post list --field=post_date`
+    Then STDOUT should contain:
+      """
+      2018-07-03 00:00:00
+      """
+    And I run `wp post list --field=post_date_gmt`
+    Then STDOUT should contain:
+      """
+      2018-07-03 00:00:00
+      """
+
+  Scenario: Generating posts with post_date_gmt argument with time
+    When I run `wp post generate --count=1 --post_date_gmt="2018-07-04 00:00:00"`
+    And I run `wp post list --field=post_date`
+    Then STDOUT should contain:
+      """
+      2018-07-04 00:00:00
+      """
+    And I run `wp post list --field=post_date_gmt`
+    Then STDOUT should contain:
+      """
+      2018-07-04 00:00:00
+      """
