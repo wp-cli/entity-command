@@ -501,13 +501,19 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$user_ids[] = $user->ID;
 		}
 
-		if ( Utils\get_flag_value( $assoc_args, 'skip-email' ) ) {
+		$skip_email = Utils\get_flag_value( $assoc_args, 'skip-email' );
+		if ( $skip_email ) {
 			add_filter( 'send_email_change_email', '__return_false' );
 			add_filter( 'send_password_change_email', '__return_false' );
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $user_ids, $assoc_args, 'wp_update_user' );
+
+		if ( $skip_email ) {
+			remove_filter( 'send_email_change_email', '__return_false' );
+			remove_filter( 'send_password_change_email', '__return_false' );
+		}
 	}
 
 	/**
