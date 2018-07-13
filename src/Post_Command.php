@@ -634,6 +634,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--post_date=<yyyy-mm-dd-hh-ii-ss>]
 	 * : The date of the generated posts. Default: current date
 	 *
+	 * [--post_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
+	 * : The GMT date of the generated posts. Default: value of post_date (or current date if it's not set)
+	 *
 	 * [--post_content]
 	 * : If set, the command reads the post_content from STDIN.
 	 *
@@ -680,11 +683,22 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'post_type' => 'post',
 			'post_status' => 'publish',
 			'post_author' => false,
-			'post_date' => current_time( 'mysql' ),
+			'post_date' => false,
+			'post_date_gmt' => false,
 			'post_content' => '',
 			'post_title' => '',
 		);
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
+
+		$call_time = current_time( 'mysql' );
+
+		if ( $post_date_gmt === false ) {
+			$post_date_gmt = $post_date ? $post_date : $call_time;
+		}
+
+		if ( $post_date === false ) {
+			$post_date = $post_date_gmt ? $post_date_gmt : $call_time;
+		}
 
 		// @codingStandardsIgnoreStart
 		if ( !post_type_exists( $post_type ) ) {
@@ -745,6 +759,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				'post_parent' => $current_parent,
 				'post_name' => ! empty( $post_title  ) ? sanitize_title( $post_title . ( $i === $total ) ? '' : '-$i' ) : "post-$i",
 				'post_date' => $post_date,
+				'post_date_gmt' => $post_date_gmt,
 				'post_content' => $post_content,
 			);
 
