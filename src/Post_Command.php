@@ -457,7 +457,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$post_type = get_post_type( $post_id );
 
 			if ( !$assoc_args['force'] && ( $post_type !== 'post' && $post_type !== 'page' ) ) {
-				return array( 'error', "Error: Posts of type '$post_type' do not support being sent to trash.\nPlease use the --force flag to skip trash and delete them permanently." );
+				return array( 'error', "Posts of type '$post_type' do not support being sent to trash.\nPlease use the --force flag to skip trash and delete them permanently." );
 			}
 
 			$r = wp_delete_post( $post_id, $assoc_args['force'] );
