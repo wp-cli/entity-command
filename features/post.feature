@@ -34,7 +34,7 @@ Feature: Manage WordPress posts
     When I run `wp post delete {CUSTOM_POST_ID} --force`
     Then STDOUT should be:
       """
-      Success: Trashed post {CUSTOM_POST_ID}.
+      Success: Deleted post {CUSTOM_POST_ID}.
       """
 
     When I run the previous command again
