@@ -24,7 +24,7 @@ Feature: Manage WordPress posts
       Success: Trashed post {POST_ID}.
       """
 
-    When I run `wp post delete {CUSTOM_POST_ID}`
+    When I try `wp post delete {CUSTOM_POST_ID}`
     Then STDERR should be:
       """
       Warning: Error: Posts of type 'test' do not support being sent to trash.
