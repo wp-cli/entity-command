@@ -8,6 +8,10 @@ Feature: Manage WordPress posts
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
+    When I run `wp post create --post_title='Test post' --post_type="test" --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {CUSTOM_POST_ID}
+
     When I run `wp post update {POST_ID} --post_title='Updated post'`
     Then STDOUT should be:
       """
@@ -18,6 +22,13 @@ Feature: Manage WordPress posts
     Then STDOUT should be:
       """
       Success: Trashed post {POST_ID}.
+      """
+
+    When I run `wp post delete {CUSTOM_POST_ID}`
+    Then STDOUT should be:
+      """
+      Error: Posts of type 'test' do not support being sent to trash.
+      Please use the --force flag to skip trash and delete them permanently.
       """
 
     When I run the previous command again
