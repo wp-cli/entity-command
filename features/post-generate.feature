@@ -12,6 +12,12 @@ Feature: Generate new WordPress posts
       """
     And STDERR should be empty
 
+    When I try `wp post generate --count=1 --post_content`
+    Then STDERR should contain:
+      """
+      Error: The parameter `post_content` reads from STDIN.
+      """
+
   Scenario: Generating posts by a specific author
 
     When I run `wp user create dummyuser dummy@example.com --porcelain`
