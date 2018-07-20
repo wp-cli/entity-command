@@ -31,6 +31,12 @@ Feature: Manage WordPress posts
       Please use the --force flag to skip trash and delete them permanently.
       """
 
+    When I run `wp post delete {CUSTOM_POST_ID} --force`
+    Then STDOUT should be:
+      """
+      Success: Trashed post {CUSTOM_POST_ID}.
+      """
+
     When I run the previous command again
     Then STDOUT should be:
       """
