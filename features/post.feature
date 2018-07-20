@@ -25,7 +25,7 @@ Feature: Manage WordPress posts
       """
 
     When I run `wp post delete {CUSTOM_POST_ID}`
-    Then STDOUT should be:
+    Then STDERR should be:
       """
       Warning: Error: Posts of type 'test' do not support being sent to trash.
       Please use the --force flag to skip trash and delete them permanently.
