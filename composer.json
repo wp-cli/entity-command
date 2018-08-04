@@ -1,11 +1,8 @@
 {
     "name": "wp-cli/entity-command",
-    "description": "Manage WordPress core entities.",
     "type": "wp-cli-package",
+    "description": "Manage WordPress core entities.",
     "homepage": "https://github.com/wp-cli/entity-command",
-    "support": {
-        "issues": "https://github.com/wp-cli/entity-command/issues"
-    },
     "license": "MIT",
     "authors": [
         {
@@ -14,20 +11,14 @@
             "homepage": "https://runcommand.io"
         }
     ],
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "autoload": {
-        "psr-4": {
-            "": "src/",
-            "WP_CLI\\": "src/WP_CLI"
-        },
-        "files": [ "entity-command.php" ]
-    },
     "require": {
         "wp-cli/wp-cli": "^2"
     },
     "require-dev": {
         "wp-cli/wp-cli-tests": "^0"
+    },
+    "config": {
+        "sort-packages": true
     },
     "extra": {
         "branch-alias": {
@@ -185,11 +176,22 @@
             "user update"
         ]
     },
+    "autoload": {
+        "psr-4": {
+            "": "src/",
+            "WP_CLI\\": "src/WP_CLI"
+        },
+        "files": [
+            "entity-command.php"
+        ]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "scripts": {
+        "behat": "run-behat-tests",
         "lint": "run-linter-tests",
         "phpcs": "run-phpcs-tests",
         "phpunit": "run-php-unit-tests",
-        "behat": "run-behat-tests",
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",
@@ -197,5 +199,8 @@
             "@phpunit",
             "@behat"
         ]
+    },
+    "support": {
+        "issues": "https://github.com/wp-cli/entity-command/issues"
     }
 }
