@@ -149,7 +149,7 @@ Feature: Import users from CSV
       admin,admin@example.com,Existing User,administrator
       """
 
-    When I try `wp user import-csv -`
+    When I try `wp user import-csv - | tr -d ' '`
     Then STDERR should be:
       """
       Error: Unable to read content from STDIN.
