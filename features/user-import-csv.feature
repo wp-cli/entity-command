@@ -139,7 +139,6 @@ Feature: Import users from CSV
       | Bob Jones         | contributor          |
       | Bill Jones        | administrator,author |
 
-  @broken
   Scenario: Importing users from STDIN
     Given a WP install
     And a users.csv file:
