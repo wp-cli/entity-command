@@ -10,7 +10,7 @@ class Utils {
 	 * @return bool
 	 */
 	public static function has_stdin() {
-		$handle  = print_r(fopen( 'php://STDIN', 'ro' ));
+		$handle  = trim)fopen( 'php://STDIN', 'r' ));
 		$read    = array( $handle );
 		$write   = null;
 		$except  = null;
