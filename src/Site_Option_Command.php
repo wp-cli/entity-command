@@ -2,6 +2,7 @@
 
 use WP_CLI\Entity\RecursiveDataStructureTraverser;
 use WP_CLI\Utils;
+use WP_CLI\Entity\Utils as EntityUtils;
 
 /**
  * Adds, updates, deletes, and lists site options in a multisite installation.
@@ -174,7 +175,7 @@ class Site_Option_Command extends WP_CLI_Command {
 			$fields = explode( ',', $assoc_args['fields'] );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
+		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			$fields = array( 'size_bytes' );
 			$size_query = ",SUM(LENGTH(meta_value)) AS `size_bytes`";
 		}
@@ -190,7 +191,7 @@ class Site_Option_Command extends WP_CLI_Command {
 		}
 		$results = $wpdb->get_results( $query );
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
+		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			WP_CLI::line( $results[0]->size_bytes );
 		} else {
 			$formatter = new \WP_CLI\Formatter(
@@ -362,12 +363,13 @@ class Site_Option_Command extends WP_CLI_Command {
 
 		if ( 'delete' == $action ) {
 			$patch_value = null;
-		} elseif ( \WP_CLI\Entity\Utils::has_stdin() ) {
-			$stdin_value = WP_CLI::get_value_from_arg_or_stdin( $args, -1 );
-			$patch_value = WP_CLI::read_value( trim( $stdin_value ), $assoc_args );
 		} else {
-			// Take the patch value as the last positional argument. Mutates $key_path to be 1 element shorter!
-			$patch_value = WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
+			$stdin_value = EntityUtils::has_stdin()
+				? trim( WP_CLI::get_value_from_arg_or_stdin( $args, -1 ) )
+				: null;
+			$patch_value = ! empty( $stdin_value )
+				? WP_CLI::read_value( $stdin_value, $assoc_args )
+				: WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
 		}
 
 		/* Need to make a copy of $current_value here as it is modified by reference */
