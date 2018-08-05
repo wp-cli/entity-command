@@ -10,8 +10,8 @@ class Utils {
 	 * @return bool
 	 */
 	public static function has_stdin() {
-		$handle  = fopen( 'php://stdin', 'ro' );
-		$read    = print_r(array( $handle ));
+		$handle  = fopen( 'php://STDIN', 'r' );
+		$read    = array( $handle );
 		$write   = null;
 		$except  = null;
 		$streams = stream_select( $read, $write, $except, 0 );
