@@ -154,7 +154,6 @@ Feature: Import users from CSV
       """
       Error: Unable to read content from STDIN.
       """
-    And the return code should be 1
 
     When I run `cat users.csv | wp user import-csv -`
     Then STDOUT should be:
