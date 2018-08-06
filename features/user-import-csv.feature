@@ -139,7 +139,6 @@ Feature: Import users from CSV
       | Bob Jones         | contributor          |
       | Bill Jones        | administrator,author |
 
-  @broken
   Scenario: Importing users from STDIN
     Given a WP install
     And a users.csv file:
@@ -151,11 +150,11 @@ Feature: Import users from CSV
       """
 
     When I try `wp user import-csv -`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
       Error: Unable to read content from STDIN.
       """
-    And the return code should be 1
+     And the return code should be 1
 
     When I run `cat users.csv | wp user import-csv -`
     Then STDOUT should be:
