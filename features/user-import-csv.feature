@@ -150,11 +150,10 @@ Feature: Import users from CSV
       """
 
     When I try `wp user import-csv -`
-    Then STDERR should be:
+    Then STDERR should contain:
       """
       Error: Unable to read content from STDIN.
       """
-    And the return code should be 1
 
     When I run `cat users.csv | wp user import-csv -`
     Then STDOUT should be:
