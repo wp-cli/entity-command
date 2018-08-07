@@ -184,7 +184,8 @@
     },
     "autoload": {
         "psr-4": {
-            "": "src/"
+            "": "src/",
+            "WP_CLI\\": "src/WP_CLI"
         },
         "files": [
             "entity-command.php"
