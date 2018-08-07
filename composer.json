@@ -12,8 +12,9 @@
         }
     ],
     "require": {
-        "wp-cli/wp-cli": "^2",
-        "wp-cli/core-command": "^2"
+        "ext-json": "*",
+        "php": ">=5.4",
+        "wp-cli/wp-cli": "^2"
     },
     "require-dev": {
         "wp-cli/cache-command": "^1 || ^2",
