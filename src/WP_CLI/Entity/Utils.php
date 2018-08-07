@@ -10,7 +10,7 @@ class Utils {
 	 * @return bool
 	 */
 	public static function has_stdin() {
-		$handle  = WP_CLI::debug('STDIN',fopen( 'php://stdin', 'r' ));
+		$handle  = fopen( 'php://stdin', 'r' );
 		$read    = array( $handle );
 		$write   = null;
 		$except  = null;
