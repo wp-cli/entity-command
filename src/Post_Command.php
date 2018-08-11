@@ -78,6 +78,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--post_name=<post_name>]
 	 * : The post name. Default is the sanitized post title when creating a new post.
 	 *
+	 * [--from-post=<post_id>]
+	 * : Post id of a post to be duplicated.
+	 *
 	 * [--to_ping=<to_ping>]
 	 * : Space or carriage return-separated list of URLs to ping. Default empty.
 	 *
@@ -147,6 +150,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     # Create a post with multiple meta values.
 	 *     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
 	 *     Success: Created post 1923.
+	 *
+	 *     # Create a duplicate post from existing posts.
+	 *     $ wp post create --from-post=123 --post_title='Different Title'
+	 *     Success: Created post 2350.
 	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! empty( $args[0] ) ) {
@@ -172,6 +179,27 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$array_arguments = array( 'meta_input' );
 		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+
+		if ( isset( $assoc_args['from-post'] ) ) {
+			$post     = $this->fetcher->get_check( $assoc_args['from-post'] );
+			$post_arr = get_object_vars( $post );
+			$post_id  = $post_arr['ID'];
+			unset( $post_arr['post_date'] );
+			unset( $post_arr['post_date_gmt'] );
+			unset( $post_arr['guid'] );
+			unset( $post_arr['ID'] );
+
+			if ( empty( $assoc_args['meta_input'] ) ) {
+				$assoc_args['meta_input'] = $this->get_metadata( $post_id );
+			}
+			if ( empty( $assoc_args['post_category'] ) ) {
+				$post_arr['post_category'] = $this->get_category( $post_id );
+			}
+			if ( empty( $assoc_args['tags_input'] ) ) {
+				$post_arr['tags_input'] = $this->get_tags( $post_id );
+			}
+			$assoc_args = array_merge( $post_arr, $assoc_args );
+		}
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create( $args, $assoc_args, function ( $params ) {
@@ -606,6 +634,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * [--post_date=<yyyy-mm-dd-hh-ii-ss>]
 	 * : The date of the generated posts. Default: current date
 	 *
+	 * [--post_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
+	 * : The GMT date of the generated posts. Default: value of post_date (or current date if it's not set)
+	 *
 	 * [--post_content]
 	 * : If set, the command reads the post_content from STDIN.
 	 *
@@ -652,11 +683,22 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			'post_type' => 'post',
 			'post_status' => 'publish',
 			'post_author' => false,
-			'post_date' => current_time( 'mysql' ),
+			'post_date' => false,
+			'post_date_gmt' => false,
 			'post_content' => '',
 			'post_title' => '',
 		);
 		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
+
+		$call_time = current_time( 'mysql' );
+
+		if ( $post_date_gmt === false ) {
+			$post_date_gmt = $post_date ? $post_date : $call_time;
+		}
+
+		if ( $post_date === false ) {
+			$post_date = $post_date_gmt ? $post_date_gmt : $call_time;
+		}
 
 		// @codingStandardsIgnoreStart
 		if ( !post_type_exists( $post_type ) ) {
@@ -717,6 +759,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				'post_parent' => $current_parent,
 				'post_name' => ! empty( $post_title  ) ? sanitize_title( $post_title . ( $i === $total ) ? '' : '-$i' ) : "post-$i",
 				'post_date' => $post_date,
+				'post_date_gmt' => $post_date_gmt,
 				'post_content' => $post_content,
 			);
 
@@ -799,6 +842,62 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
+	 * Get post metadata.
+	 *
+	 * @param $post_id ID of the post.
+	 *
+	 * @return array
+	 */
+	private function get_metadata( $post_id ) {
+		$metadata = get_metadata( 'post', $post_id );
+		$items    = array();
+		foreach ( $metadata as $key => $values ) {
+			foreach ( $values as $item_value ) {
+				$item_value  = maybe_unserialize( $item_value );
+				$items[$key] = $item_value;
+			}
+		}
+
+		return $items;
+	}
+
+	/**
+	 * Get Categories of a post.
+	 *
+	 * @param $post_id ID of the post.
+	 *
+	 * @return array
+	 */
+	private function get_category( $post_id ) {
+		$category_data = get_the_category( $post_id );
+		$category_arr  = array();
+		foreach ( $category_data as $cat ) {
+			array_push( $category_arr, $cat->term_id );
+		}
+
+		return $category_arr;
+	}
+
+	/**
+	 * Get Tags of a post.
+	 *
+	 * @param $post_id ID of the post.
+	 *
+	 * @return array
+	 */
+	private function get_tags( $post_id ) {
+		$tag_data = get_the_tags( $post_id );
+		$tag_arr  = array();
+		if ( $tag_data ) {
+			foreach ( $tag_data as $tag ) {
+				array_push( $tag_arr, $tag->slug );
+			}
+		}
+
+		return $tag_arr;
+	}
+
+	/*
 	 * Verifies whether a post exists.
 	 *
 	 * Displays a success message if the post does exist.
@@ -819,4 +918,5 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::success( "Post with ID $args[0] exists." );
 		}
 	}
+
 }

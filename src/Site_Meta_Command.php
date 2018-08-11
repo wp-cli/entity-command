@@ -1,29 +1,40 @@
 <?php
 
 /**
- * Adds, updates, deletes, and lists comment custom fields.
+ * Adds, updates, deletes, and lists site custom fields.
  *
  * ## EXAMPLES
  *
- *     # Set comment meta
- *     $ wp comment meta set 123 description "Mary is a WordPress developer."
- *     Success: Updated custom field 'description'.
+ *     # Set site meta
+ *     $ wp site meta set 123 bio "Mary is a WordPress developer."
+ *     Success: Updated custom field 'bio'.
  *
- *     # Get comment meta
- *     $ wp comment meta get 123 description
+ *     # Get site meta
+ *     $ wp site meta get 123 bio
  *     Mary is a WordPress developer.
  *
- *     # Update comment meta
- *     $ wp comment meta update 123 description "Mary is an awesome WordPress developer."
- *     Success: Updated custom field 'description'.
+ *     # Update site meta
+ *     $ wp site meta update 123 bio "Mary is an awesome WordPress developer."
+ *     Success: Updated custom field 'bio'.
  *
- *     # Delete comment meta
- *     $ wp comment meta delete 123 description
+ *     # Delete site meta
+ *     $ wp site meta delete 123 bio
  *     Success: Deleted custom field.
  */
-class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
-	protected $meta_type = 'comment';
+class Site_Meta_Command extends \WP_CLI\CommandWithMeta {
+	protected $meta_type = 'blog';
 
+	/**
+	 * Check that the site ID exists
+	 *
+	 * @param int
+	 */
+	protected function check_object_id( $object_id ) {
+		$fetcher = new \WP_CLI\Fetchers\Site;
+		$site = $fetcher->get_check( $object_id );
+		return $site->blog_id;
+	}
+	
 	/**
 	 * Wrapper method for add_metadata that can be overridden in sub classes.
 	 *
@@ -40,7 +51,7 @@ class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * @return int|false The meta ID on success, false on failure.
 	 */
 	protected function add_metadata( $object_id, $meta_key, $meta_value, $unique = false ) {
-		return add_comment_meta( $object_id, $meta_key, $meta_value, $unique );
+		return add_site_meta( $object_id, $meta_key, $meta_value, $unique );
 	}
 
 	/**
@@ -58,7 +69,7 @@ class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 *                  update, false on failure.
 	 */
 	protected function update_metadata( $object_id, $meta_key, $meta_value, $prev_value = '' ) {
-		return update_comment_meta( $object_id, $meta_key, $meta_value, $prev_value );
+		return update_site_meta( $object_id, $meta_key, $meta_value, $prev_value );
 	}
 
 	/**
@@ -75,7 +86,7 @@ class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * @return mixed Single metadata value, or array of values.
 	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
-		return get_comment_meta( $object_id, $meta_key, $single );
+		return get_site_meta( $object_id, $meta_key, $single );
 	}
 
 	/**
@@ -95,17 +106,7 @@ class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * @return bool True on successful delete, false on failure.
 	 */
 	protected function delete_metadata( $object_id, $meta_key, $meta_value = '' ) {
-		return delete_comment_meta( $object_id, $meta_key, $meta_value );
+		return delete_site_meta( $object_id, $meta_key, $meta_value );
 	}
 
-	/**
-	 * Check that the comment ID exists
-	 *
-	 * @param int
-	 */
-	protected function check_object_id( $object_id ) {
-		$fetcher = new \WP_CLI\Fetchers\Comment;
-		$comment = $fetcher->get_check( $object_id );
-		return $comment->comment_ID;
-	}
 }
