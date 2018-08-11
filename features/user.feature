@@ -422,3 +422,41 @@ Feature: Manage WordPress users
       Error: Only spammed 1 of 2 users.
       """
     And the return code should be 1
+
+  @require-wp-4.3
+  Scenario: Sending emails on update
+    Given a WP install
+
+    When I run `wp user get 1 --field=user_email`
+    Then save STDOUT as {ORIGINAL_EMAIL}
+
+    When I run `wp user update 1 --user_email=different.mail@example.com`
+    Then STDOUT should contain:
+      """
+      Success: Updated user 1.
+      """
+    And an email should be sent
+
+    When I run `wp user update 1 --user_email={ORIGINAL_EMAIL} --skip-email`
+    Then STDOUT should contain:
+      """
+      Success: Updated user 1.
+      """
+    And an email should not be sent
+
+    When I run `wp user get 1 --field=user_pass`
+    Then save STDOUT as {ORIGINAL_PASSWORD}
+
+    When I run `wp user update 1 --user_pass=different_password`
+    Then STDOUT should contain:
+      """
+      Success: Updated user 1.
+      """
+    And an email should be sent
+
+    When I run `wp user update 1 --user_pass={ORIGINAL_PASSWORD} --skip-email`
+    Then STDOUT should contain:
+      """
+      Success: Updated user 1.
+      """
+    And an email should not be sent
