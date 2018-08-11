@@ -909,13 +909,24 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Check whether post exists.
-	 *     $ wp post exists 1337
+	 *     # The post is exists.
+	 *     $ wp post exists 1
 	 *     Success: Post with ID 1337 exists.
+	 *     $ echo $?
+	 *     0
+	 *
+	 *     # The post is not exists.
+	 *     $ wp post exists 10000
+	 *     $ echo $?
+	 *     1
+	 *
 	 */
 	public function exists( $args ) {
+
 		if ( $this->fetcher->get( $args[0] ) ) {
 			WP_CLI::success( "Post with ID $args[0] exists." );
+		} else {
+			WP_CLI::halt( 1 );
 		}
 	}
 
