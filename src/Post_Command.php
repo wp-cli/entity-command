@@ -915,7 +915,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     $ echo $?
 	 *     0
 	 *
-	 *     # The post does not exists.
+	 *     # The post does not exist.
 	 *     $ wp post exists 10000
 	 *     $ echo $?
 	 *     1
