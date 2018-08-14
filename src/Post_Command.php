@@ -909,13 +909,13 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # The post is exists.
+	 *     # The post exists.
 	 *     $ wp post exists 1
 	 *     Success: Post with ID 1337 exists.
 	 *     $ echo $?
 	 *     0
 	 *
-	 *     # The post is not exists.
+	 *     # The post does not exists.
 	 *     $ wp post exists 10000
 	 *     $ echo $?
 	 *     1
