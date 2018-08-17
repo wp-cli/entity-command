@@ -13,6 +13,11 @@ Feature: Manage WordPress posts
       """
     Success: Post with ID {POST_ID} exists.
       """
+    And the return code should be 0
+
+    When I run `wp post exists 1000`
+    And STDOUT should be empty
+    And the return code should be 1
 
     When I run `wp post update {POST_ID} --post_title='Updated post'`
     Then STDOUT should be:
