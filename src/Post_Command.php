@@ -148,7 +148,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Created post 1922.
 	 *
 	 *     # Create a post with multiple meta values.
-	 *     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
+	 *     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}'
 	 *     Success: Created post 1923.
 	 *
 	 *     # Create a duplicate post from existing posts.
