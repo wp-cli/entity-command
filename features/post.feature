@@ -399,6 +399,40 @@ Feature: Manage WordPress posts
       | {POST_ID} | key2     | value2b    |
       | {POST_ID} | key3     | value3     |
 
+  Scenario: Creating posts badly formatted taxonomy input should give warning
+    When I try `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='xxxx' --porcelain`
+    Then the return code should be 0
+    And STDOUT should be a number
+    And save STDOUT as {POST_ID}
+    And STDERR should be:
+      """
+      The 'tax_input' field could not be decode to a valid taxonomy array.
+      """
+
+  Scenario: Creating/updating custom taxonomies
+    When I run `wp term create post_tag t1 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID}
+
+    When I run `wp term create post_tag t2 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID2}
+
+    When I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"post_tag":[{TERM_ID}]}' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post term list {POST_ID} post_tag --format=table`
+    Then STDOUT should be a table containing rows:
+      | term_id   | name | slug | taxonomy |
+      | {TERM_ID} | t1   | t1   | post_tag |
+
+    When I run `wp post update {POST_ID} --tax_input='{"post_tag":[{TERM_ID2}]}'`
+    And I run `wp post term list {POST_ID} post_tag --format=table`
+    Then STDOUT should be a table containing rows:
+      | term_id    | name | slug | taxonomy |
+      | {TERM_ID2} | t2   | t2   | post_tag |
+
   @less-than-wp-4.4
   Scenario: Creating/updating posts with meta keys for WP < 4.4 has no effect so should give warning
     When I try `wp post create --post_title='Test Post' --post_content='Test post content' --meta_input='{"key1":"value1","key2":"value2"}' --porcelain`
