@@ -1,6 +1,6 @@
 # Used by Probot Settings: https://probot.github.io/apps/settings/
 repository:
-  description: Manage WordPress core entities.
+  description: Manage WordPress comments, menus, options, posts, sites, terms, and users.
 labels:
   - name: bug
     color: fc2929
