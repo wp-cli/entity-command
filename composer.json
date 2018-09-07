@@ -1,7 +1,7 @@
 {
     "name": "wp-cli/entity-command",
     "type": "wp-cli-package",
-    "description": "Manage WordPress core entities.",
+    "description": "Manage WordPress comments, menus, options, posts, sites, terms, and users.",
     "homepage": "https://github.com/wp-cli/entity-command",
     "license": "MIT",
     "authors": [
