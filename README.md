@@ -1,7 +1,7 @@
 wp-cli/entity-command
 =====================
 
-Manage WordPress core entities.
+Manage WordPress comments, menus, options, posts, sites, terms, and users.
 
 [![Build Status](https://travis-ci.org/wp-cli/entity-command.svg?branch=master)](https://travis-ci.org/wp-cli/entity-command)
 
