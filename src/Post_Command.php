@@ -188,7 +188,7 @@ class Post_Command extends CommandWithDBObject {
 
 
 		if ( isset( $assoc_args['tax_input'] ) && !is_array( $assoc_args['tax_input'] ) ) {
-			WP_CLI::warning( "The 'tax_input' field could not be decode to a valid taxonomy array." );
+			WP_CLI::warning( "The 'tax_input' field could not be decoded to a valid taxonomy array." );
 			unset( $assoc_args['tax_input'] );
 		}
 
