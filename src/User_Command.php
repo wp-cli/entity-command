@@ -135,7 +135,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
 			if ( ! is_multisite() ) {
-				WP_CLI::error( 'This is not a multisite install.' );
+				WP_CLI::error( 'This is not a multisite installation.' );
 			}
 			$assoc_args['blog_id'] = 0;
 			if ( isset( $assoc_args['fields'] ) ) {
@@ -1149,7 +1149,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		// If site is not multisite, then stop execution.
 		if ( ! is_multisite() ) {
-			WP_CLI::error( 'This is not a multisite install.' );
+			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 
 		if ( 'spam' === $pref && '1' === $value ) {
