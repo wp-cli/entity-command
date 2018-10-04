@@ -470,6 +470,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Gets a list of posts.
 	 *
+	 * Display posts based on all arguments supported by
+	 * [WP_Query()](https://developer.wordpress.org/reference/classes/wp_query/).
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--<field>=<value>]
