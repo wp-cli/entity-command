@@ -243,6 +243,9 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	/**
 	 * Gets a list of comments.
 	 *
+	 * Display comments based on all arguments supported by
+	 * [WP_Comment_Query()](https://developer.wordpress.org/reference/classes/WP_Comment_Query/__construct/).
+	 *
 	 * ## OPTIONS
 	 *
 	 * [--<field>=<value>]
