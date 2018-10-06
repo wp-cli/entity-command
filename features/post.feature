@@ -15,7 +15,7 @@ Feature: Manage WordPress posts
       """
     And the return code should be 0
 
-    When I run `wp post exists 1000`
+    When I try `wp post exists 1000`
     And STDOUT should be empty
     And the return code should be 1
 
