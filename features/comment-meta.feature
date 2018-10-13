@@ -56,3 +56,21 @@ Feature: Manage comment custom fields
       """
       -- hi
       """
+
+  Scenario: List comment meta
+    Given a WP install
+
+    When I run `wp comment meta add 1 apple banana`
+    And I run `wp comment meta add 1 apple banana`
+    Then STDOUT should not be empty
+
+    When I run `wp comment meta set 1 banana '["apple", "apple"]' --format=json`
+    Then STDOUT should not be empty
+
+    When I run `wp comment meta list 1`
+    Then STDOUT should be a table containing rows:
+      | comment_id | meta_key | meta_value                              |
+      | 1          | apple    | banana                                  |
+      | 1          | apple    | banana                                  |
+      | 1          | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
+
