@@ -62,53 +62,53 @@ Feature: Manage user custom fields
     When I run `wp user meta list 1 --format=json --keys=nickname,foo --fields=meta_key,meta_value`
     Then STDOUT should be JSON containing:
       """
-      [{"meta_key":"nickname","meta_value":"admin"},{"meta_key":"foo","meta_value":["1","2"]}]
+      [{"meta_key":"nickname","meta_value":"admin"},{"meta_key":"foo","meta_value":"a:2:{i:0;s:1:\"1\";i:1;s:1:\"2\";}"}]
       """
 
     When I run `wp user meta list 1 --keys=nickname,foo`
     Then STDOUT should be a table containing rows:
-      | user_id | meta_key | meta_value     |
-      | 1       | nickname | admin          |
-      | 1       | foo      | ["1","2"]      |
+      | user_id | meta_key | meta_value                          |
+      | 1       | nickname | admin                               |
+      | 1       | foo      | a:2:{i:0;s:1:"1";i:1;s:1:"2";}      |
 
     When I run `wp user meta list admin --keys=nickname,foo`
     Then STDOUT should be a table containing rows:
-      | user_id | meta_key | meta_value     |
-      | 1       | nickname | admin          |
-      | 1       | foo      | ["1","2"]      |
+      | user_id | meta_key | meta_value                          |
+      | 1       | nickname | admin                               |
+      | 1       | foo      | a:2:{i:0;s:1:"1";i:1;s:1:"2";}      |
 
     When I run `wp user meta list admin --keys=nickname,foo --orderby=id --order=asc`
     Then STDOUT should be a table containing rows:
-      | user_id | meta_key | meta_value     |
-      | 1       | nickname | admin          |
-      | 1       | foo      | ["1","2"]      |
+      | user_id | meta_key | meta_value                          |
+      | 1       | nickname | admin                               |
+      | 1       | foo      | a:2:{i:0;s:1:"1";i:1;s:1:"2";}      |
 
     When I run `wp user meta list admin --keys=nickname,foo --orderby=id --order=desc`
     Then STDOUT should be a table containing rows:
-      | user_id | meta_key | meta_value     |
-      | 1       | foo      | ["1","2"]      |
-      | 1       | nickname | admin          |
+      | user_id | meta_key | meta_value                          |
+      | 1       | foo      | a:2:{i:0;s:1:"1";i:1;s:1:"2";}      |
+      | 1       | nickname | admin                               |
 
     When I run `wp user meta list admin --keys=nickname,foo --orderby=meta_key --order=asc`
     Then STDOUT should be a table containing rows:
-      | user_id | meta_key | meta_value     |
-      | 1       | foo      | ["1","2"]      |
-      | 1       | nickname | admin          |
+      | user_id | meta_key | meta_value                          |
+      | 1       | foo      | a:2:{i:0;s:1:"1";i:1;s:1:"2";}      |
+      | 1       | nickname | admin                               |
 
     When I run `wp user meta list admin --keys=nickname,foo --orderby=meta_key --order=desc`
     Then STDOUT should be a table containing rows:
-      | user_id | meta_key | meta_value     |
-      | 1       | nickname | admin          |
-      | 1       | foo      | ["1","2"]      |
+      | user_id | meta_key | meta_value                          |
+      | 1       | nickname | admin                               |
+      | 1       | foo      | a:2:{i:0;s:1:"1";i:1;s:1:"2";}      |
 
     When I run `wp user meta list admin --keys=nickname,foo --orderby=meta_value --order=asc`
     Then STDOUT should be a table containing rows:
-      | user_id | meta_key | meta_value     |
-      | 1       | nickname | admin          |
-      | 1       | foo      | ["1","2"]      |
+      | user_id | meta_key | meta_value                          |
+      | 1       | nickname | admin                               |
+      | 1       | foo      | a:2:{i:0;s:1:"1";i:1;s:1:"2";}      |
 
     When I run `wp user meta list admin --keys=nickname,foo --orderby=meta_value --order=desc`
     Then STDOUT should be a table containing rows:
-      | user_id | meta_key | meta_value     |
-      | 1       | foo      | ["1","2"]      |
-      | 1       | nickname | admin          |
+      | user_id | meta_key | meta_value                          |
+      | 1       | foo      | a:2:{i:0;s:1:"1";i:1;s:1:"2";}      |
+      | 1       | nickname | admin                               |
