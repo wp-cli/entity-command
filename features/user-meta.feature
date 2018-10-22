@@ -112,3 +112,20 @@ Feature: Manage user custom fields
       | user_id | meta_key | meta_value                          |
       | 1       | foo      | a:2:{i:0;s:1:"1";i:1;s:1:"2";}      |
       | 1       | nickname | admin                               |
+
+
+  Scenario: Get particular user meta
+    Given a WP install
+
+    When I run `wp user create testuser testuser@example.com --description='This is description' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I try the previous command again
+    Then the return code should be 1
+
+    When I try `wp user-meta get {USER_ID} description`
+    Then STDOUT should be:
+      """
+      This is description
+      """
