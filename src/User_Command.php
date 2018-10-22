@@ -373,6 +373,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$user->last_name = \WP_CLI\Utils\get_flag_value( $assoc_args, 'last_name', false );
 
+		$user->description = \WP_CLI\Utils\get_flag_value( $assoc_args, 'description', false );
+
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
 		} else {
