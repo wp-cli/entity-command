@@ -16,6 +16,14 @@ Feature: Manage WordPress taxonomies
       | name     | label            | description | object_type   | show_tagcloud | hierarchical | public |
       | nav_menu | Navigation Menus |             | nav_menu_item |               |              |        |
 
+  @require-wp-5.0
+  Scenario: Listing taxonomies with counts
+    When I run `wp taxonomy list --fields=name,count --format=csv`
+    Then STDOUT should be CSV containing:
+      | name     | count      |
+      | category | 1          |
+      | post_tag | 0          |
+
   Scenario: Get taxonomy
     When I try `wp taxonomy get invalid-taxonomy`
     Then STDERR should be:
@@ -30,3 +38,11 @@ Feature: Manage WordPress taxonomies
       | name        | category   |
       | object_type | ["post"]   |
       | label       | Categories |
+
+  @require-wp-5.0
+  Scenario: Get taxonomy with count
+    When I run `wp taxonomy get category --fields=name,count`
+    Then STDOUT should be a table containing rows:
+      | Field       | Value      |
+      | name        | category   |
+      | count       | 1          |

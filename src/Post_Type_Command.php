@@ -35,6 +35,37 @@ class Post_Type_Command extends WP_CLI_Command {
 	);
 
 	/**
+	 * Gets the post counts for each supplied post type.
+	 *
+	 * @param array $post_types Post types to fetch counts for.
+	 * @return array Associative array of post counts keyed by post type.
+	 */
+	protected function get_counts( $post_types ) {
+		global $wpdb;
+
+		if ( count( $post_types ) <= 0 ) {
+			return [];
+		}
+
+		$query  = $wpdb->prepare(
+			"SELECT `post_type`, COUNT(*) AS `count`
+			FROM $wpdb->posts
+			WHERE `post_type` IN (" . implode( ',', array_fill( 0, count( $post_types ), '%s' ) ) . ")
+			GROUP BY `post_type`",
+			$post_types
+		);
+		$counts = $wpdb->get_results( $query );
+
+		// Make sure there's a count for every item.
+		$counts = array_merge(
+			array_fill_keys( $post_types, 0 ),
+			wp_list_pluck( $counts, 'count', 'post_type' )
+		);
+
+		return $counts;
+	}
+
+	/**
 	 * Lists registered post types.
 	 *
 	 * ## OPTIONS
@@ -71,7 +102,9 @@ class Post_Type_Command extends WP_CLI_Command {
 	 * * public
 	 * * capability_type
 	 *
-	 * There are no optionally available fields.
+	 * These fields are optionally available:
+	 *
+	 * * count
 	 *
 	 * ## EXAMPLES
 	 *
@@ -100,7 +133,18 @@ class Post_Type_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		$types = get_post_types( $assoc_args, 'objects' );
+		$fields = $formatter->fields;
+		$types  = get_post_types( $assoc_args, 'objects' );
+		$counts = [];
+
+		if ( count( $types ) > 0 && in_array( 'count', $fields, true ) ) {
+			$counts = $this->get_counts( wp_list_pluck( $types, 'name' ) );
+		}
+
+		$types = array_map( function( $type ) use ( $counts ) {
+			$type->count = isset( $counts[ $type->name ] ) ? $counts[ $type->name ] : 0;
+			return $type;
+		}, $types );
 
 		$formatter->display_items( $types );
 	}
@@ -132,7 +176,7 @@ class Post_Type_Command extends WP_CLI_Command {
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
-	 * These fields will be displayed by default for each post type:
+	 * These fields will be displayed by default for the specified post type:
 	 *
 	 * * name
 	 * * label
@@ -144,7 +188,9 @@ class Post_Type_Command extends WP_CLI_Command {
 	 * * cap
 	 * * supports
 	 *
-	 * There are no optionally available fields.
+	 * These fields are optionally available:
+	 *
+	 * * count
 	 *
 	 * ## EXAMPLES
 	 *
@@ -169,6 +215,15 @@ class Post_Type_Command extends WP_CLI_Command {
 			$assoc_args['fields'] = $default_fields;
 		}
 
+		$formatter = $this->get_formatter( $assoc_args );
+		$fields    = $formatter->fields;
+		$count     = 0;
+
+		if ( in_array( 'count', $fields, true ) ) {
+			$count = $this->get_counts( [ $post_type->name ] );
+			$count = $count[ $post_type->name ];
+		}
+
 		$data = array(
 			'name'            => $post_type->name,
 			'label'           => $post_type->label,
@@ -179,9 +234,8 @@ class Post_Type_Command extends WP_CLI_Command {
 			'labels'          => $post_type->labels,
 			'cap'             => $post_type->cap,
 			'supports'        => get_all_post_type_supports( $post_type->name ),
+			'count'           => $count,
 		);
-
-		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $data );
 	}
 
