@@ -6,9 +6,17 @@ Feature: Manage WordPress post types
   Scenario: Listing post types
     When I run `wp post-type list --format=csv`
     Then STDOUT should be CSV containing:
-  | name | label | description | hierarchical | public | capability_type |
-  | post | Posts |             |              | 1      | post            |
-  | page | Pages |             | 1            | 1      | page            |
+      | name | label | description | hierarchical | public | capability_type |
+      | post | Posts |             |              | 1      | post            |
+      | page | Pages |             | 1            | 1      | page            |
+
+  @require-wp-5.0
+  Scenario: Listing post types with count
+    When I run `wp post-type list --fields=name,count --format=csv`
+    Then STDOUT should be CSV containing:
+      | name | count |
+      | post | 1     |
+      | page | 2     |
 
   Scenario: Get a post type
     When I try `wp post-type get invalid-post-type`
@@ -31,3 +39,11 @@ Feature: Manage WordPress post types
       """
       "title":true
       """
+
+  @require-wp-5.0
+  Scenario: Get a post type with count
+    When I try `wp post-type get page --fields=name,count`
+    Then STDOUT should be a table containing rows:
+      | Field       | Value     |
+      | name        | page      |
+      | count       | 2         |
