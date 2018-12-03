@@ -2,6 +2,7 @@
 
 use WP_CLI\Entity\RecursiveDataStructureTraverser;
 use WP_CLI\Utils;
+use WP_CLI\Entity\Utils as EntityUtils;
 
 /**
  * Retrieves and sets site options, including plugin and WordPress settings.
@@ -124,7 +125,7 @@ class Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'autoload' ) === 'no' ) {
+		if ( Utils\get_flag_value( $assoc_args, 'autoload' ) === 'no' ) {
 			$autoload = 'no';
 		} else {
 			$autoload = 'yes';
@@ -265,7 +266,7 @@ class Option_Command extends WP_CLI_Command {
 			$fields = explode( ',', $assoc_args['fields'] );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
+		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			$fields = array( 'size_bytes' );
 			$size_query = ",SUM(LENGTH(option_value)) AS `size_bytes`";
 		}
@@ -305,8 +306,8 @@ class Option_Command extends WP_CLI_Command {
 		$results = $wpdb->get_results( "SELECT `option_name`,`option_value`,`autoload`" . $size_query
 					. " FROM `$wpdb->options` {$where}" );
 
-		$orderby = \WP_CLI\Utils\get_flag_value( $assoc_args, 'orderby' );
-		$order   = \WP_CLI\Utils\get_flag_value( $assoc_args, 'order' );
+		$orderby = Utils\get_flag_value( $assoc_args, 'orderby' );
+		$order   = Utils\get_flag_value( $assoc_args, 'order' );
 
 		// Sort result.
 		if ( 'option_id' !== $orderby ) {
@@ -328,7 +329,7 @@ class Option_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
+		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			WP_CLI::line( $results[0]->size_bytes );
 		} else {
 			$formatter = new \WP_CLI\Formatter(
@@ -406,7 +407,7 @@ class Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
-		$autoload = \WP_CLI\Utils\get_flag_value( $assoc_args, 'autoload' );
+		$autoload = Utils\get_flag_value( $assoc_args, 'autoload' );
 		if ( ! in_array( $autoload, array( 'yes', 'no' ) ) ) {
 			$autoload = null;
 		}
@@ -544,12 +545,13 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( 'delete' == $action ) {
 			$patch_value = null;
-		} elseif ( \WP_CLI\Entity\Utils::has_stdin() ) {
-			$stdin_value = WP_CLI::get_value_from_arg_or_stdin( $args, -1 );
-			$patch_value = WP_CLI::read_value( trim( $stdin_value ), $assoc_args );
 		} else {
-			// Take the patch value as the last positional argument. Mutates $key_path to be 1 element shorter!
-			$patch_value = WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
+			$stdin_value = EntityUtils::has_stdin()
+				? trim( WP_CLI::get_value_from_arg_or_stdin( $args, -1 ) )
+				: null;
+			$patch_value = ! empty( $stdin_value )
+				? WP_CLI::read_value( $stdin_value, $assoc_args )
+				: WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
 		}
 
 		/* Need to make a copy of $current_value here as it is modified by reference */
