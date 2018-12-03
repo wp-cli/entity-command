@@ -713,9 +713,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$post_author = $user_fetcher->get_check( $post_author )->ID;
 		}
 
-		if ( !empty( \WP_CLI\Utils\get_flag_value( $assoc_args, 'post_content' ) ) ) {
-			if ( !\WP_CLI\Entity\Utils::has_stdin() ) {
-				WP_CLI::error( "The parameter `post_content` reads from STDIN." );
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'post_content' ) ) {
+			if ( ! \WP_CLI\Entity\Utils::has_stdin() ) {
+				WP_CLI::error( 'The parameter `post_content` reads from STDIN.' );
 			}
 
 			$post_content = file_get_contents( 'php://stdin' );
