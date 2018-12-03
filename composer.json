@@ -1,11 +1,8 @@
 {
     "name": "wp-cli/entity-command",
-    "description": "Manage WordPress core entities.",
     "type": "wp-cli-package",
+    "description": "Manage WordPress comments, menus, options, posts, sites, terms, and users.",
     "homepage": "https://github.com/wp-cli/entity-command",
-    "support": {
-        "issues": "https://github.com/wp-cli/entity-command/issues"
-    },
     "license": "MIT",
     "authors": [
         {
@@ -14,24 +11,23 @@
             "homepage": "https://runcommand.io"
         }
     ],
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "autoload": {
-        "psr-4": {
-            "": "src/",
-            "WP_CLI\\": "src/WP_CLI"
-        },
-        "files": [ "entity-command.php" ]
+    "require": {
+        "wp-cli/wp-cli": "^2"
     },
-    "require": {},
     "require-dev": {
-        "behat/behat": "~2.5",
-        "wp-cli/wp-cli": "^1.5",
-        "phpunit/phpunit": "^4.8"
+        "wp-cli/cache-command": "^1 || ^2",
+        "wp-cli/db-command": "^1.3 || ^2",
+        "wp-cli/extension-command": "^1.2 || ^2",
+        "wp-cli/media-command": "^1.1 || ^2",
+        "wp-cli/wp-cli-tests": "^2.0.7"
+    },
+    "config": {
+        "process-timeout": 7200,
+        "sort-packages": true
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.x-dev"
+            "dev-master": "2.x-dev"
         },
         "bundled": true,
         "commands": [
@@ -184,5 +180,33 @@
             "user unspam",
             "user update"
         ]
+    },
+    "autoload": {
+        "psr-4": {
+            "": "src/",
+            "WP_CLI\\": "src/WP_CLI"
+        },
+        "files": [
+            "entity-command.php"
+        ]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "behat": "run-behat-tests",
+        "behat-rerun": "rerun-behat-tests",
+        "lint": "run-linter-tests",
+        "phpcs": "run-phpcs-tests",
+        "phpunit": "run-php-unit-tests",
+        "prepare-tests": "install-package-tests",
+        "test": [
+            "@lint",
+            "@phpcs",
+            "@phpunit",
+            "@behat"
+        ]
+    },
+    "support": {
+        "issues": "https://github.com/wp-cli/entity-command/issues"
     }
 }
