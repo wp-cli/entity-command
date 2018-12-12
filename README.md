@@ -1,7 +1,7 @@
 wp-cli/entity-command
 =====================
 
-Manage WordPress core entities.
+Manage WordPress comments, menus, options, posts, sites, terms, and users.
 
 [![Build Status](https://travis-ci.org/wp-cli/entity-command.svg?branch=master)](https://travis-ci.org/wp-cli/entity-command)
 
@@ -2177,12 +2177,42 @@ wp post edit <id>
 
 
 
+### wp post exists
+
+Verifies whether a post exists.
+
+~~~
+wp post exists <id>
+~~~
+
+Displays a success message if the post does exist.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to check.
+
+**EXAMPLES**
+
+    # The post exists.
+    $ wp post exists 1
+    Success: Post with ID 1337 exists.
+    $ echo $?
+    0
+
+    # The post does not exist.
+    $ wp post exists 10000
+    $ echo $?
+    1
+
+
+
 ### wp post generate
 
 Generates some posts.
 
 ~~~
-wp post generate [--count=<number>] [--post_type=<type>] [--post_status=<status>] [--post_title=<post_title>] [--post_author=<login>] [--post_date=<yyyy-mm-dd-hh-ii-ss>] [--post_content] [--max_depth=<number>] [--format=<format>]
+wp post generate [--count=<number>] [--post_type=<type>] [--post_status=<status>] [--post_title=<post_title>] [--post_author=<login>] [--post_date=<yyyy-mm-dd-hh-ii-ss>] [--post_date_gmt=<yyyy-mm-dd-hh-ii-ss>] [--post_content] [--max_depth=<number>] [--format=<format>]
 ~~~
 
 Creates a specified number of new posts with dummy data.
@@ -2221,6 +2251,9 @@ Creates a specified number of new posts with dummy data.
 
 	[--post_date=<yyyy-mm-dd-hh-ii-ss>]
 		The date of the generated posts. Default: current date
+
+	[--post_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
+		The GMT date of the generated posts. Default: value of post_date (or current date if it's not set)
 
 	[--post_content]
 		If set, the command reads the post_content from STDIN.
@@ -5469,7 +5502,7 @@ wp user unspam <id>...
 Updates an existing user.
 
 ~~~
-wp user update <user>... [--user_pass=<password>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--display_name=<display_name>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--role=<role>] --<field>=<value>
+wp user update <user>... [--user_pass=<password>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--display_name=<display_name>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--role=<role>] --<field>=<value> [--skip-email]
 ~~~
 
 **OPTIONS**
@@ -5515,6 +5548,9 @@ wp user update <user>... [--user_pass=<password>] [--user_nicename=<nice_name>] 
 
 	--<field>=<value>
 		One or more fields to update. For accepted fields, see wp_update_user().
+
+	[--skip-email]
+		Don't send an email notification to the user.
 
 **EXAMPLES**
 

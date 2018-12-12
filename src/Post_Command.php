@@ -148,7 +148,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Created post 1922.
 	 *
 	 *     # Create a post with multiple meta values.
-	 *     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
+	 *     $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}'
 	 *     Success: Created post 1923.
 	 *
 	 *     # Create a duplicate post from existing posts.
@@ -474,6 +474,9 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 	/**
 	 * Gets a list of posts.
+	 *
+	 * Display posts based on all arguments supported by
+	 * [WP_Query()](https://developer.wordpress.org/reference/classes/wp_query/).
 	 *
 	 * ## OPTIONS
 	 *
@@ -900,5 +903,36 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		return $tag_arr;
+	}
+
+	/**
+	 * Verifies whether a post exists.
+	 *
+	 * Displays a success message if the post does exist.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # The post exists.
+	 *     $ wp post exists 1
+	 *     Success: Post with ID 1337 exists.
+	 *     $ echo $?
+	 *     0
+	 *
+	 *     # The post does not exist.
+	 *     $ wp post exists 10000
+	 *     $ echo $?
+	 *     1
+	 */
+	public function exists( $args ) {
+		if ( $this->fetcher->get( $args[0] ) ) {
+			WP_CLI::success( "Post with ID {$args[0]} exists." );
+		} else {
+			WP_CLI::halt( 1 );
+		}
 	}
 }

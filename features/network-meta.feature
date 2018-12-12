@@ -13,6 +13,6 @@ Feature: Manage network-wide custom fields.
     Then STDOUT should be empty
     And STDERR should contain:
       """
-      This is not a multisite install.
+      This is not a multisite install
       """
     And the return code should be 1
