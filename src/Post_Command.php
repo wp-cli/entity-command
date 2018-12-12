@@ -447,29 +447,39 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Deleted post 1294.
 	 */
 	public function delete( $args, $assoc_args ) {
-		$defaults = array(
-			'force' => false,
-		);
+		$defaults   = [ 'force' => false ];
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		parent::_delete( $args, $assoc_args, function ( $post_id, $assoc_args ) {
-			$status = get_post_status( $post_id );
-			$post_type = get_post_type( $post_id );
+		parent::_delete( $args, $assoc_args, [ $this, 'delete_callback' ] );
+	}
 
-			if ( !$assoc_args['force'] && ( $post_type !== 'post' && $post_type !== 'page' ) ) {
-				return array( 'error', "Posts of type '$post_type' do not support being sent to trash.\nPlease use the --force flag to skip trash and delete them permanently." );
-			}
+	/**
+	 * Callback used to delete a post.
+	 *
+	 * @param $post_id
+	 * @param $assoc_args
+	 * @return array
+	 */
+	protected function delete_callback( $post_id, $assoc_args ) {
+		$status    = get_post_status( $post_id );
+		$post_type = get_post_type( $post_id );
 
-			$r = wp_delete_post( $post_id, $assoc_args['force'] );
+		if ( ! $assoc_args['force']
+			&& ( $post_type !== 'post' && $post_type !== 'page' ) ) {
+			return [
+				'error',
+				"Posts of type '{$post_type}' do not support being sent to trash.\n"
+				. 'Please use the --force flag to skip trash and delete them permanently.',
+			];
+		}
 
-			if ( $r ) {
-				$action = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type ? 'Deleted' : 'Trashed';
+		if ( ! wp_delete_post( $post_id, $assoc_args['force'] ) ) {
+			return [ 'error', "Failed deleting post {$post_id}." ];
+		}
 
-				return array( 'success', "$action post $post_id." );
-			} else {
-				return array( 'error', "Failed deleting post $post_id." );
-			}
-		} );
+		$action = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type ? 'Deleted' : 'Trashed';
+
+		return [ 'success', "{$action} post {$post_id}." ];
 	}
 
 	/**
