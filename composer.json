@@ -91,6 +91,7 @@
             "post create",
             "post delete",
             "post edit",
+            "post exists",
             "post generate",
             "post get",
             "post list",
