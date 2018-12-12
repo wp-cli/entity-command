@@ -1,6 +1,6 @@
 Feature: Manage site custom fields
 
-  @require-wp-5.0
+  @require-wp-5.1
   Scenario: Site meta CRUD
     Given a WP multisite installation
 
