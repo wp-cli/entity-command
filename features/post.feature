@@ -8,10 +8,14 @@ Feature: Manage WordPress posts
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
-    When I run `wp post exists {POST_ID}`
+    When I run `wp post create --post_title='Test post' --post_type="test" --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {CUSTOM_POST_ID}
+
+    When I run `wp post exists {CUSTOM_POST_ID}`
     Then STDOUT should be:
       """
-    Success: Post with ID {POST_ID} exists.
+      Success: Post with ID {CUSTOM_POST_ID} exists.
       """
     And the return code should be 0
 
@@ -35,6 +39,19 @@ Feature: Manage WordPress posts
     Then STDOUT should be:
       """
       Success: Deleted post {POST_ID}.
+      """
+
+    When I try `wp post delete {CUSTOM_POST_ID}`
+    Then STDERR should be:
+      """
+      Warning: Posts of type 'test' do not support being sent to trash.
+      Please use the --force flag to skip trash and delete them permanently.
+      """
+
+    When I run `wp post delete {CUSTOM_POST_ID} --force`
+    Then STDOUT should be:
+      """
+      Success: Deleted post {CUSTOM_POST_ID}.
       """
 
     When I try the previous command again
