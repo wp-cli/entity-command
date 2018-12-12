@@ -897,7 +897,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		return $tag_arr;
 	}
 
-	/*
+	/**
 	 * Verifies whether a post exists.
 	 *
 	 * Displays a success message if the post does exist.
@@ -919,7 +919,6 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *     $ wp post exists 10000
 	 *     $ echo $?
 	 *     1
-	 *
 	 */
 	public function exists( $args ) {
 		if ( $this->fetcher->get( $args[0] ) ) {
