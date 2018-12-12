@@ -103,7 +103,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	 *
 	 * @param array $args Collection of one or more object ids to delete.
 	 * @param array $assoc_args Any arguments needed for the callback function.
-	 * @param string $callback Function used to delete object.
+	 * @param callable $callback Function used to delete object.
 	 */
 	protected function _delete( $args, $assoc_args, $callback ) {
 		$status = 0;
