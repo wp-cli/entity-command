@@ -922,12 +922,10 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 *
 	 */
 	public function exists( $args ) {
-
 		if ( $this->fetcher->get( $args[0] ) ) {
-			WP_CLI::success( "Post with ID $args[0] exists." );
+			WP_CLI::success( "Post with ID {$args[0]} exists." );
 		} else {
 			WP_CLI::halt( 1 );
 		}
 	}
-
 }
