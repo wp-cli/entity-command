@@ -3029,6 +3029,22 @@ wp post-type get <post-type> [--field=<field>] [--fields=<fields>] [--format=<fo
 		  - yaml
 		---
 
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each post type:
+
+* name
+* label
+* description
+* hierarchical
+* public
+* capability_type
+* labels
+* cap
+* supports
+
+There are no optionally available fields.
+
 **EXAMPLES**
 
     # Get details about the 'page' post type.
@@ -3070,7 +3086,7 @@ wp post-type list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--f
 
 **AVAILABLE FIELDS**
 
-These fields will be displayed by default for each term:
+These fields will be displayed by default for each post type:
 
 * name
 * label
