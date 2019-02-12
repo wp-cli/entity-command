@@ -23,3 +23,11 @@ Feature: Manage WordPress post types
       | Field       | Value     |
       | name        | page      |
       | label       | Pages     |
+    And STDOUT should contain:
+      """
+      supports
+      """
+    And STDOUT should contain:
+      """
+      "title":true
+      """

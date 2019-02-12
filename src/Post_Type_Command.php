@@ -62,7 +62,7 @@ class Post_Type_Command extends WP_CLI_Command {
 	 *
 	 * ## AVAILABLE FIELDS
 	 *
-	 * These fields will be displayed by default for each term:
+	 * These fields will be displayed by default for each post type:
 	 *
 	 * * name
 	 * * label
@@ -130,6 +130,22 @@ class Post_Type_Command extends WP_CLI_Command {
 	 *   - yaml
 	 * ---
 	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each post type:
+	 *
+	 * * name
+	 * * label
+	 * * description
+	 * * hierarchical
+	 * * public
+	 * * capability_type
+	 * * labels
+	 * * cap
+	 * * supports
+	 *
+	 * There are no optionally available fields.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Get details about the 'page' post type.
@@ -146,7 +162,8 @@ class Post_Type_Command extends WP_CLI_Command {
 		if ( empty( $assoc_args['fields'] ) ) {
 			$default_fields = array_merge( $this->fields, array(
 				'labels',
-				'cap'
+				'cap',
+				'supports',
 			) );
 
 			$assoc_args['fields'] = $default_fields;
@@ -161,6 +178,7 @@ class Post_Type_Command extends WP_CLI_Command {
 			'capability_type' => $post_type->capability_type,
 			'labels'          => $post_type->labels,
 			'cap'             => $post_type->cap,
+			'supports'        => get_all_post_type_supports( $post_type->name ),
 		);
 
 		$formatter = $this->get_formatter( $assoc_args );
