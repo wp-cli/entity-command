@@ -239,12 +239,11 @@ class Taxonomy_Command extends WP_CLI_Command {
 
 		$id = $id['term_taxonomy_id'];
 		$posts = get_objects_in_term( $term->term_id, $args[1] );
-		$term_order = 0;
 
 		foreach ( $posts as $post ) {
 			$type = get_post_type( $post );
 			if ( in_array( $type, $original_taxonomy->object_type ) ) {
-				$values[] = $wpdb->prepare( "(%d, %d, %d)", $post, $id, $term_order );
+				$values[] = $wpdb->prepare( "(%d, %d, %d)", $post, $id, 0 );
 			}
 
 			clean_post_cache( $post );
@@ -270,7 +269,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 
 		if ( ! empty( $clean_term_cache ) ) {
 			$clean_term_cache = array_unique( array_values( $clean_term_cache ) );
-			clean_term_cache ( $clean_term_cache, $new_tax );
+			clean_term_cache ( $clean_term_cache, $args[2] );
 		}
 	}
 
