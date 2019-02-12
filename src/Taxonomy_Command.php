@@ -251,15 +251,19 @@ class Taxonomy_Command extends WP_CLI_Command {
 		}
 
 		if ( $values ) {
-			$wpdb->query( "INSERT INTO $wpdb->term_relationships (object_id, term_taxonomy_id, term_order) VALUES " . join(',', $values) . " ON DUPLICATE KEY UPDATE term_order = VALUES(term_order)" );
+			$wpdb->query( "INSERT INTO $wpdb->term_relationships (object_id, term_taxonomy_id, term_order) VALUES " . join( ',', $values ) . " ON DUPLICATE KEY UPDATE term_order = VALUES(term_order)" );
 			$wpdb->update($wpdb->term_taxonomy, array( 'count' => $term->count ), array( 'term_id' => $term->term_id, 'taxonomy' => $args[2] ) );
 
-			WP_CLI::success( "Term added to posts." );
+			WP_CLI::success( "Term migrated!" );
 
 			$clean_term_cache[] = $term->term_id;
 		}
 
 		$del = wp_delete_term( $term_id, $tax );
+
+		if ( is_wp_error( $del ) ) {
+			WP_CLI::error( "An error has occured: " . $id->get_error_message() );
+		}
 
 		// Set all parents to 0 (root-level) if their parent was the converted tag
 		$wpdb->update( $wpdb->term_taxonomy, array( 'parent' => 0 ), array( 'parent' => $term_id, 'taxonomy' => $tax )  );
