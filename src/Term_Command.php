@@ -644,34 +644,48 @@ class Term_Command extends WP_CLI_Command {
 	 * <term>
 	 * : Slug or ID of the term to migrate.
 	 *
-	 * <orig-taxonomy>
-	 * : Taxonomy slug of the term to migrate.
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * default: id
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
 	 *
-	 * <dest-taxonomy>
+	 * [--from=<taxonomy>]
+	 * : Taxonomy slug of the term to migrate.
+	 * ---
+	 * default: category
+	 * ---
+	 *
+	 * [--to=<taxonomy>]
 	 * : Taxonomy slug to migrate.
+	 * ---
+	 * default: post_tag
 	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Migrate a category's term (video) to tag taxonomy.
-	 *     $ wp taxonomy migrate video category post_tag
-	 *     Term video has migrated from category taxonomy to post_tag taxonomy.
+	 *     $ wp term migrate 9190
+	 *     Taxonomy term `9190` for taxonomy `category` doesn't exist.
 	 */
 	public function migrate( $args, $assoc_args ) {
 		// Code based from https://wordpress.org/plugins/taxonomy-converter/
 		global $wpdb;
 		$clean_term_cache = array();
 		$term_reference = $args[0];
-		$original_taxonomy = $args[1];
-		$destination_taxonomy = $args[2];
-		$exists = term_exists( $term_reference, $args[1] );
+		$original_taxonomy = Utils\get_flag_value( $assoc_args, 'from' );
+		$destination_taxonomy = Utils\get_flag_value( $assoc_args, 'to' );
 
-		if ( ! empty( $exists ) ) {
+		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term_reference, $original_taxonomy );
+
+		if ( ! empty( $term ) ) {
 			WP_CLI::error( "Taxonomy term `{$term_reference}` for taxonomy `{$original_taxonomy}` doesn't exist." );
 		}
 
-		$original_taxonomy = get_taxonomy( $term_reference );
-		$term = get_term( $term_reference, $original_taxonomy );
+		$original_taxonomy = get_taxonomy( $original_taxonomy );
 
 		$id = wp_insert_term($term->name, $destination_taxonomy, array( 'slug' => $term->slug ) );
 
@@ -680,7 +694,7 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		$id = $id['term_taxonomy_id'];
-		$posts = get_objects_in_term( $term->term_id, $args[1] );
+		$posts = get_objects_in_term( $term->term_id, $original_taxonomy );
 
 		foreach ( $posts as $post ) {
 			$type = get_post_type( $post );
@@ -703,7 +717,7 @@ class Term_Command extends WP_CLI_Command {
 		$del = wp_delete_term( $term_id, $tax );
 
 		if ( is_wp_error( $del ) ) {
-			WP_CLI::error( "An error has occured: " . $id->get_error_message() );
+			WP_CLI::error( "An error has occured: " . $del->get_error_message() );
 		}
 
 		// Set all parents to 0 (root-level) if their parent was the converted tag
