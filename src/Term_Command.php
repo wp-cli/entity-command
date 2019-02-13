@@ -674,32 +674,31 @@ class Term_Command extends WP_CLI_Command {
 	public function migrate( $args, $assoc_args ) {
 		// Code based from https://wordpress.org/plugins/taxonomy-converter/
 		global $wpdb;
-		$clean_term_cache = array();
+		$clean_term_cache = $values = array();
 		$term_reference = $args[0];
 		$original_taxonomy = Utils\get_flag_value( $assoc_args, 'from' );
 		$destination_taxonomy = Utils\get_flag_value( $assoc_args, 'to' );
 
 		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term_reference, $original_taxonomy );
 
-		if ( ! empty( $term ) ) {
+		if ( ! $term ) {
 			WP_CLI::error( "Taxonomy term `{$term_reference}` for taxonomy `{$original_taxonomy}` doesn't exist." );
 		}
 
 		$original_taxonomy = get_taxonomy( $original_taxonomy );
 
-		$id = wp_insert_term($term->name, $destination_taxonomy, array( 'slug' => $term->slug ) );
+		$id = wp_insert_term( $term->name, $destination_taxonomy, array( 'slug' => $term->slug ) );
 
 		if ( is_wp_error( $id ) ) {
 			WP_CLI::error( "An error has occured: " . $id->get_error_message() );
 		}
 
-		$id = $id['term_taxonomy_id'];
-		$posts = get_objects_in_term( $term->term_id, $original_taxonomy );
+		$posts = get_objects_in_term( $term->term_id, $original_taxonomy->name );
 
 		foreach ( $posts as $post ) {
 			$type = get_post_type( $post );
 			if ( in_array( $type, $original_taxonomy->object_type ) ) {
-				$values[] = $wpdb->prepare( "(%d, %d, %d)", $post, $id, 0 );
+				$values[] = $wpdb->prepare( "(%d, %d, %d)", $post, $id['term_taxonomy_id'], 0 );
 			}
 
 			clean_post_cache( $post );
@@ -714,18 +713,18 @@ class Term_Command extends WP_CLI_Command {
 			$clean_term_cache[] = $term->term_id;
 		}
 
-		$del = wp_delete_term( $term_id, $tax );
+		$del = wp_delete_term( $term->term_id, $original_taxonomy );
 
 		if ( is_wp_error( $del ) ) {
 			WP_CLI::error( "An error has occured: " . $del->get_error_message() );
 		}
 
 		// Set all parents to 0 (root-level) if their parent was the converted tag
-		$wpdb->update( $wpdb->term_taxonomy, array( 'parent' => 0 ), array( 'parent' => $term_id, 'taxonomy' => $tax )  );
+		$wpdb->update( $wpdb->term_taxonomy, array( 'parent' => 0 ), array( 'parent' => $term->term_id, 'taxonomy' => $destination_taxonomy )  );
 
 		if ( ! empty( $clean_term_cache ) ) {
 			$clean_term_cache = array_unique( array_values( $clean_term_cache ) );
-			clean_term_cache ( $clean_term_cache, $args[2] );
+			clean_term_cache( $clean_term_cache, $destination_taxonomy );
 		}
 	}
 
