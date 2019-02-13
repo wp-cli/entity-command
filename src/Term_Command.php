@@ -669,10 +669,11 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 *     # Migrate a category's term (video) to tag taxonomy.
 	 *     $ wp term migrate 9190
-	 *     Taxonomy term `9190` for taxonomy `category` doesn't exist.
+	 *     Post 219060 assigned to new term!
+	 *     Old Term removed!
+	 *     Success: Migration of `9190` term for 1 posts
 	 */
 	public function migrate( $args, $assoc_args ) {
-		// Code based from https://wordpress.org/plugins/taxonomy-converter/
 		global $wpdb;
 		$clean_term_cache = $values = array();
 		$term_reference = $args[0];
@@ -687,10 +688,10 @@ class Term_Command extends WP_CLI_Command {
 
 		$original_taxonomy = get_taxonomy( $original_taxonomy );
 
-		$id = wp_insert_term( $term->name, $destination_taxonomy, array( 'slug' => $term->slug ) );
+		$id = wp_insert_term( $term->name, $destination_taxonomy, array( 'slug' => $term->slug, 'parent' => 0, 'description' => $term->description ) );
 
 		if ( is_wp_error( $id ) ) {
-			WP_CLI::error( "An error has occured: " . $id->get_error_message() );
+			WP_CLI::error( $id->get_error_message() );
 		}
 
 		$posts = get_objects_in_term( $term->term_id, $original_taxonomy->name );
@@ -698,34 +699,30 @@ class Term_Command extends WP_CLI_Command {
 		foreach ( $posts as $post ) {
 			$type = get_post_type( $post );
 			if ( in_array( $type, $original_taxonomy->object_type ) ) {
-				$values[] = $wpdb->prepare( "(%d, %d, %d)", $post, $id['term_taxonomy_id'], 0 );
+				$set_relationship = wp_set_object_terms( $post, $id['term_id'], $destination_taxonomy, true );
+
+				if ( is_wp_error( $set_relationship ) ) {
+					WP_CLI::error( "On setting the relationship, " . $set_relationship->get_error_message() );
+				}
+
+				WP_CLI::line( "Post {$post} assigned to new term!" );
 			}
 
 			clean_post_cache( $post );
 		}
 
-		if ( $values ) {
-			$wpdb->query( "INSERT INTO $wpdb->term_relationships (object_id, term_taxonomy_id, term_order) VALUES " . join( ',', $values ) . " ON DUPLICATE KEY UPDATE term_order = VALUES(term_order)" );
-			$wpdb->update($wpdb->term_taxonomy, array( 'count' => $term->count ), array( 'term_id' => $term->term_id, 'taxonomy' => $destination_taxonomy ) );
+		clean_term_cache( $term->term_id );
 
-			WP_CLI::success( "Term migrated!" );
+		WP_CLI::line( "Term migrated!" );
 
-			$clean_term_cache[] = $term->term_id;
-		}
-
-		$del = wp_delete_term( $term->term_id, $original_taxonomy );
+		$del = wp_delete_term( $term->term_id, $original_taxonomy->name );
 
 		if ( is_wp_error( $del ) ) {
-			WP_CLI::error( "An error has occured: " . $del->get_error_message() );
+			WP_CLI::error( "On deleting the term, " . $del->get_error_message() );
 		}
 
-		// Set all parents to 0 (root-level) if their parent was the converted tag
-		$wpdb->update( $wpdb->term_taxonomy, array( 'parent' => 0 ), array( 'parent' => $term->term_id, 'taxonomy' => $destination_taxonomy )  );
-
-		if ( ! empty( $clean_term_cache ) ) {
-			$clean_term_cache = array_unique( array_values( $clean_term_cache ) );
-			clean_term_cache( $clean_term_cache, $destination_taxonomy );
-		}
+		WP_CLI::line( "Old Term removed!" );
+		WP_CLI::success( "Migration of `{$term_reference}` term for " . count( $posts ) . " posts" );
 	}
 
 	private function maybe_make_child() {
