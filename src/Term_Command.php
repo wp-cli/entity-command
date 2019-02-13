@@ -636,6 +636,85 @@ class Term_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Migrate a term of a taxonomy to another taxonomy.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <term>
+	 * : Slug or ID of the term to migrate.
+	 *
+	 * <orig-taxonomy>
+	 * : Taxonomy slug of the term to migrate.
+	 *
+	 * <dest-taxonomy>
+	 * : Taxonomy slug to migrate.
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Migrate a category's term (video) to tag taxonomy.
+	 *     $ wp taxonomy migrate video category post_tag
+	 *     Term video has migrated from category taxonomy to post_tag taxonomy.
+	 */
+	public function migrate( $args, $assoc_args ) {
+		// Code based from https://wordpress.org/plugins/taxonomy-converter/
+		global $wpdb;
+		$clean_term_cache = array();
+		$term_reference = $args[0];
+		$original_taxonomy = $args[1];
+		$destination_taxonomy = $args[2];
+		$exists = term_exists( $term_reference, $args[1] );
+
+		if ( ! empty( $exists ) ) {
+			WP_CLI::error( "Taxonomy term `{$term_reference}` for taxonomy `{$original_taxonomy}` doesn't exist." );
+		}
+
+		$original_taxonomy = get_taxonomy( $term_reference );
+		$term = get_term( $term_reference, $original_taxonomy );
+
+		$id = wp_insert_term($term->name, $destination_taxonomy, array( 'slug' => $term->slug ) );
+
+		if ( is_wp_error( $id ) ) {
+			WP_CLI::error( "An error has occured: " . $id->get_error_message() );
+		}
+
+		$id = $id['term_taxonomy_id'];
+		$posts = get_objects_in_term( $term->term_id, $args[1] );
+
+		foreach ( $posts as $post ) {
+			$type = get_post_type( $post );
+			if ( in_array( $type, $original_taxonomy->object_type ) ) {
+				$values[] = $wpdb->prepare( "(%d, %d, %d)", $post, $id, 0 );
+			}
+
+			clean_post_cache( $post );
+		}
+
+		if ( $values ) {
+			$wpdb->query( "INSERT INTO $wpdb->term_relationships (object_id, term_taxonomy_id, term_order) VALUES " . join( ',', $values ) . " ON DUPLICATE KEY UPDATE term_order = VALUES(term_order)" );
+			$wpdb->update($wpdb->term_taxonomy, array( 'count' => $term->count ), array( 'term_id' => $term->term_id, 'taxonomy' => $destination_taxonomy ) );
+
+			WP_CLI::success( "Term migrated!" );
+
+			$clean_term_cache[] = $term->term_id;
+		}
+
+		$del = wp_delete_term( $term_id, $tax );
+
+		if ( is_wp_error( $del ) ) {
+			WP_CLI::error( "An error has occured: " . $id->get_error_message() );
+		}
+
+		// Set all parents to 0 (root-level) if their parent was the converted tag
+		$wpdb->update( $wpdb->term_taxonomy, array( 'parent' => 0 ), array( 'parent' => $term_id, 'taxonomy' => $tax )  );
+
+		if ( ! empty( $clean_term_cache ) ) {
+			$clean_term_cache = array_unique( array_values( $clean_term_cache ) );
+			clean_term_cache ( $clean_term_cache, $args[2] );
+		}
+	}
+
 	private function maybe_make_child() {
 		// 50% chance of making child term
 		return ( mt_rand(1, 2) == 1 );
