@@ -655,26 +655,18 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * [--from=<taxonomy>]
 	 * : Taxonomy slug of the term to migrate.
-	 * ---
-	 * default: category
-	 * ---
 	 *
 	 * [--to=<taxonomy>]
 	 * : Taxonomy slug to migrate to.
-	 * ---
-	 * default: post_tag
-	 * ---
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Migrate a category's term (video) to tag taxonomy.
-	 *     $ wp term migrate 9190
+	 *     $ wp term migrate 9190 --from=category --to=post_tag
 	 *     Post 219060 assigned to new term!
-	 *     Old Term removed!
 	 *     Success: Migration of `9190` term for 1 posts
 	 */
 	public function migrate( $args, $assoc_args ) {
-		global $wpdb;
 		$clean_term_cache = $values = array();
 		$term_reference = $args[0];
 		$original_taxonomy = Utils\get_flag_value( $assoc_args, 'from' );
@@ -723,7 +715,7 @@ class Term_Command extends WP_CLI_Command {
 
 		WP_CLI::log( "Old instance of term '{$term->slug} removed from its original taxonomy." );
 		$post_count  = count( $posts );
-		$post_plural = WP_CLI\Utils\pluralize( 'post', $post_count )
+		$post_plural = WP_CLI\Utils\pluralize( 'post', $post_count );
 		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{original_taxonomy}' to taxonomy '{destination_taxonomy}' for {$post_count} {$post_plural}" );
 	}
 
