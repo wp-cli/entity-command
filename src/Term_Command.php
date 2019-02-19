@@ -660,7 +660,7 @@ class Term_Command extends WP_CLI_Command {
 	 * ---
 	 *
 	 * [--to=<taxonomy>]
-	 * : Taxonomy slug to migrate.
+	 * : Taxonomy slug to migrate to.
 	 * ---
 	 * default: post_tag
 	 * ---
@@ -694,26 +694,26 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( $id->get_error_message() );
 		}
 
-		$posts = get_objects_in_term( $term->term_id, $original_taxonomy->name );
+		$post_ids = get_objects_in_term( $term->term_id, $original_taxonomy->name );
 
-		foreach ( $posts as $post ) {
-			$type = get_post_type( $post );
+		foreach ( $post_ids as $post_id ) {
+			$type = get_post_type( $post_id );
 			if ( in_array( $type, $original_taxonomy->object_type ) ) {
-				$set_relationship = wp_set_object_terms( $post, $id['term_id'], $destination_taxonomy, true );
+				$term_taxonomy_id = wp_set_object_terms( $post_id, $id['term_id'], $destination_taxonomy, true );
 
-				if ( is_wp_error( $set_relationship ) ) {
-					WP_CLI::error( "On setting the relationship, " . $set_relationship->get_error_message() );
+				if ( is_wp_error( $term_taxonomy_id ) ) {
+					WP_CLI::error( "Failed to assign the term '{$term->slug}' to the post {$post_id}. Reason: " . $term_taxonomy_id->get_error_message() );
 				}
 
-				WP_CLI::line( "Post {$post} assigned to new term!" );
+				WP_CLI::log( "Term '{$term->slug}' assigned to post {$post_id}." );
 			}
 
-			clean_post_cache( $post );
+			clean_post_cache( $post_id );
 		}
 
 		clean_term_cache( $term->term_id );
 
-		WP_CLI::line( "Term migrated!" );
+		WP_CLI::log( "Term '{$term->slug}' migrated!" );
 
 		$del = wp_delete_term( $term->term_id, $original_taxonomy->name );
 
@@ -721,8 +721,10 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "On deleting the term, " . $del->get_error_message() );
 		}
 
-		WP_CLI::line( "Old Term removed!" );
-		WP_CLI::success( "Migration of `{$term_reference}` term for " . count( $posts ) . " posts" );
+		WP_CLI::log( "Old instance of term '{$term->slug} removed from its original taxonomy." );
+		$post_count  = count( $posts );
+		$post_plural = WP_CLI\Utils\pluralize( 'post', $post_count )
+		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{original_taxonomy}' to taxonomy '{destination_taxonomy}' for {$post_count} {$post_plural}" );
 	}
 
 	private function maybe_make_child() {
