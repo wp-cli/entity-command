@@ -46,7 +46,8 @@ Feature: Manage term custom fields
       Old instance of term '{TERM_ID}' removed from its original taxonomy.
       Success: Migrated the term '{TERM_ID}' from taxonomy 'category' to taxonomy 'post_tag' for 1 post
       """
-
+  
+  @require-wp-4.4
   Scenario: Migrate a term in multiple posts
     Given a WP install
 
