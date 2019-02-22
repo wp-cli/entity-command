@@ -23,6 +23,30 @@ Feature: Manage term custom fields
       Success: Migrated the term 'apple' from taxonomy 'category' to taxonomy 'post_tag' for 1 post
       """
 
+  @require-wp-4.4
+  Scenario: Migrate a term that exist with id
+    Given a WP install
+
+    When I run `wp term create category apple --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID}
+
+    When I run `wp post create --post_title='Test post' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post term set {POST_ID} category {TERM_ID}`
+    Then STDOUT should not be empty
+
+    When I run `wp term migrate {TERM_ID} --by=slug --from=category --to=post_tag`
+    Then STDOUT should be:
+      """
+      Term '{TERM_ID}' assigned to post 4.
+      Term '{TERM_ID}' migrated!
+      Old instance of term '{TERM_ID}' removed from its original taxonomy.
+      Success: Migrated the term '{TERM_ID}' from taxonomy 'category' to taxonomy 'post_tag' for 1 post
+      """
+
   Scenario: Migrate a term in multiple posts
     Given a WP install
 
@@ -57,7 +81,7 @@ Feature: Manage term custom fields
   Scenario: Migrate a term that not exist
     Given a WP install
 
-    When I run `wp term migrate peach --by=slug --from=category --to=post_tag`
+    When I try `wp term migrate peach --by=slug --from=category --to=post_tag`
     Then STDERR should be:
       """
       Error: Taxonomy term `peach` for taxonomy `category` doesn't exist.
