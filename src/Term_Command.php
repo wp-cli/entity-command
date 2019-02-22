@@ -663,8 +663,9 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 *     # Migrate a category's term (video) to tag taxonomy.
 	 *     $ wp term migrate 9190 --from=category --to=post_tag
-	 *     Post 219060 assigned to new term!
-	 *     Success: Migration of `9190` term for 1 posts
+	 *     Term '9190' migrated!
+	 *     Old instance of term '9190' removed from its original taxonomy.
+	 *     Success: Migrated the term '9190' from taxonomy 'category' to taxonomy 'post_tag' for 1 posts
 	 */
 	public function migrate( $args, $assoc_args ) {
 		$clean_term_cache = $values = array();
@@ -713,10 +714,10 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "On deleting the term, " . $del->get_error_message() );
 		}
 
-		WP_CLI::log( "Old instance of term '{$term->slug} removed from its original taxonomy." );
-		$post_count  = count( $posts );
+		WP_CLI::log( "Old instance of term '{$term->slug}' removed from its original taxonomy." );
+		$post_count  = count( $post_ids );
 		$post_plural = WP_CLI\Utils\pluralize( 'post', $post_count );
-		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{original_taxonomy}' to taxonomy '{destination_taxonomy}' for {$post_count} {$post_plural}" );
+		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{$original_taxonomy->name}' to taxonomy '{$destination_taxonomy}' for {$post_count} {$post_plural}" );
 	}
 
 	private function maybe_make_child() {
