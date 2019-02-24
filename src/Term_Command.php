@@ -636,6 +636,90 @@ class Term_Command extends WP_CLI_Command {
 		}
 	}
 
+	/**
+	 * Migrate a term of a taxonomy to another taxonomy.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <term>
+	 * : Slug or ID of the term to migrate.
+	 *
+	 * [--by=<field>]
+	 * : Explicitly handle the term value as a slug or id.
+	 * ---
+	 * default: id
+	 * options:
+	 *   - slug
+	 *   - id
+	 * ---
+	 *
+	 * [--from=<taxonomy>]
+	 * : Taxonomy slug of the term to migrate.
+	 *
+	 * [--to=<taxonomy>]
+	 * : Taxonomy slug to migrate to.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Migrate a category's term (video) to tag taxonomy.
+	 *     $ wp term migrate 9190 --from=category --to=post_tag
+	 *     Term '9190' migrated!
+	 *     Old instance of term '9190' removed from its original taxonomy.
+	 *     Success: Migrated the term '9190' from taxonomy 'category' to taxonomy 'post_tag' for 1 posts
+	 */
+	public function migrate( $args, $assoc_args ) {
+		$clean_term_cache = $values = array();
+		$term_reference = $args[0];
+		$original_taxonomy = Utils\get_flag_value( $assoc_args, 'from' );
+		$destination_taxonomy = Utils\get_flag_value( $assoc_args, 'to' );
+
+		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term_reference, $original_taxonomy );
+
+		if ( ! $term ) {
+			WP_CLI::error( "Taxonomy term '{$term_reference}' for taxonomy '{$original_taxonomy}' doesn't exist." );
+		}
+
+		$original_taxonomy = get_taxonomy( $original_taxonomy );
+
+		$id = wp_insert_term( $term->name, $destination_taxonomy, array( 'slug' => $term->slug, 'parent' => 0, 'description' => $term->description ) );
+
+		if ( is_wp_error( $id ) ) {
+			WP_CLI::error( $id->get_error_message() );
+		}
+
+		$post_ids = get_objects_in_term( $term->term_id, $original_taxonomy->name );
+
+		foreach ( $post_ids as $post_id ) {
+			$type = get_post_type( $post_id );
+			if ( in_array( $type, $original_taxonomy->object_type ) ) {
+				$term_taxonomy_id = wp_set_object_terms( $post_id, $id['term_id'], $destination_taxonomy, true );
+
+				if ( is_wp_error( $term_taxonomy_id ) ) {
+					WP_CLI::error( "Failed to assign the term '{$term->slug}' to the post {$post_id}. Reason: " . $term_taxonomy_id->get_error_message() );
+				}
+
+				WP_CLI::log( "Term '{$term->slug}' assigned to post {$post_id}." );
+			}
+
+			clean_post_cache( $post_id );
+		}
+
+		clean_term_cache( $term->term_id );
+
+		WP_CLI::log( "Term '{$term->slug}' migrated." );
+
+		$del = wp_delete_term( $term->term_id, $original_taxonomy->name );
+
+		if ( is_wp_error( $del ) ) {
+			WP_CLI::error( "Failed to delete the term '{$term->slug}'. Reason: " . $del->get_error_message() );
+		}
+
+		WP_CLI::log( "Old instance of term '{$term->slug}' removed from its original taxonomy." );
+		$post_count  = count( $post_ids );
+		$post_plural = WP_CLI\Utils\pluralize( 'post', $post_count );
+		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{$original_taxonomy->name}' to taxonomy '{$destination_taxonomy}' for {$post_count} {$post_plural}." );
+	}
+
 	private function maybe_make_child() {
 		// 50% chance of making child term
 		return ( mt_rand(1, 2) == 1 );
