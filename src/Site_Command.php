@@ -136,6 +136,14 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	/**
+	 * Reset option values to default.
+	 */
+	private function _reset_options() {
+		// Reset Privacy Policy value to prevent error.
+		update_option( 'wp_page_for_privacy_policy', 0 );
+	}
+
+	/**
 	 * Empties a site of its content (posts, comments, terms, and meta).
 	 *
 	 * Truncates posts, comments, and terms tables to empty a site of its
@@ -186,6 +194,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 		$this->_empty_comments();
 		$this->_empty_taxonomies();
 		$this->_insert_default_terms();
+		$this->_reset_options();
 
 		if ( ! empty( $upload_message ) ) {
 			$upload_dir = wp_upload_dir();
