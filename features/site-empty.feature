@@ -42,6 +42,12 @@ Feature: Empty a WordPress site of its data
     When I run `wp term list post_tag --format=ids`
     Then STDOUT should be empty
 
+    When I run `wp option get wp_page_for_privacy_policy`
+    Then STDOUT should be:
+      """
+      0
+      """
+
   Scenario: Empty a site and its uploads directory
     Given a WP multisite installation
     And I run `wp site create --slug=foo`
