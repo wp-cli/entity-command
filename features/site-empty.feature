@@ -29,6 +29,21 @@ Feature: Empty a WordPress site of its data
       Success: Created post_tag 2.
       """
 
+    When I run `wp post create --post_type=page --post_title='Sample Privacy Page' --post_content='Sample Privacy Terms' --porcelain`
+    Then save STDOUT as {PAGE_ID}
+
+    When I run `wp option set wp_page_for_privacy_policy {PAGE_ID}`
+    Then STDOUT should be:
+      """
+      Success: Updated 'wp_page_for_privacy_policy' option.
+      """
+
+    When I run `wp option get wp_page_for_privacy_policy`
+    Then STDOUT should be:
+      """
+      {PAGE_ID}
+      """
+
     When I run `wp site empty --yes`
     Then STDOUT should be:
       """
@@ -41,6 +56,12 @@ Feature: Empty a WordPress site of its data
 
     When I run `wp term list post_tag --format=ids`
     Then STDOUT should be empty
+
+    When I run `wp option get wp_page_for_privacy_policy`
+    Then STDOUT should be:
+      """
+      0
+      """
 
   Scenario: Empty a site and its uploads directory
     Given a WP multisite installation
