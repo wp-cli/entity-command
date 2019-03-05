@@ -264,6 +264,9 @@ Gets a list of comments.
 wp comment list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
+Display comments based on all arguments supported by
+[WP_Comment_Query()](https://developer.wordpress.org/reference/classes/WP_Comment_Query/__construct/).
+
 **OPTIONS**
 
 	[--<field>=<value>]
@@ -2111,7 +2114,7 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
     Success: Created post 1922.
 
     # Create a post with multiple meta values.
-    $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}
+    $ wp post create --post_title='A post' --post_content='Just a small post.' --meta_input='{"key1":"value1","key2":"value2"}'
     Success: Created post 1923.
 
     # Create a duplicate post from existing posts.
@@ -2338,6 +2341,9 @@ Gets a list of posts.
 ~~~
 wp post list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
+
+Display posts based on all arguments supported by
+[WP_Query()](https://developer.wordpress.org/reference/classes/wp_query/).
 
 **OPTIONS**
 
