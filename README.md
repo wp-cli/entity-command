@@ -3037,7 +3037,7 @@ wp post-type get <post-type> [--field=<field>] [--fields=<fields>] [--format=<fo
 
 **AVAILABLE FIELDS**
 
-These fields will be displayed by default for each post type:
+These fields will be displayed by default for the specified post type:
 
 * name
 * label
@@ -3049,7 +3049,9 @@ These fields will be displayed by default for each post type:
 * cap
 * supports
 
-There are no optionally available fields.
+These fields are optionally available:
+
+* count
 
 **EXAMPLES**
 
@@ -3101,7 +3103,9 @@ These fields will be displayed by default for each post type:
 * public
 * capability_type
 
-There are no optionally available fields.
+These fields are optionally available:
+
+* count
 
 **EXAMPLES**
 
@@ -3618,6 +3622,24 @@ wp taxonomy get <taxonomy> [--field=<field>] [--fields=<fields>] [--format=<form
 		  - yaml
 		---
 
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for the specified taxonomy:
+
+* name
+* label
+* description
+* object_type
+* show_tagcloud
+* hierarchical
+* public
+* labels
+* cap
+
+These fields are optionally available:
+
+* count
+
 **EXAMPLES**
 
     # Get details of `category` taxonomy.
@@ -3674,10 +3696,14 @@ These fields will be displayed by default for each term:
 * name
 * label
 * description
-* public
+* object_type
+* show_tagcloud
 * hierarchical
+* public
 
-There are no optionally available fields.
+These fields are optionally available:
+
+* count
 
 **EXAMPLES**
 
