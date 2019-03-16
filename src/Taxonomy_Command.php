@@ -45,6 +45,37 @@ class Taxonomy_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Gets the term counts for each supplied taxonomy.
+	 *
+	 * @param array $taxonomies Taxonomies to fetch counts for.
+	 * @return array Associative array of term counts keyed by taxonomy.
+	 */
+	protected function get_counts( $taxonomies ) {
+		global $wpdb;
+
+		if ( count( $taxonomies ) <= 0 ) {
+			return [];
+		}
+
+		$query  = $wpdb->prepare(
+			"SELECT `taxonomy`, COUNT(*) AS `count`
+			FROM $wpdb->term_taxonomy
+			WHERE `taxonomy` IN (" . implode( ',', array_fill( 0, count( $taxonomies ), '%s' ) ) . ")
+			GROUP BY `taxonomy`",
+			$taxonomies
+		);
+		$counts = $wpdb->get_results( $query );
+
+		// Make sure there's a count for every item.
+		$counts = array_merge(
+			array_fill_keys( $taxonomies, 0 ),
+			wp_list_pluck( $counts, 'count', 'taxonomy' )
+		);
+
+		return $counts;
+	}
+
+	/**
 	 * Lists registered taxonomies.
 	 *
 	 * ## OPTIONS
@@ -77,10 +108,14 @@ class Taxonomy_Command extends WP_CLI_Command {
 	 * * name
 	 * * label
 	 * * description
-	 * * public
+	 * * object_type
+	 * * show_tagcloud
 	 * * hierarchical
+	 * * public
 	 *
-	 * There are no optionally available fields.
+	 * These fields are optionally available:
+	 *
+	 * * count
 	 *
 	 * ## EXAMPLES
 	 *
@@ -112,10 +147,17 @@ class Taxonomy_Command extends WP_CLI_Command {
 			$assoc_args['object_type'] = array( $assoc_args['object_type'] );
 		}
 
+		$fields     = $formatter->fields;
 		$taxonomies = get_taxonomies( $assoc_args, 'objects' );
+		$counts     = [];
 
-		$taxonomies = array_map( function( $taxonomy ) {
+		if ( count( $taxonomies ) > 0 && in_array( 'count', $fields, true ) ) {
+			$counts = $this->get_counts( wp_list_pluck( $taxonomies, 'name' ) );
+		}
+
+		$taxonomies = array_map( function( $taxonomy ) use ( $counts ) {
 			$taxonomy->object_type = implode( ', ', $taxonomy->object_type );
+			$taxonomy->count       = isset( $counts[ $taxonomy->name ] ) ? $counts[ $taxonomy->name ] : 0;
 			return $taxonomy;
 		}, $taxonomies );
 
@@ -146,6 +188,24 @@ class Taxonomy_Command extends WP_CLI_Command {
 	 *   - json
 	 *   - yaml
 	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for the specified taxonomy:
+	 *
+	 * * name
+	 * * label
+	 * * description
+	 * * object_type
+	 * * show_tagcloud
+	 * * hierarchical
+	 * * public
+	 * * labels
+	 * * cap
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * count
 	 *
 	 * ## EXAMPLES
 	 *
@@ -179,6 +239,15 @@ class Taxonomy_Command extends WP_CLI_Command {
 			$assoc_args['fields'] = $default_fields;
 		}
 
+		$formatter = $this->get_formatter( $assoc_args );
+		$fields    = $formatter->fields;
+		$count     = 0;
+
+		if ( in_array( 'count', $fields, true ) ) {
+			$count = $this->get_counts( [ $taxonomy->name ] );
+			$count = $count[ $taxonomy->name ];
+		}
+
 		$data = array(
 			'name'          => $taxonomy->name,
 			'label'         => $taxonomy->label,
@@ -189,9 +258,8 @@ class Taxonomy_Command extends WP_CLI_Command {
 			'public'        => $taxonomy->public,
 			'labels'        => $taxonomy->labels,
 			'cap'           => $taxonomy->cap,
+			'count'         => $count,
 		);
-
-		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $data );
 	}
 
