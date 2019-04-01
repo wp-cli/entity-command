@@ -59,45 +59,45 @@ Feature: Manage post custom fields
 
     When I run `wp post meta list 1`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
-      | 1       | banana   | ["apple","apple"]  |
+      | post_id | meta_key | meta_value                              |
+      | 1       | apple    | banana                                  |
+      | 1       | apple    | banana                                  |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
 
     When I run `wp post meta list 1 --orderby=id --order=desc`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | banana   | ["apple","apple"]  |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
+      | post_id | meta_key | meta_value                              |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
+      | 1       | apple    | banana                                  |
+      | 1       | apple    | banana                                  |
 
     When I run `wp post meta list 1 --orderby=meta_key --order=asc`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
-      | 1       | banana   | ["apple","apple"]  |
+      | post_id | meta_key | meta_value                              |
+      | 1       | apple    | banana                                  |
+      | 1       | apple    | banana                                  |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
 
     When I run `wp post meta list 1 --orderby=meta_key --order=desc`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | banana   | ["apple","apple"]  |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
+      | post_id | meta_key | meta_value                              |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
+      | 1       | apple    | banana                                  |
+      | 1       | apple    | banana                                  |
 
     When I run `wp post meta list 1 --orderby=meta_value --order=asc`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
-      | 1       | banana   | ["apple","apple"]  |
+      | post_id | meta_key | meta_value                              |
+      | 1       | apple    | banana                                  |
+      | 1       | apple    | banana                                  |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
 
     When I run `wp post meta list 1 --orderby=meta_value --order=desc`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | banana   | ["apple","apple"]  |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
+      | post_id | meta_key | meta_value                              |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
+      | 1       | apple    | banana                                  |
+      | 1       | apple    | banana                                  |
 
   Scenario: Delete all post meta
     Given a WP install
