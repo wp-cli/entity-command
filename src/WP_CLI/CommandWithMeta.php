@@ -84,8 +84,6 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 			foreach( $values as $item_value ) {
 
-				$item_value = maybe_unserialize( $item_value );
-
 				$items[] = (object) array(
 					"{$this->meta_type}_id" => $object_id,
 					'meta_key'              => $key,
