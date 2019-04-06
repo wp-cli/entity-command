@@ -435,7 +435,7 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <key>
+	 * <key>...
 	 * : Key for the option.
 	 *
 	 * ## EXAMPLES
@@ -443,14 +443,20 @@ class Option_Command extends WP_CLI_Command {
 	 *     # Delete an option.
 	 *     $ wp option delete my_option
 	 *     Success: Deleted 'my_option' option.
+	 *
+	 *     # Delete multiple options.
+	 *     $ wp option delete option_one option_two option_three
+	 *     Success: Deleted 'option_one' option.
+	 *     Success: Deleted 'option_two' option.
+	 *     Warning: Could not delete 'option_three' option. Does it exist?
 	 */
 	public function delete( $args ) {
-		list( $key ) = $args;
-
-		if ( !delete_option( $key ) ) {
-			WP_CLI::error( "Could not delete '$key' option. Does it exist?" );
-		} else {
-			WP_CLI::success( "Deleted '$key' option." );
+		foreach ( $args as $arg ) {
+			if ( ! delete_option( $arg ) ) {
+				WP_CLI::warning( "Could not delete '$arg' option. Does it exist?" );
+			} else {
+				WP_CLI::success( "Deleted '$arg' option." );
+			}
 		}
 	}
 
