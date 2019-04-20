@@ -12,6 +12,8 @@ Feature: Generate new WordPress posts
       """
     And STDERR should be empty
 
+  @broken
+  Scenario: Using --post-content requires STDIN input
     When I try `wp post generate --count=1 --post_content`
     Then STDERR should contain:
       """
