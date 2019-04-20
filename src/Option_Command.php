@@ -77,7 +77,7 @@ class Option_Command extends WP_CLI_Command {
 		$value = get_option( $key );
 
 		if ( false === $value ) {
-			WP_CLI::error( "Could not get '$key' option. Does it exist?" );
+			WP_CLI::error( "Could not get '{$key}' option. Does it exist?" );
 		}
 
 		WP_CLI::print_value( $value, $assoc_args );
@@ -132,9 +132,9 @@ class Option_Command extends WP_CLI_Command {
 		}
 
 		if ( !add_option( $key, $value, '', $autoload ) ) {
-			WP_CLI::error( "Could not add option '$key'. Does it already exist?" );
+			WP_CLI::error( "Could not add option '{$key}'. Does it already exist?" );
 		} else {
-			WP_CLI::success( "Added '$key' option." );
+			WP_CLI::success( "Added '{$key}' option." );
 		}
 	}
 
@@ -420,12 +420,12 @@ class Option_Command extends WP_CLI_Command {
 		$old_value = sanitize_option( $key, get_option( $key ) );
 
 		if ( $value === $old_value && is_null( $autoload ) ) {
-			WP_CLI::success( "Value passed for '$key' option is unchanged." );
+			WP_CLI::success( "Value passed for '{$key}' option is unchanged." );
 		} else {
 			if ( update_option( $key, $value, $autoload ) ) {
-				WP_CLI::success( "Updated '$key' option." );
+				WP_CLI::success( "Updated '{$key}' option." );
 			} else {
-				WP_CLI::error( "Could not update option '$key'." );
+				WP_CLI::error( "Could not update option '{$key}'." );
 			}
 		}
 	}
@@ -453,9 +453,9 @@ class Option_Command extends WP_CLI_Command {
 	public function delete( $args ) {
 		foreach ( $args as $arg ) {
 			if ( ! delete_option( $arg ) ) {
-				WP_CLI::warning( "Could not delete '$arg' option. Does it exist?" );
+				WP_CLI::warning( "Could not delete '{$arg}' option. Does it exist?" );
 			} else {
-				WP_CLI::success( "Deleted '$arg' option." );
+				WP_CLI::success( "Deleted '{$arg}' option." );
 			}
 		}
 	}
@@ -577,12 +577,12 @@ class Option_Command extends WP_CLI_Command {
 		$patched_value = sanitize_option( $key, $traverser->value() );
 
 		if ( $patched_value === $old_value ) {
-			WP_CLI::success( "Value passed for '$key' option is unchanged." );
+			WP_CLI::success( "Value passed for '{$key}' option is unchanged." );
 		} else {
 			if ( update_option( $key, $patched_value ) ) {
-				WP_CLI::success( "Updated '$key' option." );
+				WP_CLI::success( "Updated '{$key}' option." );
 			} else {
-				WP_CLI::error( "Could not update option '$key'." );
+				WP_CLI::error( "Could not update option '{$key}'." );
 			}
 		}
 	}
