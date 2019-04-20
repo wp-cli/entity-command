@@ -57,6 +57,21 @@ Feature: Manage WordPress options
     When I run `wp option delete str_opt`
     Then STDOUT should not be empty
 
+    When I run `wp option add option_one "ONE"`
+    And I run `wp option add option_two "TWO"`
+    Then STDOUT should not be empty
+
+    When I try `wp option delete option_one option_two option_three`
+    Then STDOUT should be:
+      """
+      Success: Deleted 'option_one' option.
+      Success: Deleted 'option_two' option.
+      """
+    And STDERR should be:
+      """
+      Warning: Could not delete 'option_three' option. Does it exist?
+      """
+
     When I run `wp option list`
     Then STDOUT should not contain:
       """
@@ -227,7 +242,7 @@ Feature: Manage WordPress options
 
     When I try `wp option list --search='auto_opt' --autoload`
     Then STDOUT should not be empty
-	And STDERR should be:
+    And STDERR should be:
       """
       Warning: --autoload parameter needs a value
       """
@@ -235,7 +250,7 @@ Feature: Manage WordPress options
 
     When I try `wp option list --search='auto_opt' --autoload=no`
     Then STDOUT should be empty
-	And STDERR should be:
+    And STDERR should be:
       """
       Error: Value of '--autoload' should be on or off.
       """
@@ -243,7 +258,7 @@ Feature: Manage WordPress options
 
     When I try `wp option add str_opt_foo 'bar' --autoload`
     Then STDOUT should not be empty
-	And STDERR should be:
+    And STDERR should be:
       """
       Warning: --autoload parameter needs a value
       """
@@ -251,7 +266,7 @@ Feature: Manage WordPress options
 
     When I try `wp option add str_opt_foo 'bar' --autoload=off`
     Then STDOUT should be empty
-	And STDERR should contain:
+    And STDERR should contain:
       """
       Error: Parameter errors:
       """
