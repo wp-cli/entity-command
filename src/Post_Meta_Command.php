@@ -30,8 +30,8 @@ class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * @param int
 	 */
 	protected function check_object_id( $object_id ) {
-		$fetcher = new \WP_CLI\Fetchers\Post;
-		$post = $fetcher->get_check( $object_id );
+		$fetcher = new WP_CLI\Fetchers\Post();
+		$post    = $fetcher->get_check( $object_id );
 		return $post->ID;
 	}
 
