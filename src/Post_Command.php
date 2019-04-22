@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\Utils;
+
 /**
  * Manages posts, content, and meta.
  *
@@ -19,19 +21,19 @@
  *
  * @package wp-cli
  */
-class Post_Command extends \WP_CLI\CommandWithDBObject {
+class Post_Command extends WP_CLI\CommandWithDBObject {
 
-	protected $obj_type = 'post';
-	protected $obj_fields = array(
+	protected $obj_type   = 'post';
+	protected $obj_fields = [
 		'ID',
 		'post_title',
 		'post_name',
 		'post_date',
 		'post_status',
-	);
+	];
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\Fetchers\Post;
+		$this->fetcher = new \WP_CLI\Fetchers\Post();
 	}
 
 	/**
@@ -160,25 +162,27 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$assoc_args['post_content'] = $this->read_from_file_or_stdin( $args[0] );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'edit' ) ) {
-			$input = \WP_CLI\Utils\get_flag_value( $assoc_args, 'post_content', '' );
+		if ( Utils\get_flag_value( $assoc_args, 'edit' ) ) {
+			$input = Utils\get_flag_value( $assoc_args, 'post_content', '' );
 
-			if ( $output = $this->_edit( $input, 'WP-CLI: New Post' ) )
+			$output = $this->_edit( $input, 'WP-CLI: New Post' );
+			if ( $output ) {
 				$assoc_args['post_content'] = $output;
-			else
+			} else {
 				$assoc_args['post_content'] = $input;
+			}
 		}
 
 		if ( isset( $assoc_args['post_category'] ) ) {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		if ( isset( $assoc_args['meta_input'] ) && \WP_CLI\Utils\wp_version_compare( '4.4', '<' ) ) {
+		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
 			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
 		}
 
-		$array_arguments = array( 'meta_input' );
-		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+		$array_arguments = [ 'meta_input' ];
+		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		if ( isset( $assoc_args['from-post'] ) ) {
 			$post     = $this->fetcher->get_check( $assoc_args['from-post'] );
@@ -202,9 +206,13 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
-		parent::_create( $args, $assoc_args, function ( $params ) {
-			return wp_insert_post( $params, true );
-		} );
+		parent::_create(
+			$args,
+			$assoc_args,
+			function ( $params ) {
+				return wp_insert_post( $params, true );
+			}
+		);
 	}
 
 	/**
@@ -314,7 +322,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function update( $args, $assoc_args ) {
 
-		foreach( $args as $key => $arg ) {
+		foreach ( $args as $key => $arg ) {
 			if ( is_numeric( $arg ) ) {
 				continue;
 			}
@@ -328,17 +336,21 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		if ( isset( $assoc_args['meta_input'] ) && \WP_CLI\Utils\wp_version_compare( '4.4', '<' ) ) {
+		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
 			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
 		}
 
-		$array_arguments = array( 'meta_input' );
-		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+		$array_arguments = [ 'meta_input' ];
+		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		$assoc_args = wp_slash( $assoc_args );
-		parent::_update( $args, $assoc_args, function ( $params ) {
-			return wp_update_post( $params, true );
-		} );
+		parent::_update(
+			$args,
+			$assoc_args,
+			function ( $params ) {
+				return wp_update_post( $params, true );
+			}
+		);
 	}
 
 	/**
@@ -359,17 +371,20 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$r = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
 
-		if ( $r === false )
+		if ( false === $r ) {
 			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
-		else
-			$this->update( $args, array( 'post_content' => $r, ) );
+		} else {
+			$this->update( $args, [ 'post_content' => $r ] );
+		}
 	}
 
+	// phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Whitelisting to provide backward compatibility to classes possibly extending this class.
 	protected function _edit( $content, $title ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling native WordPress hook.
 		$content = apply_filters( 'the_editor_content', $content );
-		$output = \WP_CLI\Utils\launch_editor_for_input( $content, $title );
-		return ( is_string( $output ) ) ?
-			apply_filters( 'content_save_pre', $output ) : $output;
+		$output  = Utils\launch_editor_for_input( $content, $title );
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling native WordPress hook.
+		return ( is_string( $output ) ) ? apply_filters( 'content_save_pre', $output ) : $output;
 	}
 
 	/**
@@ -465,7 +480,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 		$post_type = get_post_type( $post_id );
 
 		if ( ! $assoc_args['force']
-			&& ( $post_type !== 'post' && $post_type !== 'page' ) ) {
+			&& ( 'post' !== $post_type && 'page' !== $post_type ) ) {
 			return [
 				'error',
 				"Posts of type '{$post_type}' do not support being sent to trash.\n"
@@ -584,30 +599,33 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	public function list_( $_, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		$defaults = array(
+		$defaults   = [
 			'posts_per_page' => -1,
 			'post_status'    => 'any',
-		);
+		];
 		$query_args = array_merge( $defaults, $assoc_args );
 		$query_args = self::process_csv_arguments_to_arrays( $query_args );
 		if ( isset( $query_args['post_type'] ) && 'any' !== $query_args['post_type'] ) {
 			$query_args['post_type'] = explode( ',', $query_args['post_type'] );
 		}
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
-			$query = new WP_Query( $query_args );
+			$query                = new WP_Query( $query_args );
 			echo implode( ' ', $query->posts );
-		} else if ( 'count' === $formatter->format ) {
+		} elseif ( 'count' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
-			$query = new WP_Query( $query_args );
+			$query                = new WP_Query( $query_args );
 			$formatter->display_items( $query->posts );
 		} else {
 			$query = new WP_Query( $query_args );
-			$posts = array_map( function( $post ) {
-				$post->url = get_permalink( $post->ID );
-				return $post;
-			}, $query->posts );
+			$posts = array_map(
+				function( $post ) {
+						$post->url = get_permalink( $post->ID );
+						return $post;
+				},
+				$query->posts
+			);
 			$formatter->display_items( $posts );
 		}
 	}
@@ -695,26 +713,34 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
 
-		$defaults = array(
-			'count' => 100,
-			'max_depth' => 1,
-			'post_type' => 'post',
-			'post_status' => 'publish',
-			'post_author' => false,
-			'post_date' => false,
+		$defaults = [
+			'count'         => 100,
+			'max_depth'     => 1,
+			'post_type'     => 'post',
+			'post_status'   => 'publish',
+			'post_author'   => false,
+			'post_date'     => false,
 			'post_date_gmt' => false,
-			'post_content' => '',
-			'post_title' => '',
-		);
-		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
+			'post_content'  => '',
+			'post_title'    => '',
+		];
+
+		$final_post_data = array_merge( $defaults, $assoc_args );
+		$post_date_gmt   = $final_post_data['post_date_gmt'];
+		$post_date       = $final_post_data['post_date'];
+		$post_type       = $final_post_data['post_type'];
+		$post_author     = $final_post_data['post_author'];
+		$count           = $final_post_data['count'];
+		$max_depth       = $final_post_data['max_depth'];
+		$post_status     = $final_post_data['post_status'];
 
 		$call_time = current_time( 'mysql' );
 
-		if ( $post_date_gmt === false ) {
+		if ( false === $post_date_gmt ) {
 			$post_date_gmt = $post_date ? $post_date : $call_time;
 		}
 
-		if ( $post_date === false ) {
+		if ( false === $post_date ) {
 			$post_date = $post_date_gmt ? $post_date_gmt : $call_time;
 		}
 
@@ -728,7 +754,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 			$post_author = $user_fetcher->get_check( $post_author )->ID;
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'post_content' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'post_content' ) ) {
 			if ( ! \WP_CLI\Entity\Utils::has_stdin() ) {
 				WP_CLI::error( 'The parameter `post_content` reads from STDIN.' );
 			}
@@ -745,11 +771,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 
 		$limit = $count + $total;
 
-		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+		$format = Utils\get_flag_value( $assoc_args, 'format', 'progress' );
 
 		$notify = false;
 		if ( 'progress' === $format ) {
-			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating posts', $count );
+			$notify = Utils\make_progress_bar( 'Generating posts', $count );
 		}
 
 		$previous_post_id = 0;
@@ -773,7 +799,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				}
 			}
 
-			$args = array(
+			$args = [
 				'post_type' => $post_type,
 				'post_title' => ! empty( $post_title ) && $i === $total ? "$label" : "$label $i",
 				'post_status' => $post_status,
@@ -783,7 +809,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 				'post_date' => $post_date,
 				'post_date_gmt' => $post_date_gmt,
 				'post_content' => $post_content,
-			);
+			];
 
 			$post_id = wp_insert_post( $args, true );
 			if ( is_wp_error( $post_id ) ) {
@@ -809,13 +835,13 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	}
 
 	private function maybe_make_child() {
-		// 50% chance of making child post
-		return ( mt_rand(1, 2) == 1 );
+		// 50% chance of making child post.
+		return ( wp_rand( 1, 2 ) === 1 );
 	}
 
 	private function maybe_reset_depth() {
-		// 10% chance of reseting to root depth
-		return ( mt_rand(1, 10) == 7 );
+		// 10% chance of reseting to root depth,
+		return ( wp_rand( 1, 10 ) === 7 );
 	}
 
 	/**
@@ -825,7 +851,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 * @return string
 	 */
 	private function read_from_file_or_stdin( $arg ) {
-		if ( $arg !== '-' ) {
+		if ( '-' !== $arg ) {
 			$readfile = $arg;
 			if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
 				\WP_CLI::error( "Unable to read content from '$readfile'." );
@@ -845,7 +871,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	private function get_category_ids( $arg ) {
 
 		$categories   = explode( ',', $arg );
-		$category_ids = array();
+		$category_ids = [];
 		foreach ( $categories as $post_category ) {
 			if ( trim( $post_category ) ) {
 				if ( is_numeric( $post_category ) && (int) $post_category ) {
@@ -872,11 +898,11 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	private function get_metadata( $post_id ) {
 		$metadata = get_metadata( 'post', $post_id );
-		$items    = array();
+		$items    = [];
 		foreach ( $metadata as $key => $values ) {
 			foreach ( $values as $item_value ) {
-				$item_value  = maybe_unserialize( $item_value );
-				$items[$key] = $item_value;
+				$item_value    = maybe_unserialize( $item_value );
+				$items[ $key ] = $item_value;
 			}
 		}
 
@@ -892,7 +918,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	private function get_category( $post_id ) {
 		$category_data = get_the_category( $post_id );
-		$category_arr  = array();
+		$category_arr  = [];
 		foreach ( $category_data as $cat ) {
 			array_push( $category_arr, $cat->term_id );
 		}
@@ -909,7 +935,7 @@ class Post_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	private function get_tags( $post_id ) {
 		$tag_data = get_the_tags( $post_id );
-		$tag_arr  = array();
+		$tag_arr  = [];
 		if ( $tag_data ) {
 			foreach ( $tag_data as $tag ) {
 				array_push( $tag_arr, $tag->slug );

@@ -13,7 +13,7 @@ class Post_Term_Command extends \WP_CLI\CommandWithTerms {
 	protected $obj_type = 'post';
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\Fetchers\Post;
+		$this->fetcher = new WP_CLI\Fetchers\Post();
 	}
 
 	protected function get_object_type() {
