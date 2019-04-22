@@ -26,21 +26,21 @@ use WP_CLI\Utils;
  *
  * @package wp-cli
  */
-class Comment_Command extends \WP_CLI\CommandWithDBObject {
+class Comment_Command extends WP_CLI\CommandWithDBObject {
 
-	protected $obj_type = 'comment';
+	protected $obj_type   = 'comment';
 	protected $obj_id_key = 'comment_ID';
-	protected $obj_fields = array(
+	protected $obj_fields = [
 		'comment_ID',
 		'comment_post_ID',
 		'comment_date',
 		'comment_approved',
 		'comment_author',
 		'comment_author_email',
-	);
+	];
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\Fetchers\Comment;
+		$this->fetcher = new \WP_CLI\Fetchers\Comment();
 	}
 
 	/**
@@ -62,28 +62,32 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function create( $args, $assoc_args ) {
 		$assoc_args = wp_slash( $assoc_args );
-		parent::_create( $args, $assoc_args, function ( $params ) {
-			if ( isset( $params['comment_post_ID'] ) ) {
-				$post_id = $params['comment_post_ID'];
-				$post = get_post( $post_id );
-				if ( !$post ) {
-					return new WP_Error( 'no_post', "Can't find post $post_id." );
+		parent::_create(
+			$args,
+			$assoc_args,
+			function ( $params ) {
+				if ( isset( $params['comment_post_ID'] ) ) {
+					$post_id = $params['comment_post_ID'];
+					$post    = get_post( $post_id );
+					if ( ! $post ) {
+						return new WP_Error( 'no_post', "Can't find post $post_id." );
+					}
+				} else {
+					// Make sure it's set for older WP versions else get undefined PHP notice.
+					$params['comment_post_ID'] = 0;
 				}
-			} else {
-				// Make sure it's set for older WP versions else get undefined PHP notice.
-				$params['comment_post_ID'] = 0;
+
+				// We use wp_insert_comment() instead of wp_new_comment() to stay at a low level and
+				// avoid wp_die() formatted messages or notifications
+				$comment_id = wp_insert_comment( $params );
+
+				if ( ! $comment_id ) {
+					return new WP_Error( 'db_error', 'Could not create comment.' );
+				}
+
+				return $comment_id;
 			}
-
-			// We use wp_insert_comment() instead of wp_new_comment() to stay at a low level and
-			// avoid wp_die() formatted messages or notifications
-			$comment_id = wp_insert_comment( $params );
-
-			if ( !$comment_id ) {
-				return new WP_Error( 'db_error', 'Could not create comment.' );
-			}
-
-			return $comment_id;
-		} );
+		);
 	}
 
 	/**
@@ -105,13 +109,17 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function update( $args, $assoc_args ) {
 		$assoc_args = wp_slash( $assoc_args );
-		parent::_update( $args, $assoc_args, function ( $params ) {
-			if ( !wp_update_comment( $params ) ) {
-				return new WP_Error( 'Could not update comment.' );
-			}
+		parent::_update(
+			$args,
+			$assoc_args,
+			function ( $params ) {
+				if ( ! wp_update_comment( $params ) ) {
+					return new WP_Error( 'Could not update comment.' );
+				}
 
-			return true;
-		} );
+				return true;
+			}
+		);
 	}
 
 	/**
@@ -153,31 +161,33 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function generate( $args, $assoc_args ) {
 
-		$defaults = array(
-			'count'    => 100,
-			'post_id'  => 0,
-		);
+		$defaults   = [
+			'count'   => 100,
+			'post_id' => 0,
+		];
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+		$format = Utils\get_flag_value( $assoc_args, 'format', 'progress' );
 
 		$notify = false;
 		if ( 'progress' === $format ) {
-			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating comments', $assoc_args['count'] );
+			$notify = Utils\make_progress_bar( 'Generating comments', $assoc_args['count'] );
 		}
 
 		$comment_count = wp_count_comments();
-		$total = (int )$comment_count->total_comments;
-		$limit = $total + $assoc_args['count'];
+		$total         = (int) $comment_count->total_comments;
+		$limit         = $total + $assoc_args['count'];
 
 		for ( $i = $total; $i < $limit; $i++ ) {
-			$comment_id = wp_insert_comment( array(
-				'comment_content'       => "Comment {$i}",
-				'comment_post_ID'       => $assoc_args['post_id'],
-				) );
+			$comment_id = wp_insert_comment(
+				[
+					'comment_content' => "Comment {$i}",
+					'comment_post_ID' => $assoc_args['post_id'],
+				]
+			);
 			if ( 'progress' === $format ) {
 				$notify->tick();
-			} else if ( 'ids' === $format ) {
+			} elseif ( 'ids' === $format ) {
 				if ( 'ids' === $format ) {
 					echo $comment_id;
 					if ( $i < $limit - 1 ) {
@@ -225,14 +235,14 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Thanks for all the comments, everyone!
 	 */
 	public function get( $args, $assoc_args ) {
-		$comment_id = (int)$args[0];
-		$comment = get_comment( $comment_id );
+		$comment_id = (int) $args[0];
+		$comment    = get_comment( $comment_id );
 		if ( empty( $comment ) ) {
-			WP_CLI::error( "Invalid comment ID." );
+			WP_CLI::error( 'Invalid comment ID.' );
 		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
-			$comment_array = get_object_vars( $comment );
+			$comment_array        = get_object_vars( $comment );
 			$assoc_args['fields'] = array_keys( $comment_array );
 		}
 
@@ -325,7 +335,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	public function list_( $_, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$assoc_args['fields'] = 'comment_ID';
 		}
 
@@ -339,30 +349,33 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 			&& ! empty( $assoc_args['orderby'] )
 			&& 'comment__in' === $assoc_args['orderby']
 			&& Utils\wp_version_compare( '4.4', '<' ) ) {
-			$comments = array();
-			foreach( $assoc_args['comment__in'] as $comment_id ) {
+			$comments = [];
+			foreach ( $assoc_args['comment__in'] as $comment_id ) {
 				$comment = get_comment( $comment_id );
 				if ( $comment ) {
 					$comments[] = $comment;
 				} else {
-					WP_CLI::warning( sprintf( "Invalid comment %s.", $comment_id ) );
+					WP_CLI::warning( sprintf( 'Invalid comment %s.', $comment_id ) );
 				}
 			}
 		} else {
-			$query = new WP_Comment_Query();
+			$query    = new WP_Comment_Query();
 			$comments = $query->query( $assoc_args );
 		}
 
 		if ( 'count' === $formatter->format ) {
 			echo $comments;
 		} else {
-			if ( 'ids' == $formatter->format ) {
+			if ( 'ids' === $formatter->format ) {
 				$comments = wp_list_pluck( $comments, 'comment_ID' );
 			} elseif ( is_array( $comments ) ) {
-				$comments = array_map( function( $comment ){
-					$comment->url = get_comment_link( $comment->comment_ID );
-					return $comment;
-				}, $comments );
+				$comments = array_map(
+					function( $comment ) {
+							$comment->url = get_comment_link( $comment->comment_ID );
+							return $comment;
+					},
+					$comments
+				);
 			}
 			$formatter->display_items( $comments );
 		}
@@ -391,22 +404,26 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Deleted comment 2341.
 	 */
 	public function delete( $args, $assoc_args ) {
-		parent::_delete( $args, $assoc_args, function ( $comment_id, $assoc_args ) {
-			$force = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' );
+		parent::_delete(
+			$args,
+			$assoc_args,
+			function ( $comment_id, $assoc_args ) {
+				$force = Utils\get_flag_value( $assoc_args, 'force' );
 
-			$status = wp_get_comment_status( $comment_id );
-			$r = wp_delete_comment( $comment_id, $force );
+				$status = wp_get_comment_status( $comment_id );
+				$r      = wp_delete_comment( $comment_id, $force );
 
-			if ( $r ) {
-				if ( $force || 'trash' === $status ) {
-					return array( 'success', "Deleted comment $comment_id." );
+				if ( $r ) {
+					if ( $force || 'trash' === $status ) {
+						return [ 'success', "Deleted comment $comment_id." ];
+					} else {
+						return [ 'success', "Trashed comment $comment_id." ];
+					}
 				} else {
-					return array( 'success', "Trashed comment $comment_id." );
+					return [ 'error', "Failed deleting comment $comment_id." ];
 				}
-			} else {
-				return array( 'error', "Failed deleting comment $comment_id." );
 			}
-		} );
+		);
 	}
 
 	private function call( $args, $status, $success, $failure ) {
@@ -458,7 +475,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Trashed comment 1337.
 	 */
 	public function trash( $args, $assoc_args ) {
-		foreach( $args as $id ) {
+		foreach ( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Trashed', 'Failed trashing' );
 		}
 	}
@@ -479,7 +496,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function untrash( $args, $assoc_args ) {
 		$this->check_server_name();
-		foreach( $args as $id ) {
+		foreach ( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Untrashed', 'Failed untrashing' );
 		}
 	}
@@ -499,7 +516,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Marked as spam comment 1337.
 	 */
 	public function spam( $args, $assoc_args ) {
-		foreach( $args as $id ) {
+		foreach ( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Marked as spam', 'Failed marking as spam' );
 		}
 	}
@@ -520,7 +537,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function unspam( $args, $assoc_args ) {
 		$this->check_server_name();
-		foreach( $args as $id ) {
+		foreach ( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Unspammed', 'Failed unspamming' );
 		}
 	}
@@ -541,8 +558,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function approve( $args, $assoc_args ) {
 		$this->check_server_name();
-		foreach( $args as $id ) {
-			$this->set_status( $id, 'approve', "Approved" );
+		foreach ( $args as $id ) {
+			$this->set_status( $id, 'approve', 'Approved' );
 		}
 	}
 
@@ -562,8 +579,8 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function unapprove( $args, $assoc_args ) {
 		$this->check_server_name();
-		foreach( $args as $id ) {
-			$this->set_status( $id, 'hold', "Unapproved" );
+		foreach ( $args as $id ) {
+			$this->set_status( $id, 'hold', 'Unapproved' );
 		}
 	}
 
@@ -598,7 +615,7 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     total_comments:  19
 	 */
 	public function count( $args, $assoc_args ) {
-		$post_id = \WP_CLI\Utils\get_flag_value( $args, 0, 0 );
+		$post_id = Utils\get_flag_value( $args, 0, 0 );
 
 		$count = wp_count_comments( $post_id );
 
@@ -627,11 +644,11 @@ class Comment_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Updated post 123 comment count to 67.
 	 */
 	public function recount( $args ) {
-		foreach( $args as $id ) {
+		foreach ( $args as $id ) {
 			wp_update_comment_count( $id );
 			$post = get_post( $id );
 			if ( $post ) {
-				WP_CLI::log( sprintf( "Updated post %d comment count to %d.", $post->ID, $post->comment_count ) );
+				WP_CLI::log( sprintf( 'Updated post %d comment count to %d.', $post->ID, $post->comment_count ) );
 			} else {
 				WP_CLI::warning( sprintf( "Post %d doesn't exist.", $post->ID ) );
 			}
