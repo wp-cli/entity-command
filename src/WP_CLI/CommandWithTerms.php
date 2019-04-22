@@ -3,14 +3,16 @@
 namespace WP_CLI;
 
 use WP_CLI;
+use WP_CLI_Command;
 use WP_CLI\Utils;
+use WP_CLI\Formatter;
 
 /**
  * Base class for WP-CLI commands that deal with terms
  *
  * @package wp-cli
  */
-abstract class CommandWithTerms extends \WP_CLI_Command {
+abstract class CommandWithTerms extends WP_CLI_Command {
 
 	/**
 	 * @var string $object_type WordPress' expected name for the object.
@@ -25,12 +27,12 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	/**
 	 * @var array $obj_fields Default fields to display for each object.
 	 */
-	protected $obj_fields = array(
-		"term_id",
-		"name",
-		"slug",
-		"taxonomy"
-	);
+	protected $obj_fields = [
+		'term_id',
+		'name',
+		'slug',
+		'taxonomy',
+	];
 
 	/**
 	 * List all terms associated with an object.
@@ -81,14 +83,14 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 */
 	public function list_( $args, $assoc_args ) {
 
-		$defaults = array(
-			'format'      => 'table',
-			);
+		$defaults   = [
+			'format' => 'table',
+		];
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$object_id      = array_shift( $args );
 		$taxonomy_names = $args;
-		$taxonomy_args = array();
+		$taxonomy_args  = [];
 
 		$this->set_obj_id( $object_id );
 
@@ -96,7 +98,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 			$this->taxonomy_exists( $taxonomy );
 		}
 
-		if ( $assoc_args['format'] == 'ids' ) {
+		if ( 'ids' === $assoc_args['format'] ) {
 			$taxonomy_args['fields'] = 'ids';
 		}
 
@@ -134,15 +136,16 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * : Remove all terms from the object.
 	 */
 	public function remove( $args, $assoc_args ) {
-		$object_id      = array_shift( $args );
-		$taxonomy       = array_shift( $args );
-		$terms          = $args;
+		$object_id = array_shift( $args );
+		$taxonomy  = array_shift( $args );
+		$terms     = $args;
 
 		$this->set_obj_id( $object_id );
 
 		$this->taxonomy_exists( $taxonomy );
 
-		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
+		$field = Utils\get_flag_value( $assoc_args, 'by' );
+		if ( $field ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
 		}
 
@@ -162,7 +165,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 				// Set default category to post.
 				$default_category = (int) get_option( 'default_category' );
 				$default_category = ( ! empty( $default_category ) ) ? $default_category : 1;
-				$default_category = wp_set_object_terms( $object_id, array( $default_category ), $taxonomy, true );
+				$default_category = wp_set_object_terms( $object_id, [ $default_category ], $taxonomy, true );
 
 				if ( ! is_wp_error( $default_category ) ) {
 					$message = 'Removed all terms and set default term.';
@@ -220,15 +223,16 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * ---
 	 */
 	public function add( $args, $assoc_args ) {
-		$object_id      = array_shift( $args );
-		$taxonomy       = array_shift( $args );
-		$terms          = $args;
+		$object_id = array_shift( $args );
+		$taxonomy  = array_shift( $args );
+		$terms     = $args;
 
 		$this->set_obj_id( $object_id );
 
 		$this->taxonomy_exists( $taxonomy );
 
-		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
+		$field = Utils\get_flag_value( $assoc_args, 'by' );
+		if ( $field ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
 		}
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, true );
@@ -264,15 +268,16 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * ---
 	 */
 	public function set( $args, $assoc_args ) {
-		$object_id      = array_shift( $args );
-		$taxonomy       = array_shift( $args );
-		$terms          = $args;
+		$object_id = array_shift( $args );
+		$taxonomy  = array_shift( $args );
+		$terms     = $args;
 
 		$this->set_obj_id( $object_id );
 
 		$this->taxonomy_exists( $taxonomy );
 
-		if ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) {
+		$field = Utils\get_flag_value( $assoc_args, 'by' );
+		if ( $field ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
 		}
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, false );
@@ -294,7 +299,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 
 		$taxonomy_names = get_object_taxonomies( $this->get_object_type() );
 
-		if ( ! in_array( $taxonomy, $taxonomy_names ) ) {
+		if ( ! in_array( $taxonomy, $taxonomy_names, true ) ) {
 			WP_CLI::error( "Invalid taxonomy {$taxonomy}." );
 		}
 	}
@@ -308,8 +313,8 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 */
 	protected function prepare_terms( $field, $terms, $taxonomy ) {
 		if ( 'id' === $field ) {
-			$new_terms = array();
-			foreach( $terms as $i => $term_id ) {
+			$new_terms = [];
+			foreach ( $terms as $i => $term_id ) {
 				$term = get_term_by( 'term_id', $term_id, $taxonomy );
 				if ( $term ) {
 					$new_terms[] = $term->slug;
@@ -356,7 +361,7 @@ abstract class CommandWithTerms extends \WP_CLI_Command {
 	 * @return WP_CLI\Formatter
 	 */
 	protected function get_formatter( &$assoc_args ) {
-		return new WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
+		return new Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
 }
 

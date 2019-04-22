@@ -53,6 +53,12 @@
 
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound">
 		<exclude-pattern>*/src/WP_CLI/Fetchers/(Comment|Post|Site|User)\.php$</exclude-pattern>
+		<exclude-pattern>*/src/WP_CLI/CommandWith(DBObject|Meta|Terms)\.php$</exclude-pattern>
+	</rule>
+
+	<!-- Whitelisting to provide backward compatibility to classes possibly extending this class. -->
+	<rule ref="PSR2.Methods.MethodDeclaration.Underscore">
+		<exclude-pattern>*/src/WP_CLI/CommandWithDBObject\.php$</exclude-pattern>
 	</rule>
 
 </ruleset>

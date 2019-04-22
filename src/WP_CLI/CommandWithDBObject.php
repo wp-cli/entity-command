@@ -2,12 +2,17 @@
 
 namespace WP_CLI;
 
+use WP_CLI;
+use WP_CLI_Command;
+use WP_CLI\Formatter;
+use WP_CLI\Utils;
+
 /**
  * Base class for WP-CLI commands that deal with database objects.
  *
  * @package wp-cli
  */
-abstract class CommandWithDBObject extends \WP_CLI_Command {
+abstract class CommandWithDBObject extends WP_CLI_Command {
 
 	/**
 	 * @var string $object_type WordPress' expected name for the object.
@@ -38,13 +43,14 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		$obj_id = $callback( $assoc_args );
 
 		if ( is_wp_error( $obj_id ) ) {
-			\WP_CLI::error( $obj_id );
+			WP_CLI::error( $obj_id );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) )
-			\WP_CLI::line( $obj_id );
-		else
-			\WP_CLI::success( "Created $this->obj_type $obj_id." );
+		if ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
+			WP_CLI::line( $obj_id );
+		} else {
+			WP_CLI::success( "Created $this->obj_type $obj_id." );
+		}
 	}
 
 	/**
@@ -59,23 +65,25 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		$status = 0;
 
 		if ( empty( $assoc_args ) ) {
-			\WP_CLI::error( "Need some fields to update." );
+			WP_CLI::error( 'Need some fields to update.' );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
 			wp_defer_term_counting( true );
 		}
 
 		foreach ( $args as $obj_id ) {
-			$params = array_merge( $assoc_args, array( $this->obj_id_key => $obj_id ) );
+			$params = array_merge( $assoc_args, [ $this->obj_id_key => $obj_id ] );
 
-			$status = $this->success_or_failure( $this->wp_error_to_resp(
-				$callback( $params ),
-				"Updated $this->obj_type $obj_id."
-			) );
+			$status = $this->success_or_failure(
+				$this->wp_error_to_resp(
+					$callback( $params ),
+					"Updated $this->obj_type $obj_id."
+				)
+			);
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
 			wp_defer_term_counting( false );
 		}
 
@@ -89,7 +97,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	 * @return array
 	 */
 	protected static function process_csv_arguments_to_arrays( $assoc_args ) {
-		foreach( $assoc_args as $k => $v ) {
+		foreach ( $assoc_args as $k => $v ) {
 			if ( false !== strpos( $k, '__' ) ) {
 				$assoc_args[ $k ] = explode( ',', $v );
 			}
@@ -108,16 +116,16 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	protected function _delete( $args, $assoc_args, $callback ) {
 		$status = 0;
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
 			wp_defer_term_counting( true );
 		}
 
 		foreach ( $args as $obj_id ) {
-			$r = $callback( $obj_id, $assoc_args );
+			$r      = $callback( $obj_id, $assoc_args );
 			$status = $this->success_or_failure( $r );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
 			wp_defer_term_counting( false );
 		}
 
@@ -132,10 +140,11 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	 * @return array
 	 */
 	protected function wp_error_to_resp( $r, $success_msg ) {
-		if ( is_wp_error( $r ) )
-			return array( 'error', $r->get_error_message() );
-		else
-			return array( 'success', $success_msg );
+		if ( is_wp_error( $r ) ) {
+			return [ 'error', $r->get_error_message() ];
+		} else {
+			return [ 'success', $success_msg ];
+		}
 	}
 
 	/**
@@ -147,11 +156,11 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	protected function success_or_failure( $r ) {
 		list( $type, $msg ) = $r;
 
-		if ( 'success' == $type ) {
-			\WP_CLI::success( $msg );
+		if ( 'success' === $type ) {
+			WP_CLI::success( $msg );
 			$status = 0;
 		} else {
-			\WP_CLI::warning( $msg );
+			WP_CLI::warning( $msg );
 			$status = 1;
 		}
 
@@ -175,7 +184,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 		} else {
 			$fields = $this->obj_fields;
 		}
-		return new \WP_CLI\Formatter( $assoc_args, $fields, $this->obj_type );
+		return new Formatter( $assoc_args, $fields, $this->obj_type );
 	}
 
 	/**
@@ -187,7 +196,7 @@ abstract class CommandWithDBObject extends \WP_CLI_Command {
 	protected function _url( $args, $callback ) {
 		foreach ( $args as $obj_id ) {
 			$object = $this->fetcher->get_check( $obj_id );
-			\WP_CLI::line( $callback( $object->{$this->obj_id_key} ) );
+			WP_CLI::line( $callback( $object->{$this->obj_id_key} ) );
 		}
 	}
 }
