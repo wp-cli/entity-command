@@ -21,7 +21,7 @@
  *     $ wp comment meta delete 123 description
  *     Success: Deleted custom field.
  */
-class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
+class Comment_Meta_Command extends WP_CLI\CommandWithMeta {
 	protected $meta_type = 'comment';
 
 	/**
@@ -104,7 +104,7 @@ class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * @param int
 	 */
 	protected function check_object_id( $object_id ) {
-		$fetcher = new \WP_CLI\Fetchers\Comment;
+		$fetcher = new WP_CLI\Fetchers\Comment();
 		$comment = $fetcher->get_check( $object_id );
 		return $comment->comment_ID;
 	}
