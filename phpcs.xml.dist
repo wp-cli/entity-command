@@ -58,6 +58,7 @@
 	</rule>
 
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound">
+	<exclude-pattern>*/src/Option_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Post(_Meta|_Term|_Type)?_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Site(_Meta|_Option)?_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Term(_Meta)?_Command\.php$</exclude-pattern>
