@@ -21,13 +21,13 @@ use WP_CLI\Utils;
  */
 class Menu_Item_Command extends WP_CLI_Command {
 
-	protected $obj_fields = array(
+	protected $obj_fields = [
 		'db_id',
 		'type',
 		'title',
 		'link',
 		'position',
-	);
+	];
 
 	/**
 	 * Gets a list of items associated with a menu.
@@ -92,21 +92,27 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		$items = wp_get_nav_menu_items( $args[0] );
 		if ( false === $items || is_wp_error( $items ) ) {
-			WP_CLI::error( "Invalid menu." );
+			WP_CLI::error( 'Invalid menu.' );
 		}
 
 		// Correct position inconsistency and
 		// protected `url` param in WP-CLI
-		$items = array_map( function( $item ) use ( $assoc_args ) {
-			$item->position = $item->menu_order;
-			$item->link = $item->url;
-			return $item;
-		}, $items );
+		$items = array_map(
+			function( $item ) use ( $assoc_args ) {
+					$item->position = $item->menu_order;
+					$item->link     = $item->url;
+					return $item;
+			},
+			$items
+		);
 
-		if ( ! empty( $assoc_args['format'] ) && 'ids' == $assoc_args['format'] ) {
-			$items = array_map( function( $item ) {
-				return $item->db_id;
-			}, $items );
+		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
+			$items = array_map(
+				function( $item ) {
+						return $item->db_id;
+				},
+				$items
+			);
 		}
 
 		$formatter = $this->get_formatter( $assoc_args );
@@ -165,7 +171,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		unset( $args[1] );
 		$post = get_post( $assoc_args['object-id'] );
 		if ( ! $post ) {
-			WP_CLI::error( "Invalid post." );
+			WP_CLI::error( 'Invalid post.' );
 		}
 		$assoc_args['object'] = $post->post_type;
 
@@ -228,7 +234,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		unset( $args[2] );
 
 		if ( ! get_term_by( 'id', $assoc_args['object-id'], $assoc_args['object'] ) ) {
-			WP_CLI::error( "Invalid term." );
+			WP_CLI::error( 'Invalid term.' );
 		}
 
 		$this->add_or_update_item( 'add', 'taxonomy', $args, $assoc_args );
@@ -328,9 +334,9 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		// Shuffle the position of these.
 		$args[1] = $args[0];
-		$terms = get_the_terms( $args[1], 'nav_menu' );
+		$terms   = get_the_terms( $args[1], 'nav_menu' );
 		if ( $terms && ! is_wp_error( $terms ) ) {
-			$args[0] = (int)$terms[0]->term_id;
+			$args[0] = (int) $terms[0]->term_id;
 		} else {
 			$args[0] = 0;
 		}
@@ -357,30 +363,32 @@ class Menu_Item_Command extends WP_CLI_Command {
 	public function delete( $args, $_ ) {
 		global $wpdb;
 
-		$count = $errors = 0;
+		$count  = 0;
+		$errors = 0;
 
-		foreach( $args as $arg ) {
+		foreach ( $args as $arg ) {
 
 			$parent_menu_id = (int) get_post_meta( $arg, '_menu_item_menu_item_parent', true );
-			$ret = wp_delete_post( $arg, true );
+			$ret            = wp_delete_post( $arg, true );
 			if ( ! $ret ) {
 				WP_CLI::warning( "Couldn't delete menu item {$arg}." );
 				$errors++;
-			} else if ( $parent_menu_id ) {
+			} elseif ( $parent_menu_id ) {
 				$children = $wpdb->get_results( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_menu_item_menu_item_parent' AND meta_value=%s", (int) $arg ) );
 				if ( $children ) {
 					$children_query = $wpdb->prepare( "UPDATE $wpdb->postmeta SET meta_value = %d WHERE meta_key = '_menu_item_menu_item_parent' AND meta_value=%s", $parent_menu_id, (int) $arg );
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $children_query is already prepared above.
 					$wpdb->query( $children_query );
-					foreach( $children as $child ) {
+					foreach ( $children as $child ) {
 						clean_post_cache( $child );
 					}
 				}
 			}
 
+			// phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison -- Will increase count for non existent menu.
 			if ( false != $ret ) {
 				$count++;
 			}
-
 		}
 
 		Utils\report_batch_operation_results( 'menu item', 'delete', count( $args ), $count, $errors );
@@ -391,19 +399,19 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 */
 	private function add_or_update_item( $method, $type, $args, $assoc_args ) {
 
-		$menu = $args[0];
-		$menu_item_db_id = \WP_CLI\Utils\get_flag_value( $args, 1, 0 );
+		$menu            = $args[0];
+		$menu_item_db_id = Utils\get_flag_value( $args, 1, 0 );
 
 		$menu = wp_get_nav_menu_object( $menu );
 		if ( ! $menu || is_wp_error( $menu ) ) {
-			WP_CLI::error( "Invalid menu." );
+			WP_CLI::error( 'Invalid menu.' );
 		}
 
 		// `url` is protected in WP-CLI, so we use `link` instead
-		$assoc_args['url'] = \WP_CLI\Utils\get_flag_value( $assoc_args, 'link' );
+		$assoc_args['url'] = Utils\get_flag_value( $assoc_args, 'link' );
 
 		// Need to persist the menu item data. See https://core.trac.wordpress.org/ticket/28138
-		if ( 'update' == $method ) {
+		if ( 'update' === $method ) {
 
 			$menu_item_obj = get_post( $menu_item_db_id );
 			$menu_item_obj = wp_setup_nav_menu_item( $menu_item_obj );
@@ -411,59 +419,59 @@ class Menu_Item_Command extends WP_CLI_Command {
 			// Correct the menu position if this was the first item. See https://core.trac.wordpress.org/ticket/28140
 			$position = ( 0 === $menu_item_obj->menu_order ) ? 1 : $menu_item_obj->menu_order;
 
-			$default_args = array(
-				'position'     => $position,
-				'title'        => $menu_item_obj->title,
-				'url'          => $menu_item_obj->url,
-				'description'  => $menu_item_obj->description,
-				'object'       => $menu_item_obj->object,
-				'object-id'    => $menu_item_obj->object_id,
-				'parent-id'    => $menu_item_obj->menu_item_parent,
-				'attr-title'   => $menu_item_obj->attr_title,
-				'target'       => $menu_item_obj->target,
-				'classes'      => implode( ' ', $menu_item_obj->classes ), // stored in the database as array
-				'xfn'          => $menu_item_obj->xfn,
-				'status'       => $menu_item_obj->post_status,
-				);
+			$default_args = [
+				'position'    => $position,
+				'title'       => $menu_item_obj->title,
+				'url'         => $menu_item_obj->url,
+				'description' => $menu_item_obj->description,
+				'object'      => $menu_item_obj->object,
+				'object-id'   => $menu_item_obj->object_id,
+				'parent-id'   => $menu_item_obj->menu_item_parent,
+				'attr-title'  => $menu_item_obj->attr_title,
+				'target'      => $menu_item_obj->target,
+				'classes'     => implode( ' ', $menu_item_obj->classes ), // stored in the database as array
+				'xfn'         => $menu_item_obj->xfn,
+				'status'      => $menu_item_obj->post_status,
+			];
 
 		} else {
 
-			$default_args = array(
-				'position'     => 0,
-				'title'        => '',
-				'url'          => '',
-				'description'  => '',
-				'object'       => '',
-				'object-id'    => 0,
-				'parent-id'    => 0,
-				'attr-title'   => '',
-				'target'       => '',
-				'classes'      => '',
-				'xfn'          => '',
+			$default_args = [
+				'position'    => 0,
+				'title'       => '',
+				'url'         => '',
+				'description' => '',
+				'object'      => '',
+				'object-id'   => 0,
+				'parent-id'   => 0,
+				'attr-title'  => '',
+				'target'      => '',
+				'classes'     => '',
+				'xfn'         => '',
 				// Core oddly defaults to 'draft' for create,
 				// and 'publish' for update
 				// Easiest to always work with publish
-				'status'       => 'publish',
-				);
+				'status'      => 'publish',
+			];
 
 		}
 
-		$menu_item_args = array();
-		foreach( $default_args as $key => $default_value ) {
+		$menu_item_args = [];
+		foreach ( $default_args as $key => $default_value ) {
 			// wp_update_nav_menu_item() has a weird argument prefix
-			$new_key = 'menu-item-' . $key;
-			$menu_item_args[ $new_key ] = \WP_CLI\Utils\get_flag_value( $assoc_args, $key, $default_value );
+			$new_key                    = 'menu-item-' . $key;
+			$menu_item_args[ $new_key ] = Utils\get_flag_value( $assoc_args, $key, $default_value );
 		}
 
 		$menu_item_args['menu-item-type'] = $type;
-		$ret = wp_update_nav_menu_item( $menu->term_id, $menu_item_db_id, $menu_item_args );
+		$ret                              = wp_update_nav_menu_item( $menu->term_id, $menu_item_db_id, $menu_item_args );
 
 		if ( is_wp_error( $ret ) ) {
 			WP_CLI::error( $ret->get_error_message() );
-		} else if ( ! $ret ) {
-			if ( 'add' == $method ) {
+		} elseif ( ! $ret ) {
+			if ( 'add' === $method ) {
 				WP_CLI::error( "Couldn't add menu item." );
-			} else if ( 'update' == $method ) {
+			} elseif ( 'update' === $method ) {
 				WP_CLI::error( "Couldn't update menu item." );
 			}
 		} else {
@@ -478,16 +486,16 @@ class Menu_Item_Command extends WP_CLI_Command {
 			 * @see https://core.trac.wordpress.org/ticket/27113
 			 */
 			if ( ! is_object_in_term( $ret, 'nav_menu', (int) $menu->term_id ) ) {
-				wp_set_object_terms( $ret, array( (int)$menu->term_id ), 'nav_menu' );
+				wp_set_object_terms( $ret, [ (int) $menu->term_id ], 'nav_menu' );
 			}
 
-			if ( 'add' == $method && ! empty( $assoc_args['porcelain'] ) ) {
+			if ( 'add' === $method && ! empty( $assoc_args['porcelain'] ) ) {
 				WP_CLI::line( $ret );
 			} else {
-				if ( 'add' == $method ) {
-					WP_CLI::success( "Menu item added." );
-				} else if ( 'update' == $method ) {
-					WP_CLI::success( "Menu item updated." );
+				if ( 'add' === $method ) {
+					WP_CLI::success( 'Menu item added.' );
+				} elseif ( 'update' === $method ) {
+					WP_CLI::success( 'Menu item updated.' );
 				}
 			}
 		}
