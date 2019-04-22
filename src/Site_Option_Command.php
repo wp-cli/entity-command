@@ -57,7 +57,7 @@ class Site_Option_Command extends WP_CLI_Command {
 		$value = get_site_option( $key );
 
 		if ( false === $value ) {
-			WP_CLI::halt(1);
+			WP_CLI::halt( 1 );
 		}
 
 		WP_CLI::print_value( $value, $assoc_args );
@@ -160,9 +160,9 @@ class Site_Option_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 
 		global $wpdb;
-		$pattern = '%';
-		$fields = array( 'meta_key', 'meta_value' );
-		$size_query = ",LENGTH(meta_value) AS `size_bytes`";
+		$pattern    = '%';
+		$fields     = [ 'meta_key', 'meta_value' ];
+		$size_query = ',LENGTH(meta_value) AS `size_bytes`';
 
 		if ( isset( $assoc_args['search'] ) ) {
 			$pattern = self::esc_like( $assoc_args['search'] );
@@ -176,19 +176,22 @@ class Site_Option_Command extends WP_CLI_Command {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
-			$fields = array( 'size_bytes' );
-			$size_query = ",SUM(LENGTH(meta_value)) AS `size_bytes`";
+			$fields     = [ 'size_bytes' ];
+			$size_query = ',SUM(LENGTH(meta_value)) AS `size_bytes`';
 		}
 
 		$query = $wpdb->prepare(
-			"SELECT `meta_id`, `site_id`, `meta_key`,`meta_value`" . $size_query
+			'SELECT `meta_id`, `site_id`, `meta_key`,`meta_value`%s'
 				. " FROM `$wpdb->sitemeta` WHERE `meta_key` LIKE %s",
+			$size_query,
 			$pattern
 		);
 
-		if ( $site_id = Utils\get_flag_value( $assoc_args, 'site_id' ) ) {
+		$site_id = Utils\get_flag_value( $assoc_args, 'site_id' );
+		if ( $site_id ) {
 			$query .= $wpdb->prepare( ' AND site_id=%d', $site_id );
 		}
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query is already prepared above.
 		$results = $wpdb->get_results( $query );
 
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
@@ -236,7 +239,7 @@ class Site_Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
-		$value = sanitize_option( $key, $value );
+		$value     = sanitize_option( $key, $value );
 		$old_value = sanitize_option( $key, get_site_option( $key ) );
 
 		if ( $value === $old_value ) {
@@ -302,12 +305,15 @@ class Site_Option_Command extends WP_CLI_Command {
 			WP_CLI::halt( 1 );
 		}
 
-		$key_path = array_map( function( $key ) {
-			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
-				return (int) $key;
-			}
-			return $key;
-		}, array_slice( $args, 1 ) );
+		$key_path = array_map(
+			function( $key ) {
+				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
+					return (int) $key;
+				}
+					return $key;
+			},
+			array_slice( $args, 1 )
+		);
 
 		$traverser = new RecursiveDataStructureTraverser( $value );
 
@@ -354,14 +360,17 @@ class Site_Option_Command extends WP_CLI_Command {
 	 */
 	public function patch( $args, $assoc_args ) {
 		list( $action, $key ) = $args;
-		$key_path = array_map( function( $key ) {
-			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
-				return (int) $key;
-			}
-			return $key;
-		}, array_slice( $args, 2 ) );
+		$key_path             = array_map(
+			function( $key ) {
+				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
+					return (int) $key;
+				}
+					return $key;
+			},
+			array_slice( $args, 2 )
+		);
 
-		if ( 'delete' == $action ) {
+		if ( 'delete' === $action ) {
 			$patch_value = null;
 		} else {
 			$stdin_value = EntityUtils::has_stdin()
@@ -373,7 +382,8 @@ class Site_Option_Command extends WP_CLI_Command {
 		}
 
 		/* Need to make a copy of $current_value here as it is modified by reference */
-		$old_value = $current_value = sanitize_option( $key, get_site_option( $key ) );
+		$old_value     = sanitize_option( $key, get_site_option( $key ) );
+		$current_value = $old_value;
 		if ( is_object( $current_value ) ) {
 			$old_value = clone $current_value;
 		}
@@ -403,11 +413,11 @@ class Site_Option_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		// Remove notices in 4.0 and support backwards compatibility
-		if( method_exists( $wpdb, 'esc_like' ) ) {
+		if ( method_exists( $wpdb, 'esc_like' ) ) {
 			// 4.0
 			$old = $wpdb->esc_like( $old );
 		} else {
-			// 3.9 or less
+			// phpcs:ignore WordPress.WP.DeprecatedFunctions.like_escapeFound -- called in WordPress 3.9 or less.
 			$old = like_escape( esc_sql( $old ) );
 		}
 
