@@ -14,7 +14,7 @@ class User extends Base {
 
 	/**
 	 * Get a user object by one of its identifying attributes
-	 * 
+	 *
 	 * @param mixed $id_email_or_login
 	 * @return WP_User|false
 	 */
