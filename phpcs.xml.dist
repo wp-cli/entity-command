@@ -51,4 +51,8 @@
 		</properties>
 	</rule>
 
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound">
+		<exclude-pattern>*/src/WP_CLI/Fetchers/(Comment|Post|Site|User)\.php$</exclude-pattern>
+	</rule>
+
 </ruleset>
