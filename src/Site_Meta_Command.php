@@ -21,7 +21,7 @@
  *     $ wp site meta delete 123 bio
  *     Success: Deleted custom field.
  */
-class Site_Meta_Command extends \WP_CLI\CommandWithMeta {
+class Site_Meta_Command extends WP_CLI\CommandWithMeta {
 	protected $meta_type = 'blog';
 
 	/**
@@ -30,11 +30,11 @@ class Site_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * @param int
 	 */
 	protected function check_object_id( $object_id ) {
-		$fetcher = new \WP_CLI\Fetchers\Site;
-		$site = $fetcher->get_check( $object_id );
+		$fetcher = new WP_CLI\Fetchers\Site();
+		$site    = $fetcher->get_check( $object_id );
 		return $site->blog_id;
 	}
-	
+
 	/**
 	 * Wrapper method for add_metadata that can be overridden in sub classes.
 	 *

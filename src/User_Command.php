@@ -1116,7 +1116,7 @@ class User_Command extends WP_CLI\CommandWithDBObject {
 	 * @param string $user_id
 	 * @param string $password
 	 */
-	private static function wp_new_user_notification( $user_id, $password ) {
+	public static function wp_new_user_notification( $user_id, $password ) {
 		if ( Utils\wp_version_compare( '4.3.1', '>=' ) ) {
 			wp_new_user_notification( $user_id, null, 'both' );
 		} elseif ( Utils\wp_version_compare( '4.3', '>=' ) ) {
