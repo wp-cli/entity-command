@@ -63,22 +63,23 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 */
 	public function list_( $_, $assoc_args ) {
 
-		$locations = get_registered_nav_menus();
-		$location_objs = array();
-		foreach( $locations as $location => $description ) {
-			$location_obj = new \stdClass;
-			$location_obj->location = $location;
+		$locations     = get_registered_nav_menus();
+		$location_objs = [];
+		foreach ( $locations as $location => $description ) {
+			$location_obj              = new \stdClass();
+			$location_obj->location    = $location;
 			$location_obj->description = $description;
-			$location_objs[] = $location_obj;
+			$location_objs[]           = $location_obj;
 		}
 
-		$formatter = new \WP_CLI\Formatter( $assoc_args, array( 'location', 'description' ) );
+		$formatter = new \WP_CLI\Formatter( $assoc_args, [ 'location', 'description' ] );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$ids = array_map(
-				function($o) {
+				function( $o ) {
 					return $o->location;
-				}, $location_objs
+				},
+				$location_objs
 			);
 			$formatter->display_items( $ids );
 		} else {
@@ -118,7 +119,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 			WP_CLI::error( "Invalid location $location." );
 		}
 
-		$locations = get_nav_menu_locations();
+		$locations              = get_nav_menu_locations();
 		$locations[ $location ] = $menu_obj->term_id;
 
 		set_theme_mod( 'nav_menu_locations', $locations );
@@ -150,18 +151,18 @@ class Menu_Location_Command extends WP_CLI_Command {
 
 		$menu = wp_get_nav_menu_object( $menu );
 		if ( ! $menu || is_wp_error( $menu ) ) {
-			WP_CLI::error( "Invalid menu." );
+			WP_CLI::error( 'Invalid menu.' );
 		}
 
 		$locations = get_nav_menu_locations();
-		if ( \WP_CLI\Utils\get_flag_value( $locations, $location ) != $menu->term_id ) {
+		if ( WP_CLI\Utils\get_flag_value( $locations, $location ) !== $menu->term_id ) {
 			WP_CLI::error( "Menu isn't assigned to location." );
 		}
 
 		$locations[ $location ] = 0;
 		set_theme_mod( 'nav_menu_locations', $locations );
 
-		WP_CLI::success( "Removed location from menu." );
+		WP_CLI::success( 'Removed location from menu.' );
 
 	}
 

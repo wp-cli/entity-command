@@ -58,6 +58,7 @@
 	</rule>
 
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound">
+		<exclude-pattern>*/src/Menu(_Item|_Location)?_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Network_Meta_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Network_Namespace\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Option_Command\.php$</exclude-pattern>
