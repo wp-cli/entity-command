@@ -27,8 +27,8 @@ class RecursiveDataStructureTraverser {
 	 * @param static $parent
 	 */
 	public function __construct( &$data, $key = null, $parent = null ) {
-		$this->data =& $data;
-		$this->key = $key;
+		$this->data   =& $data;
+		$this->key    = $key;
 		$this->parent = $parent;
 	}
 
@@ -172,6 +172,6 @@ class RecursiveDataStructureTraverser {
 	 */
 	public function exists( $key ) {
 		return ( is_array( $this->data ) && array_key_exists( $key, $this->data ) ) ||
-		       ( is_object( $this->data ) && property_exists( $this->data, $key ) );
+			( is_object( $this->data ) && property_exists( $this->data, $key ) );
 	}
 }
