@@ -221,15 +221,15 @@ class Term_Command extends WP_CLI_Command {
 
 		$assoc_args = wp_slash( $assoc_args );
 		$term       = wp_slash( $term );
-		$ret        = wp_insert_term( $term, $taxonomy, $assoc_args );
+		$result     = wp_insert_term( $term, $taxonomy, $assoc_args );
 
-		if ( is_wp_error( $ret ) ) {
-			WP_CLI::error( $ret->get_error_message() );
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( $result->get_error_message() );
 		} else {
 			if ( $porcelain ) {
-				WP_CLI::line( $ret['term_id'] );
+				WP_CLI::line( $result['term_id'] );
 			} else {
-				WP_CLI::success( sprintf( 'Created %s %d.', $taxonomy, $ret['term_id'] ) );
+				WP_CLI::success( sprintf( 'Created %s %d.', $taxonomy, $result['term_id'] ) );
 			}
 		}
 	}
@@ -374,10 +374,10 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		// Update term.
-		$ret = wp_update_term( $term->term_id, $taxonomy, $assoc_args );
+		$result = wp_update_term( $term->term_id, $taxonomy, $assoc_args );
 
-		if ( is_wp_error( $ret ) ) {
-			WP_CLI::error( $ret->get_error_message() );
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( $result->get_error_message() );
 		} else {
 			WP_CLI::success( 'Term updated.' );
 		}
@@ -451,12 +451,12 @@ class Term_Command extends WP_CLI_Command {
 
 			}
 
-			$ret = wp_delete_term( $term_id, $taxonomy );
+			$result = wp_delete_term( $term_id, $taxonomy );
 
-			if ( is_wp_error( $ret ) ) {
-				WP_CLI::warning( $ret );
+			if ( is_wp_error( $result ) ) {
+				WP_CLI::warning( $result );
 				$errors++;
-			} elseif ( $ret ) {
+			} elseif ( $result ) {
 				WP_CLI::log( sprintf( 'Deleted %s %d.', $taxonomy, $term_id ) );
 				$successes++;
 			} else {

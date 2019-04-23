@@ -580,10 +580,11 @@ class Site_Command extends CommandWithDBObject {
 			'where'  => $where,
 			'append' => $append,
 		];
-		$it            = new TableIterator( $iterator_args );
 
-		$it = Utils\iterator_map(
-			$it,
+		$iterator = new TableIterator( $iterator_args );
+
+		$iterator = Utils\iterator_map(
+			$iterator,
 			function( $blog ) {
 				$blog->url = trailingslashit( get_site_url( $blog->blog_id ) );
 				return $blog;
@@ -591,13 +592,13 @@ class Site_Command extends CommandWithDBObject {
 		);
 
 		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
-			$sites     = iterator_to_array( $it );
+			$sites     = iterator_to_array( $iterator );
 			$ids       = wp_list_pluck( $sites, 'blog_id' );
 			$formatter = new Formatter( $assoc_args, null, 'site' );
 			$formatter->display_items( $ids );
 		} else {
 			$formatter = new Formatter( $assoc_args, null, 'site' );
-			$formatter->display_items( $it );
+			$formatter->display_items( $iterator );
 		}
 	}
 

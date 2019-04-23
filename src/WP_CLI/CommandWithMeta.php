@@ -347,7 +347,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 
 		try {
 			$value = $traverser->get( $key_path );
-		} catch ( Exception $e ) {
+		} catch ( Exception $exception ) {
 			die( 1 );
 		}
 
@@ -424,8 +424,8 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 
 		try {
 			$traverser->$action( $key_path, $patch_value );
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+		} catch ( Exception $exception ) {
+			WP_CLI::error( $exception->getMessage() );
 		}
 
 		$patched_meta_value = sanitize_meta( $meta_key, $traverser->value(), $this->meta_type );

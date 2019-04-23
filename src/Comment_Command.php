@@ -413,9 +413,9 @@ class Comment_Command extends CommandWithDBObject {
 				$force = Utils\get_flag_value( $assoc_args, 'force' );
 
 				$status = wp_get_comment_status( $comment_id );
-				$r      = wp_delete_comment( $comment_id, $force );
+				$result = wp_delete_comment( $comment_id, $force );
 
-				if ( $r ) {
+				if ( $result ) {
 					if ( $force || 'trash' === $status ) {
 						return [ 'success', "Deleted comment $comment_id." ];
 					} else {
@@ -443,10 +443,10 @@ class Comment_Command extends CommandWithDBObject {
 	private function set_status( $args, $status, $success ) {
 		$comment = $this->fetcher->get_check( $args );
 
-		$r = wp_set_comment_status( $comment->comment_ID, $status, true );
+		$result = wp_set_comment_status( $comment->comment_ID, $status, true );
 
-		if ( is_wp_error( $r ) ) {
-			WP_CLI::error( $r );
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( $result );
 		} else {
 			WP_CLI::success( "$success comment $comment->comment_ID." );
 		}

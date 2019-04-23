@@ -373,12 +373,12 @@ class Post_Command extends CommandWithDBObject {
 	public function edit( $args, $_ ) {
 		$post = $this->fetcher->get_check( $args[0] );
 
-		$r = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
+		$result = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
 
-		if ( false === $r ) {
+		if ( false === $result ) {
 			WP_CLI::warning( 'No change made to post content.', 'Aborted' );
 		} else {
-			$this->update( $args, [ 'post_content' => $r ] );
+			$this->update( $args, [ 'post_content' => $result ] );
 		}
 	}
 
