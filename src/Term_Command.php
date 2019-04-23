@@ -546,7 +546,7 @@ class Term_Command extends WP_CLI_Command {
 		$suspend_cache_invalidation = wp_suspend_cache_invalidation( true );
 		$created                    = [];
 
-		for ( $i = $max_id + 1; $i <= $max_id + $count; $i++ ) {
+		for ( $index = $max_id + 1; $index <= $max_id + $count; $index++ ) {
 
 			if ( $hierarchical ) {
 
@@ -565,10 +565,10 @@ class Term_Command extends WP_CLI_Command {
 
 			$args = [
 				'parent' => $current_parent,
-				'slug'   => $slug . "-{$i}",
+				'slug'   => $slug . "-{$index}",
 			];
 
-			$name = "{$label} {$i}";
+			$name = "{$label} {$index}";
 			$term = wp_insert_term( $name, $taxonomy, $args );
 			if ( is_wp_error( $term ) ) {
 				WP_CLI::warning( $term );
@@ -577,7 +577,7 @@ class Term_Command extends WP_CLI_Command {
 				$previous_term_id = $term['term_id'];
 				if ( 'ids' === $format ) {
 					echo $term['term_id'];
-					if ( $i < $max_id + $count ) {
+					if ( $index < $max_id + $count ) {
 						echo ' ';
 					}
 				}

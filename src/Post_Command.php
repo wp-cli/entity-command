@@ -785,7 +785,7 @@ class Post_Command extends CommandWithDBObject {
 		$current_depth    = 1;
 		$current_parent   = 0;
 
-		for ( $i = $total; $i < $limit; $i++ ) {
+		for ( $index = $total; $index < $limit; $index++ ) {
 
 			if ( $hierarchical ) {
 
@@ -804,11 +804,11 @@ class Post_Command extends CommandWithDBObject {
 
 			$args = [
 				'post_type'     => $post_type,
-				'post_title'    => ! empty( $post_title ) && $i === $total ? $label : "{$label} {$i}",
+				'post_title'    => ! empty( $post_title ) && $index === $total ? $label : "{$label} {$index}",
 				'post_status'   => $post_status,
 				'post_author'   => $post_author,
 				'post_parent'   => $current_parent,
-				'post_name'     => ! empty( $post_title ) ? sanitize_title( $post_title . ( $i === $total ? '' : "-{$i}" ) ) : "post-{$i}",
+				'post_name'     => ! empty( $post_title ) ? sanitize_title( $post_title . ( $index === $total ? '' : "-{$index}" ) ) : "post-{$index}",
 				'post_date'     => $post_date,
 				'post_date_gmt' => $post_date_gmt,
 				'post_content'  => $post_content,
@@ -821,7 +821,7 @@ class Post_Command extends CommandWithDBObject {
 				$previous_post_id = $post_id;
 				if ( 'ids' === $format ) {
 					echo $post_id;
-					if ( $i < $limit - 1 ) {
+					if ( $index < $limit - 1 ) {
 						echo ' ';
 					}
 				}

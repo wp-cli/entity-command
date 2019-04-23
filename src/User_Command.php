@@ -589,9 +589,9 @@ class User_Command extends CommandWithDBObject {
 			$notify = Utils\make_progress_bar( 'Generating users', $assoc_args['count'] );
 		}
 
-		for ( $i = $total; $i < $limit; $i++ ) {
-			$login = "user_{$blog_id}_{$i}";
-			$name  = "User {$i}";
+		for ( $index = $total; $index < $limit; $index++ ) {
+			$login = "user_{$blog_id}_{$index}";
+			$name  = "User {$index}";
 
 			$user_id = wp_insert_user(
 				[
@@ -612,7 +612,7 @@ class User_Command extends CommandWithDBObject {
 				$notify->tick();
 			} elseif ( 'ids' === $format ) {
 				echo $user_id;
-				if ( $i < $limit - 1 ) {
+				if ( $index < $limit - 1 ) {
 					echo ' ';
 				}
 			}
@@ -953,7 +953,7 @@ class User_Command extends CommandWithDBObject {
 			$csv_data = new CsvIterator( $filename );
 		}
 
-		foreach ( $csv_data as $i => $new_user ) {
+		foreach ( $csv_data as $new_user ) {
 			$defaults = [
 				'role'            => get_option( 'default_role' ),
 				'user_pass'       => wp_generate_password(),
