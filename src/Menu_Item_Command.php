@@ -1,5 +1,6 @@
 <?php
 
+use WP_CLI\Formatter;
 use WP_CLI\Utils;
 
 /**
@@ -503,7 +504,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	protected function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields );
+		return new Formatter( $assoc_args, $this->obj_fields );
 	}
 
 }

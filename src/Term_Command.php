@@ -1,5 +1,6 @@
 <?php
 
+use WP_CLI\Formatter;
 use WP_CLI\Utils;
 
 /**
@@ -748,6 +749,6 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	private function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'term' );
+		return new Formatter( $assoc_args, $this->fields, 'term' );
 	}
 }

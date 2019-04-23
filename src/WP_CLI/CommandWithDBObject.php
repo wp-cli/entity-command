@@ -4,7 +4,6 @@ namespace WP_CLI;
 
 use WP_CLI;
 use WP_CLI_Command;
-use WP_CLI\Formatter;
 use WP_CLI\Utils;
 
 /**
@@ -171,7 +170,7 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 	 * Get Formatter object based on supplied parameters.
 	 *
 	 * @param array $assoc_args Parameters passed to command. Determines formatting.
-	 * @return \WP_CLI\Formatter
+	 * @return Formatter
 	 */
 	protected function get_formatter( &$assoc_args ) {
 

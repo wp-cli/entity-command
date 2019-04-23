@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\CommandWithDBObject;
+use WP_CLI\Fetchers\Comment as CommentFetcher;
 use WP_CLI\Utils;
 
 /**
@@ -26,7 +28,7 @@ use WP_CLI\Utils;
  *
  * @package wp-cli
  */
-class Comment_Command extends WP_CLI\CommandWithDBObject {
+class Comment_Command extends CommandWithDBObject {
 
 	protected $obj_type   = 'comment';
 	protected $obj_id_key = 'comment_ID';
@@ -40,7 +42,7 @@ class Comment_Command extends WP_CLI\CommandWithDBObject {
 	];
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\Fetchers\Comment();
+		$this->fetcher = new CommentFetcher();
 	}
 
 	/**

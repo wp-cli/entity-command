@@ -1,5 +1,8 @@
 <?php
 
+use WP_CLI\CommandWithMeta;
+use WP_CLI\Fetchers\Post as PostFetcher;
+
 /**
  * Adds, updates, deletes, and lists post custom fields.
  *
@@ -21,7 +24,7 @@
  *     $ wp post meta delete 123 _wp_page_template
  *     Success: Deleted custom field.
  */
-class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
+class Post_Meta_Command extends CommandWithMeta {
 	protected $meta_type = 'post';
 
 	/**
@@ -30,7 +33,7 @@ class Post_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * @param int
 	 */
 	protected function check_object_id( $object_id ) {
-		$fetcher = new WP_CLI\Fetchers\Post();
+		$fetcher = new PostFetcher();
 		$post    = $fetcher->get_check( $object_id );
 		return $post->ID;
 	}

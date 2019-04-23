@@ -5,7 +5,6 @@ namespace WP_CLI;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
-use WP_CLI\Formatter;
 
 /**
  * Base class for WP-CLI commands that deal with terms

@@ -1,4 +1,8 @@
 <?php
+
+use WP_CLI\Formatter;
+use WP_CLI\Utils;
+
 /**
  * Retrieves information about registered taxonomies.
  *
@@ -36,7 +40,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 
 	public function __construct() {
 
-		if ( \WP_CLI\Utils\wp_version_compare( 3.7, '<' ) ) {
+		if ( Utils\wp_version_compare( 3.7, '<' ) ) {
 			// remove description for wp <= 3.7
 			$this->fields = array_values( array_diff( $this->fields, array( 'description' ) ) );
 		}
@@ -271,6 +275,6 @@ class Taxonomy_Command extends WP_CLI_Command {
 	}
 
 	private function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'taxonomy' );
+		return new Formatter( $assoc_args, $this->fields, 'taxonomy' );
 	}
 }
