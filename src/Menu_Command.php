@@ -91,7 +91,7 @@ class Menu_Command extends WP_CLI_Command {
 	 *     $ wp menu delete "My Menu"
 	 *     Success: 1 menu deleted.
 	 */
-	public function delete( $args, $_ ) {
+	public function delete( $args, $assoc_args ) {
 
 		$count  = 0;
 		$errors = 0;
@@ -160,7 +160,7 @@ class Menu_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 */
-	public function list_( $_, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 
 		$menus = wp_get_nav_menus();
 

@@ -365,8 +365,6 @@ class Term_Command extends WP_CLI_Command {
 
 		$assoc_args = wp_slash( $assoc_args );
 
-		list( $taxonomy, $term ) = $args;
-
 		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term, $taxonomy );
 
 		if ( ! $term ) {
@@ -677,8 +675,6 @@ class Term_Command extends WP_CLI_Command {
 	 *     Success: Migrated the term '9190' from taxonomy 'category' to taxonomy 'post_tag' for 1 posts
 	 */
 	public function migrate( $args, $assoc_args ) {
-		$clean_term_cache     = [];
-		$values               = [];
 		$term_reference       = $args[0];
 		$original_taxonomy    = Utils\get_flag_value( $assoc_args, 'from' );
 		$destination_taxonomy = Utils\get_flag_value( $assoc_args, 'to' );

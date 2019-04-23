@@ -27,7 +27,7 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 	/**
 	 * @var array $obj_fields Default fields to display for each object.
 	 */
-	protected $obj_fields = null;
+	protected $obj_fields;
 
 	/**
 	 * Create a given database object.
