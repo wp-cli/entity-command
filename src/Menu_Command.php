@@ -1,5 +1,6 @@
 <?php
 
+use WP_CLI\Formatter;
 use WP_CLI\Utils;
 
 /**
@@ -69,7 +70,7 @@ class Menu_Command extends WP_CLI_Command {
 
 		} else {
 
-			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
+			if ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 				WP_CLI::line( $menu_id );
 			} else {
 				WP_CLI::success( "Created menu $menu_id." );
@@ -196,7 +197,7 @@ class Menu_Command extends WP_CLI_Command {
 	}
 
 	protected function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
+		return new Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
 
 }

@@ -1,8 +1,12 @@
 <?php
 
-use WP_CLI\Utils;
+use WP_CLI\CommandWithDBObject;
+use WP_CLI\Entity\Utils as EntityUtils;
+use WP_CLI\Fetchers\Site as SiteFetcher;
+use WP_CLI\Fetchers\User as UserFetcher;
 use WP_CLI\Formatter;
-use WP_CLI\Fetchers;
+use WP_CLI\Iterators\CSV as CsvIterator;
+use WP_CLI\Utils;
 
 /**
  * Manages users, along with their roles, capabilities, and meta.
@@ -30,7 +34,7 @@ use WP_CLI\Fetchers;
  *
  * @package wp-cli
  */
-class User_Command extends WP_CLI\CommandWithDBObject {
+class User_Command extends CommandWithDBObject {
 
 	protected $obj_type   = 'user';
 	protected $obj_fields = [
@@ -47,8 +51,8 @@ class User_Command extends WP_CLI\CommandWithDBObject {
 	];
 
 	public function __construct() {
-		$this->fetcher     = new Fetchers\User();
-		$this->sitefetcher = new Fetchers\Site();
+		$this->fetcher     = new UserFetcher();
+		$this->sitefetcher = new SiteFetcher();
 	}
 
 	/**
@@ -913,7 +917,7 @@ class User_Command extends WP_CLI\CommandWithDBObject {
 				WP_CLI::error( "Couldn't access remote CSV file (HTTP {$response_code} response)." );
 			}
 		} elseif ( '-' === $filename ) {
-			if ( ! WP_CLI\Entity\Utils::has_stdin() ) {
+			if ( ! EntityUtils::has_stdin() ) {
 				WP_CLI::error( 'Unable to read content from STDIN.' );
 			}
 		} elseif ( ! file_exists( $filename ) ) {
@@ -942,7 +946,7 @@ class User_Command extends WP_CLI\CommandWithDBObject {
 				$csv_data[] = $data;
 			}
 		} else {
-			$csv_data = new WP_CLI\Iterators\CSV( $filename );
+			$csv_data = new CsvIterator( $filename );
 		}
 
 		foreach ( $csv_data as $i => $new_user ) {
@@ -1077,7 +1081,7 @@ class User_Command extends WP_CLI\CommandWithDBObject {
 		if ( $skip_email ) {
 			add_filter( 'send_password_change_email', '__return_false' );
 		}
-		$fetcher = new Fetchers\User();
+		$fetcher = new UserFetcher();
 		$users   = $fetcher->get_many( $args );
 		foreach ( $users as $user ) {
 			wp_update_user(

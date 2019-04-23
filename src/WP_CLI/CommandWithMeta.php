@@ -4,7 +4,6 @@ namespace WP_CLI;
 
 use WP_CLI;
 use WP_CLI_Command;
-use WP_CLI\Formatter;
 use WP_CLI\Entity\RecursiveDataStructureTraverser;
 use WP_CLI\Entity\Utils as EntityUtils;
 
@@ -348,7 +347,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 
 		try {
 			$value = $traverser->get( $key_path );
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			die( 1 );
 		}
 
@@ -425,7 +424,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 
 		try {
 			$traverser->$action( $key_path, $patch_value );
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
 

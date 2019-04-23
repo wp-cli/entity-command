@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\Entity\RecursiveDataStructureTraverser;
+use WP_CLI\Formatter;
 use WP_CLI\Utils;
 use WP_CLI\Entity\Utils as EntityUtils;
 
@@ -337,7 +338,7 @@ class Option_Command extends WP_CLI_Command {
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			WP_CLI::line( $results[0]->size_bytes );
 		} else {
-			$formatter = new \WP_CLI\Formatter(
+			$formatter = new Formatter(
 				$assoc_args,
 				$fields
 			);
@@ -509,7 +510,7 @@ class Option_Command extends WP_CLI_Command {
 
 		try {
 			$value = $traverser->get( $key_path );
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			die( 1 );
 		}
 
@@ -582,7 +583,7 @@ class Option_Command extends WP_CLI_Command {
 
 		try {
 			$traverser->$action( $key_path, $patch_value );
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
 

@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Entity;
 
+use UnexpectedValueException;
+
 class RecursiveDataStructureTraverser {
 
 	/**
@@ -151,7 +153,7 @@ class RecursiveDataStructureTraverser {
 	/**
 	 * Create the key on the current data.
 	 *
-	 * @throws \UnexpectedValueException
+	 * @throws UnexpectedValueException
 	 */
 	protected function create_key() {
 		if ( is_array( $this->data ) ) {
@@ -159,7 +161,7 @@ class RecursiveDataStructureTraverser {
 		} elseif ( is_object( $this->data ) ) {
 			$this->data->{$this->key} = null;
 		} else {
-			throw new \UnexpectedValueException( sprintf( 'Cannot create key "%s" on data type %s', $this->key, gettype( $this->data ) ) );
+			throw new UnexpectedValueException( sprintf( 'Cannot create key "%s" on data type %s', $this->key, gettype( $this->data ) ) );
 		}
 	}
 

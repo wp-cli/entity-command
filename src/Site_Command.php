@@ -1,5 +1,9 @@
 <?php
 
+use WP_CLI\CommandWithDBObject;
+use WP_CLI\Fetchers\Site as SiteFetcher;
+use WP_CLI\Iterators\Query as QueryIterator;
+use WP_CLI\Iterators\Table as TableIterator;
 use WP_CLI\Utils;
 use WP_CLI\Formatter;
 
@@ -24,13 +28,13 @@ use WP_CLI\Formatter;
  *
  * @package wp-cli
  */
-class Site_Command extends \WP_CLI\CommandWithDBObject {
+class Site_Command extends CommandWithDBObject {
 
 	protected $obj_type   = 'site';
 	protected $obj_id_key = 'blog_id';
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\Fetchers\Site();
+		$this->fetcher = new SiteFetcher();
 	}
 
 	/**
@@ -57,7 +61,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 
 		// Empty posts and post cache
 		$posts_query = "SELECT ID FROM $wpdb->posts";
-		$posts       = new WP_CLI\Iterators\Query( $posts_query, 10000 );
+		$posts       = new QueryIterator( $posts_query, 10000 );
 
 		$taxonomies = get_taxonomies();
 
@@ -576,7 +580,7 @@ class Site_Command extends \WP_CLI\CommandWithDBObject {
 			'where'  => $where,
 			'append' => $append,
 		];
-		$it            = new \WP_CLI\Iterators\Table( $iterator_args );
+		$it            = new TableIterator( $iterator_args );
 
 		$it = Utils\iterator_map(
 			$it,

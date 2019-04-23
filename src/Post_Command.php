@@ -1,5 +1,9 @@
 <?php
 
+use WP_CLI\CommandWithDBObject;
+use WP_CLI\Entity\Utils as EntityUtils;
+use WP_CLI\Fetchers\Post as PostFetcher;
+use WP_CLI\Fetchers\User as UserFetcher;
 use WP_CLI\Utils;
 
 /**
@@ -21,7 +25,7 @@ use WP_CLI\Utils;
  *
  * @package wp-cli
  */
-class Post_Command extends WP_CLI\CommandWithDBObject {
+class Post_Command extends CommandWithDBObject {
 
 	protected $obj_type   = 'post';
 	protected $obj_fields = [
@@ -33,7 +37,7 @@ class Post_Command extends WP_CLI\CommandWithDBObject {
 	];
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\Fetchers\Post();
+		$this->fetcher = new PostFetcher();
 	}
 
 	/**
@@ -372,7 +376,7 @@ class Post_Command extends WP_CLI\CommandWithDBObject {
 		$r = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
 
 		if ( false === $r ) {
-			\WP_CLI::warning( 'No change made to post content.', 'Aborted' );
+			WP_CLI::warning( 'No change made to post content.', 'Aborted' );
 		} else {
 			$this->update( $args, [ 'post_content' => $r ] );
 		}
@@ -750,12 +754,12 @@ class Post_Command extends WP_CLI\CommandWithDBObject {
 		}
 
 		if ( $post_author ) {
-			$user_fetcher = new \WP_CLI\Fetchers\User;
+			$user_fetcher = new UserFetcher;
 			$post_author = $user_fetcher->get_check( $post_author )->ID;
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'post_content' ) ) {
-			if ( ! \WP_CLI\Entity\Utils::has_stdin() ) {
+			if ( ! EntityUtils::has_stdin() ) {
 				WP_CLI::error( 'The parameter `post_content` reads from STDIN.' );
 			}
 
@@ -854,7 +858,7 @@ class Post_Command extends WP_CLI\CommandWithDBObject {
 		if ( '-' !== $arg ) {
 			$readfile = $arg;
 			if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
-				\WP_CLI::error( "Unable to read content from '$readfile'." );
+				WP_CLI::error( "Unable to read content from '$readfile'." );
 			}
 		} else {
 			$readfile = 'php://stdin';

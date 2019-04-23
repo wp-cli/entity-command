@@ -1,4 +1,7 @@
 <?php
+
+use WP_CLI\Formatter;
+
 /**
  * Retrieves details on the site's registered post types.
  *
@@ -247,6 +250,6 @@ class Post_Type_Command extends WP_CLI_Command {
 	}
 
 	private function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'post-type' );
+		return new Formatter( $assoc_args, $this->fields, 'post-type' );
 	}
 }

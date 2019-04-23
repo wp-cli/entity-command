@@ -1,5 +1,8 @@
 <?php
 
+use WP_CLI\Formatter;
+use WP_CLI\Utils;
+
 /**
  * Assigns, removes, and lists a menu's locations.
  *
@@ -66,13 +69,13 @@ class Menu_Location_Command extends WP_CLI_Command {
 		$locations     = get_registered_nav_menus();
 		$location_objs = [];
 		foreach ( $locations as $location => $description ) {
-			$location_obj              = new \stdClass();
+			$location_obj              = new stdClass();
 			$location_obj->location    = $location;
 			$location_obj->description = $description;
 			$location_objs[]           = $location_obj;
 		}
 
-		$formatter = new \WP_CLI\Formatter( $assoc_args, [ 'location', 'description' ] );
+		$formatter = new Formatter( $assoc_args, [ 'location', 'description' ] );
 
 		if ( 'ids' === $formatter->format ) {
 			$ids = array_map(
@@ -155,7 +158,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 		}
 
 		$locations = get_nav_menu_locations();
-		if ( WP_CLI\Utils\get_flag_value( $locations, $location ) !== $menu->term_id ) {
+		if ( Utils\get_flag_value( $locations, $location ) !== $menu->term_id ) {
 			WP_CLI::error( "Menu isn't assigned to location." );
 		}
 

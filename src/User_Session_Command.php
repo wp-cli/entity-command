@@ -1,6 +1,7 @@
 <?php
 
-use WP_CLI\Fetchers;
+use WP_CLI\Fetchers\User as UserFetcher;
+use WP_CLI\Formatter;
 use WP_CLI\Utils;
 
 /**
@@ -30,7 +31,7 @@ class User_Session_Command extends WP_CLI_Command {
 	];
 
 	public function __construct() {
-		$this->fetcher = new Fetchers\User();
+		$this->fetcher = new UserFetcher();
 	}
 
 	/**
@@ -192,7 +193,7 @@ class User_Session_Command extends WP_CLI_Command {
 	}
 
 	private function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->fields );
+		return new Formatter( $assoc_args, $this->fields );
 	}
 
 }

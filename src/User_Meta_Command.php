@@ -1,6 +1,7 @@
 <?php
 
-use WP_CLI\Fetchers;
+use WP_CLI\CommandWithMeta;
+use WP_CLI\Fetchers\User as UserFetcher;
 
 /**
  * Adds, updates, deletes, and lists user custom fields.
@@ -29,11 +30,11 @@ use WP_CLI\Fetchers;
  *     $ wp user meta delete 123 bio
  *     Success: Deleted custom field.
  */
-class User_Meta_Command extends WP_CLI\CommandWithMeta {
+class User_Meta_Command extends CommandWithMeta {
 	protected $meta_type = 'user';
 
 	public function __construct() {
-		$this->fetcher = new Fetchers\User();
+		$this->fetcher = new UserFetcher();
 	}
 
 	/**
