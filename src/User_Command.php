@@ -963,7 +963,7 @@ class User_Command extends CommandWithDBObject {
 				$roles        = array_map( 'trim', explode( ',', $new_user['roles'] ) );
 				$invalid_role = false;
 				foreach ( $roles as $role ) {
-					if ( is_null( get_role( $role ) ) ) {
+					if ( null === get_role( $role ) ) {
 						WP_CLI::warning( "{$new_user['user_login']} has an invalid role." );
 						$invalid_role = true;
 						break;
@@ -976,7 +976,7 @@ class User_Command extends CommandWithDBObject {
 				$secondary_roles  = $roles;
 			} elseif ( 'none' === $new_user['role'] ) {
 				$new_user['role'] = false;
-			} elseif ( is_null( get_role( $new_user['role'] ) ) ) {
+			} elseif ( null === get_role( $new_user['role'] ) ) {
 				WP_CLI::warning( "{$new_user['user_login']} has an invalid role." );
 				continue;
 			}
@@ -1105,7 +1105,7 @@ class User_Command extends CommandWithDBObject {
 	 */
 	private static function validate_role( $role ) {
 
-		if ( ! empty( $role ) && is_null( get_role( $role ) ) ) {
+		if ( ! empty( $role ) && null === get_role( $role ) ) {
 			WP_CLI::error( sprintf( "Role doesn't exist: %s", $role ) );
 		}
 

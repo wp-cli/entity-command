@@ -423,7 +423,7 @@ class Option_Command extends WP_CLI_Command {
 		}
 		$old_value = sanitize_option( $key, get_option( $key ) );
 
-		if ( $value === $old_value && is_null( $autoload ) ) {
+		if ( $value === $old_value && null === $autoload ) {
 			WP_CLI::success( "Value passed for '{$key}' option is unchanged." );
 		} else {
 			if ( update_option( $key, $value, $autoload ) ) {
