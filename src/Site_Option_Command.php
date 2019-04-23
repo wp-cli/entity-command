@@ -97,9 +97,9 @@ class Site_Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
 		if ( ! add_site_option( $key, $value ) ) {
-			WP_CLI::error( "Could not add site option '$key'. Does it already exist?" );
+			WP_CLI::error( "Could not add site option '{$key}'. Does it already exist?" );
 		} else {
-			WP_CLI::success( "Added '$key' site option." );
+			WP_CLI::success( "Added '{$key}' site option." );
 		}
 	}
 
@@ -244,12 +244,12 @@ class Site_Option_Command extends WP_CLI_Command {
 		$old_value = sanitize_option( $key, get_site_option( $key ) );
 
 		if ( $value === $old_value ) {
-			WP_CLI::success( "Value passed for '$key' site option is unchanged." );
+			WP_CLI::success( "Value passed for '{$key}' site option is unchanged." );
 		} else {
 			if ( update_site_option( $key, $value ) ) {
-				WP_CLI::success( "Updated '$key' site option." );
+				WP_CLI::success( "Updated '{$key}' site option." );
 			} else {
-				WP_CLI::error( "Could not update site option '$key'." );
+				WP_CLI::error( "Could not update site option '{$key}'." );
 			}
 		}
 	}
@@ -271,9 +271,9 @@ class Site_Option_Command extends WP_CLI_Command {
 		list( $key ) = $args;
 
 		if ( ! delete_site_option( $key ) ) {
-			WP_CLI::error( "Could not delete '$key' site option. Does it exist?" );
+			WP_CLI::error( "Could not delete '{$key}' site option. Does it exist?" );
 		} else {
-			WP_CLI::success( "Deleted '$key' site option." );
+			WP_CLI::success( "Deleted '{$key}' site option." );
 		}
 	}
 
@@ -400,12 +400,12 @@ class Site_Option_Command extends WP_CLI_Command {
 		$patched_value = sanitize_option( $key, $traverser->value() );
 
 		if ( $patched_value === $old_value ) {
-			WP_CLI::success( "Value passed for '$key' site option is unchanged." );
+			WP_CLI::success( "Value passed for '{$key}' site option is unchanged." );
 		} else {
 			if ( update_site_option( $key, $patched_value ) ) {
-				WP_CLI::success( "Updated '$key' site option." );
+				WP_CLI::success( "Updated '{$key}' site option." );
 			} else {
-				WP_CLI::error( "Could not update site option '$key'." );
+				WP_CLI::error( "Could not update site option '{$key}'." );
 			}
 		}
 	}

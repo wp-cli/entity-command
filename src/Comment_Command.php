@@ -72,7 +72,7 @@ class Comment_Command extends CommandWithDBObject {
 					$post_id = $params['comment_post_ID'];
 					$post    = get_post( $post_id );
 					if ( ! $post ) {
-						return new WP_Error( 'no_post', "Can't find post $post_id." );
+						return new WP_Error( 'no_post', "Can't find post {$post_id}." );
 					}
 				} else {
 					// Make sure it's set for older WP versions else get undefined PHP notice.
@@ -355,7 +355,7 @@ class Comment_Command extends CommandWithDBObject {
 				if ( $comment ) {
 					$comments[] = $comment;
 				} else {
-					WP_CLI::warning( sprintf( 'Invalid comment %s.', $comment_id ) );
+					WP_CLI::warning( "Invalid comment {$comment_id}." );
 				}
 			}
 		} else {
@@ -414,11 +414,11 @@ class Comment_Command extends CommandWithDBObject {
 				$result = wp_delete_comment( $comment_id, $force );
 
 				if ( ! $result ) {
-					return [ 'error', "Failed deleting comment $comment_id." ];
+					return [ 'error', "Failed deleting comment {$comment_id}." ];
 				}
 
 				$verb = ( $force || 'trash' === $status ) ? 'Deleted' : 'Trashed';
-				return [ 'success', "$verb comment $comment_id." ];
+				return [ 'success', "{$verb} comment {$comment_id}." ];
 			}
 		);
 	}
@@ -426,13 +426,13 @@ class Comment_Command extends CommandWithDBObject {
 	private function call( $args, $status, $success, $failure ) {
 		$comment_id = absint( $args );
 
-		$func = sprintf( 'wp_%s_comment', $status );
+		$func = "wp_{$status}_comment";
 
 		if ( ! $func( $comment_id ) ) {
-			WP_CLI::error( "$failure comment $comment_id." );
+			WP_CLI::error( "{$failure} comment {$comment_id}." );
 		}
 
-		WP_CLI::success( "$success comment $comment_id." );
+		WP_CLI::success( "{$success} comment {$comment_id}." );
 	}
 
 	private function set_status( $args, $status, $success ) {
@@ -444,7 +444,7 @@ class Comment_Command extends CommandWithDBObject {
 			WP_CLI::error( $result );
 		}
 
-		WP_CLI::success( "$success comment $comment->comment_ID." );
+		WP_CLI::success( "{$success} comment {$comment->comment_ID}." );
 	}
 
 	/**
@@ -645,9 +645,9 @@ class Comment_Command extends CommandWithDBObject {
 			wp_update_comment_count( $id );
 			$post = get_post( $id );
 			if ( $post ) {
-				WP_CLI::log( sprintf( 'Updated post %d comment count to %d.', $post->ID, $post->comment_count ) );
+				WP_CLI::log( "Updated post {$post->ID} comment count to {$post->comment_count}." );
 			} else {
-				WP_CLI::warning( sprintf( "Post %d doesn't exist.", $post->ID ) );
+				WP_CLI::warning( "Post {$post->ID} doesn't exist." );
 			}
 		}
 	}
@@ -672,7 +672,7 @@ class Comment_Command extends CommandWithDBObject {
 		$status = wp_get_comment_status( $comment_id );
 
 		if ( false === $status ) {
-			WP_CLI::error( "Could not check status of comment $comment_id." );
+			WP_CLI::error( "Could not check status of comment {$comment_id}." );
 		} else {
 			WP_CLI::line( $status );
 		}
@@ -696,7 +696,7 @@ class Comment_Command extends CommandWithDBObject {
 	 */
 	public function exists( $args ) {
 		if ( $this->fetcher->get( $args[0] ) ) {
-			WP_CLI::success( "Comment with ID $args[0] exists." );
+			WP_CLI::success( "Comment with ID {$args[0]} exists." );
 		}
 	}
 }

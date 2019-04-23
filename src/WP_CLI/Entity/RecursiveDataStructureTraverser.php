@@ -137,7 +137,7 @@ class RecursiveDataStructureTraverser {
 		}
 
 		if ( ! $this->exists( $current ) ) {
-			$exception = new NonExistentKeyException( "No data exists for key \"$current\"" );
+			$exception = new NonExistentKeyException( "No data exists for key \"{$current}\"" );
 			$exception->set_traverser( new static( $this->data, $current, $this->parent ) );
 			throw $exception;
 		}
@@ -161,7 +161,10 @@ class RecursiveDataStructureTraverser {
 		} elseif ( is_object( $this->data ) ) {
 			$this->data->{$this->key} = null;
 		} else {
-			throw new UnexpectedValueException( sprintf( 'Cannot create key "%s" on data type %s', $this->key, gettype( $this->data ) ) );
+			$type = gettype( $this->data );
+			throw new UnexpectedValueException(
+				"Cannot create key \"{$this->key}\" on data type {$type}"
+			);
 		}
 	}
 

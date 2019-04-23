@@ -590,7 +590,7 @@ class User_Command extends CommandWithDBObject {
 		}
 
 		for ( $i = $total; $i < $limit; $i++ ) {
-			$login = sprintf( 'user_%d_%d', $blog_id, $i );
+			$login = "user_{$blog_id}_{$i}";
 			$name  = "User {$i}";
 
 			$user_id = wp_insert_user(
@@ -686,7 +686,7 @@ class User_Command extends CommandWithDBObject {
 
 		$user->add_role( $role );
 
-		WP_CLI::success( sprintf( "Added '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
+		WP_CLI::success( "Added '{$role}' role for {$user->user_login} ({$user->ID})." );
 	}
 
 	/**
@@ -717,7 +717,7 @@ class User_Command extends CommandWithDBObject {
 
 			$user->remove_role( $role );
 
-			WP_CLI::success( sprintf( "Removed '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
+			WP_CLI::success( "Removed '{$role}' role for {$user->user_login} ({$user->ID})." );
 		} else {
 			// Multisite
 			if ( function_exists( 'remove_user_from_blog' ) ) {
@@ -759,7 +759,7 @@ class User_Command extends CommandWithDBObject {
 			$cap = $args[1];
 			$user->add_cap( $cap );
 
-			WP_CLI::success( sprintf( "Added '%s' capability for %s (%d).", $cap, $user->user_login, $user->ID ) );
+			WP_CLI::success( "Added '{$cap}' capability for {$user->user_login} ({$user->ID})." );
 		}
 	}
 
@@ -793,13 +793,13 @@ class User_Command extends CommandWithDBObject {
 			$cap = $args[1];
 			if ( ! isset( $user->caps[ $cap ] ) ) {
 				if ( isset( $user->allcaps[ $cap ] ) ) {
-					WP_CLI::error( sprintf( "The '%s' cap for %s (%d) is inherited from a role.", $cap, $user->user_login, $user->ID ) );
+					WP_CLI::error( "The '{$cap}' cap for {$user->user_login} ({$user->ID}) is inherited from a role." );
 				}
-				WP_CLI::error( sprintf( "No such '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
+				WP_CLI::error( "No such '{$cap}' cap for {$user->user_login} ({$user->ID})." );
 			}
 			$user->remove_cap( $cap );
 
-			WP_CLI::success( sprintf( "Removed '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
+			WP_CLI::success( "Removed '{$cap}' cap for {$user->user_login} ({$user->ID})." );
 		}
 	}
 
@@ -921,7 +921,7 @@ class User_Command extends CommandWithDBObject {
 				WP_CLI::error( 'Unable to read content from STDIN.' );
 			}
 		} elseif ( ! file_exists( $filename ) ) {
-			WP_CLI::error( sprintf( 'Missing file: %s', $filename ) );
+			WP_CLI::error( "Missing file: {$filename}" );
 		}
 
 		// Don't send core's emails during the creation / update process
@@ -1113,7 +1113,7 @@ class User_Command extends CommandWithDBObject {
 	private static function validate_role( $role ) {
 
 		if ( ! empty( $role ) && null === get_role( $role ) ) {
-			WP_CLI::error( sprintf( "Role doesn't exist: %s", $role ) );
+			WP_CLI::error( "Role doesn't exist: {$role}" );
 		}
 
 	}
@@ -1203,13 +1203,13 @@ class User_Command extends CommandWithDBObject {
 
 			// If no user found, then show warning.
 			if ( empty( $user ) ) {
-				WP_CLI::warning( sprintf( 'User %d doesn\'t exist.', esc_html( $user_id ) ) );
+				WP_CLI::warning( "User {$user_id} doesn't exist." );
 				continue;
 			}
 
 			// Super admin should not be marked as spam.
 			if ( is_super_admin( $user->ID ) ) {
-				WP_CLI::warning( sprintf( 'User cannot be modified. The user %d is a network administrator.', esc_html( $user->ID ) ) );
+				WP_CLI::warning( "User cannot be modified. The user {$user->ID} is a network administrator." );
 				continue;
 			}
 

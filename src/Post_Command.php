@@ -749,7 +749,7 @@ class Post_Command extends CommandWithDBObject {
 		}
 
 		if ( ! post_type_exists( $post_type ) ) {
-			WP_CLI::error( sprintf( "'%s' is not a registered post type.", $post_type ) );
+			WP_CLI::error( "'{$post_type}' is not a registered post type." );
 		}
 
 		if ( $post_author ) {
@@ -804,11 +804,11 @@ class Post_Command extends CommandWithDBObject {
 
 			$args = [
 				'post_type'     => $post_type,
-				'post_title'    => ! empty( $post_title ) && $i === $total ? "$label" : "$label $i",
+				'post_title'    => ! empty( $post_title ) && $i === $total ? $label : "{$label} {$i}",
 				'post_status'   => $post_status,
 				'post_author'   => $post_author,
 				'post_parent'   => $current_parent,
-				'post_name'     => ! empty( $post_title ) ? sanitize_title( $post_title . ( $i === $total ) ? '' : '-$i' ) : "post-$i",
+				'post_name'     => ! empty( $post_title ) ? sanitize_title( $post_title . ( $i === $total ? '' : "-{$i}" ) ) : "post-{$i}",
 				'post_date'     => $post_date,
 				'post_date_gmt' => $post_date_gmt,
 				'post_content'  => $post_content,
@@ -856,7 +856,7 @@ class Post_Command extends CommandWithDBObject {
 		if ( '-' !== $arg ) {
 			$readfile = $arg;
 			if ( ! file_exists( $readfile ) || ! is_file( $readfile ) ) {
-				WP_CLI::error( "Unable to read content from '$readfile'." );
+				WP_CLI::error( "Unable to read content from '{$readfile}'." );
 			}
 		} else {
 			$readfile = 'php://stdin';
@@ -882,7 +882,7 @@ class Post_Command extends CommandWithDBObject {
 					$category_id = category_exists( $post_category );
 				}
 				if ( ! $category_id ) {
-					WP_CLI::error( "No such post category '$post_category'." );
+					WP_CLI::error( "No such post category '{$post_category}'." );
 				}
 				$category_ids[] = $category_id;
 			}

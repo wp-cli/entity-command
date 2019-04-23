@@ -49,7 +49,7 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 		if ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			WP_CLI::line( $obj_id );
 		} else {
-			WP_CLI::success( "Created $this->obj_type $obj_id." );
+			WP_CLI::success( "Created {$this->obj_type} {$obj_id}." );
 		}
 	}
 
@@ -78,7 +78,7 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 			$status = $this->success_or_failure(
 				$this->wp_error_to_resp(
 					$callback( $params ),
-					"Updated $this->obj_type $obj_id."
+					"Updated {$this->obj_type} {$obj_id}."
 				)
 			);
 		}

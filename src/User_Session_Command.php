@@ -100,7 +100,7 @@ class User_Session_Command extends WP_CLI_Command {
 		$this->destroy_session( $manager, $token );
 		$remaining = count( $manager->get_all() );
 
-		WP_CLI::success( sprintf( 'Destroyed session. %s remaining.', $remaining ) );
+		WP_CLI::success( "Destroyed session. {$remaining} remaining." );
 	}
 
 	/**

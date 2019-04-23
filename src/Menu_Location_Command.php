@@ -114,12 +114,12 @@ class Menu_Location_Command extends WP_CLI_Command {
 
 		$menu_obj = wp_get_nav_menu_object( $menu );
 		if ( ! $menu_obj ) {
-			WP_CLI::error( "Invalid menu $menu." );
+			WP_CLI::error( "Invalid menu {$menu}." );
 		}
 
 		$locations = get_registered_nav_menus();
 		if ( ! array_key_exists( $location, $locations ) ) {
-			WP_CLI::error( "Invalid location $location." );
+			WP_CLI::error( "Invalid location {$location}." );
 		}
 
 		$locations              = get_nav_menu_locations();
@@ -127,7 +127,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 
 		set_theme_mod( 'nav_menu_locations', $locations );
 
-		WP_CLI::success( "Assigned location $location to menu $menu." );
+		WP_CLI::success( "Assigned location {$location} to menu {$menu}." );
 	}
 
 	/**

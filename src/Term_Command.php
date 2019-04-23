@@ -121,7 +121,7 @@ class Term_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 		foreach ( $args as $taxonomy ) {
 			if ( ! taxonomy_exists( $taxonomy ) ) {
-				WP_CLI::error( "Taxonomy $taxonomy doesn't exist." );
+				WP_CLI::error( "Taxonomy {$taxonomy} doesn't exist." );
 			}
 		}
 
@@ -146,7 +146,7 @@ class Term_Command extends WP_CLI_Command {
 				if ( $term && ! is_wp_error( $term ) ) {
 					$terms[] = $term;
 				} else {
-					WP_CLI::warning( sprintf( 'Invalid term %s.', $term_id ) );
+					WP_CLI::warning( "Invalid term {$term_id}." );
 				}
 			}
 		} else {
@@ -229,7 +229,7 @@ class Term_Command extends WP_CLI_Command {
 			if ( $porcelain ) {
 				WP_CLI::line( $result['term_id'] );
 			} else {
-				WP_CLI::success( sprintf( 'Created %s %d.', $taxonomy, $result['term_id'] ) );
+				WP_CLI::success( "Created {$taxonomy} {$result['term_id']}." );
 			}
 		}
 	}
@@ -440,7 +440,7 @@ class Term_Command extends WP_CLI_Command {
 
 				// If term not found, then show error message and skip the iteration.
 				if ( ! $term ) {
-					WP_CLI::warning( sprintf( "%s %s doesn't exist.", $taxonomy, $term_id ) );
+					WP_CLI::warning( "{$taxonomy} {$term_id} doesn't exist." );
 					continue;
 				}
 
@@ -455,10 +455,10 @@ class Term_Command extends WP_CLI_Command {
 				WP_CLI::warning( $result );
 				$errors++;
 			} elseif ( $result ) {
-				WP_CLI::log( sprintf( 'Deleted %s %d.', $taxonomy, $term_id ) );
+				WP_CLI::log( "Deleted {$taxonomy} {$term_id}." );
 				$successes++;
 			} else {
-				WP_CLI::warning( sprintf( "%s %s doesn't exist.", $taxonomy, $term_id ) );
+				WP_CLI::warning( "{$taxonomy} {$term_id} doesn't exist." );
 			}
 		}
 		Utils\report_batch_operation_results( 'term', 'delete', count( $args ), $successes, $errors );
@@ -522,7 +522,7 @@ class Term_Command extends WP_CLI_Command {
 		$max_depth  = $final_args['max_depth'];
 
 		if ( ! taxonomy_exists( $taxonomy ) ) {
-			WP_CLI::error( sprintf( "'%s' is not a registered taxonomy.", $taxonomy ) );
+			WP_CLI::error( "'{$taxonomy}' is not a registered taxonomy." );
 		}
 
 		$label = get_taxonomy( $taxonomy )->labels->singular_name;
@@ -565,10 +565,10 @@ class Term_Command extends WP_CLI_Command {
 
 			$args = [
 				'parent' => $current_parent,
-				'slug'   => $slug . "-$i",
+				'slug'   => $slug . "-{$i}",
 			];
 
-			$name = "$label $i";
+			$name = "{$label} {$i}";
 			$term = wp_insert_term( $name, $taxonomy, $args );
 			if ( is_wp_error( $term ) ) {
 				WP_CLI::warning( $term );
@@ -630,7 +630,7 @@ class Term_Command extends WP_CLI_Command {
 		foreach ( $args as $taxonomy ) {
 
 			if ( ! taxonomy_exists( $taxonomy ) ) {
-				WP_CLI::warning( sprintf( 'Taxonomy %s does not exist.', $taxonomy ) );
+				WP_CLI::warning( "Taxonomy {$taxonomy} does not exist." );
 			} else {
 
 				$terms             = get_terms( $taxonomy, [ 'hide_empty' => false ] );
@@ -638,7 +638,7 @@ class Term_Command extends WP_CLI_Command {
 
 				wp_update_term_count( $term_taxonomy_ids, $taxonomy );
 
-				WP_CLI::success( sprintf( 'Updated %s term count.', $taxonomy ) );
+				WP_CLI::success( "Updated {$taxonomy} term count." );
 			}
 		}
 	}
