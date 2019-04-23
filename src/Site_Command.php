@@ -317,11 +317,11 @@ class Site_Command extends CommandWithDBObject {
 
 		$site_url = trailingslashit( $blog->siteurl );
 
-		WP_CLI::confirm( "Are you sure you want to delete the '$site_url' site?", $assoc_args );
+		WP_CLI::confirm( "Are you sure you want to delete the '{$site_url}' site?", $assoc_args );
 
 		wpmu_delete_blog( $blog->blog_id, ! Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
-		WP_CLI::success( "The site at '$site_url' was deleted." );
+		WP_CLI::success( "The site at '{$site_url}' was deleted." );
 	}
 
 	/**
@@ -368,7 +368,7 @@ class Site_Command extends CommandWithDBObject {
 		if ( ! empty( $assoc_args['network_id'] ) ) {
 			$network = $this->get_network( $assoc_args['network_id'] );
 			if ( false === $network ) {
-				WP_CLI::error( sprintf( 'Network with id %d does not exist.', $assoc_args['network_id'] ) );
+				WP_CLI::error( "Network with id {$assoc_args['network_id']} does not exist." );
 			}
 		} else {
 			$network = $current_site;
@@ -442,7 +442,7 @@ class Site_Command extends CommandWithDBObject {
 			WP_CLI::line( $id );
 		} else {
 			$site_url = trailingslashit( get_site_url( $id ) );
-			WP_CLI::success( "Site $id created: $site_url" );
+			WP_CLI::success( "Site {$id} created: {$site_url}" );
 		}
 	}
 
