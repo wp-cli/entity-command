@@ -302,10 +302,12 @@ class Option_Command extends WP_CLI_Command {
 		}
 		$where .= $autoload_query . $transients_query;
 
+		// phpcs:disable WordPress.DB.PreparedSQL -- Hardcoded query parts without user input.
 		$results = $wpdb->get_results(
 			'SELECT `option_name`,`option_value`,`autoload`' . $size_query
 			. " FROM `$wpdb->options` {$where}"
 		);
+		// phpcs:enable
 
 		$orderby = Utils\get_flag_value( $assoc_args, 'orderby' );
 		$order   = Utils\get_flag_value( $assoc_args, 'order' );
