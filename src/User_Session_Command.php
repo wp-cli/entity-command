@@ -1,5 +1,9 @@
 <?php
 
+use WP_CLI\Fetchers\User as UserFetcher;
+use WP_CLI\Formatter;
+use WP_CLI\Utils;
+
 /**
  * Destroys and lists a user's sessions.
  *
@@ -18,16 +22,16 @@
  */
 class User_Session_Command extends WP_CLI_Command {
 
-	private $fields = array(
+	private $fields = [
 		'token',
 		'login_time',
 		'expiration_time',
 		'ip',
 		'ua',
-	);
+	];
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\Fetchers\User;
+		$this->fetcher = new UserFetcher();
 	}
 
 	/**
@@ -65,8 +69,8 @@ class User_Session_Command extends WP_CLI_Command {
 	 */
 	public function destroy( $args, $assoc_args ) {
 		$user    = $this->fetcher->get_check( $args[0] );
-		$token   = \WP_CLI\Utils\get_flag_value( $args, 1, null );
-		$all     = \WP_CLI\Utils\get_flag_value( $assoc_args, 'all', false );
+		$token   = Utils\get_flag_value( $args, 1, null );
+		$all     = Utils\get_flag_value( $assoc_args, 'all', false );
 		$manager = WP_Session_Tokens::get_instance( $user->ID );
 
 		if ( $token && $all ) {
@@ -85,7 +89,7 @@ class User_Session_Command extends WP_CLI_Command {
 			if ( empty( $sessions ) ) {
 				WP_CLI::success( 'No sessions to destroy.' );
 			}
-			$last = end( $sessions );
+			$last  = end( $sessions );
 			$token = $last['token'];
 		}
 
@@ -96,7 +100,7 @@ class User_Session_Command extends WP_CLI_Command {
 		$this->destroy_session( $manager, $token );
 		$remaining = count( $manager->get_all() );
 
-		WP_CLI::success( sprintf( 'Destroyed session. %s remaining.', $remaining ) );
+		WP_CLI::success( "Destroyed session. {$remaining} remaining." );
 	}
 
 	/**
@@ -157,7 +161,7 @@ class User_Session_Command extends WP_CLI_Command {
 		$manager   = WP_Session_Tokens::get_instance( $user->ID );
 		$sessions  = $this->get_all_sessions( $manager );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			echo implode( ' ', array_keys( $sessions ) );
 		} else {
 			$formatter->display_items( $sessions );
@@ -170,11 +174,14 @@ class User_Session_Command extends WP_CLI_Command {
 		$get_sessions->setAccessible( true );
 		$sessions = $get_sessions->invoke( $manager );
 
-		array_walk( $sessions, function( & $session, $token ) {
-			$session['token']           = $token;
-			$session['login_time']      = date( 'Y-m-d H:i:s', $session['login'] );
-			$session['expiration_time'] = date( 'Y-m-d H:i:s', $session['expiration'] );
-		} );
+		array_walk(
+			$sessions,
+			function( & $session, $token ) {
+				$session['token']           = $token;
+				$session['login_time']      = date( 'Y-m-d H:i:s', $session['login'] );
+				$session['expiration_time'] = date( 'Y-m-d H:i:s', $session['expiration'] );
+			}
+		);
 
 		return $sessions;
 	}
@@ -186,7 +193,7 @@ class User_Session_Command extends WP_CLI_Command {
 	}
 
 	private function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->fields );
+		return new Formatter( $assoc_args, $this->fields );
 	}
 
 }

@@ -1,5 +1,6 @@
 <?php
 
+use WP_CLI\Formatter;
 use WP_CLI\Utils;
 
 /**
@@ -38,7 +39,7 @@ use WP_CLI\Utils;
  */
 class Term_Command extends WP_CLI_Command {
 
-	private $fields = array(
+	private $fields = [
 		'term_id',
 		'term_taxonomy_id',
 		'name',
@@ -46,7 +47,7 @@ class Term_Command extends WP_CLI_Command {
 		'description',
 		'parent',
 		'count',
-	);
+	];
 
 	/**
 	 * Lists terms in a taxonomy.
@@ -120,46 +121,49 @@ class Term_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 		foreach ( $args as $taxonomy ) {
 			if ( ! taxonomy_exists( $taxonomy ) ) {
-				WP_CLI::error( "Taxonomy $taxonomy doesn't exist." );
+				WP_CLI::error( "Taxonomy {$taxonomy} doesn't exist." );
 			}
 		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 
-		$defaults = array(
+		$defaults   = [
 			'hide_empty' => false,
-		);
+		];
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		if ( ! empty( $assoc_args['term_id'] ) ) {
-			$term = get_term_by( 'id', $assoc_args['term_id'], $args[0] );
-			$terms = array( $term );
-		} else if ( ! empty( $assoc_args['include'] )
+			$term  = get_term_by( 'id', $assoc_args['term_id'], $args[0] );
+			$terms = [ $term ];
+		} elseif ( ! empty( $assoc_args['include'] )
 			&& ! empty( $assoc_args['orderby'] )
 			&& 'include' === $assoc_args['orderby']
 			&& Utils\wp_version_compare( '4.7', '<' ) ) {
-			$terms = array();
+			$terms    = [];
 			$term_ids = explode( ',', $assoc_args['include'] );
-			foreach( $term_ids as $term_id ) {
+			foreach ( $term_ids as $term_id ) {
 				$term = get_term_by( 'id', $term_id, $args[0] );
 				if ( $term && ! is_wp_error( $term ) ) {
 					$terms[] = $term;
 				} else {
-					WP_CLI::warning( sprintf( "Invalid term %s.", $term_id ) );
+					WP_CLI::warning( "Invalid term {$term_id}." );
 				}
 			}
 		} else {
 			$terms = get_terms( $args, $assoc_args );
 		}
 
-		$terms = array_map( function( $term ){
-			$term->count = (int)$term->count;
-			$term->parent = (int)$term->parent;
-			$term->url = get_term_link( $term );
-			return $term;
-		}, $terms );
+		$terms = array_map(
+			function( $term ) {
+					$term->count  = (int) $term->count;
+					$term->parent = (int) $term->parent;
+					$term->url    = get_term_link( $term );
+					return $term;
+			},
+			$terms
+		);
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$terms = wp_list_pluck( $terms, 'term_id' );
 			echo implode( ' ', $terms );
 		} else {
@@ -200,14 +204,14 @@ class Term_Command extends WP_CLI_Command {
 
 		list( $taxonomy, $term ) = $args;
 
-		$defaults = array(
+		$defaults   = [
 			'slug'        => sanitize_title( $term ),
 			'description' => '',
 			'parent'      => 0,
-		);
+		];
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
-		$porcelain = \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' );
+		$porcelain = Utils\get_flag_value( $assoc_args, 'porcelain' );
 		unset( $assoc_args['porcelain'] );
 
 		// Compatibility for < WP 4.0
@@ -216,16 +220,17 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
-		$term = wp_slash( $term );
-		$ret = wp_insert_term( $term, $taxonomy, $assoc_args );
+		$term       = wp_slash( $term );
+		$result     = wp_insert_term( $term, $taxonomy, $assoc_args );
 
-		if ( is_wp_error( $ret ) ) {
-			WP_CLI::error( $ret->get_error_message() );
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( $result->get_error_message() );
 		} else {
-			if ( $porcelain )
-				WP_CLI::line( $ret['term_id'] );
-			else
-				WP_CLI::success( sprintf( "Created %s %d.", $taxonomy, $ret['term_id'] ) );
+			if ( $porcelain ) {
+				WP_CLI::line( $result['term_id'] );
+			} else {
+				WP_CLI::success( "Created {$taxonomy} {$result['term_id']}." );
+			}
 		}
 	}
 
@@ -287,11 +292,11 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
-			$term_array = get_object_vars( $term );
+			$term_array           = get_object_vars( $term );
 			$assoc_args['fields'] = array_keys( $term_array );
 		}
 
-		$term->count = (int) $term->count;
+		$term->count  = (int) $term->count;
 		$term->parent = (int) $term->parent;
 
 		$formatter = $this->get_formatter( $assoc_args );
@@ -344,22 +349,21 @@ class Term_Command extends WP_CLI_Command {
 
 		list( $taxonomy, $term ) = $args;
 
-		$defaults = array(
+		$defaults   = [
 			'name'        => null,
 			'slug'        => null,
 			'description' => null,
 			'parent'      => null,
-		);
+		];
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
-		foreach( $assoc_args as $key => $value ) {
-			if ( is_null( $value ) )
-				unset( $assoc_args[$key] );
+		foreach ( $assoc_args as $key => $value ) {
+			if ( null === $value ) {
+				unset( $assoc_args[ $key ] );
+			}
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
-
-		list( $taxonomy, $term ) = $args;
 
 		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term, $taxonomy );
 
@@ -368,12 +372,13 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		// Update term.
-		$ret = wp_update_term( $term->term_id, $taxonomy, $assoc_args );
+		$result = wp_update_term( $term->term_id, $taxonomy, $assoc_args );
 
-		if ( is_wp_error( $ret ) )
-			WP_CLI::error( $ret->get_error_message() );
-		else
-			WP_CLI::success( "Term updated." );
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( $result->get_error_message() );
+		} else {
+			WP_CLI::success( 'Term updated.' );
+		}
 	}
 
 	/**
@@ -417,23 +422,25 @@ class Term_Command extends WP_CLI_Command {
 	 *     Deleted post_tag 161.
 	 *     Success: Deleted 3 of 3 terms.
 	 */
-	public function delete( $args, $assoc_args  ) {
+	public function delete( $args, $assoc_args ) {
 		$taxonomy = array_shift( $args );
 
-		$successes = $errors = 0;
+		$successes = 0;
+		$errors    = 0;
 		foreach ( $args as $term_id ) {
 
 			$term = $term_id;
 
 			// Get term by specified argument otherwise get term by id.
-			if ( 'slug' === ( $field = Utils\get_flag_value( $assoc_args, 'by' ) ) ) {
+			$field = Utils\get_flag_value( $assoc_args, 'by' );
+			if ( 'slug' === $field ) {
 
 				// Get term by slug.
 				$term = get_term_by( $field, $term, $taxonomy );
 
 				// If term not found, then show error message and skip the iteration.
 				if ( ! $term ) {
-					WP_CLI::warning( sprintf( "%s %s doesn't exist.", $taxonomy, $term_id ) );
+					WP_CLI::warning( "{$taxonomy} {$term_id} doesn't exist." );
 					continue;
 				}
 
@@ -442,16 +449,16 @@ class Term_Command extends WP_CLI_Command {
 
 			}
 
-			$ret = wp_delete_term( $term_id, $taxonomy );
+			$result = wp_delete_term( $term_id, $taxonomy );
 
-			if ( is_wp_error( $ret ) ) {
-				WP_CLI::warning( $ret );
+			if ( is_wp_error( $result ) ) {
+				WP_CLI::warning( $result );
 				$errors++;
-			} else if ( $ret ) {
-				WP_CLI::log( sprintf( "Deleted %s %d.", $taxonomy, $term_id ) );
+			} elseif ( $result ) {
+				WP_CLI::log( "Deleted {$taxonomy} {$term_id}." );
 				$successes++;
 			} else {
-				WP_CLI::warning( sprintf( "%s %s doesn't exist.", $taxonomy, $term_id ) );
+				WP_CLI::warning( "{$taxonomy} {$term_id} doesn't exist." );
 			}
 		}
 		Utils\report_batch_operation_results( 'term', 'delete', count( $args ), $successes, $errors );
@@ -505,39 +512,41 @@ class Term_Command extends WP_CLI_Command {
 
 		list ( $taxonomy ) = $args;
 
-		$defaults = array(
-			'count' => 100,
+		$defaults = [
+			'count'     => 100,
 			'max_depth' => 1,
-		);
+		];
 
-		extract( array_merge( $defaults, $assoc_args ), EXTR_SKIP );
+		$final_args = array_merge( $defaults, $assoc_args );
+		$count      = $final_args['count'];
+		$max_depth  = $final_args['max_depth'];
 
-		if ( !taxonomy_exists( $taxonomy ) ) {
-			WP_CLI::error( sprintf( "'%s' is not a registered taxonomy.", $taxonomy ) );
+		if ( ! taxonomy_exists( $taxonomy ) ) {
+			WP_CLI::error( "'{$taxonomy}' is not a registered taxonomy." );
 		}
 
 		$label = get_taxonomy( $taxonomy )->labels->singular_name;
-		$slug = sanitize_title_with_dashes( $label );
+		$slug  = sanitize_title_with_dashes( $label );
 
 		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
 
-		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+		$format = Utils\get_flag_value( $assoc_args, 'format', 'progress' );
 
 		$notify = false;
 		if ( 'progress' === $format ) {
-			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating terms', $count );
+			$notify = Utils\make_progress_bar( 'Generating terms', $count );
 		}
 
 		$previous_term_id = 0;
-		$current_parent = 0;
-		$current_depth = 1;
+		$current_parent   = 0;
+		$current_depth    = 1;
 
-		$max_id = (int) $wpdb->get_var( "SELECT term_taxonomy_id FROM $wpdb->term_taxonomy ORDER BY term_taxonomy_id DESC LIMIT 1" );
+		$max_id = (int) $wpdb->get_var( "SELECT term_taxonomy_id FROM {$wpdb->term_taxonomy} ORDER BY term_taxonomy_id DESC LIMIT 1" );
 
 		$suspend_cache_invalidation = wp_suspend_cache_invalidation( true );
-		$created = array();
+		$created                    = [];
 
-		for ( $i = $max_id + 1; $i <= $max_id + $count; $i++ ) {
+		for ( $index = $max_id + 1; $index <= $max_id + $count; $index++ ) {
 
 			if ( $hierarchical ) {
 
@@ -546,30 +555,29 @@ class Term_Command extends WP_CLI_Command {
 					$current_parent = $previous_term_id;
 					$current_depth++;
 
-				} else if ( $this->maybe_reset_depth() ) {
+				} elseif ( $this->maybe_reset_depth() ) {
 
 					$current_parent = 0;
-					$current_depth = 1;
+					$current_depth  = 1;
 
 				}
-
 			}
 
-			$args = array(
+			$args = [
 				'parent' => $current_parent,
-				'slug' => $slug . "-$i",
-			);
+				'slug'   => $slug . "-{$index}",
+			];
 
-			$name = "$label $i";
+			$name = "{$label} {$index}";
 			$term = wp_insert_term( $name, $taxonomy, $args );
 			if ( is_wp_error( $term ) ) {
 				WP_CLI::warning( $term );
 			} else {
-				$created[] = $term['term_id'];
+				$created[]        = $term['term_id'];
 				$previous_term_id = $term['term_id'];
 				if ( 'ids' === $format ) {
 					echo $term['term_id'];
-					if ( $i < $max_id + $count ) {
+					if ( $index < $max_id + $count ) {
 						echo ' ';
 					}
 				}
@@ -619,20 +627,19 @@ class Term_Command extends WP_CLI_Command {
 	 *     Success: Updated post_format term count.
 	 */
 	public function recount( $args ) {
-		foreach( $args as $taxonomy ) {
+		foreach ( $args as $taxonomy ) {
 
 			if ( ! taxonomy_exists( $taxonomy ) ) {
-				WP_CLI::warning( sprintf( "Taxonomy %s does not exist.", $taxonomy ) );
+				WP_CLI::warning( "Taxonomy {$taxonomy} does not exist." );
 			} else {
 
-				$terms = get_terms( $taxonomy, array( 'hide_empty' => false ) );
+				$terms             = get_terms( $taxonomy, [ 'hide_empty' => false ] );
 				$term_taxonomy_ids = wp_list_pluck( $terms, 'term_taxonomy_id' );
 
 				wp_update_term_count( $term_taxonomy_ids, $taxonomy );
 
-				WP_CLI::success( sprintf( "Updated %s term count.", $taxonomy ) );
+				WP_CLI::success( "Updated {$taxonomy} term count." );
 			}
-
 		}
 	}
 
@@ -668,9 +675,8 @@ class Term_Command extends WP_CLI_Command {
 	 *     Success: Migrated the term '9190' from taxonomy 'category' to taxonomy 'post_tag' for 1 posts
 	 */
 	public function migrate( $args, $assoc_args ) {
-		$clean_term_cache = $values = array();
-		$term_reference = $args[0];
-		$original_taxonomy = Utils\get_flag_value( $assoc_args, 'from' );
+		$term_reference       = $args[0];
+		$original_taxonomy    = Utils\get_flag_value( $assoc_args, 'from' );
 		$destination_taxonomy = Utils\get_flag_value( $assoc_args, 'to' );
 
 		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term_reference, $original_taxonomy );
@@ -681,7 +687,15 @@ class Term_Command extends WP_CLI_Command {
 
 		$original_taxonomy = get_taxonomy( $original_taxonomy );
 
-		$id = wp_insert_term( $term->name, $destination_taxonomy, array( 'slug' => $term->slug, 'parent' => 0, 'description' => $term->description ) );
+		$id = wp_insert_term(
+			$term->name,
+			$destination_taxonomy,
+			[
+				'slug'        => $term->slug,
+				'parent'      => 0,
+				'description' => $term->description,
+			]
+		);
 
 		if ( is_wp_error( $id ) ) {
 			WP_CLI::error( $id->get_error_message() );
@@ -691,7 +705,7 @@ class Term_Command extends WP_CLI_Command {
 
 		foreach ( $post_ids as $post_id ) {
 			$type = get_post_type( $post_id );
-			if ( in_array( $type, $original_taxonomy->object_type ) ) {
+			if ( in_array( $type, $original_taxonomy->object_type, true ) ) {
 				$term_taxonomy_id = wp_set_object_terms( $post_id, $id['term_id'], $destination_taxonomy, true );
 
 				if ( is_wp_error( $term_taxonomy_id ) ) {
@@ -716,21 +730,21 @@ class Term_Command extends WP_CLI_Command {
 
 		WP_CLI::log( "Old instance of term '{$term->slug}' removed from its original taxonomy." );
 		$post_count  = count( $post_ids );
-		$post_plural = WP_CLI\Utils\pluralize( 'post', $post_count );
+		$post_plural = Utils\pluralize( 'post', $post_count );
 		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{$original_taxonomy->name}' to taxonomy '{$destination_taxonomy}' for {$post_count} {$post_plural}." );
 	}
 
 	private function maybe_make_child() {
-		// 50% chance of making child term
-		return ( mt_rand(1, 2) == 1 );
+		// 50% chance of making child term.
+		return ( wp_rand( 1, 2 ) === 1 );
 	}
 
 	private function maybe_reset_depth() {
-		// 10% chance of reseting to root depth
-		return ( mt_rand(1, 10) == 7 );
+		// 10% chance of reseting to root depth.
+		return ( wp_rand( 1, 10 ) === 7 );
 	}
 
 	private function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'term' );
+		return new Formatter( $assoc_args, $this->fields, 'term' );
 	}
 }

@@ -1,5 +1,8 @@
 <?php
 
+use WP_CLI\CommandWithMeta;
+use WP_CLI\Fetchers\Comment as CommentFetcher;
+
 /**
  * Adds, updates, deletes, and lists comment custom fields.
  *
@@ -21,7 +24,7 @@
  *     $ wp comment meta delete 123 description
  *     Success: Deleted custom field.
  */
-class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
+class Comment_Meta_Command extends CommandWithMeta {
 	protected $meta_type = 'comment';
 
 	/**
@@ -104,7 +107,7 @@ class Comment_Meta_Command extends \WP_CLI\CommandWithMeta {
 	 * @param int
 	 */
 	protected function check_object_id( $object_id ) {
-		$fetcher = new \WP_CLI\Fetchers\Comment;
+		$fetcher = new CommentFetcher();
 		$comment = $fetcher->get_check( $object_id );
 		return $comment->comment_ID;
 	}

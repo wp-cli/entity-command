@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\CommandWithMeta;
+
 /**
  * Gets, adds, updates, deletes, and lists network custom fields.
  *
@@ -11,6 +13,6 @@
  *       0 => 'supervisor',
  *     )
  */
-class Network_Meta_Command extends \WP_CLI\CommandWithMeta {
+class Network_Meta_Command extends CommandWithMeta {
 	protected $meta_type = 'site';
 }

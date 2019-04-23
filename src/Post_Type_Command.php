@@ -1,4 +1,7 @@
 <?php
+
+use WP_CLI\Formatter;
+
 /**
  * Retrieves details on the site's registered post types.
  *
@@ -47,13 +50,14 @@ class Post_Type_Command extends WP_CLI_Command {
 			return [];
 		}
 
-		$query  = $wpdb->prepare(
+		$query = $wpdb->prepare(
 			"SELECT `post_type`, COUNT(*) AS `count`
 			FROM $wpdb->posts
-			WHERE `post_type` IN (" . implode( ',', array_fill( 0, count( $post_types ), '%s' ) ) . ")
-			GROUP BY `post_type`",
+			WHERE `post_type` IN (" . implode( ',', array_fill( 0, count( $post_types ), '%s' ) ) . ')
+			GROUP BY `post_type`',
 			$post_types
 		);
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query is already prepared above.
 		$counts = $wpdb->get_results( $query );
 
 		// Make sure there's a count for every item.
@@ -141,10 +145,13 @@ class Post_Type_Command extends WP_CLI_Command {
 			$counts = $this->get_counts( wp_list_pluck( $types, 'name' ) );
 		}
 
-		$types = array_map( function( $type ) use ( $counts ) {
-			$type->count = isset( $counts[ $type->name ] ) ? $counts[ $type->name ] : 0;
-			return $type;
-		}, $types );
+		$types = array_map(
+			function( $type ) use ( $counts ) {
+					$type->count = isset( $counts[ $type->name ] ) ? $counts[ $type->name ] : 0;
+					return $type;
+			},
+			$types
+		);
 
 		$formatter->display_items( $types );
 	}
@@ -206,11 +213,14 @@ class Post_Type_Command extends WP_CLI_Command {
 		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
-			$default_fields = array_merge( $this->fields, array(
-				'labels',
-				'cap',
-				'supports',
-			) );
+			$default_fields = array_merge(
+				$this->fields,
+				array(
+					'labels',
+					'cap',
+					'supports',
+				)
+			);
 
 			$assoc_args['fields'] = $default_fields;
 		}
@@ -240,6 +250,6 @@ class Post_Type_Command extends WP_CLI_Command {
 	}
 
 	private function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'post-type' );
+		return new Formatter( $assoc_args, $this->fields, 'post-type' );
 	}
 }

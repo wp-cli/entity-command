@@ -2,7 +2,9 @@
 
 namespace WP_CLI;
 
+use Exception;
 use WP_CLI;
+use WP_CLI_Command;
 use WP_CLI\Entity\RecursiveDataStructureTraverser;
 use WP_CLI\Entity\Utils as EntityUtils;
 
@@ -11,7 +13,7 @@ use WP_CLI\Entity\Utils as EntityUtils;
  *
  * @package wp-cli
  */
-abstract class CommandWithMeta extends \WP_CLI_Command {
+abstract class CommandWithMeta extends WP_CLI_Command {
 
 	protected $meta_type;
 
@@ -65,32 +67,31 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		list( $object_id ) = $args;
 
-		$keys = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : array();
+		$keys = ! empty( $assoc_args['keys'] ) ? explode( ',', $assoc_args['keys'] ) : [];
 
 		$object_id = $this->check_object_id( $object_id );
 
 		$metadata = $this->get_metadata( $object_id );
 		if ( ! $metadata ) {
-			$metadata = array();
+			$metadata = [];
 		}
 
-		$items = array();
-		foreach( $metadata as $key => $values ) {
+		$items = [];
+		foreach ( $metadata as $key => $values ) {
 
 			// Skip if not requested
-			if ( ! empty( $keys ) && ! in_array( $key, $keys ) ) {
+			if ( ! empty( $keys ) && ! in_array( $key, $keys, true ) ) {
 				continue;
 			}
 
-			foreach( $values as $item_value ) {
+			foreach ( $values as $item_value ) {
 
-				$items[] = (object) array(
+				$items[] = (object) [
 					"{$this->meta_type}_id" => $object_id,
 					'meta_key'              => $key,
 					'meta_value'            => $item_value,
-				);
+				];
 			}
-
 		}
 
 		$order   = Utils\get_flag_value( $assoc_args, 'order' );
@@ -98,12 +99,15 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		if ( 'id' !== $orderby ) {
 
-			usort( $items, function ( $a, $b ) use ( $orderby, $order ) {
-				// Sort array.
-				return 'asc' === $order
+			usort(
+				$items,
+				function ( $a, $b ) use ( $orderby, $order ) {
+					// Sort array.
+					return 'asc' === $order
 						? $a->$orderby > $b->$orderby
 						: $a->$orderby < $b->$orderby;
-			});
+				}
+			);
 
 		} elseif ( 'id' === $orderby && 'desc' === $order ) { // Sort by default descending.
 			krsort( $items );
@@ -115,7 +119,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 			$fields = $this->get_fields();
 		}
 
-		$formatter = new \WP_CLI\Formatter( $assoc_args, $fields, $this->meta_type );
+		$formatter = new Formatter( $assoc_args, $fields, $this->meta_type );
 		$formatter->display_items( $items );
 
 	}
@@ -148,8 +152,9 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		$value = $this->get_metadata( $object_id, $meta_key, true );
 
-		if ( '' === $value )
-			die(1);
+		if ( '' === $value ) {
+			die( 1 );
+		}
 
 		WP_CLI::print_value( $value, $assoc_args );
 	}
@@ -174,7 +179,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	public function delete( $args, $assoc_args ) {
 		list( $object_id ) = $args;
 
-		$meta_key = ! empty( $args[1] ) ? $args[1] : '';
+		$meta_key   = ! empty( $args[1] ) ? $args[1] : '';
 		$meta_value = ! empty( $args[2] ) ? $args[2] : '';
 
 		if ( empty( $meta_key ) && ! Utils\get_flag_value( $assoc_args, 'all' ) ) {
@@ -185,7 +190,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		if ( Utils\get_flag_value( $assoc_args, 'all' ) ) {
 			$errors = false;
-			foreach( $this->get_metadata( $object_id ) as $meta_key => $values ) {
+			foreach ( $this->get_metadata( $object_id ) as $meta_key => $values ) {
 				$success = $this->delete_metadata( $object_id, $meta_key );
 				if ( $success ) {
 					WP_CLI::log( "Deleted '{$meta_key}' custom field." );
@@ -202,9 +207,9 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		} else {
 			$success = $this->delete_metadata( $object_id, $meta_key, $meta_value );
 			if ( $success ) {
-				WP_CLI::success( "Deleted custom field." );
+				WP_CLI::success( 'Deleted custom field.' );
 			} else {
-				WP_CLI::error( "Failed to delete custom field." );
+				WP_CLI::error( 'Failed to delete custom field.' );
 			}
 		}
 	}
@@ -241,12 +246,12 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$object_id = $this->check_object_id( $object_id );
 
 		$meta_value = wp_slash( $meta_value );
-		$success = $this->add_metadata( $object_id, $meta_key, $meta_value );
+		$success    = $this->add_metadata( $object_id, $meta_key, $meta_value );
 
 		if ( $success ) {
-			WP_CLI::success( "Added custom field." );
+			WP_CLI::success( 'Added custom field.' );
 		} else {
-			WP_CLI::error( "Failed to add custom field." );
+			WP_CLI::error( 'Failed to add custom field.' );
 		}
 	}
 
@@ -284,20 +289,19 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		$object_id = $this->check_object_id( $object_id );
 
 		$meta_value = sanitize_meta( $meta_key, $meta_value, $this->meta_type );
-		$old_value = sanitize_meta( $meta_key, $this->get_metadata( $object_id, $meta_key, true ), $this->meta_type );
+		$old_value  = sanitize_meta( $meta_key, $this->get_metadata( $object_id, $meta_key, true ), $this->meta_type );
 
 		if ( $meta_value === $old_value ) {
-			WP_CLI::success( "Value passed for custom field '$meta_key' is unchanged." );
+			WP_CLI::success( "Value passed for custom field '{$meta_key}' is unchanged." );
 		} else {
 			$meta_value = wp_slash( $meta_value );
-			$success = $this->update_metadata( $object_id, $meta_key, $meta_value );
+			$success    = $this->update_metadata( $object_id, $meta_key, $meta_value );
 
 			if ( $success ) {
-				WP_CLI::success( "Updated custom field '$meta_key'." );
+				WP_CLI::success( "Updated custom field '{$meta_key}'." );
 			} else {
-				WP_CLI::error( "Failed to update custom field '$meta_key'." );
+				WP_CLI::error( "Failed to update custom field '{$meta_key}'." );
 			}
-
 		}
 
 	}
@@ -327,13 +331,16 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 */
 	public function pluck( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
-		$object_id = $this->check_object_id( $object_id );
-		$key_path = array_map( function( $key ) {
-			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
-				return (int) $key;
-			}
-			return $key;
-		}, array_slice( $args, 2 ) );
+		$object_id                    = $this->check_object_id( $object_id );
+		$key_path                     = array_map(
+			function ( $key ) {
+				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
+					return (int) $key;
+				}
+				return $key;
+			},
+			array_slice( $args, 2 )
+		);
 
 		$value = $this->get_metadata( $object_id, $meta_key, true );
 
@@ -341,7 +348,7 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		try {
 			$value = $traverser->get( $key_path );
-		} catch ( \Exception $e ) {
+		} catch ( Exception $exception ) {
 			die( 1 );
 		}
 
@@ -385,15 +392,18 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 */
 	public function patch( $args, $assoc_args ) {
 		list( $action, $object_id, $meta_key ) = $args;
-		$object_id = $this->check_object_id( $object_id );
-		$key_path = array_map( function( $key ) {
-			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
-				return (int) $key;
-			}
-			return $key;
-		}, array_slice( $args, 3 ) );
+		$object_id                             = $this->check_object_id( $object_id );
+		$key_path                              = array_map(
+			function( $key ) {
+				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
+					return (int) $key;
+				}
+					return $key;
+			},
+			array_slice( $args, 3 )
+		);
 
-		if ( 'delete' == $action ) {
+		if ( 'delete' === $action ) {
 			$patch_value = null;
 		} else {
 			$stdin_value = EntityUtils::has_stdin()
@@ -405,7 +415,8 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 		}
 
 		/* Need to make a copy of $current_meta_value here as it is modified by reference */
-		$current_meta_value = $old_meta_value = sanitize_meta( $meta_key, $this->get_metadata( $object_id, $meta_key, true ), $this->meta_type );
+		$current_meta_value = sanitize_meta( $meta_key, $this->get_metadata( $object_id, $meta_key, true ), $this->meta_type );
+		$old_meta_value     = $current_meta_value;
 		if ( is_object( $current_meta_value ) ) {
 			$old_meta_value = clone $current_meta_value;
 		}
@@ -414,22 +425,22 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 
 		try {
 			$traverser->$action( $key_path, $patch_value );
-		} catch ( \Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+		} catch ( Exception $exception ) {
+			WP_CLI::error( $exception->getMessage() );
 		}
 
 		$patched_meta_value = sanitize_meta( $meta_key, $traverser->value(), $this->meta_type );
 
 		if ( $patched_meta_value === $old_meta_value ) {
-			WP_CLI::success( "Value passed for custom field '$meta_key' is unchanged." );
+			WP_CLI::success( "Value passed for custom field '{$meta_key}' is unchanged." );
 		} else {
 			$slashed = wp_slash( $patched_meta_value );
 			$success = $this->update_metadata( $object_id, $meta_key, $slashed );
 
 			if ( $success ) {
-				WP_CLI::success( "Updated custom field '$meta_key'." );
+				WP_CLI::success( "Updated custom field '{$meta_key}'." );
 			} else {
-				WP_CLI::error( "Failed to update custom field '$meta_key'." );
+				WP_CLI::error( "Failed to update custom field '{$meta_key}'." );
 			}
 		}
 	}
@@ -514,11 +525,11 @@ abstract class CommandWithMeta extends \WP_CLI_Command {
 	 * @return array
 	 */
 	private function get_fields() {
-		return array(
+		return [
 			"{$this->meta_type}_id",
 			'meta_key',
 			'meta_value',
-		);
+		];
 	}
 
 	/**
