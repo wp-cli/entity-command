@@ -729,32 +729,25 @@ class Post_Command extends CommandWithDBObject {
 			'post_title'    => '',
 		];
 
-		$final_post_data = array_merge( $defaults, $assoc_args );
-		$post_date_gmt   = $final_post_data['post_date_gmt'];
-		$post_date       = $final_post_data['post_date'];
-		$post_type       = $final_post_data['post_type'];
-		$post_author     = $final_post_data['post_author'];
-		$count           = $final_post_data['count'];
-		$max_depth       = $final_post_data['max_depth'];
-		$post_status     = $final_post_data['post_status'];
+		$post_data = array_merge( $defaults, $assoc_args );
 
 		$call_time = current_time( 'mysql' );
 
-		if ( false === $post_date_gmt ) {
-			$post_date_gmt = $post_date ?: $call_time;
+		if ( false === $post_data['post_date_gmt'] ) {
+			$post_data['post_date_gmt'] = $post_data['post_date'] ?: $call_time;
 		}
 
-		if ( false === $post_date ) {
-			$post_date = $post_date_gmt ?: $call_time;
+		if ( false === $post_data['post_date'] ) {
+			$post_data['post_date'] = $post_data['post_date_gmt'] ?: $call_time;
 		}
 
-		if ( ! post_type_exists( $post_type ) ) {
-			WP_CLI::error( "'{$post_type}' is not a registered post type." );
+		if ( ! post_type_exists( $post_data['post_type'] ) ) {
+			WP_CLI::error( "'{$post_data['post_type']}' is not a registered post type." );
 		}
 
-		if ( $post_author ) {
-			$user_fetcher = new UserFetcher();
-			$post_author  = $user_fetcher->get_check( $post_author )->ID;
+		if ( $post_data['post_author'] ) {
+			$user_fetcher             = new UserFetcher();
+			$post_data['post_author'] = $user_fetcher->get_check( $post_data['post_author'] )->ID;
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'post_content' ) ) {
@@ -762,23 +755,25 @@ class Post_Command extends CommandWithDBObject {
 				WP_CLI::error( 'The parameter `post_content` reads from STDIN.' );
 			}
 
-			$post_content = file_get_contents( 'php://stdin' );
+			$post_data['post_content'] = file_get_contents( 'php://stdin' );
 		}
 
 		// Get the total number of posts.
-		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_type ) );
+		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_data['post_type'] ) );
 
-		$label = ! empty( $post_title ) ? $post_title : get_post_type_object( $post_type )->labels->singular_name;
+		$label = ! empty( $post_data['post_title'] )
+			? $post_data['post_title']
+			: get_post_type_object( $post_data['post_type'] )->labels->singular_name;
 
-		$hierarchical = get_post_type_object( $post_type )->hierarchical;
+		$hierarchical = get_post_type_object( $post_data['post_type'] )->hierarchical;
 
-		$limit = $count + $total;
+		$limit = $post_data['count'] + $total;
 
 		$format = Utils\get_flag_value( $assoc_args, 'format', 'progress' );
 
 		$notify = false;
 		if ( 'progress' === $format ) {
-			$notify = Utils\make_progress_bar( 'Generating posts', $count );
+			$notify = Utils\make_progress_bar( 'Generating posts', $post_data['count'] );
 		}
 
 		$previous_post_id = 0;
@@ -789,7 +784,7 @@ class Post_Command extends CommandWithDBObject {
 
 			if ( $hierarchical ) {
 
-				if ( $this->maybe_make_child() && $current_depth < $max_depth ) {
+				if ( $this->maybe_make_child() && $current_depth < $post_data['max_depth'] ) {
 
 					$current_parent = $previous_post_id;
 					$current_depth++;
@@ -803,15 +798,19 @@ class Post_Command extends CommandWithDBObject {
 			}
 
 			$args = [
-				'post_type'     => $post_type,
-				'post_title'    => ! empty( $post_title ) && $index === $total ? $label : "{$label} {$index}",
-				'post_status'   => $post_status,
-				'post_author'   => $post_author,
+				'post_type'     => $post_data['post_type'],
+				'post_title'    => ( ! empty( $post_data['post_title'] ) && $index === $total )
+					? $label
+					: "{$label} {$index}",
+				'post_status'   => $post_data['post_status'],
+				'post_author'   => $post_data['post_author'],
 				'post_parent'   => $current_parent,
-				'post_name'     => ! empty( $post_title ) ? sanitize_title( $post_title . ( $index === $total ? '' : "-{$index}" ) ) : "post-{$index}",
-				'post_date'     => $post_date,
-				'post_date_gmt' => $post_date_gmt,
-				'post_content'  => $post_content,
+				'post_name'     => ! empty( $post_data['post_title'] )
+					? sanitize_title( $post_data['post_title'] . ( $index === $total ? '' : "-{$index}" ) )
+					: "post-{$index}",
+				'post_date'     => $post_data['post_date'],
+				'post_date_gmt' => $post_data['post_date_gmt'],
+				'post_content'  => $post_data['post_content'],
 			];
 
 			$post_id = wp_insert_post( $args, true );
