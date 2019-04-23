@@ -260,10 +260,10 @@ class Site_Command extends CommandWithDBObject {
 			}
 			foreach ( $directories_to_delete as $directory ) {
 				// Directory could be main sites directory '/sites' which may be non-empty.
-				@rmdir( $directory ); // @codingStandardsIgnoreLine
+				@rmdir( $directory );
 			}
 			// May be non-empty if '/sites' still around.
-			@rmdir( $upload_dir['basedir'] ); // @codingStandardsIgnoreLine
+			@rmdir( $upload_dir['basedir'] );
 		}
 
 		WP_CLI::success( "The site at '" . site_url() . "' was emptied." );
