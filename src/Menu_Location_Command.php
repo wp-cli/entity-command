@@ -64,7 +64,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 */
-	public function list_( $_, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 
 		$locations     = get_registered_nav_menus();
 		$location_objs = [];
@@ -108,7 +108,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand assign
 	 */
-	public function assign( $args, $_ ) {
+	public function assign( $args, $assoc_args ) {
 
 		list( $menu, $location ) = $args;
 
@@ -148,7 +148,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand remove
 	 */
-	public function remove( $args, $_ ) {
+	public function remove( $args, $assoc_args ) {
 
 		list( $menu, $location ) = $args;
 

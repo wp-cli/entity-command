@@ -334,7 +334,7 @@ class Comment_Command extends CommandWithDBObject {
 	 *
 	 * @subcommand list
 	 */
-	public function list_( $_, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		if ( 'ids' === $formatter->format ) {

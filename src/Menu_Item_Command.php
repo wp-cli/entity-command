@@ -99,7 +99,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		// Correct position inconsistency and
 		// protected `url` param in WP-CLI
 		$items = array_map(
-			function( $item ) use ( $assoc_args ) {
+			function( $item ) {
 					$item->position = $item->menu_order;
 					$item->link     = $item->url;
 					return $item;
@@ -361,7 +361,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand delete
 	 */
-	public function delete( $args, $_ ) {
+	public function delete( $args, $assoc_args ) {
 		global $wpdb;
 
 		$count  = 0;

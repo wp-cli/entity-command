@@ -89,11 +89,9 @@ class Site_Command extends CommandWithDBObject {
 
 		// Empty taxonomies and terms
 		$terms      = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
-		$ids        = [];
 		$taxonomies = [];
 		foreach ( (array) $terms as $term ) {
 			$taxonomies[] = $term->taxonomy;
-			$ids[]        = $term->term_id;
 			wp_cache_delete( $term->term_id, $term->taxonomy );
 		}
 
@@ -354,7 +352,7 @@ class Site_Command extends CommandWithDBObject {
 	 *     $ wp site create --slug=example
 	 *     Success: Site 3 created: http://www.example.com/example/
 	 */
-	public function create( $_, $assoc_args ) {
+	public function create( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite installation.' );
 		}
@@ -412,11 +410,9 @@ class Site_Command extends CommandWithDBObject {
 		if ( is_subdomain_install() ) {
 			$newdomain = $base . '.' . preg_replace( '|^www\.|', '', $current_site->domain );
 			$path      = $current_site->path;
-			$url       = $newdomain;
 		} else {
 			$newdomain = $current_site->domain;
 			$path      = $current_site->path . $base . '/';
-			$url       = $newdomain . $path;
 		}
 
 		$user_id = email_exists( $email );
@@ -539,7 +535,7 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * @subcommand list
 	 */
-	public function list_( $_, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite installation.' );
 		}

@@ -370,7 +370,7 @@ class Post_Command extends CommandWithDBObject {
 	 *     # Launch system editor to edit post
 	 *     $ wp post edit 123
 	 */
-	public function edit( $args, $_ ) {
+	public function edit( $args, $assoc_args ) {
 		$post = $this->fetcher->get_check( $args[0] );
 
 		$result = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
@@ -600,7 +600,7 @@ class Post_Command extends CommandWithDBObject {
 	 *
 	 * @subcommand list
 	 */
-	public function list_( $_, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$defaults   = [
