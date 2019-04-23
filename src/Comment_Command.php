@@ -180,10 +180,10 @@ class Comment_Command extends CommandWithDBObject {
 		$total         = (int) $comment_count->total_comments;
 		$limit         = $total + $assoc_args['count'];
 
-		for ( $i = $total; $i < $limit; $i++ ) {
+		for ( $index = $total; $index < $limit; $index++ ) {
 			$comment_id = wp_insert_comment(
 				[
-					'comment_content' => "Comment {$i}",
+					'comment_content' => "Comment {$index}",
 					'comment_post_ID' => $assoc_args['post_id'],
 				]
 			);
@@ -191,7 +191,7 @@ class Comment_Command extends CommandWithDBObject {
 				$notify->tick();
 			} elseif ( 'ids' === $format ) {
 				echo $comment_id;
-				if ( $i < $limit - 1 ) {
+				if ( $index < $limit - 1 ) {
 					echo ' ';
 				}
 			}

@@ -313,7 +313,7 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 	protected function prepare_terms( $field, $terms, $taxonomy ) {
 		if ( 'id' === $field ) {
 			$new_terms = [];
-			foreach ( $terms as $i => $term_id ) {
+			foreach ( $terms as $term_id ) {
 				$term = get_term_by( 'term_id', $term_id, $taxonomy );
 				if ( $term ) {
 					$new_terms[] = $term->slug;
