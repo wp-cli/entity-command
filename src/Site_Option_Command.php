@@ -182,9 +182,9 @@ class Site_Option_Command extends WP_CLI_Command {
 		}
 
 		$query = $wpdb->prepare(
-			'SELECT `meta_id`, `site_id`, `meta_key`,`meta_value`%s'
+			'SELECT `meta_id`, `site_id`, `meta_key`,`meta_value`'
+				. $size_query // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Hard-coded partial query without user input.
 				. " FROM `$wpdb->sitemeta` WHERE `meta_key` LIKE %s",
-			$size_query,
 			$pattern
 		);
 
