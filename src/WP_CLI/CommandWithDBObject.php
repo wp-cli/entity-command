@@ -5,6 +5,7 @@ namespace WP_CLI;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
+use WP_Error;
 
 /**
  * Base class for WP-CLI commands that deal with database objects.
@@ -120,8 +121,8 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 		}
 
 		foreach ( $args as $obj_id ) {
-			$r      = $callback( $obj_id, $assoc_args );
-			$status = $this->success_or_failure( $r );
+			$result = $callback( $obj_id, $assoc_args );
+			$status = $this->success_or_failure( $result );
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'defer-term-counting' ) ) {
@@ -134,13 +135,13 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 	/**
 	 * Format callback response to consistent format.
 	 *
-	 * @param WP_Error|true $r Response from CRUD callback.
-	 * @param string $success_msg
+	 * @param WP_Error|true $response Response from CRUD callback.
+	 * @param string        $success_msg
 	 * @return array
 	 */
-	protected function wp_error_to_resp( $r, $success_msg ) {
-		if ( is_wp_error( $r ) ) {
-			return [ 'error', $r->get_error_message() ];
+	protected function wp_error_to_resp( $response, $success_msg ) {
+		if ( is_wp_error( $response ) ) {
+			return [ 'error', $response->get_error_message() ];
 		} else {
 			return [ 'success', $success_msg ];
 		}
@@ -149,11 +150,11 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 	/**
 	 * Display success or warning based on response; return proper exit code.
 	 *
-	 * @param array $r Formatted from a CRUD callback.
+	 * @param array $response Formatted from a CRUD callback.
 	 * @return int $status
 	 */
-	protected function success_or_failure( $r ) {
-		list( $type, $msg ) = $r;
+	protected function success_or_failure( $response ) {
+		list( $type, $msg ) = $response;
 
 		if ( 'success' === $type ) {
 			WP_CLI::success( $msg );

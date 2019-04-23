@@ -169,7 +169,7 @@ class User_Command extends CommandWithDBObject {
 		} elseif ( 'count' === $formatter->format ) {
 			$formatter->display_items( $users );
 		} else {
-			$it = Utils\iterator_map(
+			$iterator = Utils\iterator_map(
 				$users,
 				function ( $user ) {
 					if ( ! is_object( $user ) ) {
@@ -182,7 +182,7 @@ class User_Command extends CommandWithDBObject {
 				}
 			);
 
-			$formatter->display_items( $it );
+			$formatter->display_items( $iterator );
 		}
 	}
 
@@ -282,14 +282,14 @@ class User_Command extends CommandWithDBObject {
 				$user_id = $user->ID;
 
 				if ( $network ) {
-					$r       = wpmu_delete_user( $user_id );
+					$result  = wpmu_delete_user( $user_id );
 					$message = "Deleted user {$user_id}.";
 				} else {
-					$r       = wp_delete_user( $user_id, $reassign );
+					$result  = wp_delete_user( $user_id, $reassign );
 					$message = "Removed user {$user_id} from " . home_url() . '.';
 				}
 
-				if ( $r ) {
+				if ( $result ) {
 					return [ 'success', $message ];
 				} else {
 					return [ 'error', "Failed deleting user {$user_id}." ];
@@ -405,9 +405,9 @@ class User_Command extends CommandWithDBObject {
 		}
 
 		if ( is_multisite() ) {
-			$ret = wpmu_validate_user_signup( $user->user_login, $user->user_email );
-			if ( is_wp_error( $ret['errors'] ) && ! empty( $ret['errors']->errors ) ) {
-				WP_CLI::error( $ret['errors'] );
+			$result = wpmu_validate_user_signup( $user->user_login, $user->user_email );
+			if ( is_wp_error( $result['errors'] ) && ! empty( $result['errors']->errors ) ) {
+				WP_CLI::error( $result['errors'] );
 			}
 			$user_id = wpmu_create_user( $user->user_login, $user->user_pass, $user->user_email );
 			if ( ! $user_id ) {
@@ -1008,9 +1008,9 @@ class User_Command extends CommandWithDBObject {
 				unset( $new_user['ID'] ); // Unset else it will just return the ID
 
 				if ( is_multisite() ) {
-					$ret = wpmu_validate_user_signup( $new_user['user_login'], $new_user['user_email'] );
-					if ( is_wp_error( $ret['errors'] ) && ! empty( $ret['errors']->errors ) ) {
-						WP_CLI::warning( $ret['errors'] );
+					$result = wpmu_validate_user_signup( $new_user['user_login'], $new_user['user_email'] );
+					if ( is_wp_error( $result['errors'] ) && ! empty( $result['errors']->errors ) ) {
+						WP_CLI::warning( $result['errors'] );
 						continue;
 					}
 					$user_id = wpmu_create_user( $new_user['user_login'], $new_user['user_pass'], $new_user['user_email'] );

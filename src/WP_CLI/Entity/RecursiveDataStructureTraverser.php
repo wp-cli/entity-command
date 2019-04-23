@@ -94,8 +94,8 @@ class RecursiveDataStructureTraverser {
 	public function insert( $key_path, $value ) {
 		try {
 			$this->update( $key_path, $value );
-		} catch ( NonExistentKeyException $e ) {
-			$e->get_traverser()->create_key();
+		} catch ( NonExistentKeyException $exception ) {
+			$exception->get_traverser()->create_key();
 			$this->insert( $key_path, $value );
 		}
 	}

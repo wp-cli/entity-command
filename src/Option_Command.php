@@ -510,7 +510,7 @@ class Option_Command extends WP_CLI_Command {
 
 		try {
 			$value = $traverser->get( $key_path );
-		} catch ( Exception $e ) {
+		} catch ( Exception $exception ) {
 			die( 1 );
 		}
 
@@ -583,8 +583,8 @@ class Option_Command extends WP_CLI_Command {
 
 		try {
 			$traverser->$action( $key_path, $patch_value );
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+		} catch ( Exception $exception ) {
+			WP_CLI::error( $exception->getMessage() );
 		}
 
 		$patched_value = sanitize_option( $key, $traverser->value() );

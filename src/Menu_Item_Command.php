@@ -370,8 +370,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 		foreach ( $args as $arg ) {
 
 			$parent_menu_id = (int) get_post_meta( $arg, '_menu_item_menu_item_parent', true );
-			$ret            = wp_delete_post( $arg, true );
-			if ( ! $ret ) {
+			$result         = wp_delete_post( $arg, true );
+			if ( ! $result ) {
 				WP_CLI::warning( "Couldn't delete menu item {$arg}." );
 				$errors++;
 			} elseif ( $parent_menu_id ) {
@@ -387,7 +387,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			}
 
 			// phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison -- Will increase count for non existent menu.
-			if ( false != $ret ) {
+			if ( false != $result ) {
 				$count++;
 			}
 		}
@@ -465,11 +465,11 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 
 		$menu_item_args['menu-item-type'] = $type;
-		$ret                              = wp_update_nav_menu_item( $menu->term_id, $menu_item_db_id, $menu_item_args );
+		$result                           = wp_update_nav_menu_item( $menu->term_id, $menu_item_db_id, $menu_item_args );
 
-		if ( is_wp_error( $ret ) ) {
-			WP_CLI::error( $ret->get_error_message() );
-		} elseif ( ! $ret ) {
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( $result->get_error_message() );
+		} elseif ( ! $result ) {
 			if ( 'add' === $method ) {
 				WP_CLI::error( "Couldn't add menu item." );
 			} elseif ( 'update' === $method ) {
@@ -486,12 +486,12 @@ class Menu_Item_Command extends WP_CLI_Command {
 			 *
 			 * @see https://core.trac.wordpress.org/ticket/27113
 			 */
-			if ( ! is_object_in_term( $ret, 'nav_menu', (int) $menu->term_id ) ) {
-				wp_set_object_terms( $ret, [ (int) $menu->term_id ], 'nav_menu' );
+			if ( ! is_object_in_term( $result, 'nav_menu', (int) $menu->term_id ) ) {
+				wp_set_object_terms( $result, [ (int) $menu->term_id ], 'nav_menu' );
 			}
 
 			if ( 'add' === $method && ! empty( $assoc_args['porcelain'] ) ) {
-				WP_CLI::line( $ret );
+				WP_CLI::line( $result );
 			} else {
 				if ( 'add' === $method ) {
 					WP_CLI::success( 'Menu item added.' );
