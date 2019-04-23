@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Entity;
 
+use UnexpectedValueException;
+
 class RecursiveDataStructureTraverser {
 
 	/**
@@ -27,8 +29,8 @@ class RecursiveDataStructureTraverser {
 	 * @param static $parent
 	 */
 	public function __construct( &$data, $key = null, $parent = null ) {
-		$this->data =& $data;
-		$this->key = $key;
+		$this->data   =& $data;
+		$this->key    = $key;
 		$this->parent = $parent;
 	}
 
@@ -92,8 +94,8 @@ class RecursiveDataStructureTraverser {
 	public function insert( $key_path, $value ) {
 		try {
 			$this->update( $key_path, $value );
-		} catch ( NonExistentKeyException $e ) {
-			$e->get_traverser()->create_key();
+		} catch ( NonExistentKeyException $exception ) {
+			$exception->get_traverser()->create_key();
 			$this->insert( $key_path, $value );
 		}
 	}
@@ -135,7 +137,7 @@ class RecursiveDataStructureTraverser {
 		}
 
 		if ( ! $this->exists( $current ) ) {
-			$exception = new NonExistentKeyException( "No data exists for key \"$current\"" );
+			$exception = new NonExistentKeyException( "No data exists for key \"{$current}\"" );
 			$exception->set_traverser( new static( $this->data, $current, $this->parent ) );
 			throw $exception;
 		}
@@ -151,7 +153,7 @@ class RecursiveDataStructureTraverser {
 	/**
 	 * Create the key on the current data.
 	 *
-	 * @throws \UnexpectedValueException
+	 * @throws UnexpectedValueException
 	 */
 	protected function create_key() {
 		if ( is_array( $this->data ) ) {
@@ -159,7 +161,10 @@ class RecursiveDataStructureTraverser {
 		} elseif ( is_object( $this->data ) ) {
 			$this->data->{$this->key} = null;
 		} else {
-			throw new \UnexpectedValueException( sprintf( 'Cannot create key "%s" on data type %s', $this->key, gettype( $this->data ) ) );
+			$type = gettype( $this->data );
+			throw new UnexpectedValueException(
+				"Cannot create key \"{$this->key}\" on data type {$type}"
+			);
 		}
 	}
 
@@ -172,6 +177,6 @@ class RecursiveDataStructureTraverser {
 	 */
 	public function exists( $key ) {
 		return ( is_array( $this->data ) && array_key_exists( $key, $this->data ) ) ||
-		       ( is_object( $this->data ) && property_exists( $this->data, $key ) );
+			( is_object( $this->data ) && property_exists( $this->data, $key ) );
 	}
 }

@@ -1,5 +1,6 @@
 <?php
 
+use WP_CLI\Formatter;
 use WP_CLI\Utils;
 
 /**
@@ -34,14 +35,14 @@ use WP_CLI\Utils;
  */
 class Menu_Command extends WP_CLI_Command {
 
-	protected $obj_type = 'nav_menu';
-	protected $obj_fields = array(
+	protected $obj_type   = 'nav_menu';
+	protected $obj_fields = [
 		'term_id',
 		'name',
 		'slug',
 		'locations',
 		'count',
-	);
+	];
 
 	/**
 	 * Creates a new menu.
@@ -69,12 +70,11 @@ class Menu_Command extends WP_CLI_Command {
 
 		} else {
 
-			if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
+			if ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 				WP_CLI::line( $menu_id );
 			} else {
-				WP_CLI::success( "Created menu $menu_id." );
+				WP_CLI::success( "Created menu {$menu_id}." );
 			}
-
 		}
 	}
 
@@ -91,10 +91,11 @@ class Menu_Command extends WP_CLI_Command {
 	 *     $ wp menu delete "My Menu"
 	 *     Success: 1 menu deleted.
 	 */
-	public function delete( $args, $_ ) {
+	public function delete( $args, $assoc_args ) {
 
-		$count = $errors = 0;
-		foreach( $args as $arg ) {
+		$count  = 0;
+		$errors = 0;
+		foreach ( $args as $arg ) {
 			$ret = wp_delete_nav_menu( $arg );
 			if ( ! $ret || is_wp_error( $ret ) ) {
 				WP_CLI::warning( "Couldn't delete menu '{$arg}'." );
@@ -159,35 +160,35 @@ class Menu_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand list
 	 */
-	public function list_( $_, $assoc_args ) {
+	public function list_( $args, $assoc_args ) {
 
 		$menus = wp_get_nav_menus();
 
 		$menu_locations = get_nav_menu_locations();
-		foreach( $menus as &$menu ) {
+		foreach ( $menus as &$menu ) {
 
-			$menu->locations = array();
-			foreach( $menu_locations as $location => $term_id ) {
+			$menu->locations = [];
+			foreach ( $menu_locations as $location => $term_id ) {
 
-				if ( $term_id == $menu->term_id  ) {
+				if ( $term_id === $menu->term_id ) {
 					$menu->locations[] = $location;
 				}
-
 			}
 
 			// Normalize the data for some output formats.
-			if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], array( 'csv', 'table' ) ) ) {
+			if ( ! isset( $assoc_args['format'] ) || in_array( $assoc_args['format'], [ 'csv', 'table' ], true ) ) {
 				$menu->locations = implode( ',', $menu->locations );
 			}
 		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			$ids = array_map(
-				function($o) {
+				function( $o ) {
 					return $o->term_id;
-				}, $menus
+				},
+				$menus
 			);
 			$formatter->display_items( $ids );
 		} else {
@@ -196,7 +197,7 @@ class Menu_Command extends WP_CLI_Command {
 	}
 
 	protected function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
+		return new Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
 
 }

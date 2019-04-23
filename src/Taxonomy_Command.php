@@ -1,4 +1,8 @@
 <?php
+
+use WP_CLI\Formatter;
+use WP_CLI\Utils;
+
 /**
  * Retrieves information about registered taxonomies.
  *
@@ -36,7 +40,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 
 	public function __construct() {
 
-		if ( \WP_CLI\Utils\wp_version_compare( 3.7, '<' ) ) {
+		if ( Utils\wp_version_compare( 3.7, '<' ) ) {
 			// remove description for wp <= 3.7
 			$this->fields = array_values( array_diff( $this->fields, array( 'description' ) ) );
 		}
@@ -57,13 +61,14 @@ class Taxonomy_Command extends WP_CLI_Command {
 			return [];
 		}
 
-		$query  = $wpdb->prepare(
+		$query = $wpdb->prepare(
 			"SELECT `taxonomy`, COUNT(*) AS `count`
 			FROM $wpdb->term_taxonomy
-			WHERE `taxonomy` IN (" . implode( ',', array_fill( 0, count( $taxonomies ), '%s' ) ) . ")
-			GROUP BY `taxonomy`",
+			WHERE `taxonomy` IN (" . implode( ',', array_fill( 0, count( $taxonomies ), '%s' ) ) . ')
+			GROUP BY `taxonomy`',
 			$taxonomies
 		);
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query is already prepared above.
 		$counts = $wpdb->get_results( $query );
 
 		// Make sure there's a count for every item.
@@ -155,11 +160,14 @@ class Taxonomy_Command extends WP_CLI_Command {
 			$counts = $this->get_counts( wp_list_pluck( $taxonomies, 'name' ) );
 		}
 
-		$taxonomies = array_map( function( $taxonomy ) use ( $counts ) {
-			$taxonomy->object_type = implode( ', ', $taxonomy->object_type );
-			$taxonomy->count       = isset( $counts[ $taxonomy->name ] ) ? $counts[ $taxonomy->name ] : 0;
-			return $taxonomy;
-		}, $taxonomies );
+		$taxonomies = array_map(
+			function( $taxonomy ) use ( $counts ) {
+					$taxonomy->object_type = implode( ', ', $taxonomy->object_type );
+					$taxonomy->count       = isset( $counts[ $taxonomy->name ] ) ? $counts[ $taxonomy->name ] : 0;
+					return $taxonomy;
+			},
+			$taxonomies
+		);
 
 		$formatter->display_items( $taxonomies );
 	}
@@ -231,10 +239,13 @@ class Taxonomy_Command extends WP_CLI_Command {
 		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
-			$default_fields = array_merge( $this->fields, array(
-				'labels',
-				'cap'
-			) );
+			$default_fields = array_merge(
+				$this->fields,
+				array(
+					'labels',
+					'cap',
+				)
+			);
 
 			$assoc_args['fields'] = $default_fields;
 		}
@@ -264,6 +275,6 @@ class Taxonomy_Command extends WP_CLI_Command {
 	}
 
 	private function get_formatter( &$assoc_args ) {
-		return new \WP_CLI\Formatter( $assoc_args, $this->fields, 'taxonomy' );
+		return new Formatter( $assoc_args, $this->fields, 'taxonomy' );
 	}
 }

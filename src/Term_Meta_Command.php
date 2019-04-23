@@ -1,5 +1,7 @@
 <?php
 
+use WP_CLI\CommandWithMeta;
+
 /**
  * Adds, updates, deletes, and lists term custom fields.
  *
@@ -21,7 +23,7 @@
  *     $ wp term meta delete 123 bio
  *     Success: Deleted custom field.
  */
-class Term_Meta_Command extends \WP_CLI\CommandWithMeta {
+class Term_Meta_Command extends CommandWithMeta {
 	protected $meta_type = 'term';
 
 	/**

@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\Entity\RecursiveDataStructureTraverser;
+use WP_CLI\Formatter;
 use WP_CLI\Utils;
 use WP_CLI\Entity\Utils as EntityUtils;
 
@@ -131,7 +132,7 @@ class Option_Command extends WP_CLI_Command {
 			$autoload = 'yes';
 		}
 
-		if ( !add_option( $key, $value, '', $autoload ) ) {
+		if ( ! add_option( $key, $value, '', $autoload ) ) {
 			WP_CLI::error( "Could not add option '{$key}'. Does it already exist?" );
 		} else {
 			WP_CLI::success( "Added '{$key}' option." );
@@ -242,12 +243,11 @@ class Option_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 
 		global $wpdb;
-		$pattern = '%';
-		$exclude = '';
-		$fields = array( 'option_name', 'option_value' );
-		$size_query = ",LENGTH(option_value) AS `size_bytes`";
+		$pattern        = '%';
+		$exclude        = '';
+		$fields         = array( 'option_name', 'option_value' );
+		$size_query     = ',LENGTH(option_value) AS `size_bytes`';
 		$autoload_query = '';
-		$sort = Utils\get_flag_value( $assoc_args, 'order' );
 
 		if ( isset( $assoc_args['search'] ) ) {
 			$pattern = self::esc_like( $assoc_args['search'] );
@@ -267,8 +267,8 @@ class Option_Command extends WP_CLI_Command {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
-			$fields = array( 'size_bytes' );
-			$size_query = ",SUM(LENGTH(option_value)) AS `size_bytes`";
+			$fields     = array( 'size_bytes' );
+			$size_query = ',SUM(LENGTH(option_value)) AS `size_bytes`';
 		}
 
 		if ( isset( $assoc_args['autoload'] ) ) {
@@ -284,7 +284,6 @@ class Option_Command extends WP_CLI_Command {
 		// By default we don't want to display transients.
 		$show_transients = Utils\get_flag_value( $assoc_args, 'transients', false );
 
-		$transients_query = '';
 		if ( $show_transients ) {
 			$transients_query = " AND option_name LIKE '\_transient\_%'
 			OR option_name LIKE '\_site\_transient\_%'";
@@ -295,28 +294,35 @@ class Option_Command extends WP_CLI_Command {
 
 		$where = '';
 		if ( $pattern ) {
-			$where .= $wpdb->prepare( "WHERE `option_name` LIKE %s", $pattern );
+			$where .= $wpdb->prepare( 'WHERE `option_name` LIKE %s', $pattern );
 		}
 
 		if ( $exclude ) {
-			$where .= $wpdb->prepare( " AND `option_name` NOT LIKE %s", $exclude );
+			$where .= $wpdb->prepare( ' AND `option_name` NOT LIKE %s', $exclude );
 		}
 		$where .= $autoload_query . $transients_query;
 
-		$results = $wpdb->get_results( "SELECT `option_name`,`option_value`,`autoload`" . $size_query
-					. " FROM `$wpdb->options` {$where}" );
+		// phpcs:disable WordPress.DB.PreparedSQL -- Hardcoded query parts without user input.
+		$results = $wpdb->get_results(
+			'SELECT `option_name`,`option_value`,`autoload`' . $size_query
+			. " FROM `$wpdb->options` {$where}"
+		);
+		// phpcs:enable
 
 		$orderby = Utils\get_flag_value( $assoc_args, 'orderby' );
 		$order   = Utils\get_flag_value( $assoc_args, 'order' );
 
 		// Sort result.
 		if ( 'option_id' !== $orderby ) {
-			usort( $results, function ( $a, $b ) use ( $orderby, $order ) {
-				// Sort array.
-				return 'asc' === $order
+			usort(
+				$results,
+				function ( $a, $b ) use ( $orderby, $order ) {
+					// Sort array.
+					return 'asc' === $order
 						? $a->$orderby > $b->$orderby
 						: $a->$orderby < $b->$orderby;
-			});
+				}
+			);
 		} elseif ( 'option_id' === $orderby && 'desc' === $order ) { // Sort by default descending.
 			krsort( $results );
 		}
@@ -332,7 +338,7 @@ class Option_Command extends WP_CLI_Command {
 		if ( Utils\get_flag_value( $assoc_args, 'format' ) === 'total_bytes' ) {
 			WP_CLI::line( $results[0]->size_bytes );
 		} else {
-			$formatter = new \WP_CLI\Formatter(
+			$formatter = new Formatter(
 				$assoc_args,
 				$fields
 			);
@@ -408,18 +414,18 @@ class Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
 		$autoload = Utils\get_flag_value( $assoc_args, 'autoload' );
-		if ( ! in_array( $autoload, array( 'yes', 'no' ) ) ) {
+		if ( ! in_array( $autoload, [ 'yes', 'no' ], true ) ) {
 			$autoload = null;
 		}
 
 		$value = sanitize_option( $key, $value );
 		// Sanitization WordPress normally performs when getting an option
-		if ( in_array( $key, array('siteurl', 'home', 'category_base', 'tag_base') ) ) {
+		if ( in_array( $key, [ 'siteurl', 'home', 'category_base', 'tag_base' ], true ) ) {
 			$value = untrailingslashit( $value );
 		}
 		$old_value = sanitize_option( $key, get_option( $key ) );
 
-		if ( $value === $old_value && is_null( $autoload ) ) {
+		if ( $value === $old_value && null === $autoload ) {
 			WP_CLI::success( "Value passed for '{$key}' option is unchanged." );
 		} else {
 			if ( update_option( $key, $value, $autoload ) ) {
@@ -490,18 +496,21 @@ class Option_Command extends WP_CLI_Command {
 			WP_CLI::halt( 1 );
 		}
 
-		$key_path = array_map( function( $key ) {
-			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
-				return (int) $key;
-			}
-			return $key;
-		}, array_slice( $args, 1 ) );
+		$key_path = array_map(
+			function( $key ) {
+				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
+					return (int) $key;
+				}
+					return $key;
+			},
+			array_slice( $args, 1 )
+		);
 
 		$traverser = new RecursiveDataStructureTraverser( $value );
 
 		try {
 			$value = $traverser->get( $key_path );
-		} catch ( \Exception $e ) {
+		} catch ( Exception $exception ) {
 			die( 1 );
 		}
 
@@ -542,14 +551,17 @@ class Option_Command extends WP_CLI_Command {
 	 */
 	public function patch( $args, $assoc_args ) {
 		list( $action, $key ) = $args;
-		$key_path = array_map( function( $key ) {
-			if ( is_numeric( $key ) && ( $key === (string) intval( $key ) ) ) {
-				return (int) $key;
-			}
-			return $key;
-		}, array_slice( $args, 2 ) );
+		$key_path             = array_map(
+			function( $key ) {
+				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
+					return (int) $key;
+				}
+					return $key;
+			},
+			array_slice( $args, 2 )
+		);
 
-		if ( 'delete' == $action ) {
+		if ( 'delete' === $action ) {
 			$patch_value = null;
 		} else {
 			$stdin_value = EntityUtils::has_stdin()
@@ -561,7 +573,8 @@ class Option_Command extends WP_CLI_Command {
 		}
 
 		/* Need to make a copy of $current_value here as it is modified by reference */
-		$old_value = $current_value = sanitize_option( $key, get_option( $key ) );
+		$old_value     = sanitize_option( $key, get_option( $key ) );
+		$current_value = $old_value;
 		if ( is_object( $current_value ) ) {
 			$old_value = clone $current_value;
 		}
@@ -570,8 +583,8 @@ class Option_Command extends WP_CLI_Command {
 
 		try {
 			$traverser->$action( $key_path, $patch_value );
-		} catch ( \Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+		} catch ( Exception $exception ) {
+			WP_CLI::error( $exception->getMessage() );
 		}
 
 		$patched_value = sanitize_option( $key, $traverser->value() );
@@ -591,11 +604,11 @@ class Option_Command extends WP_CLI_Command {
 		global $wpdb;
 
 		// Remove notices in 4.0 and support backwards compatibility
-		if( method_exists( $wpdb, 'esc_like' ) ) {
+		if ( method_exists( $wpdb, 'esc_like' ) ) {
 			// 4.0
 			$old = $wpdb->esc_like( $old );
 		} else {
-			// 3.9 or less
+			// phpcs:ignore WordPress.WP.DeprecatedFunctions.like_escapeFound -- called in WordPress 3.9 or less.
 			$old = like_escape( esc_sql( $old ) );
 		}
 

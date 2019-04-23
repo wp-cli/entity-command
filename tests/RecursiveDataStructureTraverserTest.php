@@ -7,7 +7,7 @@ use WP_CLI\Entity\RecursiveDataStructureTraverser;
 class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 
 	/** @test */
-	function it_can_get_a_top_level_array_value() {
+	public function it_can_get_a_top_level_array_value() {
 		$array = array(
 			'foo' => 'bar',
 		);
@@ -18,7 +18,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_get_a_top_level_object_value() {
+	public function it_can_get_a_top_level_object_value() {
 		$object = (object) array(
 			'foo' => 'bar',
 		);
@@ -29,11 +29,11 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_get_a_nested_array_value() {
+	public function it_can_get_a_nested_array_value() {
 		$array = array(
 			'foo' => array(
 				'bar' => array(
-					'baz' => 'value'
+					'baz' => 'value',
 				),
 			),
 		);
@@ -44,7 +44,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_get_a_nested_object_value() {
+	public function it_can_get_a_nested_object_value() {
 		$object = (object) array(
 			'foo' => (object) array(
 				'bar' => 'baz',
@@ -57,7 +57,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_set_a_nested_array_value() {
+	public function it_can_set_a_nested_array_value() {
 		$array = array(
 			'foo' => array(
 				'bar' => 'baz',
@@ -72,7 +72,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_set_a_nested_object_value() {
+	public function it_can_set_a_nested_object_value() {
 		$object = (object) array(
 			'foo' => (object) array(
 				'bar' => 'baz',
@@ -87,7 +87,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_update_an_integer_object_value() {
+	public function it_can_update_an_integer_object_value() {
 		$object = (object) array(
 			'test_mode' => 0,
 		);
@@ -100,7 +100,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_delete_a_nested_array_value() {
+	public function it_can_delete_a_nested_array_value() {
 		$array = array(
 			'foo' => array(
 				'bar' => 'baz',
@@ -115,7 +115,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_delete_a_nested_object_value() {
+	public function it_can_delete_a_nested_object_value() {
 		$object = (object) array(
 			'foo' => (object) array(
 				'bar' => 'baz',
@@ -130,7 +130,7 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_can_insert_a_key_into_a_nested_array() {
+	public function it_can_insert_a_key_into_a_nested_array() {
 		$array = array(
 			'foo' => array(
 				'bar' => 'baz',
@@ -145,8 +145,8 @@ class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	/** @test */
-	function it_throws_an_exception_when_attempting_to_create_a_key_on_an_invalid_type() {
-		$data = 'a string';
+	public function it_throws_an_exception_when_attempting_to_create_a_key_on_an_invalid_type() {
+		$data      = 'a string';
 		$traverser = new RecursiveDataStructureTraverser( $data );
 
 		try {

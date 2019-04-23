@@ -1,6 +1,12 @@
 <?php
 
-use \WP_CLI\Utils;
+use WP_CLI\CommandWithDBObject;
+use WP_CLI\Entity\Utils as EntityUtils;
+use WP_CLI\Fetchers\Site as SiteFetcher;
+use WP_CLI\Fetchers\User as UserFetcher;
+use WP_CLI\Formatter;
+use WP_CLI\Iterators\CSV as CsvIterator;
+use WP_CLI\Utils;
 
 /**
  * Manages users, along with their roles, capabilities, and meta.
@@ -28,25 +34,25 @@ use \WP_CLI\Utils;
  *
  * @package wp-cli
  */
-class User_Command extends \WP_CLI\CommandWithDBObject {
+class User_Command extends CommandWithDBObject {
 
-	protected $obj_type = 'user';
-	protected $obj_fields = array(
+	protected $obj_type   = 'user';
+	protected $obj_fields = [
 		'ID',
 		'user_login',
 		'display_name',
 		'user_email',
 		'user_registered',
-		'roles'
-	);
+		'roles',
+	];
 
-	private $cap_fields = array(
-		'name'
-	);
+	private $cap_fields = [
+		'name',
+	];
 
 	public function __construct() {
-		$this->fetcher = new \WP_CLI\Fetchers\User;
-		$this->sitefetcher = new \WP_CLI\Fetchers\Site;
+		$this->fetcher     = new UserFetcher();
+		$this->sitefetcher = new SiteFetcher();
 	}
 
 	/**
@@ -133,46 +139,50 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	public function list_( $args, $assoc_args ) {
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'network' ) ) {
 			if ( ! is_multisite() ) {
 				WP_CLI::error( 'This is not a multisite installation.' );
 			}
 			$assoc_args['blog_id'] = 0;
 			if ( isset( $assoc_args['fields'] ) ) {
-				$fields = explode( ',', $assoc_args['fields'] );
-				$assoc_args['fields'] = array_diff( $fields, array( 'roles' ) );
+				$fields               = explode( ',', $assoc_args['fields'] );
+				$assoc_args['fields'] = array_diff( $fields, [ 'roles' ] );
 			} else {
-				$assoc_args['fields'] = array_diff( $this->obj_fields, array( 'roles' ) );
+				$assoc_args['fields'] = array_diff( $this->obj_fields, [ 'roles' ] );
 			}
 		}
 
 		$formatter = $this->get_formatter( $assoc_args );
 
-		if ( in_array( $formatter->format, array( 'ids', 'count' ) ) ) {
+		if ( in_array( $formatter->format, [ 'ids', 'count' ], true ) ) {
 			$assoc_args['fields'] = 'ids';
 		} else {
 			$assoc_args['fields'] = 'all_with_meta';
 		}
 
 		$assoc_args['count_total'] = false;
-		$assoc_args = self::process_csv_arguments_to_arrays( $assoc_args );
-		$users = get_users( $assoc_args );
+		$assoc_args                = self::process_csv_arguments_to_arrays( $assoc_args );
+		$users                     = get_users( $assoc_args );
 
-		if ( 'ids' == $formatter->format ) {
+		if ( 'ids' === $formatter->format ) {
 			echo implode( ' ', $users );
-		} else if ( 'count' === $formatter->format ) {
+		} elseif ( 'count' === $formatter->format ) {
 			$formatter->display_items( $users );
 		} else {
-			$it = WP_CLI\Utils\iterator_map( $users, function ( $user ) {
-				if ( !is_object( $user ) )
+			$iterator = Utils\iterator_map(
+				$users,
+				function ( $user ) {
+					if ( ! is_object( $user ) ) {
+						return $user;
+					}
+
+					$user->roles = implode( ',', $user->roles );
+					$user->url   = get_author_posts_url( $user->ID, $user->user_nicename );
 					return $user;
+				}
+			);
 
-				$user->roles = implode( ',', $user->roles );
-				$user->url = get_author_posts_url( $user->ID, $user->user_nicename );
-				return $user;
-			} );
-
-			$formatter->display_items( $it );
+			$formatter->display_items( $iterator );
 		}
 	}
 
@@ -211,8 +221,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     $ wp user get bob --format=json > bob.json
 	 */
 	public function get( $args, $assoc_args ) {
-		$user = $this->fetcher->get_check( $args[0] );
-		$user_data = $user->to_array();
+		$user               = $this->fetcher->get_check( $args[0] );
+		$user_data          = $user->to_array();
 		$user_data['roles'] = implode( ', ', $user->roles );
 
 		$formatter = $this->get_formatter( $assoc_args );
@@ -252,36 +262,40 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     Success: Removed user 578 from http://example.com
 	 */
 	public function delete( $args, $assoc_args ) {
-		$network = \WP_CLI\Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
-		$reassign = \WP_CLI\Utils\get_flag_value( $assoc_args, 'reassign' );
+		$network  = Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
+		$reassign = Utils\get_flag_value( $assoc_args, 'reassign' );
 
 		if ( $network && $reassign ) {
-			WP_CLI::error('Reassigning content to a different user is not supported on multisite.');
+			WP_CLI::error( 'Reassigning content to a different user is not supported on multisite.' );
 		}
 
-		if ( !$reassign ) {
+		if ( ! $reassign ) {
 			WP_CLI::confirm( '--reassign parameter not passed. All associated posts will be deleted. Proceed?', $assoc_args );
 		}
 
 		$users = $this->fetcher->get_many( $args );
 
-		parent::_delete( $users, $assoc_args, function ( $user ) use ( $network, $reassign ) {
-			$user_id = $user->ID;
+		parent::_delete(
+			$users,
+			$assoc_args,
+			function ( $user ) use ( $network, $reassign ) {
+				$user_id = $user->ID;
 
-			if ( $network ) {
-				$r = wpmu_delete_user( $user_id );
-				$message = "Deleted user $user_id.";
-			} else {
-				$r = wp_delete_user( $user_id, $reassign );
-				$message = "Removed user $user_id from " . home_url() . ".";
-			}
+				if ( $network ) {
+					$result  = wpmu_delete_user( $user_id );
+					$message = "Deleted user {$user_id}.";
+				} else {
+					$result  = wp_delete_user( $user_id, $reassign );
+					$message = "Removed user {$user_id} from " . home_url() . '.';
+				}
 
-			if ( $r ) {
-				return array( 'success', $message );
-			} else {
-				return array( 'error', "Failed deleting user $user_id." );
+				if ( ! $result ) {
+					return [ 'error', "Failed deleting user {$user_id}." ];
+				}
+
+				return [ 'success', $message ];
 			}
-		} );
+		);
 	}
 
 	/**
@@ -347,7 +361,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 *     4
 	 */
 	public function create( $args, $assoc_args ) {
-		$user = new stdClass;
+		$user = new stdClass();
 
 		list( $user->user_login, $user->user_email ) = $args;
 
@@ -357,50 +371,50 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			WP_CLI::error( "The '{$user->user_login}' username is already registered." );
 		}
 
-		if ( !is_email( $user->user_email ) ) {
+		if ( ! is_email( $user->user_email ) ) {
 			WP_CLI::error( "The '{$user->user_email}' email address is invalid." );
 		}
 
-		$user->user_registered = \WP_CLI\Utils\get_flag_value(
+		$user->user_registered = Utils\get_flag_value(
 			$assoc_args,
 			'user_registered',
-			strftime( "%F %T", current_time('timestamp') )
+			strftime( '%F %T', current_time( 'timestamp' ) )
 		);
 
-		$user->display_name = \WP_CLI\Utils\get_flag_value( $assoc_args, 'display_name', false );
+		$user->display_name = Utils\get_flag_value( $assoc_args, 'display_name', false );
 
-		$user->first_name = \WP_CLI\Utils\get_flag_value( $assoc_args, 'first_name', false );
+		$user->first_name = Utils\get_flag_value( $assoc_args, 'first_name', false );
 
-		$user->last_name = \WP_CLI\Utils\get_flag_value( $assoc_args, 'last_name', false );
+		$user->last_name = Utils\get_flag_value( $assoc_args, 'last_name', false );
 
-		$user->description = \WP_CLI\Utils\get_flag_value( $assoc_args, 'description', false );
+		$user->description = Utils\get_flag_value( $assoc_args, 'description', false );
 
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
 		} else {
-			$user->user_pass = wp_generate_password(24);
-			$generated_pass = true;
+			$user->user_pass = wp_generate_password( 24 );
+			$generated_pass  = true;
 		}
 
-		$user->role = \WP_CLI\Utils\get_flag_value( $assoc_args, 'role', get_option('default_role') );
+		$user->role = Utils\get_flag_value( $assoc_args, 'role', get_option( 'default_role' ) );
 		self::validate_role( $user->role );
 
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
+		if ( ! Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
 			add_filter( 'send_password_change_email', '__return_false' );
 			add_filter( 'send_email_change_email', '__return_false' );
 		}
 
 		if ( is_multisite() ) {
-			$ret = wpmu_validate_user_signup( $user->user_login, $user->user_email );
-			if ( is_wp_error( $ret['errors'] ) && ! empty( $ret['errors']->errors ) ) {
-				WP_CLI::error( $ret['errors'] );
+			$result = wpmu_validate_user_signup( $user->user_login, $user->user_email );
+			if ( is_wp_error( $result['errors'] ) && ! empty( $result['errors']->errors ) ) {
+				WP_CLI::error( $result['errors'] );
 			}
 			$user_id = wpmu_create_user( $user->user_login, $user->user_pass, $user->user_email );
 			if ( ! $user_id ) {
-				WP_CLI::error( "Unknown error creating new user." );
+				WP_CLI::error( 'Unknown error creating new user.' );
 			}
 			$user->ID = $user_id;
-			$user_id = wp_update_user( $user );
+			$user_id  = wp_update_user( $user );
 			if ( is_wp_error( $user_id ) ) {
 				WP_CLI::error( $user_id );
 			}
@@ -420,16 +434,17 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			}
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
 			self::wp_new_user_notification( $user_id, $user->user_pass );
 		}
 
-		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
+		if ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 			WP_CLI::line( $user_id );
 		} else {
-			WP_CLI::success( "Created user $user_id." );
-			if ( isset( $generated_pass ) )
-				WP_CLI::line( "Password: $user->user_pass" );
+			WP_CLI::success( "Created user {$user_id}." );
+			if ( isset( $generated_pass ) ) {
+				WP_CLI::line( "Password: {$user->user_pass}" );
+			}
 		}
 	}
 
@@ -495,7 +510,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			unset( $assoc_args['user_login'] );
 		}
 
-		$user_ids = array();
+		$user_ids = [];
 		foreach ( $this->fetcher->get_many( $args ) as $user ) {
 			$user_ids[] = $user->ID;
 		}
@@ -551,10 +566,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	public function generate( $args, $assoc_args ) {
 		global $blog_id;
 
-		$defaults = array(
+		$defaults   = [
 			'count' => 100,
-			'role' => get_option('default_role'),
-		);
+			'role'  => get_option( 'default_role' ),
+		];
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		$role = $assoc_args['role'];
@@ -564,27 +579,29 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		$user_count = count_users();
-		$total = $user_count['total_users'];
-		$limit = $assoc_args['count'] + $total;
+		$total      = $user_count['total_users'];
+		$limit      = $assoc_args['count'] + $total;
 
-		$format = \WP_CLI\Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+		$format = Utils\get_flag_value( $assoc_args, 'format', 'progress' );
 
 		$notify = false;
 		if ( 'progress' === $format ) {
-			$notify = \WP_CLI\Utils\make_progress_bar( 'Generating users', $assoc_args['count'] );
+			$notify = Utils\make_progress_bar( 'Generating users', $assoc_args['count'] );
 		}
 
-		for ( $i = $total; $i < $limit; $i++ ) {
-			$login = sprintf( 'user_%d_%d', $blog_id, $i );
-			$name = "User $i";
+		for ( $index = $total; $index < $limit; $index++ ) {
+			$login = "user_{$blog_id}_{$index}";
+			$name  = "User {$index}";
 
-			$user_id = wp_insert_user( array(
-				'user_login' => $login,
-				'user_pass' => $login,
-				'nickname' => $name,
-				'display_name' => $name,
-				'role' => $role,
-			) );
+			$user_id = wp_insert_user(
+				[
+					'user_login'   => $login,
+					'user_pass'    => $login,
+					'nickname'     => $name,
+					'display_name' => $name,
+					'role'         => $role,
+				]
+			);
 
 			if ( false === $role ) {
 				delete_user_option( $user_id, 'capabilities' );
@@ -593,9 +610,9 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			if ( 'progress' === $format ) {
 				$notify->tick();
-			} else if ( 'ids' === $format ) {
+			} elseif ( 'ids' === $format ) {
 				echo $user_id;
-				if ( $i < $limit - 1 ) {
+				if ( $index < $limit - 1 ) {
 					echo ' ';
 				}
 			}
@@ -628,15 +645,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	public function set_role( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 
-		$role = \WP_CLI\Utils\get_flag_value( $args, 1, get_option('default_role') );
+		$role = Utils\get_flag_value( $args, 1, get_option( 'default_role' ) );
 
 		self::validate_role( $role );
 
 		// Multisite
-		if ( function_exists( 'add_user_to_blog' ) )
+		if ( function_exists( 'add_user_to_blog' ) ) {
 			add_user_to_blog( get_current_blog_id(), $user->ID, $role );
-		else
+		} else {
 			$user->set_role( $role );
+		}
 
 		WP_CLI::success( "Added {$user->user_login} ({$user->ID}) to " . site_url() . " as {$role}." );
 	}
@@ -668,7 +686,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 		$user->add_role( $role );
 
-		WP_CLI::success( sprintf( "Added '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
+		WP_CLI::success( "Added '{$role}' role for {$user->user_login} ({$user->ID})." );
 	}
 
 	/**
@@ -699,15 +717,16 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			$user->remove_role( $role );
 
-			WP_CLI::success( sprintf( "Removed '%s' role for %s (%d).", $role, $user->user_login, $user->ID ) );
+			WP_CLI::success( "Removed '{$role}' role for {$user->user_login} ({$user->ID})." );
 		} else {
 			// Multisite
-			if ( function_exists( 'remove_user_from_blog' ) )
+			if ( function_exists( 'remove_user_from_blog' ) ) {
 				remove_user_from_blog( $user->ID, get_current_blog_id() );
-			else
+			} else {
 				$user->remove_all_caps();
+			}
 
-			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() . "." );
+			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() . '.' );
 		}
 	}
 
@@ -737,10 +756,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	public function add_cap( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 		if ( $user ) {
-			$cap  = $args[1];
+			$cap = $args[1];
 			$user->add_cap( $cap );
 
-			WP_CLI::success( sprintf( "Added '%s' capability for %s (%d).", $cap, $user->user_login, $user->ID ) );
+			WP_CLI::success( "Added '{$cap}' capability for {$user->user_login} ({$user->ID})." );
 		}
 	}
 
@@ -774,13 +793,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			$cap = $args[1];
 			if ( ! isset( $user->caps[ $cap ] ) ) {
 				if ( isset( $user->allcaps[ $cap ] ) ) {
-					WP_CLI::error( sprintf( "The '%s' cap for %s (%d) is inherited from a role.", $cap, $user->user_login, $user->ID ) );
+					WP_CLI::error( "The '{$cap}' cap for {$user->user_login} ({$user->ID}) is inherited from a role." );
 				}
-				WP_CLI::error( sprintf( "No such '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
+				WP_CLI::error( "No such '{$cap}' cap for {$user->user_login} ({$user->ID})." );
 			}
 			$user->remove_cap( $cap );
 
-			WP_CLI::success( sprintf( "Removed '%s' cap for %s (%d).", $cap, $user->user_login, $user->ID ) );
+			WP_CLI::success( "Removed '{$cap}' cap for {$user->user_login} ({$user->ID})." );
 		}
 	}
 
@@ -821,7 +840,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			$user_caps_list = $user->allcaps;
 
-			$active_user_cap_list = array();
+			$active_user_cap_list = [];
 
 			foreach ( $user_caps_list as $cap => $active ) {
 				if ( $active ) {
@@ -833,20 +852,18 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				foreach ( $active_user_cap_list as $cap ) {
 					WP_CLI::line( $cap );
 				}
-			}
-			else {
-				$output_caps = array();
+			} else {
+				$output_caps = [];
 				foreach ( $active_user_cap_list as $cap ) {
-					$output_cap = new stdClass;
+					$output_cap = new stdClass();
 
 					$output_cap->name = $cap;
 
 					$output_caps[] = $output_cap;
 				}
-				$formatter = new \WP_CLI\Formatter( $assoc_args, $this->cap_fields );
+				$formatter = new Formatter( $assoc_args, $this->cap_fields );
 				$formatter->display_items( $output_caps );
 			}
-
 		}
 	}
 
@@ -894,17 +911,17 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		$filename = $args[0];
 
 		if ( 0 === stripos( $filename, 'http://' ) || 0 === stripos( $filename, 'https://' ) ) {
-			$response = wp_remote_head( $filename );
-			$response_code = (string)wp_remote_retrieve_response_code( $response );
-			if ( in_array( $response_code[0], array( 4, 5 ) ) ) {
+			$response      = wp_remote_head( $filename );
+			$response_code = (string) wp_remote_retrieve_response_code( $response );
+			if ( in_array( (int) $response_code[0], [ 4, 5 ], true ) ) {
 				WP_CLI::error( "Couldn't access remote CSV file (HTTP {$response_code} response)." );
 			}
 		} elseif ( '-' === $filename ) {
-			if ( ! WP_CLI\Entity\Utils::has_stdin() ) {
-				\WP_CLI::error( "Unable to read content from STDIN." );
+			if ( ! EntityUtils::has_stdin() ) {
+				WP_CLI::error( 'Unable to read content from STDIN.' );
 			}
 		} elseif ( ! file_exists( $filename ) ) {
-			WP_CLI::error( sprintf( "Missing file: %s", $filename ) );
+			WP_CLI::error( "Missing file: {$filename}" );
 		}
 
 		// Don't send core's emails during the creation / update process
@@ -912,41 +929,45 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		add_filter( 'send_email_change_email', '__return_false' );
 
 		if ( '-' === $filename ) {
-			$file_object = new NoRewindIterator( new SplFileObject( "php://stdin" ) );
+			$file_object = new NoRewindIterator( new SplFileObject( 'php://stdin' ) );
 			$file_object->setFlags( SplFileObject::READ_CSV );
-			$csv_data = array();
-			$indexes = array();
+			$csv_data = [];
+			$indexes  = [];
 			foreach ( $file_object as $line ) {
 				if ( empty( $line[0] ) ) {
 					continue;
-				} elseif ( empty( $indexes ) ) {
+				}
+
+				if ( empty( $indexes ) ) {
 					$indexes = $line;
 					continue;
 				}
+
 				foreach ( $indexes as $n => $key ) {
 					$data[ $key ] = $line[ $n ];
 				}
+
 				$csv_data[] = $data;
 			}
 		} else {
-			$csv_data = new \WP_CLI\Iterators\CSV( $filename );
+			$csv_data = new CsvIterator( $filename );
 		}
 
-		foreach ( $csv_data as $i => $new_user ) {
-			$defaults = array(
-				'role' => get_option('default_role'),
-				'user_pass' => wp_generate_password(),
-				'user_registered' => strftime( "%F %T", time() ),
-				'display_name' => false,
-			);
+		foreach ( $csv_data as $new_user ) {
+			$defaults = [
+				'role'            => get_option( 'default_role' ),
+				'user_pass'       => wp_generate_password(),
+				'user_registered' => strftime( '%F %T', time() ),
+				'display_name'    => false,
+			];
 			$new_user = array_merge( $defaults, $new_user );
 
-			$secondary_roles = array();
+			$secondary_roles = [];
 			if ( ! empty( $new_user['roles'] ) ) {
-				$roles = array_map( 'trim', explode( ',', $new_user['roles'] ) );
+				$roles        = array_map( 'trim', explode( ',', $new_user['roles'] ) );
 				$invalid_role = false;
-				foreach( $roles as $role ) {
-					if ( is_null( get_role( $role ) ) ) {
+				foreach ( $roles as $role ) {
+					if ( null === get_role( $role ) ) {
 						WP_CLI::warning( "{$new_user['user_login']} has an invalid role." );
 						$invalid_role = true;
 						break;
@@ -956,10 +977,10 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 					continue;
 				}
 				$new_user['role'] = array_shift( $roles );
-				$secondary_roles = $roles;
-			} else if ( 'none' === $new_user['role'] ) {
+				$secondary_roles  = $roles;
+			} elseif ( 'none' === $new_user['role'] ) {
 				$new_user['role'] = false;
-			} elseif ( is_null( get_role( $new_user['role'] ) ) ) {
+			} elseif ( null === get_role( $new_user['role'] ) ) {
 				WP_CLI::warning( "{$new_user['user_login']} has an invalid role." );
 				continue;
 			}
@@ -967,42 +988,43 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 			// User already exists and we just need to add them to the site if they aren't already there
 			$existing_user = get_user_by( 'email', $new_user['user_email'] );
 
-			if ( !$existing_user ) {
+			if ( ! $existing_user ) {
 				$existing_user = get_user_by( 'login', $new_user['user_login'] );
 			}
 
-			if ( $existing_user && \WP_CLI\Utils\get_flag_value( $assoc_args, 'skip-update' ) ) {
+			if ( $existing_user && Utils\get_flag_value( $assoc_args, 'skip-update' ) ) {
 
 				WP_CLI::log( "{$existing_user->user_login} exists and has been skipped." );
 				continue;
 
-			} else if ( $existing_user ) {
+			}
 
+			if ( $existing_user ) {
 				$new_user['ID'] = $existing_user->ID;
-				$user_id = wp_update_user( $new_user );
+				$user_id        = wp_update_user( $new_user );
 
-				if ( !in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ) ) && is_multisite() && $new_user['role'] ) {
+				if ( ! in_array( $existing_user->user_login, wp_list_pluck( $blog_users, 'user_login' ), true ) && is_multisite() && $new_user['role'] ) {
 					add_user_to_blog( get_current_blog_id(), $existing_user->ID, $new_user['role'] );
 					WP_CLI::log( "{$existing_user->user_login} added as {$new_user['role']}." );
 				}
 
-			// Create the user
+				// Create the user
 			} else {
 				unset( $new_user['ID'] ); // Unset else it will just return the ID
 
 				if ( is_multisite() ) {
-					$ret = wpmu_validate_user_signup( $new_user['user_login'], $new_user['user_email'] );
-					if ( is_wp_error( $ret['errors'] ) && ! empty( $ret['errors']->errors ) ) {
-						WP_CLI::warning( $ret['errors'] );
+					$result = wpmu_validate_user_signup( $new_user['user_login'], $new_user['user_email'] );
+					if ( is_wp_error( $result['errors'] ) && ! empty( $result['errors']->errors ) ) {
+						WP_CLI::warning( $result['errors'] );
 						continue;
 					}
 					$user_id = wpmu_create_user( $new_user['user_login'], $new_user['user_pass'], $new_user['user_email'] );
 					if ( ! $user_id ) {
-						WP_CLI::warning( "Unknown error creating new user." );
+						WP_CLI::warning( 'Unknown error creating new user.' );
 						continue;
 					}
 					$new_user['ID'] = $user_id;
-					$user_id = wp_update_user( $new_user );
+					$user_id        = wp_update_user( $new_user );
 					if ( is_wp_error( $user_id ) ) {
 						WP_CLI::warning( $user_id );
 						continue;
@@ -1011,7 +1033,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 					$user_id = wp_insert_user( $new_user );
 				}
 
-				if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
+				if ( Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
 					self::wp_new_user_notification( $user_id, $new_user['user_pass'] );
 				}
 			}
@@ -1020,20 +1042,22 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				WP_CLI::warning( $user_id );
 				continue;
 
-			} else if ( $new_user['role'] === false ) {
+			}
+
+			if ( false === $new_user['role'] ) {
 				delete_user_option( $user_id, 'capabilities' );
 				delete_user_option( $user_id, 'user_level' );
 			}
 
 			$user = get_user_by( 'id', $user_id );
-			foreach( $secondary_roles as $secondary_role ) {
+			foreach ( $secondary_roles as $secondary_role ) {
 				$user->add_role( $secondary_role );
 			}
 
-			if ( !empty( $existing_user ) ) {
-				WP_CLI::success( $new_user['user_login'] . " updated." );
+			if ( ! empty( $existing_user ) ) {
+				WP_CLI::success( $new_user['user_login'] . ' updated.' );
 			} else {
-				WP_CLI::success( $new_user['user_login'] . " created." );
+				WP_CLI::success( $new_user['user_login'] . ' created.' );
 			}
 		}
 	}
@@ -1064,10 +1088,15 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		if ( $skip_email ) {
 			add_filter( 'send_password_change_email', '__return_false' );
 		}
-		$fetcher = new \WP_CLI\Fetchers\User;
-		$users = $fetcher->get_many( $args );
-		foreach( $users as $user ) {
-			wp_update_user( array( 'ID' => $user->ID, 'user_pass' => wp_generate_password() ) );
+		$fetcher = new UserFetcher();
+		$users   = $fetcher->get_many( $args );
+		foreach ( $users as $user ) {
+			wp_update_user(
+				[
+					'ID'        => $user->ID,
+					'user_pass' => wp_generate_password(),
+				]
+			);
 			WP_CLI::log( "Reset password for {$user->user_login}." );
 		}
 		if ( $skip_email ) {
@@ -1083,8 +1112,8 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 */
 	private static function validate_role( $role ) {
 
-		if ( ! empty( $role ) && is_null( get_role( $role ) ) ) {
-			WP_CLI::error( sprintf( "Role doesn't exist: %s", $role ) );
+		if ( ! empty( $role ) && null === get_role( $role ) ) {
+			WP_CLI::error( "Role doesn't exist: {$role}" );
 		}
 
 	}
@@ -1098,12 +1127,14 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 	 * @param string $user_id
 	 * @param string $password
 	 */
-	private static function wp_new_user_notification( $user_id, $password ) {
-		if ( \WP_CLI\Utils\wp_version_compare( '4.3.1', '>=' ) ) {
+	public static function wp_new_user_notification( $user_id, $password ) {
+		if ( Utils\wp_version_compare( '4.3.1', '>=' ) ) {
 			wp_new_user_notification( $user_id, null, 'both' );
-		} else if ( \WP_CLI\Utils\wp_version_compare( '4.3', '>=' ) ) {
+		} elseif ( Utils\wp_version_compare( '4.3', '>=' ) ) {
+			// phpcs:ignore WordPress.WP.DeprecatedParameters.Wp_new_user_notificationParam2Found -- Only called in valid conditions.
 			wp_new_user_notification( $user_id, 'both' );
 		} else {
+			// phpcs:ignore WordPress.WP.DeprecatedParameters.Wp_new_user_notificationParam2Found -- Only called in valid conditions.
 			wp_new_user_notification( $user_id, $password );
 		}
 	}
@@ -1155,15 +1186,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 		}
 
 		if ( 'spam' === $pref && '1' === $value ) {
-			$action = 'marked as spam';
-			$verb = 'spam';
-		} elseif ( 'spam' === $pref && '0' === $value  ) {
-			$action = 'removed from spam';
-			$verb = 'unspam';
+			$action = (int) $value ? 'marked as spam' : 'removed from spam';
+			$verb   = (int) $value ? 'spam' : 'unspam';
 		}
 
-		$successes = $errors = 0;
-		$users = $this->fetcher->get_many( $user_ids );
+		$successes = 0;
+		$errors    = 0;
+		$users     = $this->fetcher->get_many( $user_ids );
 		if ( count( $users ) < count( $user_ids ) ) {
 			$errors = count( $user_ids ) - count( $users );
 		}
@@ -1174,13 +1203,13 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 
 			// If no user found, then show warning.
 			if ( empty( $user ) ) {
-				WP_CLI::warning( sprintf( 'User %d doesn\'t exist.', esc_html( $user_id ) ) );
+				WP_CLI::warning( "User {$user_id} doesn't exist." );
 				continue;
 			}
 
 			// Super admin should not be marked as spam.
 			if ( is_super_admin( $user->ID ) ) {
-				WP_CLI::warning( sprintf( 'User cannot be modified. The user %d is a network administrator.', esc_html( $user->ID ) ) );
+				WP_CLI::warning( "User cannot be modified. The user {$user->ID} is a network administrator." );
 				continue;
 			}
 
@@ -1196,7 +1225,7 @@ class User_Command extends \WP_CLI\CommandWithDBObject {
 				$site = $this->sitefetcher->get_check( $details->site_id );
 
 				// Main blog shouldn't a spam !
-				if ( $details->userblog_id != $site->blog_id ) {
+				if ( $details->userblog_id !== $site->blog_id ) {
 					update_blog_status( $details->userblog_id, $pref, $value );
 				}
 			}
