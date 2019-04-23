@@ -289,11 +289,11 @@ class User_Command extends CommandWithDBObject {
 					$message = "Removed user {$user_id} from " . home_url() . '.';
 				}
 
-				if ( $result ) {
-					return [ 'success', $message ];
-				} else {
+				if ( ! $result ) {
 					return [ 'error', "Failed deleting user {$user_id}." ];
 				}
+
+				return [ 'success', $message ];
 			}
 		);
 	}
@@ -936,13 +936,17 @@ class User_Command extends CommandWithDBObject {
 			foreach ( $file_object as $line ) {
 				if ( empty( $line[0] ) ) {
 					continue;
-				} elseif ( empty( $indexes ) ) {
+				}
+
+				if ( empty( $indexes ) ) {
 					$indexes = $line;
 					continue;
 				}
+
 				foreach ( $indexes as $n => $key ) {
 					$data[ $key ] = $line[ $n ];
 				}
+
 				$csv_data[] = $data;
 			}
 		} else {
@@ -993,8 +997,9 @@ class User_Command extends CommandWithDBObject {
 				WP_CLI::log( "{$existing_user->user_login} exists and has been skipped." );
 				continue;
 
-			} elseif ( $existing_user ) {
+			}
 
+			if ( $existing_user ) {
 				$new_user['ID'] = $existing_user->ID;
 				$user_id        = wp_update_user( $new_user );
 
@@ -1037,7 +1042,9 @@ class User_Command extends CommandWithDBObject {
 				WP_CLI::warning( $user_id );
 				continue;
 
-			} elseif ( false === $new_user['role'] ) {
+			}
+
+			if ( false === $new_user['role'] ) {
 				delete_user_option( $user_id, 'capabilities' );
 				delete_user_option( $user_id, 'user_level' );
 			}
@@ -1179,11 +1186,8 @@ class User_Command extends CommandWithDBObject {
 		}
 
 		if ( 'spam' === $pref && '1' === $value ) {
-			$action = 'marked as spam';
-			$verb   = 'spam';
-		} elseif ( 'spam' === $pref && '0' === $value ) {
-			$action = 'removed from spam';
-			$verb   = 'unspam';
+			$action = (int) $value ? 'marked as spam' : 'removed from spam';
+			$verb   = (int) $value ? 'spam' : 'unspam';
 		}
 
 		$successes = 0;

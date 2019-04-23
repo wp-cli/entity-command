@@ -775,26 +775,22 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	private function update_site_status( $ids, $pref, $value ) {
-		if ( 'archived' === $pref && 1 === $value ) {
-			$action = 'archived';
-		} elseif ( 'archived' === $pref && 0 === $value ) {
-			$action = 'unarchived';
-		} elseif ( 'deleted' === $pref && 1 === $value ) {
-			$action = 'deactivated';
-		} elseif ( 'deleted' === $pref && 0 === $value ) {
-			$action = 'activated';
-		} elseif ( 'spam' === $pref && 1 === $value ) {
-			$action = 'marked as spam';
-		} elseif ( 'spam' === $pref && 0 === $value ) {
-			$action = 'removed from spam';
-		} elseif ( 'public' === $pref && 1 === $value ) {
-			$action = 'marked as public';
-		} elseif ( 'public' === $pref && 0 === $value ) {
-			$action = 'marked as private';
-		} elseif ( 'mature' === $pref && 1 === $value ) {
-			$action = 'marked as mature';
-		} elseif ( 'mature' === $pref && 0 === $value ) {
-			$action = 'marked as unmature';
+		switch ( $pref ) {
+			case 'archived':
+				$action = $value ? 'archived' : 'unarchived';
+				break;
+			case 'deleted':
+				$action = $value ? 'deactivated' : 'activated';
+				break;
+			case 'mature':
+				$action = $value ? 'marked as mature' : 'marked as unmature';
+				break;
+			case 'public':
+				$action = $value ? 'marked as public' : 'marked as private';
+				break;
+			case 'spam':
+				$action = $value ? 'marked as spam' : 'removed from spam';
+				break;
 		}
 
 		foreach ( $ids as $site_id ) {
