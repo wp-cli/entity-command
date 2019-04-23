@@ -753,8 +753,8 @@ class Post_Command extends CommandWithDBObject {
 		}
 
 		if ( $post_author ) {
-			$user_fetcher = new UserFetcher;
-			$post_author = $user_fetcher->get_check( $post_author )->ID;
+			$user_fetcher = new UserFetcher();
+			$post_author  = $user_fetcher->get_check( $post_author )->ID;
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'post_content' ) ) {
@@ -782,36 +782,36 @@ class Post_Command extends CommandWithDBObject {
 		}
 
 		$previous_post_id = 0;
-		$current_depth = 1;
-		$current_parent = 0;
+		$current_depth    = 1;
+		$current_parent   = 0;
 
 		for ( $i = $total; $i < $limit; $i++ ) {
 
 			if ( $hierarchical ) {
 
-				if( $this->maybe_make_child() && $current_depth < $max_depth ) {
+				if ( $this->maybe_make_child() && $current_depth < $max_depth ) {
 
 					$current_parent = $previous_post_id;
 					$current_depth++;
 
-				} else if( $this->maybe_reset_depth() ) {
+				} elseif ( $this->maybe_reset_depth() ) {
 
-					$current_depth = 1;
+					$current_depth  = 1;
 					$current_parent = 0;
 
 				}
 			}
 
 			$args = [
-				'post_type' => $post_type,
-				'post_title' => ! empty( $post_title ) && $i === $total ? "$label" : "$label $i",
-				'post_status' => $post_status,
-				'post_author' => $post_author,
-				'post_parent' => $current_parent,
-				'post_name' => ! empty( $post_title  ) ? sanitize_title( $post_title . ( $i === $total ) ? '' : '-$i' ) : "post-$i",
-				'post_date' => $post_date,
+				'post_type'     => $post_type,
+				'post_title'    => ! empty( $post_title ) && $i === $total ? "$label" : "$label $i",
+				'post_status'   => $post_status,
+				'post_author'   => $post_author,
+				'post_parent'   => $current_parent,
+				'post_name'     => ! empty( $post_title ) ? sanitize_title( $post_title . ( $i === $total ) ? '' : '-$i' ) : "post-$i",
+				'post_date'     => $post_date,
 				'post_date_gmt' => $post_date_gmt,
-				'post_content' => $post_content,
+				'post_content'  => $post_content,
 			];
 
 			$post_id = wp_insert_post( $args, true );
