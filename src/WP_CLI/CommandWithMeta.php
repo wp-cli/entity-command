@@ -2,6 +2,7 @@
 
 namespace WP_CLI;
 
+use Exception;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Entity\RecursiveDataStructureTraverser;
