@@ -166,37 +166,37 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 				$default_category = ( ! empty( $default_category ) ) ? $default_category : 1;
 				$default_category = wp_set_object_terms( $object_id, [ $default_category ], $taxonomy, true );
 
-				if ( ! is_wp_error( $default_category ) ) {
-					$message = 'Removed all terms and set default term.';
-				} else {
+				if ( is_wp_error( $default_category ) ) {
 					WP_CLI::error( 'Failed to set default term.' );
 				}
+
+				$message = 'Removed all terms and set default term.';
 			}
 
-			if ( ! is_wp_error( $result ) ) {
-				WP_CLI::success( $message );
-			} else {
+			if ( is_wp_error( $result ) ) {
 				WP_CLI::error( 'Failed to remove all terms.' );
 			}
+
+			WP_CLI::success( $message );
+
 			return;
-
-		} else {
-
-			// Abort if no terms are specified.
-			if ( ! $terms ) {
-				WP_CLI::error( 'Please specify one or more terms, or use --all.' );
-			}
-
-			// Remove term from post.
-			$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
 		}
+
+		// Abort if no terms are specified.
+		if ( ! $terms ) {
+			WP_CLI::error( 'Please specify one or more terms, or use --all.' );
+		}
+
+		// Remove term from post.
+		$result = wp_remove_object_terms( $object_id, $terms, $taxonomy );
 
 		$label = count( $terms ) > 1 ? 'terms' : 'term';
-		if ( ! is_wp_error( $result ) ) {
-			WP_CLI::success( "Removed {$label}." );
-		} else {
+
+		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( "Failed to remove {$label}." );
 		}
+
+		WP_CLI::success( "Removed {$label}." );
 	}
 
 	/**

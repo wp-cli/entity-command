@@ -190,11 +190,9 @@ class Comment_Command extends CommandWithDBObject {
 			if ( 'progress' === $format ) {
 				$notify->tick();
 			} elseif ( 'ids' === $format ) {
-				if ( 'ids' === $format ) {
-					echo $comment_id;
-					if ( $i < $limit - 1 ) {
-						echo ' ';
-					}
+				echo $comment_id;
+				if ( $i < $limit - 1 ) {
+					echo ' ';
 				}
 			}
 		}
@@ -415,15 +413,12 @@ class Comment_Command extends CommandWithDBObject {
 				$status = wp_get_comment_status( $comment_id );
 				$result = wp_delete_comment( $comment_id, $force );
 
-				if ( $result ) {
-					if ( $force || 'trash' === $status ) {
-						return [ 'success', "Deleted comment $comment_id." ];
-					} else {
-						return [ 'success', "Trashed comment $comment_id." ];
-					}
-				} else {
+				if ( ! $result ) {
 					return [ 'error', "Failed deleting comment $comment_id." ];
 				}
+
+				$verb = ( $force || 'trash' === $status ) ? 'Deleted' : 'Trashed';
+				return [ 'success', "$verb comment $comment_id." ];
 			}
 		);
 	}
@@ -433,11 +428,11 @@ class Comment_Command extends CommandWithDBObject {
 
 		$func = sprintf( 'wp_%s_comment', $status );
 
-		if ( $func( $comment_id ) ) {
-			WP_CLI::success( "$success comment $comment_id." );
-		} else {
+		if ( ! $func( $comment_id ) ) {
 			WP_CLI::error( "$failure comment $comment_id." );
 		}
+
+		WP_CLI::success( "$success comment $comment_id." );
 	}
 
 	private function set_status( $args, $status, $success ) {
@@ -447,9 +442,9 @@ class Comment_Command extends CommandWithDBObject {
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( $result );
-		} else {
-			WP_CLI::success( "$success comment $comment->comment_ID." );
 		}
+
+		WP_CLI::success( "$success comment $comment->comment_ID." );
 	}
 
 	/**

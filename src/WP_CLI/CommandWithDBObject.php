@@ -140,11 +140,9 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 	 * @return array
 	 */
 	protected function wp_error_to_resp( $response, $success_msg ) {
-		if ( is_wp_error( $response ) ) {
-			return [ 'error', $response->get_error_message() ];
-		} else {
-			return [ 'success', $success_msg ];
-		}
+		return is_wp_error( $response )
+			? [ 'error', $response->get_error_message() ]
+			: [ 'success', $success_msg ];
 	}
 
 	/**
