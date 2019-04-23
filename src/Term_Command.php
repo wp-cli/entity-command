@@ -358,7 +358,7 @@ class Term_Command extends WP_CLI_Command {
 		$assoc_args = wp_parse_args( $assoc_args, $defaults );
 
 		foreach ( $assoc_args as $key => $value ) {
-			if ( is_null( $value ) ) {
+			if ( null === $value ) {
 				unset( $assoc_args[ $key ] );
 			}
 		}

@@ -22,7 +22,7 @@ class Comment extends Base {
 		$comment_id = (int) $arg;
 		$comment    = get_comment( $comment_id );
 
-		if ( is_null( $comment ) ) {
+		if ( null === $comment ) {
 			return false;
 		}
 
