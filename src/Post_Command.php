@@ -748,8 +748,7 @@ class Post_Command extends CommandWithDBObject {
 			$post_date = $post_date_gmt ? $post_date_gmt : $call_time;
 		}
 
-		// @codingStandardsIgnoreStart
-		if ( !post_type_exists( $post_type ) ) {
+		if ( ! post_type_exists( $post_type ) ) {
 			WP_CLI::error( sprintf( "'%s' is not a registered post type.", $post_type ) );
 		}
 
@@ -835,7 +834,6 @@ class Post_Command extends CommandWithDBObject {
 		if ( 'progress' === $format ) {
 			$notify->finish();
 		}
-		// @codingStandardsIgnoreEnd
 	}
 
 	private function maybe_make_child() {
