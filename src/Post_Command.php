@@ -741,11 +741,11 @@ class Post_Command extends CommandWithDBObject {
 		$call_time = current_time( 'mysql' );
 
 		if ( false === $post_date_gmt ) {
-			$post_date_gmt = $post_date ? $post_date : $call_time;
+			$post_date_gmt = $post_date ?: $call_time;
 		}
 
 		if ( false === $post_date ) {
-			$post_date = $post_date_gmt ? $post_date_gmt : $call_time;
+			$post_date = $post_date_gmt ?: $call_time;
 		}
 
 		if ( ! post_type_exists( $post_type ) ) {
@@ -888,7 +888,7 @@ class Post_Command extends CommandWithDBObject {
 			}
 		}
 		// If no category ids found, return exploded array for compat with previous WP-CLI versions.
-		return $category_ids ? $category_ids : $categories;
+		return $category_ids ?: $categories;
 	}
 
 	/**
