@@ -775,6 +775,8 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	private function update_site_status( $ids, $pref, $value ) {
+		$value = (int) $value;
+
 		switch ( $pref ) {
 			case 'archived':
 				$action = $value ? 'archived' : 'unarchived';
@@ -801,7 +803,7 @@ class Site_Command extends CommandWithDBObject {
 				continue;
 			}
 
-			$old_value = get_blog_status( $site->blog_id, $pref );
+			$old_value = (int) get_blog_status( $site->blog_id, $pref );
 
 			if ( $value === $old_value ) {
 				WP_CLI::warning( "Site {$site->blog_id} already {$action}." );
