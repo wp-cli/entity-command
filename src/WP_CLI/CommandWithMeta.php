@@ -61,6 +61,10 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *  - asc
 	 *  - desc
 	 * ---
+	 *
+	 * [--unserialize]
+	 * : Unserialize meta_value output.
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -85,6 +89,10 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 			}
 
 			foreach ( $values as $item_value ) {
+
+				if ( Utils\get_flag_value( $assoc_args, 'unserialize' ) ) {
+					$item_value = maybe_unserialize( $item_value );
+				}
 
 				$items[] = (object) [
 					"{$this->meta_type}_id" => $object_id,
