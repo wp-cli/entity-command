@@ -460,7 +460,7 @@ wp comment meta get <id> <key> [--format=<format>]
 List all metadata associated with an object.
 
 ~~~
-wp comment meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
+wp comment meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>] [--unserialize]
 ~~~
 
 **OPTIONS**
@@ -504,6 +504,9 @@ wp comment meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>
 		 - asc
 		 - desc
 		---
+
+	[--unserialize]
+		Unserialize meta_value output.
 
 
 
@@ -1442,7 +1445,7 @@ wp network meta get <id> <key> [--format=<format>]
 List all metadata associated with an object.
 
 ~~~
-wp network meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
+wp network meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>] [--unserialize]
 ~~~
 
 **OPTIONS**
@@ -1486,6 +1489,9 @@ wp network meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>
 		 - asc
 		 - desc
 		---
+
+	[--unserialize]
+		Unserialize meta_value output.
 
 
 
@@ -2561,7 +2567,7 @@ wp post meta get <id> <key> [--format=<format>]
 List all metadata associated with an object.
 
 ~~~
-wp post meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
+wp post meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>] [--unserialize]
 ~~~
 
 **OPTIONS**
@@ -2605,6 +2611,9 @@ wp post meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [
 		 - asc
 		 - desc
 		---
+
+	[--unserialize]
+		Unserialize meta_value output.
 
 
 
@@ -4152,7 +4161,7 @@ wp term meta get <id> <key> [--format=<format>]
 List all metadata associated with an object.
 
 ~~~
-wp term meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
+wp term meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>] [--unserialize]
 ~~~
 
 **OPTIONS**
@@ -4196,6 +4205,9 @@ wp term meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [
 		 - asc
 		 - desc
 		---
+
+	[--unserialize]
+		Unserialize meta_value output.
 
 
 
@@ -4960,7 +4972,7 @@ wp user meta get <user> <key> [--format=<format>]
 Lists all metadata associated with a user.
 
 ~~~
-wp user meta list <user> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
+wp user meta list <user> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>] [--unserialize]
 ~~~
 
 **OPTIONS**
@@ -5004,6 +5016,9 @@ wp user meta list <user> [--keys=<keys>] [--fields=<fields>] [--format=<format>]
 		 - asc
 		 - desc
 		---
+
+	[--unserialize]
+		Unserialize meta_value output.
 
 **EXAMPLES**
 
