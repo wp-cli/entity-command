@@ -83,7 +83,7 @@ class User_Meta_Command extends CommandWithMeta {
 	 * ---
 	 *
 	 * [--unserialize]
-	 * : Unserialize the result.
+	 * : Unserialize meta_value output.
 	 *
 	 * ## EXAMPLES
 	 *
