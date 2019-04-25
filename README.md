@@ -1669,12 +1669,12 @@ Errors if the option already exists.
 Deletes an option.
 
 ~~~
-wp option delete <key>
+wp option delete <key>...
 ~~~
 
 **OPTIONS**
 
-	<key>
+	<key>...
 		Key for the option.
 
 **EXAMPLES**
@@ -1682,6 +1682,12 @@ wp option delete <key>
     # Delete an option.
     $ wp option delete my_option
     Success: Deleted 'my_option' option.
+
+    # Delete multiple options.
+    $ wp option delete option_one option_two option_three
+    Success: Deleted 'option_one' option.
+    Success: Deleted 'option_two' option.
+    Warning: Could not delete 'option_three' option. Does it exist?
 
 
 
