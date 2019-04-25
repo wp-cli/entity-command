@@ -82,6 +82,9 @@ class User_Meta_Command extends CommandWithMeta {
 	 *  - desc
 	 * ---
 	 *
+	 * [--unserialize]
+	 * : Unserialize meta_value output.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # List user meta
