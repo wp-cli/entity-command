@@ -66,10 +66,10 @@ Feature: Manage post custom fields
 
     When I run `wp post meta list 1 --unserialize`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value                              |
-      | 1       | apple    | banana                                  |
-      | 1       | apple    | banana                                  |
-      | 1       | banana   | ["apple","apple"]                       |
+      | post_id | meta_key | meta_value         |
+      | 1       | apple    | banana             |
+      | 1       | apple    | banana             |
+      | 1       | banana   | ["apple","apple"]  |
 
     When I run `wp post meta list 1 --orderby=id --order=desc`
     Then STDOUT should be a table containing rows:
