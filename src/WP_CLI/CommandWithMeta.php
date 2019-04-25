@@ -63,7 +63,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 * ---
 	 *
 	 * [--unserialize]
-	 * : Unserialize the result.
+	 * : Unserialize meta_value output.
 	 *
 	 * @subcommand list
 	 */
