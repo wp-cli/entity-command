@@ -164,8 +164,6 @@ class Taxonomy_Command extends WP_CLI_Command {
 		$taxonomies = ( $is_strict ) ?
 			get_taxonomies( $assoc_args, 'objects' ) :
 			get_object_taxonomies( $taxonomy_object, 'objects' );
-
-		// $taxonomies = get_taxonomies( $assoc_args, 'objects' );
 		$counts     = [];
 
 		if ( count( $taxonomies ) > 0 && in_array( 'count', $fields, true ) ) {
