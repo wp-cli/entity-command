@@ -152,8 +152,13 @@ class Taxonomy_Command extends WP_CLI_Command {
 			$assoc_args['object_type'] = array( $assoc_args['object_type'] );
 		}
 
+		// Check if it's strict mode or not.
+		$is_strict = ( isset( $assoc_args['strict'] ) && true === $assoc_args['strict'] ) ? true : false;
+
 		$fields     = $formatter->fields;
-		$taxonomies = get_taxonomies( $assoc_args, 'objects' );
+		$taxonomies = ( $is_strict ) ?
+		              get_taxonomies( array( 'object_type' => $assoc_args['object_type'] ), 'objects' ) :
+		              get_object_taxonomies( $assoc_args['object_type'], 'objects' );
 		$counts     = [];
 
 		if ( count( $taxonomies ) > 0 && in_array( 'count', $fields, true ) ) {
