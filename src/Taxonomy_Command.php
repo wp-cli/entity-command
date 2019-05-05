@@ -157,8 +157,8 @@ class Taxonomy_Command extends WP_CLI_Command {
 
 		$fields     = $formatter->fields;
 		$taxonomies = ( $is_strict ) ?
-		              get_taxonomies( array( 'object_type' => $assoc_args['object_type'] ), 'objects' ) :
-		              get_object_taxonomies( $assoc_args['object_type'], 'objects' );
+			get_taxonomies( array( 'object_type' => $assoc_args['object_type'] ), 'objects' ) :
+			get_object_taxonomies( $assoc_args['object_type'], 'objects' );
 		$counts     = [];
 
 		if ( count( $taxonomies ) > 0 && in_array( 'count', $fields, true ) ) {
