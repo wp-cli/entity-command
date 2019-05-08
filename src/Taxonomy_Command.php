@@ -149,7 +149,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		// Check if it's strict mode or not.
-		$is_strict = ( isset( $assoc_args['strict'] ) && true === $assoc_args['strict'] ) ? true : false;
+		$strict = Utils\get_flag_value( $assoc_args, 'strict', false );
 
 		unset( $assoc_args['strict'] );
 
@@ -161,9 +161,10 @@ class Taxonomy_Command extends WP_CLI_Command {
 		}
 
 		$fields     = $formatter->fields;
-		$taxonomies = ( $is_strict ) ?
-			get_taxonomies( $assoc_args, 'objects' ) :
-			get_object_taxonomies( $taxonomy_object, 'objects' );
+		$taxonomies = ( isset( $taxonomy_object ) && ! $strict )
+			? get_object_taxonomies( $taxonomy_object, 'objects' )
+			: get_taxonomies( $assoc_args, 'objects' );
+
 		$counts     = [];
 
 		if ( count( $taxonomies ) > 0 && in_array( 'count', $fields, true ) ) {
