@@ -54,7 +54,7 @@ Feature: Manage WordPress taxonomies
       <?php
       // Plugin Name: Test Taxonomy Strict/No-Strict Mode
 
-      add_action( 'init', function(){
+      add_action( 'init', function() {
         $args = array(
           'hierarchical'          => true,
           'show_ui'               => true,
@@ -68,7 +68,7 @@ Feature: Manage WordPress taxonomies
         );
 
         register_taxonomy( 'genres', array( 'post','page' ), $args );
-      });
+      } );
       """
 
     When I run `wp taxonomy list --object_type=post --strict`
