@@ -162,7 +162,7 @@ class Post_Revision_Command extends CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * [<revision-ids>...]
-	 * : One or more IDs of posts to delete their revisions.
+	 * : One or more IDs of revisions to delete.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -185,16 +185,29 @@ class Post_Revision_Command extends CommandWithDBObject {
 			$args = $this->get_all_revisions_ids();
 		}
 
-		parent::_delete( $args, $assoc_args, [ $this, 'delete_callback' ] );
+		$this->delete_revisions( $args );
 	}
 
 	/**
-	 * Callback used to delete a revision.
+	 * Function used to delete a revisions.
 	 *
-	 * @param int $revision_id Revision ID use to delete revision.
+	 * @param array $revision_ids Revision IDs.
 	 * @return array
 	 */
-	protected function delete_callback( $revision_id ) {
+	private function delete_revisions( $revision_ids ) {
+		foreach ( $revision_ids as $revision_id ) {
+			$result = $this->delete_revision( $revision_id );
+			$this->success_or_failure( $result );
+		}
+	}
+
+	/**
+	 * Function to delete single revision.
+	 *
+	 * @param int $revision_id Revision ID.
+	 * @return array
+	 */
+	private function delete_revision( $revision_id ) {
 		$post_type = get_post_type( $revision_id );
 
 		if ( 'revision' !== $post_type ) {
@@ -206,6 +219,54 @@ class Post_Revision_Command extends CommandWithDBObject {
 		}
 
 		return [ 'success', "Deleted revision {$revision_id}." ];
+	}
+
+	/**
+	 * Prune the post revisions.
+	 *
+	 * [<post-ids>...]
+	 * : One or more post IDs to delete respective revisions.
+	 *
+	 * [--post_type=<post_type>]
+	 * : The post type. Default 'post'.
+	 *
+	 * [--latest[=<limit>]]
+	 * : Select revisions of given posts in latest first order. Also, can pass limit to delete limited revisions.
+	 *
+	 * [--earliest[=<limit>]]
+	 * : Select revisions of given posts in earliest/oldest first order. Also, can pass limit to delete limited revisions.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     Delete earliest/oldest two revisions of each post.
+	 *     $ wp post revision prune --earliest=2
+	 *     Deleting revision for post #89.
+	 *     Success: Deleted revision 96.
+	 *     Warning: No revision found for post #114.
+	 *     Deleting revision for post #118.
+	 *     Success: Deleted revision 124.
+	 *     Success: Deleted revision 125.
+	 *
+	 * @subcommand prune
+	 */
+	public function revision_prune( $args, $assoc_args ) {
+		// Get all revision ids to delete all.
+		$post_ids = $this->get_posts_ids( $args, $assoc_args );
+
+		if ( empty( $post_ids ) ) {
+			WP_CLI::error( 'No posts found.' );
+		}
+
+		foreach ( $post_ids as $post_id ) {
+			$revision_ids = $this->get_post_revisions( $post_id, $assoc_args );
+
+			if ( ! empty( $revision_ids ) ) {
+				WP_CLI::log( WP_CLI::colorize( "%9Deleting revision for post #{$post_id}." ) );
+				//$this->delete_revisions( $revision_ids );
+			} else {
+				WP_CLI::warning( "No revision found for post #{$post_id}." );
+			}
+		}
 	}
 
 	/**
@@ -243,16 +304,18 @@ class Post_Revision_Command extends CommandWithDBObject {
 		$offset       = 0;
 		$limit        = 100;
 		$revision_ids = [];
+		$query_args   = [
+			'post_type'      => 'revision',
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+			'posts_per_page' => $limit,
+			'order'          => 'ASC',
+		];
 
 		do {
-			$query_args   = [
-				'post_type'      => 'revision',
-				'post_status'    => 'any',
-				'fields'         => 'ids',
-				'offset'         => $offset,
-				'posts_per_page' => $limit,
-				'order'          => 'ASC',
-			];
+			// Set offset in WP_Query args.
+			$query_args['offset'] = $offset;
+			// Fire WP_Query.
 			$query_result = new WP_Query( $query_args );
 
 			if ( ! empty( $query_result->posts ) ) {
@@ -264,6 +327,65 @@ class Post_Revision_Command extends CommandWithDBObject {
 		} while ( ! empty( $query_result->posts ) );
 
 		return $revision_ids;
+	}
+
+	/**
+	 * Function to get post ids to remove their revisions.
+	 *
+	 * @param array $args       Array post ids.
+	 * @param array $assoc_args Revision prune command flags.
+	 * @return array
+	 */
+	private function get_posts_ids( $args, $assoc_args ) {
+		if ( ! empty( $args ) ) {
+			return $args;
+		}
+
+		$offset     = 0;
+		$limit      = 100;
+		$post_ids   = [];
+		$query_args = [
+			'post_type'      => Utils\get_flag_value( $assoc_args, 'post_type', 'post' ),
+			'post_status'    => 'any',
+			'fields'         => 'ids',
+			'posts_per_page' => $limit,
+			'order'          => 'ASC',
+		];
+
+		do {
+			$query_args['offset'] = $offset;
+			$query_result         = new WP_Query( $query_args );
+
+			if ( ! empty( $query_result->posts ) ) {
+				$post_ids = array_merge( $post_ids, $query_result->posts );
+			}
+
+			// Update offset to fetch next ids.
+			$offset += $limit;
+		} while ( ! empty( $query_result->posts ) );
+
+		return $post_ids;
+	}
+
+	/**
+	 * Function to get revisions of given post.
+	 *
+	 * @param int   $parent_post_id Post ID to get revisions.
+	 * @param array $assoc_args     Array of flags.
+	 * @return array
+	 */
+	private function get_post_revisions( $parent_post_id, $assoc_args ) {
+		$post_args  = $this->read_order_limit_flag( $assoc_args );
+		$query_args = [
+			'post_type'   => 'revision',
+			'post_status' => 'any',
+			'fields'      => 'ids',
+			'post_parent' => $parent_post_id,
+		];
+		$query_args = array_merge( $query_args, $post_args );
+		// Get posts IDs.
+		$query_results = new WP_Query( $query_args );
+		return $query_results->posts;
 	}
 
 }
