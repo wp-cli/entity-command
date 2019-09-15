@@ -262,7 +262,7 @@ class Post_Revision_Command extends CommandWithDBObject {
 
 			if ( ! empty( $revision_ids ) ) {
 				WP_CLI::log( WP_CLI::colorize( "%9Deleting revision for post #{$post_id}." ) );
-				//$this->delete_revisions( $revision_ids );
+				$this->delete_revisions( $revision_ids );
 			} else {
 				WP_CLI::warning( "No revision found for post #{$post_id}." );
 			}
