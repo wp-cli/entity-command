@@ -238,7 +238,7 @@ class Post_Revision_Command extends CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     Delete earliest/oldest two revisions of each post.
+	 *     # Delete earliest/oldest two revisions of each post.
 	 *     $ wp post revision prune --earliest=2
 	 *     Deleting revision for post #89.
 	 *     Success: Deleted revision 96.
@@ -267,6 +267,29 @@ class Post_Revision_Command extends CommandWithDBObject {
 				WP_CLI::warning( "No revision found for post #{$post_id}." );
 			}
 		}
+	}
+
+	/**
+	 * Restore revision.
+	 *
+	 * <revision-id>
+	 * : Revision ID to restore.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Restore revision 151.
+	 *     $ wp post revision restore 151
+	 *     Success: Post #118 restored to revision 151.
+	 *
+	 */
+	public function restore( $args, $assoc_args ) {
+		$post_id = wp_restore_post_revision( $args['0'] );
+
+		if ( empty( $post_id ) ) {
+			WP_CLI::error( "Unable to restore revision #{$args['0']}." );
+		}
+
+		WP_CLI::success( "Post #{$post_id} restored to revision #{$args['0']}." );
 	}
 
 	/**
