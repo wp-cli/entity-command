@@ -3,6 +3,7 @@
 use WP_CLI\CommandWithDBObject;
 use WP_CLI\Fetchers\Post as PostFetcher;
 use WP_CLI\Utils;
+use WP_CLI\Entity\Diff;
 
 /**
  * Manages revisions of posts.
@@ -293,6 +294,27 @@ class Post_Revision_Command extends CommandWithDBObject {
 	}
 
 	/**
+	 * Show revision difference.
+	 *
+	 * <starting-revision-id>
+	 * : Starting revision ID.
+	 *
+	 * <ending-revision-id>
+	 * : Ending revision ID.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check diff between two revisions.
+	 *     $ wp post revision diff 151 152
+	 *
+	 */
+	public function diff( $args, $assoc_args ) {
+		if ( false === $this->get_revison_diff( $args['0'], $args['1'] ) ) {
+			WP_CLI::warning( 'No diff found.' );
+		}
+	}
+
+	/**
 	 * Function to read order and limit flag.
 	 *
 	 * @param array $assoc_args Associative array of revision command flags.
@@ -409,6 +431,82 @@ class Post_Revision_Command extends CommandWithDBObject {
 		// Get posts IDs.
 		$query_results = new WP_Query( $query_args );
 		return $query_results->posts;
+	}
+
+	/**
+	 * Function to get the difference between two revisions.
+	 *
+	 * @param string $compare_from_post_id Compare from post ID.
+	 * @param string $compare_to_post_id   Compare to post ID.
+	 *
+	 * @return array
+	 */
+	private function get_revison_diff( $compare_from_post_id, $compare_to_post_id ) {
+		// Fetching starting revision.
+		$compare_from = get_post( $compare_from_post_id );
+		// Fetching ending revision.
+		$compare_to   = get_post( $compare_to_post_id );
+		// Validate both the posts.
+		$this->validate_revisions_before_compare( $compare_from, $compare_to );
+		// Allow these to be versioned
+		$fields  = array(
+			'post_title'   => 'Title',
+			'post_content' => 'Content',
+			'post_excerpt' => 'Excerpt',
+		);
+
+		$is_diff_found = false;
+		// Loop to check diff in title, content and excerpt.
+		foreach( $fields as $field => $name ) {
+			// Get the text diff.
+			$diff = $this->get_text_diff( $compare_from->$field, $compare_to->$field );
+			// If diff found then only show.
+			if ( $diff ) {
+				$is_diff_found = true;
+				WP_CLI::log( WP_CLI::colorize( "%G{$name}%n" ) );
+				WP_CLI::log( $diff );
+			}
+		}
+
+		if ( $is_diff_found ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Function to compare text difference between post text.
+	 *
+	 * @return array
+	 */
+	private function get_text_diff( $left_string, $right_string ) {
+		$left_string  = normalize_whitespace( $left_string );
+		$right_string = normalize_whitespace( $right_string );
+
+		return Diff::to_string( Diff::compare( $left_string, $right_string ) );
+	}
+
+	/**
+	 * Function to validate compare from and to posts.
+	 *
+	 * @param string $compare_from Compare from post.
+	 * @param string $compare_to   Compare to post.
+	 *
+	 * @return void
+	 */
+	private function validate_revisions_before_compare( $compare_from, $compare_to ) {
+		// Error if starting revision not found.
+		if ( ! $compare_from ) {
+			WP_CLI::error( 'Starting revision not found.' );
+		}
+		// Error if ending revision not found.
+		if ( ! $compare_to ) {
+			WP_CLI::error( 'Ending revision not found.' );
+		}
+		// If both revisions not belong to same post then return error.
+		if ( $compare_from->post_parent !== $compare_to->post_parent ) {
+			WP_CLI::error( "Please provide revision ID's of same post." );
+		}
 	}
 
 }
