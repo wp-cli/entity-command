@@ -431,8 +431,12 @@ class Comment_Command extends CommandWithDBObject {
 		if ( ! $func( $comment_id ) ) {
 			WP_CLI::error( "{$failure} comment {$comment_id}." );
 		}
-
-		WP_CLI::success( "{$success} comment {$comment_id}." );
+		
+		if ( 'spam' === $status ) {
+			WP_CLI::success( "{$success} comment {$comment_id} as spam." );	
+		} else {
+			WP_CLI::success( "{$success} comment {$comment_id}." );
+		}
 	}
 
 	private function set_status( $args, $status, $success ) {
@@ -510,11 +514,11 @@ class Comment_Command extends CommandWithDBObject {
 	 *
 	 *     # Spam comment.
 	 *     $ wp comment spam 1337
-	 *     Success: Marked as spam comment 1337.
+	 *     Success: Marked comment 1337 as spam.
 	 */
 	public function spam( $args, $assoc_args ) {
 		foreach ( $args as $id ) {
-			$this->call( $id, __FUNCTION__, 'Marked as spam', 'Failed marking as spam' );
+			$this->call( $id, __FUNCTION__, 'Marked', 'Failed marking as spam' );
 		}
 	}
 
