@@ -64,6 +64,58 @@ class Post_Revision_Command extends CommandWithDBObject {
 	 * [--earliest[=<limit>]]
 	 * : Returns revisions in earliest/oldest first order. Also, can pass limit to fetch limited revisions.
 	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each post revision.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific object fields.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - ids
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for each post revision:
+	 *
+	 * * ID
+	 * * post_title
+	 * * post_name
+	 * * post_date
+	 * * post_status
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * post_author
+	 * * post_date_gmt
+	 * * post_content
+	 * * post_excerpt
+	 * * comment_status
+	 * * ping_status
+	 * * post_password
+	 * * to_ping
+	 * * pinged
+	 * * post_modified
+	 * * post_modified_gmt
+	 * * post_content_filtered
+	 * * post_parent
+	 * * guid
+	 * * menu_order
+	 * * post_type
+	 * * post_mime_type
+	 * * comment_count
+	 * * filter
+	 * * url
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # List 2 revisions of post with ID `1`.
@@ -102,8 +154,18 @@ class Post_Revision_Command extends CommandWithDBObject {
 		$query_args       = array_merge( $defaults, $order_limit_args );
 		$query_args       = self::process_csv_arguments_to_arrays( $query_args );
 
-		$revisions = new WP_Query( $query_args );
-		$formatter->display_items( $revisions->posts );
+		if ( 'ids' === $formatter->format ) {
+			$query_args['fields'] = 'ids';
+			$revisions            = new WP_Query( $query_args );
+			echo implode( ' ', $revisions->posts );
+		} elseif ( 'count' === $formatter->format ) {
+			$query_args['fields'] = 'ids';
+			$revisions            = new WP_Query( $query_args );
+			$formatter->display_items( $revisions->posts );
+		} else {
+			$revisions = new WP_Query( $query_args );
+			$formatter->display_items( $revisions->posts );
+		}
 	}
 
 	/**
@@ -336,6 +398,7 @@ class Post_Revision_Command extends CommandWithDBObject {
 		return [
 			'posts_per_page' => $limit,
 			'order'          => $order,
+			'orderby'        => 'ID',
 		];
 	}
 
