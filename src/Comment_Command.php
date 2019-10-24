@@ -424,9 +424,9 @@ class Comment_Command extends CommandWithDBObject {
 	}
 
 	private function call( $args, $status, $success, $failure ) {
-		    $comment_id = absint( $args );
+	        $comment_id = absint( $args );
 
-		    $func = "wp_{$status}_comment";
+	        $func = "wp_{$status}_comment";
 
             if ( ! $func( $comment_id ) ) {
                     WP_CLI::error( sprintf( $failure, "comment {$comment_id}" ) );
@@ -514,7 +514,7 @@ class Comment_Command extends CommandWithDBObject {
 	public function spam( $args ) {
 	        foreach ( $args as $id ) {
                     $this->call( $id, __FUNCTION__, 'Marked %s as spam.', 'Failed marking %s as spam.' );
-            }
+	        }
 	}
 
 	/**
