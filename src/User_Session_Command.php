@@ -176,7 +176,7 @@ class User_Session_Command extends WP_CLI_Command {
 
 		array_walk(
 			$sessions,
-			function( & $session, $token ) {
+			function( &$session, $token ) {
 				$session['token']           = $token;
 				$session['login_time']      = date( 'Y-m-d H:i:s', $session['login'] );
 				$session['expiration_time'] = date( 'Y-m-d H:i:s', $session['expiration'] );
