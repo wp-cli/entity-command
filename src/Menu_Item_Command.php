@@ -486,7 +486,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			}
 		} else {
 
-			if ( 'add' === $method ) {
+			if ( ( 'add' === $method ) && $menu_item_args['menu-item-position']) {
 				$this->reorder_menu_items( $menu->term_id, $menu_item_args['menu-item-position'], +1, $result );
 			}
 
