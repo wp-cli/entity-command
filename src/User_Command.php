@@ -1104,12 +1104,12 @@ class User_Command extends CommandWithDBObject {
 		}
 
 		$reset_user_count = count( $users );
-		if( $reset_user_count === 1 ) {
-			WP_CLI::success( "Password reset for {$reset_user_count} user.");
+		if ( $reset_user_count === 1 ) {
+			WP_CLI::success( "Password reset for {$reset_user_count} user." );
 		} elseif ( $reset_user_count > 1 ) {
-			WP_CLI::success( "Passwords reset for {$reset_user_count} users.");
+			WP_CLI::success( "Passwords reset for {$reset_user_count} users." );
 		} else {
-			WP_CLI::error( "No user found to reset password." );
+			WP_CLI::error( 'No user found to reset password.' );
 		}
 	}
 
