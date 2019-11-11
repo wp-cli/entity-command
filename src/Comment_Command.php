@@ -511,7 +511,7 @@ class Comment_Command extends CommandWithDBObject {
 	 *     $ wp comment spam 1337
 	 *     Success: Marked as spam comment 1337.
 	 */
-	public function spam( $args ) {
+	public function spam( $args, $assoc_args ) {
 		foreach ( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Marked %s as spam.', 'Failed marking %s as spam.' );
 		}
