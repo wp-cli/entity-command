@@ -378,7 +378,7 @@ class User_Command extends CommandWithDBObject {
 		$user->user_registered = Utils\get_flag_value(
 			$assoc_args,
 			'user_registered',
-			strftime( '%F %T', current_time( 'timestamp' ) )
+			strftime( '%F %T', current_time( 'timestamp' ) ) // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp
 		);
 
 		$user->display_name = Utils\get_flag_value( $assoc_args, 'display_name', false );
@@ -1185,7 +1185,7 @@ class User_Command extends CommandWithDBObject {
 			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 
-		if ( 'spam' === $pref && '1' === $value ) {
+		if ( 'spam' === $pref ) {
 			$action = (int) $value ? 'marked as spam' : 'removed from spam';
 			$verb   = (int) $value ? 'spam' : 'unspam';
 		}
@@ -1220,8 +1220,8 @@ class User_Command extends CommandWithDBObject {
 			}
 
 			// Make that user's blog as spam too.
-			$blogs = get_blogs_of_user( $user_id, true );
-			foreach ( (array) $blogs as $details ) {
+			$blogs = (array) get_blogs_of_user( $user_id, true );
+			foreach ( $blogs as $details ) {
 				$site = $this->sitefetcher->get_check( $details->site_id );
 
 				// Main blog shouldn't a spam !
@@ -1230,8 +1230,18 @@ class User_Command extends CommandWithDBObject {
 				}
 			}
 
-			// Set status and show message.
-			update_user_status( $user_id, $pref, $value );
+			if ( Utils\wp_version_compare( '5.3', '<' ) ) {
+				// phpcs:ignore WordPress.WP.DeprecatedFunctions.update_user_statusFound -- Fallback for older versions.
+				update_user_status( $user_id, $pref, $value );
+			} else {
+				wp_update_user(
+					[
+						'ID'  => $user_id,
+						$pref => $value,
+					]
+				);
+			}
+
 			WP_CLI::log( "User {$user_id} {$action}." );
 			$successes++;
 		}
