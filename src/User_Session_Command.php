@@ -178,8 +178,8 @@ class User_Session_Command extends WP_CLI_Command {
 			$sessions,
 			function( &$session, $token ) {
 				$session['token']           = $token;
-				$session['login_time']      = date( 'Y-m-d H:i:s', $session['login'] );
-				$session['expiration_time'] = date( 'Y-m-d H:i:s', $session['expiration'] );
+				$session['login_time']      = date( 'Y-m-d H:i:s', $session['login'] ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+				$session['expiration_time'] = date( 'Y-m-d H:i:s', $session['expiration'] ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 			}
 		);
 
