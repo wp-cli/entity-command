@@ -50,9 +50,6 @@ class User_Command extends CommandWithDBObject {
 		'name',
 	];
 
-	/** Intermediate storage for a BC filter */
-	private $value_for_spam;
-
 	public function __construct() {
 		$this->fetcher     = new UserFetcher();
 		$this->sitefetcher = new SiteFetcher();
@@ -1234,27 +1231,8 @@ class User_Command extends CommandWithDBObject {
 			}
 
 			if ( Utils\wp_version_compare( '5.3', '<' ) ) {
-				/*
-				 * Provide fallback for WP < 5.3 so as to use the preferred
-				 * method wp_update_user().
-				 * See https://core.trac.wordpress.org/ticket/45747
-				 */
-				$this->value_for_spam = $value;
-				add_filter( 'wp_pre_insert_user_data', [ $this, 'set_spam_value' ], 10, 3 );
-				wp_update_user(
-					[
-						'ID'  => $user_id,
-						$pref => $value,
-					]
-				);
-				remove_filter( 'wp_pre_insert_user_data', [ $this, 'set_spam_value' ], 10 );
-				// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- We want to fake Core actions.
-				if ( 1 === (int) $value ) {
-					do_action( 'make_spam_user', $user_id );
-				} else {
-					do_action( 'make_ham_user', $user_id );
-				}
-				// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+				// phpcs:ignore WordPress.WP.DeprecatedFunctions.update_user_statusFound -- Fallback for older versions.
+				update_user_status( $user_id, $pref, $value );
 			} else {
 				wp_update_user(
 					[
@@ -1269,23 +1247,6 @@ class User_Command extends CommandWithDBObject {
 		}
 
 		Utils\report_batch_operation_results( 'user', $verb, count( $user_ids ), $successes, $errors );
-	}
-
-	/**
-	 * Filter the user data to provide support spam user data value.
-	 *
-	 * This is only needed on WP < 5.3.
-	 *
-	 * See https://core.trac.wordpress.org/ticket/45747
-	 *
-	 * @param array    $data   Associative array of user data.
-	 * @param bool     $update Whether this is an update or a new user.
-	 * @param int|null $id     ID of the user in case of an update, null if not.
-	 * @return array Modified associative array of user data.
-	 */
-	public function set_spam_value( $data, $update, $id ) {
-		$data['spam'] = $this->value_for_spam;
-		return $data;
 	}
 
 	/**
