@@ -1079,7 +1079,7 @@ class User_Command extends CommandWithDBObject {
 	 *     $ wp user reset-password admin editor
 	 *     Reset password for admin.
 	 *     Reset password for editor.
-	 *     Success: Passwords reset.
+	 *     Success: Passwords reset for 2 users.
 	 *
 	 * @subcommand reset-password
 	 */
@@ -1102,7 +1102,15 @@ class User_Command extends CommandWithDBObject {
 		if ( $skip_email ) {
 			remove_filter( 'send_password_change_email', '__return_false' );
 		}
-		WP_CLI::success( count( $users ) > 1 ? 'Passwords reset.' : 'Password reset.' );
+
+		$reset_user_count = count( $users );
+		if ( 1 === $reset_user_count ) {
+			WP_CLI::success( "Password reset for {$reset_user_count} user." );
+		} elseif ( $reset_user_count > 1 ) {
+			WP_CLI::success( "Passwords reset for {$reset_user_count} users." );
+		} else {
+			WP_CLI::error( 'No user found to reset password.' );
+		}
 	}
 
 	/**
