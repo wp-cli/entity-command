@@ -276,7 +276,7 @@ Feature: Manage WordPress comments
     When I run `wp comment spam {COMMENT_ID}`
     Then STDOUT should be:
       """
-      Success: Marked comment {COMMENT_ID} as spam .
+      Success: Marked comment {COMMENT_ID} as spam.
       """
 
     When I run `wp comment list --format=count --status=spam`
