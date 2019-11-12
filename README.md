@@ -5216,7 +5216,7 @@ wp user reset-password <user>... [--skip-email]
     $ wp user reset-password admin editor
     Reset password for admin.
     Reset password for editor.
-    Success: Passwords reset.
+    Success: Passwords reset for 2 users.
 
 
 
