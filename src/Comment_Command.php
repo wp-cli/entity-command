@@ -429,10 +429,9 @@ class Comment_Command extends CommandWithDBObject {
 		$func = "wp_{$status}_comment";
 
 		if ( ! $func( $comment_id ) ) {
-			WP_CLI::error( "{$failure} comment {$comment_id}." );
+			WP_CLI::error( sprintf( $failure, "comment {$comment_id}" ) );
 		}
-
-		WP_CLI::success( "{$success} comment {$comment_id}." );
+		WP_CLI::success( sprintf( $success, "comment {$comment_id}" ) );
 	}
 
 	private function set_status( $args, $status, $success ) {
@@ -473,7 +472,7 @@ class Comment_Command extends CommandWithDBObject {
 	 */
 	public function trash( $args, $assoc_args ) {
 		foreach ( $args as $id ) {
-			$this->call( $id, __FUNCTION__, 'Trashed', 'Failed trashing' );
+			$this->call( $id, __FUNCTION__, 'Trashed %s.', 'Failed trashing %s.' );
 		}
 	}
 
@@ -494,7 +493,7 @@ class Comment_Command extends CommandWithDBObject {
 	public function untrash( $args, $assoc_args ) {
 		$this->check_server_name();
 		foreach ( $args as $id ) {
-			$this->call( $id, __FUNCTION__, 'Untrashed', 'Failed untrashing' );
+			$this->call( $id, __FUNCTION__, 'Untrashed %s.', 'Failed untrashing %s.' );
 		}
 	}
 
@@ -514,7 +513,7 @@ class Comment_Command extends CommandWithDBObject {
 	 */
 	public function spam( $args, $assoc_args ) {
 		foreach ( $args as $id ) {
-			$this->call( $id, __FUNCTION__, 'Marked as spam', 'Failed marking as spam' );
+			$this->call( $id, __FUNCTION__, 'Marked %s as spam.', 'Failed marking %s as spam.' );
 		}
 	}
 
@@ -535,7 +534,7 @@ class Comment_Command extends CommandWithDBObject {
 	public function unspam( $args, $assoc_args ) {
 		$this->check_server_name();
 		foreach ( $args as $id ) {
-			$this->call( $id, __FUNCTION__, 'Unspammed', 'Failed unspamming' );
+			$this->call( $id, __FUNCTION__, 'Unspammed %s.', 'Failed unspamming %s.' );
 		}
 	}
 
