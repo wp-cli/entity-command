@@ -1248,11 +1248,13 @@ class User_Command extends CommandWithDBObject {
 					]
 				);
 				remove_filter( 'wp_pre_insert_user_data', [ $this, 'set_spam_value' ], 10 );
+				// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- We want to fake Core actions.
 				if ( 1 === (int) $value ) {
 					do_action( 'make_spam_user', $user_id );
 				} else {
 					do_action( 'make_ham_user', $user_id );
 				}
+				// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 			} else {
 				wp_update_user(
 					[
