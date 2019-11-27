@@ -369,8 +369,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		foreach ( $args as $arg ) {
 
-			$post           = get_post($arg);
-			$menu_term      = get_the_terms($arg, 'nav_menu');
+			$post           = get_post( $arg );
+			$menu_term      = get_the_terms( $arg, 'nav_menu' );
 			$parent_menu_id = (int) get_post_meta( $arg, '_menu_item_menu_item_parent', true );
 			$result         = wp_delete_post( $arg, true );
 			if ( ! $result ) {
@@ -378,7 +378,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 				$errors++;
 			} else {
 
-				if ( is_array($menu_term) && !empty($menu_term) && $post ) {
+				if ( is_array( $menu_term ) && ! empty( $menu_term ) && $post ) {
 					$this->reorder_menu_items( $menu_term[0]->term_id, $post->menu_order, -1, 0 );
 				}
 
@@ -486,7 +486,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			}
 		} else {
 
-			if ( ( 'add' === $method ) && $menu_item_args['menu-item-position']) {
+			if ( ( 'add' === $method ) && $menu_item_args['menu-item-position'] ) {
 				$this->reorder_menu_items( $menu->term_id, $menu_item_args['menu-item-position'], +1, $result );
 			}
 
@@ -526,11 +526,9 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * @param int $ignore_item_id menu item that should be ignored by the change (e.g. newly created menu item)
 	 * @return int number of rows affected
 	 */
-	private function reorder_menu_items( $menu_id, $min_position, $increment, $ignore_item_id = 0 )
-	{
+	private function reorder_menu_items( $menu_id, $min_position, $increment, $ignore_item_id = 0 ) {
 		global $wpdb;
-		$reorder_query = $wpdb->prepare( "UPDATE $wpdb->posts SET `menu_order`=`menu_order`+(%d) WHERE `menu_order`>=%d AND ID IN (SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id=%d) AND ID<>%d", (int) $increment, (int) $min_position, (int) $menu_id, (int) $ignore_item_id );
-		return $wpdb->query( $reorder_query );
+		return $wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET `menu_order`=`menu_order`+(%d) WHERE `menu_order`>=%d AND ID IN (SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id=%d) AND ID<>%d", (int) $increment, (int) $min_position, (int) $menu_id, (int) $ignore_item_id ) );
 	}
 
 	protected function get_formatter( &$assoc_args ) {
