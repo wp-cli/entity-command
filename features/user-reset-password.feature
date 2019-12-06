@@ -41,3 +41,25 @@ Feature: Reset passwords for one or more WordPress users.
       """
       {ORIGINAL_PASSWORD}
       """
+
+  @require-wp-4.3
+  Scenario: Reset the password of a invalid WordPress user
+    Given a WP installation
+
+    When I try `wp user reset-password invalid-user-name`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error: invalid user(s).
+      """
+
+  @require-wp-4.3
+  Scenario: Reset the password of a invalid WordPress users
+    Given a WP installation
+
+    When I try `wp user reset-password invalid-user-name 999 invalid.user@example.com`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error: invalid user(s).
+      """
