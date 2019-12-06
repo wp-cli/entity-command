@@ -1090,6 +1090,9 @@ class User_Command extends CommandWithDBObject {
 		}
 		$fetcher = new UserFetcher();
 		$users   = $fetcher->get_many( $args );
+		if ( empty( $users ) ) {
+			WP_CLI::error( 'invalid user(s).' );
+		}
 		foreach ( $users as $user ) {
 			wp_update_user(
 				[
