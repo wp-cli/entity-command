@@ -122,7 +122,7 @@ class Site_Command extends CommandWithDBObject {
 		global $wpdb;
 
 		// Remove links and related cached data.
-		$links_query = "SELECT link_id FROM $wpdb->links";
+		$links_query = "SELECT link_id FROM {$wpdb->links}";
 		$links       = new QueryIterator( $links_query, 10000 );
 
 		// Remove bookmarks cache group.
@@ -140,7 +140,7 @@ class Site_Command extends CommandWithDBObject {
 		}
 
 		// Empty the table once link related cache and term is removed.
-		$wpdb->query( "TRUNCATE $wpdb->links" );
+		$wpdb->query( "TRUNCATE {$wpdb->links}" );
 	}
 
 	/**
