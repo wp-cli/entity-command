@@ -6,6 +6,21 @@ Feature: Empty a WordPress site of its data
     And download:
       | path                        | url                                              |
       | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+    And a insert_link_data.sql file:
+      """
+      INSERT INTO `wp_links` (`link_url`, `link_name`, `link_image`, `link_target`, `link_description`, `link_visible`, `link_owner`, `link_rating`, `link_rel`, `link_notes`, `link_rss`)
+      VALUES ('http://wordpress.org/', 'test', '', '', 'test', 'Y', 1, 0, '', '', '')
+      """
+
+    When I run `wp db query "SOURCE insert_link_data.sql;"`
+    Then STDERR should be empty
+
+    When I run `wp db query "SELECT COUNT(link_id) FROM wp_links;"`
+    Then STDOUT should be:
+      """
+      COUNT(link_id)
+      1
+      """
 
     When I run `wp media import {CACHE_DIR}/large-image.jpg --post_id=1`
     Then the wp-content/uploads/large-image.jpg file should exist
@@ -60,6 +75,13 @@ Feature: Empty a WordPress site of its data
     When I run `wp option get wp_page_for_privacy_policy`
     Then STDOUT should be:
       """
+      0
+      """
+
+    When I run `wp db query "SELECT COUNT(link_id) FROM wp_links;"`
+    Then STDOUT should be:
+      """
+      COUNT(link_id)
       0
       """
 
