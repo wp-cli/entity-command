@@ -1286,7 +1286,6 @@ class User_Command extends CommandWithDBObject {
 	 * @subcommand check-password
 	 */
 	public function check_password( $args, $assoc_args ) {
-
 		$escape_chars = Utils\get_flag_value( $assoc_args, 'escape-chars', false );
 
 		if ( ! $escape_chars && wp_slash( wp_unslash( $args[1] ) ) !== $args[1] ) {
