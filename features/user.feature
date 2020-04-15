@@ -85,6 +85,28 @@ Feature: Manage WordPress users
       """
     And the return code should be 1
 
+    When I run `wp user create testuser3b testuser3b@example.com --user_pass="test\"user3b's\pass\!"`
+    Then STDOUT should not contain:
+       """
+       Password:
+       """
+
+    # Check password without the `--escape-chars` option.
+    When I try `wp user check-password testuser3b "test\"user3b's\pass\!"`
+    Then STDERR should be:
+      """
+      Warning: Password contains characters that need to be escaped. Please escape them manually or use the `--escape-chars` option.
+      """
+    And the return code should be 1
+
+    # Check password with the `--escape-chars` option.
+    When I try `wp user check-password testuser3b "test\"user3b's\pass\!" --escape-chars`
+    Then the return code should be 0
+
+    # Check password with manually escaped characters.
+    When I try `wp user check-password testuser3b "test\\\"user3b\'s\\\pass\\\!"`
+    Then the return code should be 0
+
   Scenario: Reassigning user posts
     Given a WP multisite install
 
