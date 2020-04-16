@@ -116,6 +116,34 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	/**
+	 * Delete all links, link_category terms, and related cache.
+	 */
+	private function empty_links() {
+		global $wpdb;
+
+		// Remove links and related cached data.
+		$links_query = "SELECT link_id FROM {$wpdb->links}";
+		$links       = new QueryIterator( $links_query, 10000 );
+
+		// Remove bookmarks cache group.
+		wp_cache_delete( 'get_bookmarks', 'bookmark' );
+
+		while ( $links->valid() ) {
+			$link_id = $links->current()->link_id;
+
+			// Remove cache for the link.
+			wp_delete_object_term_relationships( $link_id, 'link_category' );
+			wp_cache_delete( $link_id, 'bookmark' );
+			clean_object_term_cache( $link_id, 'link' );
+
+			$links->next();
+		}
+
+		// Empty the table once link related cache and term is removed.
+		$wpdb->query( "TRUNCATE {$wpdb->links}" );
+	}
+
+	/**
 	 * Insert default terms.
 	 */
 	private function insert_default_terms() {
@@ -214,7 +242,7 @@ class Site_Command extends CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site empty
-	 *     Are you sure you want to empty the site at http://www.example.com of all posts, comments, and terms? [y/n] y
+	 *     Are you sure you want to empty the site at http://www.example.com of all posts, links, comments, and terms? [y/n] y
 	 *     Success: The site at 'http://www.example.com' was emptied.
 	 *
 	 * @subcommand empty
@@ -226,9 +254,10 @@ class Site_Command extends CommandWithDBObject {
 			$upload_message = ', and delete its uploads directory';
 		}
 
-		WP_CLI::confirm( "Are you sure you want to empty the site at '" . site_url() . "' of all posts, comments, and terms" . $upload_message . '?', $assoc_args );
+		WP_CLI::confirm( "Are you sure you want to empty the site at '" . site_url() . "' of all posts, links, comments, and terms" . $upload_message . '?', $assoc_args );
 
 		$this->empty_posts();
+		$this->empty_links();
 		$this->empty_comments();
 		$this->empty_taxonomies();
 		$this->insert_default_terms();
