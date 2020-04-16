@@ -176,6 +176,9 @@ class Site_Command extends CommandWithDBObject {
 	private function reset_options() {
 		// Reset Privacy Policy value to prevent error.
 		update_option( 'wp_page_for_privacy_policy', 0 );
+
+		// Reset sticky posts option.
+		update_option( 'sticky_posts', [] );
 	}
 
 	/**
