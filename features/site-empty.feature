@@ -44,6 +44,15 @@ Feature: Empty a WordPress site of its data
       {PAGE_ID}
       """
 
+    When I run `wp post create --post_title='Sticky Post' --post_content='This is just a sticky post' --porcelain`
+    Then save STDOUT as {STICKY_POST_ID}
+
+    When I run `wp option set sticky_posts '[{STICKY_POST_ID}]' --format=json`
+    Then STDOUT should be:
+      """
+      Success: Updated 'sticky_posts' option.
+      """
+
     When I run `wp site empty --yes`
     Then STDOUT should be:
       """
@@ -61,6 +70,12 @@ Feature: Empty a WordPress site of its data
     Then STDOUT should be:
       """
       0
+      """
+
+    When I run `wp option get sticky_posts --format=json`
+    Then STDOUT should be:
+      """
+      []
       """
 
   Scenario: Empty a site and its uploads directory
