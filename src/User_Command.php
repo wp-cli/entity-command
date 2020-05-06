@@ -1268,6 +1268,9 @@ class User_Command extends CommandWithDBObject {
 	 * <user_pass>
 	 * : A string that contains the plain text password for the user.
 	 *
+	 * [--escape-chars]
+	 * : Escape password with `wp_slash()` to mimic the same behavior as `wp-login.php`.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Check whether given credentials are valid; exit status 0 if valid, otherwise 1
@@ -1282,10 +1285,15 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 * @subcommand check-password
 	 */
-	public function check_password( $args ) {
+	public function check_password( $args, $assoc_args ) {
+		$escape_chars = Utils\get_flag_value( $assoc_args, 'escape-chars', false );
+
+		if ( ! $escape_chars && wp_slash( wp_unslash( $args[1] ) ) !== $args[1] ) {
+			WP_CLI::warning( 'Password contains characters that need to be escaped. Please escape them manually or use the `--escape-chars` option.' );
+		}
 
 		$user      = $this->fetcher->get_check( $args[0] );
-		$user_pass = $args[1];
+		$user_pass = $escape_chars ? wp_slash( $args[1] ) : $args[1];
 
 		if ( wp_check_password( $user_pass, $user->data->user_pass, $user->ID ) ) {
 			WP_CLI::halt( 0 );
