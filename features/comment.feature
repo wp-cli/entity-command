@@ -156,7 +156,7 @@ Feature: Manage WordPress comments
     Given I run `wp comment create --comment_post_ID=1 --comment_approved=0 --porcelain`
     And save STDOUT as {COMMENT_ID}
 
-	# With site url set.
+    # With site url set.
     When I run `wp comment approve {COMMENT_ID} --url=www.example.com`
     Then STDOUT should be:
       """
@@ -164,7 +164,7 @@ Feature: Manage WordPress comments
       """
 
     When I try the previous command again
-    Then STDERR should be:
+    Then STDERR should contain:
       """
       Error: Could not update comment status
       """
@@ -189,7 +189,7 @@ Feature: Manage WordPress comments
       0
       """
 
-	# Without site url set.
+    # Without site url set.
     When I try `wp comment approve {COMMENT_ID}`
     Then STDOUT should be:
       """
@@ -218,7 +218,7 @@ Feature: Manage WordPress comments
     And I run `wp comment create --comment_post_ID=1 --porcelain`
     And save STDOUT as {COMMENT_ID}
 
-	# With site url set.
+    # With site url set.
     When I run `wp comment unapprove {COMMENT_ID} --url=www.example.com`
     Then STDOUT should be:
       """
@@ -243,7 +243,7 @@ Feature: Manage WordPress comments
       11
       """
 
-	# Without site url set.
+    # Without site url set.
     When I try `wp comment unapprove {COMMENT_ID}`
     Then STDOUT should be:
       """
@@ -272,7 +272,7 @@ Feature: Manage WordPress comments
     And I run `wp comment create --comment_post_ID=1 --porcelain`
     And save STDOUT as {COMMENT_ID}
 
-	# With site url set.
+    # With site url set.
     When I run `wp comment spam {COMMENT_ID}`
     Then STDOUT should be:
       """
@@ -297,7 +297,7 @@ Feature: Manage WordPress comments
       0
       """
 
-	# Without site url set.
+    # Without site url set.
     When I run `wp comment spam {COMMENT_ID}`
     Then STDOUT should be:
       """
@@ -321,7 +321,7 @@ Feature: Manage WordPress comments
     And I run `wp comment create --comment_post_ID=1 --porcelain`
     And save STDOUT as {COMMENT_ID}
 
-	# With site url set.
+    # With site url set.
     When I run `wp comment trash {COMMENT_ID}`
     Then STDOUT should be:
       """
@@ -346,7 +346,7 @@ Feature: Manage WordPress comments
       0
       """
 
-	# Without site url set.
+    # Without site url set.
     When I run `wp comment trash {COMMENT_ID}`
     Then STDOUT should be:
       """
