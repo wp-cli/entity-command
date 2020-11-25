@@ -146,6 +146,20 @@ Feature: Manage WordPress users
     Then STDERR should not be empty
     And the return code should be 1
 
+  Scenario: Trying to delete super admin
+    Given a WP multisite install
+
+    When I run `wp user create bobjones bob@example.com --role=author --porcelain`
+    And save STDOUT as {BOB_ID}
+
+    When I run `wp super-admin add bobjones`
+
+    When I run `wp user delete bobjones --network --yes`
+    Then STDOUT should be:
+      """
+      Failed deleting user {BOB_ID}. The user is a Super Admin.
+      """
+
   Scenario: Create new users on multisite
     Given a WP multisite install
 
