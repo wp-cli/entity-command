@@ -290,10 +290,10 @@ class User_Command extends CommandWithDBObject {
 				}
 
 				if ( ! $result ) {
-					$message =  "Failed deleting user {$user_id}."
+					$message = "Failed deleting user {$user_id}.";
 
 					if ( is_multisite() && is_super_admin( $user_id ) ) {
-						$message .= " The user is a Super Admin.";
+						$message .= ' The user is a Super Admin.';
 					}
 
 					return [ 'error', $message ];
