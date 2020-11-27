@@ -155,10 +155,11 @@ Feature: Manage WordPress users
     When I run `wp super-admin add {BOB_ID}`
 
     When I run `wp user delete bobjones --network --yes`
-    Then STDERR should contain:
+    Then STDERR should be:
       """
-      Failed deleting user {BOB_ID}. The user is a Super Admin.
+      Warning: Failed deleting user {BOB_ID}. The user is a Super Admin.
       """
+    And the return code should be 1
 
   Scenario: Create new users on multisite
     Given a WP multisite install
