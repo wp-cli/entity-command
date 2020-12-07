@@ -102,7 +102,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '${{ matrix.php }}'
-          extensions: mysql, zip
+          extensions: mysql, zip, imagick
           coverage: none
           tools: composer
 
@@ -120,6 +120,10 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
+
+      - name: Change ImageMagick policy to allow pdf->png conversion.
+        run: |
+          sudo sed -i 's/^.*policy.*coder.*none.*PDF.*//' /etc/ImageMagick-6/policy.xml
 
       - name: Install dependencies
         if: steps.check_files.outputs.files_exists == 'true'
@@ -143,4 +147,3 @@ jobs:
         env:
           WP_VERSION: '${{ matrix.wp }}'
         run: ${{ matrix.test }}
-
