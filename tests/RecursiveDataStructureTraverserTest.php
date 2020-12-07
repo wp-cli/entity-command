@@ -3,8 +3,9 @@
 namespace WP_CLI\Entity\Tests;
 
 use WP_CLI\Entity\RecursiveDataStructureTraverser;
+use WP_CLI\Tests\TestCase;
 
-class RecursiveDataStructureTraverserTest extends \PHPUnit_Framework_TestCase {
+class RecursiveDataStructureTraverserTest extends TestCase {
 
 	/** @test */
 	public function it_can_get_a_top_level_array_value() {
