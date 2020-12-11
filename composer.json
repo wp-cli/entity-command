@@ -19,6 +19,7 @@
         "wp-cli/db-command": "^1.3 || ^2",
         "wp-cli/extension-command": "^1.2 || ^2",
         "wp-cli/media-command": "^1.1 || ^2",
+        "wp-cli/super-admin-command": "^1 || ^2",
         "wp-cli/wp-cli-tests": "^2.1"
     },
     "config": {
@@ -128,6 +129,10 @@
             "site unarchive",
             "site unmature",
             "site unspam",
+            "super-admin",
+            "super-admin add",
+            "super-admin list",
+            "super-admin remove",
             "taxonomy",
             "taxonomy get",
             "taxonomy list",
