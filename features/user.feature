@@ -146,6 +146,7 @@ Feature: Manage WordPress users
     Then STDERR should not be empty
     And the return code should be 1
 
+  @require-wp-4.0
   Scenario: Trying to delete super admin
     Given a WP multisite install
 
