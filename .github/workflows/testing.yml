@@ -114,7 +114,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '${{ matrix.php }}'
-          extensions: mysql, zip
+          extensions: imagick, mysql, zip
           coverage: none
           tools: composer
 
