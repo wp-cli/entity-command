@@ -3,12 +3,6 @@ name: Regenerate README file
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-    paths-ignore:
-      - '.github/**'
-      - 'features/**'
-      - 'README.md'
 
 jobs:
 
