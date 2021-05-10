@@ -3,7 +3,7 @@ wp-cli/entity-command
 
 Manage WordPress comments, menus, options, posts, sites, terms, and users.
 
-[![Build Status](https://travis-ci.org/wp-cli/entity-command.svg?branch=master)](https://travis-ci.org/wp-cli/entity-command)
+
 
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 
@@ -3335,7 +3335,7 @@ WP_CLI::add_hook( 'after_invoke:site empty', function(){
 **EXAMPLES**
 
     $ wp site empty
-    Are you sure you want to empty the site at http://www.example.com of all posts, comments, and terms? [y/n] y
+    Are you sure you want to empty the site at http://www.example.com of all posts, links, comments, and terms? [y/n] y
     Success: The site at 'http://www.example.com' was emptied.
 
 
