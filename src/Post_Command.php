@@ -504,8 +504,8 @@ class Post_Command extends CommandWithDBObject {
 	/**
 	 * Gets a list of posts.
 	 *
-	 * Display posts based on all arguments supported by
-	 * [WP_Query()](https://developer.wordpress.org/reference/classes/wp_query/).
+	 * Display posts based on all arguments supported by [WP_Query()](https://developer.wordpress.org/reference/classes/wp_query/).
+	 * Only shows post types marked as post by default.
 	 *
 	 * ## OPTIONS
 	 *
