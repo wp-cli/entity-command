@@ -165,6 +165,18 @@ Feature: Manage WordPress users
       Bob Jones
       """
 
+  Scenario: Create new users with additional fields
+    Given a WP install
+
+    When I run `wp user create nicename nicename@example.com --user_nicename="mr-nice"`
+    Then STDOUT should not be empty
+
+    When I run `wp user get nicename --field=user_nicename`
+    Then STDOUT should be:
+      """
+      mr-nice
+      """
+
   Scenario: Managing user roles
     Given a WP install
 
