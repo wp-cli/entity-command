@@ -598,6 +598,14 @@ class Post_Command extends CommandWithDBObject {
 	 *     | 1  | Hello world! | hello-world | 2016-06-01 14:31:12 | publish     |
 	 *     +----+--------------+-------------+---------------------+-------------+
 	 *
+	 *     # List given post by a specific author
+	 *     $ wp post list --author=2
+	 *     +----+-------------------+-------------------+---------------------+-------------+
+	 *     | ID | post_title        | post_name         | post_date           | post_status |
+	 *     +----+-------------------+-------------------+---------------------+-------------+
+	 *     | 14 | New documentation | new-documentation | 2021-06-18 21:05:11 | publish     |
+	 *     +----+-------------------+-------------------+---------------------+-------------+
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
