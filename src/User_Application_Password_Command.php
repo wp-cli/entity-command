@@ -241,6 +241,10 @@ final class User_Application_Password_Command {
 			WP_CLI::error( $application_password );
 		}
 
+		if ( null === $application_password ) {
+			WP_CLI::error( 'No application password found for this user ID and UUID.' );
+		}
+
 		$fields = self::APPLICATION_PASSWORD_FIELDS;
 
 		if ( ! empty( $assoc_args['fields'] ) ) {
@@ -433,9 +437,10 @@ final class User_Application_Password_Command {
 
 		WP_CLI::success(
 			sprintf(
-				'Deleted %d of %d application passwords.',
+				'Deleted %d of %d application %s.',
 				$count - $errors,
-				$count
+				$count,
+				Utils\pluralize( 'password', $count )
 			)
 		);
 
