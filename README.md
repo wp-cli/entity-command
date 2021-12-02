@@ -2210,7 +2210,7 @@ Displays a success message if the post does exist.
 **EXAMPLES**
 
     # The post exists.
-    $ wp post exists 1
+    $ wp post exists 1337
     Success: Post with ID 1337 exists.
     $ echo $?
     0
