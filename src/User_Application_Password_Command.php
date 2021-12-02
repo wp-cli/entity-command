@@ -404,9 +404,9 @@ final class User_Application_Password_Command {
 
 		$user_id = array_shift( $args );
 		$all     = Utils\get_flag_value( $assoc_args, 'all', false );
-		$count   = count($args);
+		$count   = count( $args );
 
-		if ( ( $count > 0 && true === $all ) || ( $count === 0 && true !== $all ) ) {
+		if ( ( 0 < $count && true === $all ) || ( 0 === $count && true !== $all ) ) {
 			WP_CLI::error( 'You need to specify either one or more UUIDS or provide the --all flag' );
 		}
 
@@ -439,7 +439,7 @@ final class User_Application_Password_Command {
 			)
 		);
 
-		WP_CLI::halt( $errors === 0 ? 0 : 1 );
+		WP_CLI::halt( 0 === $errors ? 0 : 1 );
 	}
 
 	/**
@@ -507,8 +507,7 @@ final class User_Application_Password_Command {
 	 * @param string $app_name Application name to look for.
 	 * @return bool
 	 */
-	private function application_name_exists_for_user( $user_id, $app_name )
-	{
+	private function application_name_exists_for_user( $user_id, $app_name ) {
 		if ( Utils\wp_version_compare( '5.7', '<' ) ) {
 			$passwords = WP_Application_Passwords::get_user_application_passwords( $user_id );
 
