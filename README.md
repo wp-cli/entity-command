@@ -3237,7 +3237,7 @@ wp site create --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<
 		Title of the new site. Default: prettified slug.
 
 	[--email=<email>]
-		Email for Admin user. User will be created if none exists. Assignement to Super Admin if not included.
+		Email for admin user. User will be created if none exists. Assignment to super admin if not included.
 
 	[--network_id=<network-id>]
 		Network to associate new site with. Defaults to current network (typically 1).
