@@ -157,7 +157,7 @@ Feature: Manage WordPress users
     And I try `wp user delete bobjones --network --yes`
     Then STDERR should be:
       """
-      Warning: Failed deleting user {BOB_ID}. The user is a Super Admin.
+      Warning: Failed deleting user {BOB_ID}. The user is a super admin.
       """
     And the return code should be 1
 
