@@ -20,7 +20,7 @@ Feature: Manage sites in a multisite installation
     When I run `wp site list --fields=blog_id,url`
     Then STDOUT should be a table containing rows:
       | blog_id | url                       |
-      | 1       | http://example.com/       |
+      | 1       | https://example.com/       |
       | 2       | http://first.example.com/ |
 
     When I run `wp site list --format=ids`
@@ -48,14 +48,14 @@ Feature: Manage sites in a multisite installation
     When I run `wp site list --fields=blog_id,url`
     Then STDOUT should be a table containing rows:
       | blog_id | url                       |
-      | 1       | http://example.com/       |
-      | 2       | http://example.com/first/ |
+      | 1       | https://example.com/       |
+      | 2       | https://example.com/first/ |
 
     When I run `wp site list --field=url`
     Then STDOUT should be:
       """
-      http://example.com/
-      http://example.com/first/
+      https://example.com/
+      https://example.com/first/
       """
 
     When I try `wp site delete 1`
@@ -69,7 +69,7 @@ Feature: Manage sites in a multisite installation
     When I run `wp site delete {SITE_ID} --yes`
     Then STDOUT should be:
       """
-      Success: The site at 'http://example.com/first/' was deleted.
+      Success: The site at 'https://example.com/first/' was deleted.
       """
 
     When I try the previous command again
@@ -85,13 +85,13 @@ Feature: Manage sites in a multisite installation
     When I run `wp site list --fields=blog_id,url`
     Then STDOUT should be a table containing rows:
       | blog_id | url                       |
-      | 1       | http://example.com/       |
-      | 2       | http://example.com/first/ |
+      | 1       | https://example.com/       |
+      | 2       | https://example.com/first/ |
 
     When I run `wp site list --field=url --blog_id=2`
     Then STDOUT should be:
       """
-      http://example.com/first/
+      https://example.com/first/
       """
 
   Scenario: Delete a site by slug
@@ -100,13 +100,13 @@ Feature: Manage sites in a multisite installation
     When I run `wp site create --slug=first`
     Then STDOUT should be:
       """
-      Success: Site 2 created: http://example.com/first/
+      Success: Site 2 created: https://example.com/first/
       """
 
     When I run `wp site delete --slug=first --yes`
     Then STDOUT should be:
       """
-      Success: The site at 'http://example.com/first/' was deleted.
+      Success: The site at 'https://example.com/first/' was deleted.
       """
 
     When I try the previous command again
@@ -122,7 +122,7 @@ Feature: Manage sites in a multisite installation
     When I run `wp site url {SITE_ID}`
     Then STDOUT should be:
       """
-      http://example.com/first/
+      https://example.com/first/
       """
 
     When I run `wp site create --slug=second --porcelain`
@@ -132,8 +132,8 @@ Feature: Manage sites in a multisite installation
     When I run `wp site url {SECOND_ID} {SITE_ID}`
     Then STDOUT should be:
       """
-      http://example.com/second/
-      http://example.com/first/
+      https://example.com/second/
+      https://example.com/first/
       """
 
   Scenario: Archive/unarchive a site
@@ -415,7 +415,7 @@ Feature: Manage sites in a multisite installation
     When I run `wp --url=example.com/first option get home`
     Then STDOUT should be:
       """
-      http://example.com/first
+      https://example.com/first
       """
 
   Scenario: Create site with title containing slash
