@@ -1,5 +1,35 @@
 Feature: Manage user custom fields
 
+  Scenario: User application passwords are disabled for WordPress lower than 5.6
+    Given a WP install
+    And I try `wp theme install twentytwenty --activate`
+    And I run `wp core download --version=5.5 --force`
+
+    When I try `wp user application-password create 1 myapp`
+    Then STDERR should contain:
+      """
+      Error: Requires WordPress 5.6 or greater.
+      """
+
+    When I try `wp user application-password list 1`
+    Then STDERR should contain:
+      """
+      Error: Requires WordPress 5.6 or greater.
+      """
+
+    When I try `wp user application-password get 1 123`
+    Then STDERR should contain:
+      """
+      Error: Requires WordPress 5.6 or greater.
+      """
+
+    When I try `wp user application-password delete 1 123`
+    Then STDERR should contain:
+      """
+      Error: Requires WordPress 5.6 or greater.
+      """
+
+  @require-wp-5.6
   Scenario: User application password CRUD
     Given a WP install
 
@@ -96,6 +126,7 @@ Feature: Manage user custom fields
       0
       """
 
+  @require-wp-5.6
   Scenario: List user application passwords
     Given a WP install
 
@@ -205,6 +236,7 @@ Feature: Manage user custom fields
       myapp2
       """
 
+  @require-wp-5.6
   Scenario: Get particular user application password hash
     Given a WP install
 
