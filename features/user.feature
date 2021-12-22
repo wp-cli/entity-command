@@ -398,8 +398,8 @@ Feature: Manage WordPress users
     When I run `wp user list --include=1,2 --field=url`
     Then STDOUT should be:
       """
-      http://example.com/?author=1
-      http://example.com/?author=2
+      https://example.com/?author=1
+      https://example.com/?author=2
       """
 
   Scenario: Get user with email as login
