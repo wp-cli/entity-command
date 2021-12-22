@@ -86,13 +86,13 @@ Feature: Manage WordPress menu items
     When I run `wp menu create "Grandparent Test"`
     Then STDOUT should not be empty
 
-    When I run `wp menu item add-custom grandparent-test Grandparent http://example.com/grandparent --porcelain`
+    When I run `wp menu item add-custom grandparent-test Grandparent https://example.com/grandparent --porcelain`
     Then save STDOUT as {GRANDPARENT_ID}
 
-    When I run `wp menu item add-custom grandparent-test  Parent   http://example.com/parent   --porcelain  --parent-id={GRANDPARENT_ID}`
+    When I run `wp menu item add-custom grandparent-test  Parent   https://example.com/parent   --porcelain  --parent-id={GRANDPARENT_ID}`
     Then save STDOUT as {PARENT_ID}
 
-    When I run `wp menu item add-custom grandparent-test  Child http://example.com/child   --porcelain  --parent-id={PARENT_ID}`
+    When I run `wp menu item add-custom grandparent-test  Child https://example.com/child   --porcelain  --parent-id={PARENT_ID}`
     Then save STDOUT as {CHILD_ID}
 
     When I run `wp menu item list grandparent-test --fields=title,db_id,menu_item_parent`
