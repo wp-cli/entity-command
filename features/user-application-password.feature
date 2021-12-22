@@ -130,15 +130,23 @@ Feature: Manage user custom fields
     Then save STDOUT as {CREATED2}
 
     When I run `wp user application-password list 1 --format=json`
-    Then STDOUT should be JSON containing:
+    Then STDOUT should contain:
       """
-      [{"uuid":"{UUID1}","app_id":"","name":"myapp1","password":"{JSONHASH1}","created":{CREATED1},"last_used":null,"last_ip":null},{"uuid":"{UUID2}","app_id":"","name":"myapp2","password":"{JSONHASH2}","created":{CREATED2},"last_used":null,"last_ip":null}]
+      {"uuid":"{UUID1}","app_id":"","name":"myapp1","password":"{JSONHASH1}","created":{CREATED1},"last_used":null,"last_ip":null}
+      """
+    And STDOUT should contain:
+      """
+      {"uuid":"{UUID2}","app_id":"","name":"myapp2","password":"{JSONHASH2}","created":{CREATED2},"last_used":null,"last_ip":null}
       """
 
     When I run `wp user application-password list 1 --format=json --fields=uuid,name`
-    Then STDOUT should be JSON containing:
+    Then STDOUT should contain:
       """
-      [{"uuid":"{UUID1}","name":"myapp1"},{"uuid":"{UUID2}","name":"myapp2"}]
+      {"uuid":"{UUID1}","name":"myapp1"}
+      """
+    And STDOUT should contain:
+      """
+      {"uuid":"{UUID2}","name":"myapp2"}
       """
 
     When I run `wp user application-password list 1`
@@ -188,9 +196,12 @@ Feature: Manage user custom fields
       """
 
     When I run `wp user application-password list admin --field=name`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       myapp1
+      """
+    And STDOUT should contain:
+      """
       myapp2
       """
 
