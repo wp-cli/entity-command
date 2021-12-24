@@ -165,22 +165,21 @@ final class User_Application_Password_Command {
 
 		$fields = self::APPLICATION_PASSWORD_FIELDS;
 
+		// Avoid confusion regarding the dash/underscore usage.
+		foreach ( [ 'app-id', 'last-used', 'last-ip' ] as $flag ) {
+			if ( array_key_exists( $flag, $assoc_args ) ) {
+				$underscored_flag                = str_replace( '-', '_', $flag );
+				$assoc_args[ $underscored_flag ] = $assoc_args[ $flag ];
+				unset( $assoc_args[ $flag ] );
+			}
+		}
+
 		foreach ( $fields as $field ) {
-			if (
-				! array_key_exists( $field, $assoc_args )
-				&&
-				! ( 'app_id' === $field && array_key_exists( 'app-id', $assoc_args ) )
-			) {
+			if ( ! array_key_exists( $field, $assoc_args ) ) {
 				continue;
 			}
 
 			$value = Utils\get_flag_value( $assoc_args, $field );
-
-			// Avoid confusion regarding the dash/underscore between creation flag
-			// and querying field name.
-			if ( 'app_id' === $field && array_key_exists( 'app-id', $assoc_args ) ) {
-				$value = Utils\get_flag_value( $assoc_args, 'app-id' );
-			}
 
 			$application_passwords = array_filter(
 				$application_passwords,
