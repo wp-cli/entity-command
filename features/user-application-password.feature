@@ -134,7 +134,7 @@ Feature: Manage user custom fields
     When I run `wp user application-password create 1 myapp1`
     Then STDOUT should not be empty
 
-    When I run `wp user application-password create 1 myapp2`
+    When I run `wp user application-password create 1 myapp2 --app-id=42`
     Then STDOUT should not be empty
 
     When I run `wp user application-password list 1 --name=myapp1 --field=uuid`
@@ -168,7 +168,7 @@ Feature: Manage user custom fields
       """
     And STDOUT should contain:
       """
-      {"uuid":"{UUID2}","app_id":"","name":"myapp2","password":"{JSONHASH2}","created":{CREATED2},"last_used":null,"last_ip":null}
+      {"uuid":"{UUID2}","app_id":"42","name":"myapp2","password":"{JSONHASH2}","created":{CREATED2},"last_used":null,"last_ip":null}
       """
 
     When I run `wp user application-password list 1 --format=json --fields=uuid,name`
@@ -184,37 +184,37 @@ Feature: Manage user custom fields
     When I run `wp user application-password list 1`
     Then STDOUT should be a table containing rows:
       | uuid    | app_id | name   | password | created    | last_used | last_ip |
-      | {UUID2} |        | myapp2 | {HASH2}  | {CREATED2} |           |         |
+      | {UUID2} | 42     | myapp2 | {HASH2}  | {CREATED2} |           |         |
       | {UUID1} |        | myapp1 | {HASH1}  | {CREATED1} |           |         |
 
     When I run `wp user application-password list 1 --fields=uuid,app_id,name`
     Then STDOUT should be a table containing rows:
       | uuid    | app_id | name   |
-      | {UUID2} |        | myapp2 |
+      | {UUID2} | 42     | myapp2 |
       | {UUID1} |        | myapp1 |
 
     When I run `wp user application-password list admin`
     Then STDOUT should be a table containing rows:
       | uuid    | app_id | name   | password | created    | last_used | last_ip |
-      | {UUID2} |        | myapp2 | {HASH2}  | {CREATED2} |           |         |
+      | {UUID2} | 42     | myapp2 | {HASH2}  | {CREATED2} |           |         |
       | {UUID1} |        | myapp1 | {HASH1}  | {CREATED1} |           |         |
 
     When I run `wp user application-password list admin --orderby=created --order=asc`
     Then STDOUT should be a table containing rows:
       | uuid    | app_id | name   | password | created    | last_used | last_ip |
       | {UUID1} |        | myapp1 | {HASH1}  | {CREATED1} |           |         |
-      | {UUID2} |        | myapp2 | {HASH2}  | {CREATED2} |           |         |
+      | {UUID2} | 42     | myapp2 | {HASH2}  | {CREATED2} |           |         |
 
     When I run `wp user application-password list admin --orderby=name --order=asc`
     Then STDOUT should be a table containing rows:
       | uuid    | app_id | name   | password | created    | last_used | last_ip |
       | {UUID1} |        | myapp1 | {HASH1}  | {CREATED1} |           |         |
-      | {UUID2} |        | myapp2 | {HASH2}  | {CREATED2} |           |         |
+      | {UUID2} | 42     | myapp2 | {HASH2}  | {CREATED2} |           |         |
 
     When I run `wp user application-password list admin --orderby=name --order=desc`
     Then STDOUT should be a table containing rows:
       | uuid    | app_id | name   | password | created    | last_used | last_ip |
-      | {UUID2} |        | myapp2 | {HASH2}  | {CREATED2} |           |         |
+      | {UUID2} | 42     | myapp2 | {HASH2}  | {CREATED2} |           |         |
       | {UUID1} |        | myapp1 | {HASH1}  | {CREATED1} |           |         |
 
     When I run `wp user application-password list admin --name=myapp2 --format=json`
@@ -233,6 +233,12 @@ Feature: Manage user custom fields
       myapp1
       """
     And STDOUT should contain:
+      """
+      myapp2
+      """
+
+    When I run `wp user application-password list 1 --field=name --app-id=42`
+    Then STDOUT should be:
       """
       myapp2
       """
