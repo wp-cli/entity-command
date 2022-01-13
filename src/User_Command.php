@@ -221,7 +221,7 @@ class User_Command extends CommandWithDBObject {
 	 *     $ wp user get bob --format=json > bob.json
 	 */
 	public function get( $args, $assoc_args ) {
-		$user               = $this->fetcher->get_check( $args[0] );
+		$user = $this->fetcher->get_check( $args[0] );
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $user );
