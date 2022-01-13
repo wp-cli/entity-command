@@ -181,13 +181,15 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
+		$array_arguments = [ 'meta_input', 'tax_input' ];
+		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+
 		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
 			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
+			unset( $assoc_args['meta_input'] );
 		}
 
-
-
-		if ( isset( $assoc_args['tax_input'] ) && !is_array( $assoc_args['tax_input'] ) ) {
+		if ( isset( $assoc_args['tax_input'] ) && ! is_array( $assoc_args['tax_input'] ) ) {
 			WP_CLI::warning( "The 'tax_input' field could not be decoded to a valid taxonomy array." );
 			unset( $assoc_args['tax_input'] );
 		}
@@ -354,12 +356,13 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
-			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
-		}
-
 		$array_arguments = [ 'meta_input', 'tax_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+
+		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
+			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
+			unset( $assoc_args['meta_input'] );
+		}
 
 		if ( isset( $assoc_args['tax_input'] ) && !is_array( $assoc_args['tax_input'] ) ) {
 			WP_CLI::warning( "The 'tax_input' field could not be decode to a valid taxonomy array." );
