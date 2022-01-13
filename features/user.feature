@@ -183,13 +183,39 @@ Feature: Manage WordPress users
   Scenario: Create new users with additional fields
     Given a WP install
 
-    When I run `wp user create nicename nicename@example.com --user_nicename="mr-nice"`
+    When I run `wp user list --fields=display_name,user_nicename,nickname,user_url`
+    Then STDOUT should be a table containing rows:
+      | display_name | user_nicename | nickname | user_url            |
+      | admin        | admin         | admin    | https://example.com |
+
+    When I run `wp user update admin --user_nicename="mr-admin" --nickname="Mr. Admin" --user_url="https://admin.com"`
     Then STDOUT should not be empty
+
+    When I run `wp user create nicename nicename@example.com --user_nicename="mr-nice" --nickname="Mr. Nice" --user_url="https://mr-nice.com"`
+    Then STDOUT should not be empty
+
+    When I run `wp user list --fields=display_name,user_nicename,nickname,user_url`
+    Then STDOUT should be a table containing rows:
+      | display_name | user_nicename | nickname  | user_url            |
+      | admin        | mr-admin      | Mr. Admin | https://admin.com   |
+      | nicename     | mr-nice       | Mr. Nice  | https://mr-nice.com |
 
     When I run `wp user get nicename --field=user_nicename`
     Then STDOUT should be:
       """
       mr-nice
+      """
+
+    When I run `wp user get nicename --field=nickname`
+    Then STDOUT should be:
+      """
+      Mr. Nice
+      """
+
+    When I run `wp user get nicename --field=user_url`
+    Then STDOUT should be:
+      """
+      https://mr-nice.com
       """
 
   Scenario: Managing user roles

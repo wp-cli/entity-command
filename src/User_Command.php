@@ -222,11 +222,9 @@ class User_Command extends CommandWithDBObject {
 	 */
 	public function get( $args, $assoc_args ) {
 		$user               = $this->fetcher->get_check( $args[0] );
-		$user_data          = $user->to_array();
-		$user_data['roles'] = implode( ', ', $user->roles );
 
 		$formatter = $this->get_formatter( $assoc_args );
-		$formatter->display_item( $user_data );
+		$formatter->display_item( $user );
 	}
 
 	/**
@@ -395,7 +393,11 @@ class User_Command extends CommandWithDBObject {
 
 		$user->description = Utils\get_flag_value( $assoc_args, 'description', false );
 
+		$user->nickname = Utils\get_flag_value( $assoc_args, 'nickname', false );
+
 		$user->user_nicename = Utils\get_flag_value( $assoc_args, 'user_nicename', false );
+
+		$user->user_url = Utils\get_flag_value( $assoc_args, 'user_url', false );
 
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
