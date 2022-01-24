@@ -410,28 +410,95 @@ Feature: Manage WordPress posts
       """
 
   Scenario: Creating/updating custom taxonomies
-    When I run `wp term create post_tag t1 --porcelain`
-    Then STDOUT should be a number
-    And save STDOUT as {TERM_ID}
+    Given a wp-content/mu-plugins/custom-taxonomy.php file:
+      """
+      <?php
+      // Plugin Name: Custom taxonomy
+      add_action( 'init', static function () {
+        $args = [
+          'hierarchical'          => true,
+          'show_ui'               => true,
+          'show_admin_column'     => true,
+          'update_count_callback' => '_update_post_term_count',
+          'query_var'             => true,
+          'rewrite'               => [ 'slug' => 'subject' ],
+          'labels'                => [
+            'name'          => _x( 'Genres', 'taxonomy general name' ),
+            'singular_name' => _x( 'Genre', 'taxonomy singular name' ),
+          ],
+        ];
+        register_taxonomy( 'genre', [ 'post','page' ], $args );
+      } );
+      """
 
-    When I run `wp term create post_tag t2 --porcelain`
+    When I run `wp term create genre t1 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID1}
+
+    When I run `wp term create genre t2 --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {TERM_ID2}
 
-    When I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"post_tag":[{TERM_ID}]}' --porcelain`
+    When I run `wp term create post_tag t3 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID3}
+
+    When I run `wp term create post_tag t4 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID4}
+
+    When I run `wp term create category t5 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID5}
+
+    When I run `wp term create category t6 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID6}
+
+    When I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"genre":[{TERM_ID1}]}' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post term list {POST_ID} genre --format=table`
+    Then STDOUT should be a table containing rows:
+      | term_id    | name | slug | taxonomy |
+      | {TERM_ID1} | t1   | t1   | genre    |
+
+    When I run `wp post update {POST_ID} --tax_input='{"genre":[{TERM_ID2}]}'`
+    And I run `wp post term list {POST_ID} genre --format=table`
+    Then STDOUT should be a table containing rows:
+      | term_id    | name | slug | taxonomy |
+      | {TERM_ID2} | t2   | t2   | genre    |
+
+    When I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"post_tag":[{TERM_ID3}]}' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
     When I run `wp post term list {POST_ID} post_tag --format=table`
     Then STDOUT should be a table containing rows:
-      | term_id   | name | slug | taxonomy |
-      | {TERM_ID} | t1   | t1   | post_tag |
+      | term_id    | name | slug | taxonomy |
+      | {TERM_ID3} | t3   | t3   | post_tag |
 
     When I run `wp post update {POST_ID} --tax_input='{"post_tag":[{TERM_ID2}]}'`
     And I run `wp post term list {POST_ID} post_tag --format=table`
     Then STDOUT should be a table containing rows:
       | term_id    | name | slug | taxonomy |
-      | {TERM_ID2} | t2   | t2   | post_tag |
+      | {TERM_ID4} | t4   | t4   | post_tag |
+
+    When I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"category":[{TERM_ID3}]}' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post term list {POST_ID} category --format=table`
+    Then STDOUT should be a table containing rows:
+      | term_id    | name | slug | taxonomy |
+      | {TERM_ID5} | t5   | t5   | category |
+
+    When I run `wp post update {POST_ID} --tax_input='{"category":[{TERM_ID2}]}'`
+    And I run `wp post term list {POST_ID} category --format=table`
+    Then STDOUT should be a table containing rows:
+      | term_id    | name | slug | taxonomy |
+      | {TERM_ID6} | t6   | t6   | category |
 
   @less-than-wp-4.4
   Scenario: Creating/updating posts with meta keys for WP < 4.4 has no effect so should give warning
