@@ -152,13 +152,17 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *   - json
 	 *   - yaml
 	 * ---
+	 *
+	 * [--single]
+	 * : Whether to return a single value. Use --no-single to return an array value.
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
+		$single                       = Utils\get_flag_value( $assoc_args, 'single', true );
 
 		$object_id = $this->check_object_id( $object_id );
 
-		$value = $this->get_metadata( $object_id, $meta_key, true );
+		$value = $this->get_metadata( $object_id, $meta_key, $single );
 
 		if ( '' === $value ) {
 			die( 1 );
