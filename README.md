@@ -4605,6 +4605,9 @@ make sure to reassign their posts prior to deleting the user.
     Success: Removed user 813 from http://example.com
     Success: Removed user 578 from http://example.com
 
+    # Delete all contributors in batches of 100 (avoid error: argument list too long: wp)
+    $ wp user delete $(wp user list --role=contributor --field=ID | head -n 100)
+
 
 
 ### wp user generate
