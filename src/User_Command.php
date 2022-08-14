@@ -168,7 +168,7 @@ class User_Command extends CommandWithDBObject {
 
 			if ( ! empty( $norole_user_ids ) ) {
 				$assoc_args['include'] = $norole_user_ids;
-				unset($assoc_args['role']);
+				unset( $assoc_args['role'] );
 			}
 		}
 
