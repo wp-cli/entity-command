@@ -162,7 +162,17 @@ class User_Command extends CommandWithDBObject {
 
 		$assoc_args['count_total'] = false;
 		$assoc_args                = self::process_csv_arguments_to_arrays( $assoc_args );
-		$users                     = get_users( $assoc_args );
+
+		if ( ! empty( $assoc_args['role'] ) && 'none' === $assoc_args['role'] ) {
+			$norole_user_ids = wp_get_users_with_no_role();
+
+			if ( ! empty( $norole_user_ids ) ) {
+				$assoc_args['include'] = $norole_user_ids;
+				unset($assoc_args['role']);
+			}
+		}
+
+		$users = get_users( $assoc_args );
 
 		if ( 'ids' === $formatter->format ) {
 			echo implode( ' ', $users );
