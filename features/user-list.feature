@@ -29,13 +29,14 @@ Feature: List WordPress users
 
   Scenario: List users without roles
     Given a WP install
-    When I run `wp user generate --count=1 --format=ids`
+    When I run `wp user create bili bili@example.com --porcelain`
     Then save STDOUT as {USER_ID}
 
+    And I run `wp user create sally sally@example.com --role=editor`
     And I run `wp user remove-role {USER_ID} subscriber`
 
-    When I run `wp user list --role=none --field=id`
+    When I run `wp user list --role=none --field=user_login`
     Then STDOUT should be:
       """
-      {USER_ID}
+      bili
       """
