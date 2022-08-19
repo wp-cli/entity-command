@@ -27,6 +27,7 @@ Feature: List WordPress users
       bobjones
       """
 
+  @require-wp-4.9
   Scenario: List users without roles
     Given a WP install
     When I run `wp user create bili bili@example.com --porcelain`
