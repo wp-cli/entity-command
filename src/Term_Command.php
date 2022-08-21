@@ -35,6 +35,12 @@ use WP_CLI\Utils;
  *     Success: Updated category term count
  *     Success: Updated post_tag term count
  *
+ *     # Add generated term to post.
+ *     $ wp term generate category --format=ids --count=3 | xargs -d ' ' -I % wp post term add 1 category % --by=id
+ *     Success: Added term.
+ *     Success: Added term.
+ *     Success: Added term.
+ *
  * @package wp-cli
  */
 class Term_Command extends WP_CLI_Command {
