@@ -574,6 +574,16 @@ class Site_Command extends CommandWithDBObject {
 
 		global $wpdb;
 
+		if ( isset( $assoc_args['primary'] ) ) {
+			$user_id = get_current_user_id();
+
+			if ( empty( $user_id ) ) {
+				WP_CLI::error( 'Please set --user for Primary site.' );
+			}
+
+			$assoc_args['site__in'] = get_user_option( 'primary_blog', $user_id );
+		}
+
 		if ( isset( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = preg_split( '/,[ \t]*/', $assoc_args['fields'] );
 		}
