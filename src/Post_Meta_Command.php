@@ -111,4 +111,72 @@ class Post_Meta_Command extends CommandWithMeta {
 	protected function delete_metadata( $object_id, $meta_key, $meta_value = '' ) {
 		return delete_post_meta( $object_id, $meta_key, $meta_value );
 	}
+
+	/**
+	 * Cleans up duplicate post meta values on a post.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : ID of the post to clean.
+	 *
+	 * <key>
+	 * : Meta key to clean up.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp post meta clean-duplicates 1234 enclosure
+	 *
+	 * @subcommand clean-duplicates
+	 */
+	public function clean_duplicates( $args, $assoc_args ) {
+		global $wpdb;
+
+		list( $post_id, $key ) = $args;
+
+		$metas = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->postmeta} WHERE meta_key=%s AND post_id=%d",
+				$key,
+				$post_id
+			)
+		);
+
+		if ( empty( $metas ) ) {
+			WP_CLI::error( 'No enclosures found.' );
+		}
+
+		$uniq_enclosures = [];
+		$dupe_enclosures = [];
+		foreach ( $metas as $meta ) {
+			if ( ! isset( $uniq_enclosures[ $meta->meta_value ] ) ) {
+				$uniq_enclosures[ $meta->meta_value ] = (int) $meta->meta_id;
+			} else {
+				$dupe_enclosures[] = (int) $meta->meta_id;
+			}
+		}
+
+		if ( count( $dupe_enclosures ) ) {
+			WP_CLI::confirm(
+				sprintf(
+					'Are you sure you want to delete %d duplicate enclosures and keep %d valid enclosures?',
+					count( $dupe_enclosures ),
+					count( $uniq_enclosures )
+				)
+			);
+			foreach( $dupe_enclosures as $meta_id ) {
+				delete_metadata_by_mid( 'post', $meta_id );
+				WP_CLI::log( sprintf( 'Deleted meta id %d.', $meta_id ) );
+			}
+			WP_CLI::success( 'Cleaned up duplicate enclosures.' );
+		} else {
+			WP_CLI::success(
+				sprintf(
+					'Nothing to clean up: found %d valid enclosures and %d duplicate enclosures.',
+					count( $uniq_enclosures ),
+					count( $dupe_enclosures )
+				)
+			);
+		}
+	}
 }
