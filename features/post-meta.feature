@@ -488,3 +488,46 @@ Feature: Manage post custom fields
       """
       [ "new", "bar" ]
       """
+
+  Scenario: Clean up duplicate post meta values.
+    Given a WP install
+    And a session_no file:
+      """
+      n
+      """
+    And a session_yes file:
+      """
+      y
+      """
+
+    When I run `wp post meta add 1 foo bar`
+    Then STDOUT should be:
+      """
+      Success: Added custom field.
+      """
+
+    When I try the previous command again
+    Then the return code should be 0
+
+    When I try the previous command again
+    Then the return code should be 0
+
+    When I run `wp post meta clean-duplicates 1 foo < session_no`
+    # Check for contains only, as the string contains a trailing space.
+    Then STDOUT should contain:
+      """
+      Are you sure you want to delete 2 duplicate enclosures and keep 1 valid enclosures? [y/n]
+      """
+
+    When I run `wp post meta clean-duplicates 1 foo < session_yes`
+    Then STDOUT should contain:
+      """
+      Success: Cleaned up duplicate enclosures.
+      """
+
+    When I run `wp post meta clean-duplicates 1 food`
+    Then STDERR should contain:
+      """
+      Error: No enclosures found.
+      """
+    And the return code should be 1
