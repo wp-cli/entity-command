@@ -97,14 +97,14 @@ class Post_Meta_Command extends CommandWithMeta {
 	 *
 	 * @param int    $object_id  ID of the object metadata is for
 	 * @param string $meta_key   Metadata key
-	 * @param mixed $meta_value  Optional. Metadata value. Must be serializable
-	 *                           if non-scalar. If specified, only delete
-	 *                           metadata entries with this value. Otherwise,
-	 *                           delete all entries with the specified meta_key.
-	 *                           Pass `null, `false`, or an empty string to skip
-	 *                           this check. For backward compatibility, it is
-	 *                           not possible to pass an empty string to delete
-	 *                           those entries with an empty string for a value.
+	 * @param mixed  $meta_value  Optional. Metadata value. Must be serializable
+	 *                            if non-scalar. If specified, only delete
+	 *                            metadata entries with this value. Otherwise,
+	 *                            delete all entries with the specified meta_key.
+	 *                            Pass `null, `false`, or an empty string to skip
+	 *                            this check. For backward compatibility, it is
+	 *                            not possible to pass an empty string to delete
+	 *                            those entries with an empty string for a value.
 	 *
 	 * @return bool True on successful delete, false on failure.
 	 */
@@ -146,8 +146,8 @@ class Post_Meta_Command extends CommandWithMeta {
 			WP_CLI::error( 'No enclosures found.' );
 		}
 
-		$uniq_enclosures = [];
-		$dupe_enclosures = [];
+		$uniq_enclosures = array();
+		$dupe_enclosures = array();
 		foreach ( $metas as $meta ) {
 			if ( ! isset( $uniq_enclosures[ $meta->meta_value ] ) ) {
 				$uniq_enclosures[ $meta->meta_value ] = (int) $meta->meta_id;
@@ -164,7 +164,7 @@ class Post_Meta_Command extends CommandWithMeta {
 					count( $uniq_enclosures )
 				)
 			);
-			foreach( $dupe_enclosures as $meta_id ) {
+			foreach ( $dupe_enclosures as $meta_id ) {
 				delete_metadata_by_mid( 'post', $meta_id );
 				WP_CLI::log( sprintf( 'Deleted meta id %d.', $meta_id ) );
 			}
