@@ -506,11 +506,18 @@ Feature: Manage post custom fields
       Success: Added custom field.
       """
 
-    When I try the previous command again
+    When I run the previous command again
     Then the return code should be 0
 
-    When I try the previous command again
+    When I run the previous command again
     Then the return code should be 0
+
+    When I run `wp post meta list 1 --keys=foo`
+    Then STDOUT should be a table containing rows:
+      | post_id | meta_key | meta_value |
+      | 1       | foo      | bar        |
+      | 1       | foo      | bar        |
+      | 1       | foo      | bar        |
 
     When I run `wp post meta clean-duplicates 1 foo < session_no`
     # Check for contains only, as the string contains a trailing space.
@@ -523,6 +530,12 @@ Feature: Manage post custom fields
     Then STDOUT should contain:
       """
       Success: Cleaned up duplicate enclosures.
+      """
+
+    When I try the previous command again
+    Then STDOUT should contain:
+      """
+      Success: Nothing to clean up: found 1 valid enclosures and 0 duplicate enclosures.
       """
 
     When I try `wp post meta clean-duplicates 1 food`
