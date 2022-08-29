@@ -525,8 +525,8 @@ Feature: Manage post custom fields
       Success: Cleaned up duplicate enclosures.
       """
 
-    When I run `wp post meta clean-duplicates 1 food`
-    Then STDERR should contain:
+    When I try `wp post meta clean-duplicates 1 food`
+    Then STDERR should be:
       """
       Error: No enclosures found.
       """
