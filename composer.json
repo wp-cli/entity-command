@@ -101,6 +101,7 @@
             "post list",
             "post meta",
             "post meta add",
+            "post meta clean-duplicates",
             "post meta delete",
             "post meta get",
             "post meta list",
