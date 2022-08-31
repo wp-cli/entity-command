@@ -145,7 +145,7 @@ class Post_Meta_Command extends CommandWithMeta {
 		);
 
 		if ( empty( $metas ) ) {
-			WP_CLI::error( 'No meta data found.' );
+			WP_CLI::error( sprintf( 'No meta values found for \'%s\'.', $key ) );
 		}
 
 		$uniq_metas = array();

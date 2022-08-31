@@ -58,6 +58,6 @@ Feature: Clean up duplicate post meta values
     When I try `wp post meta clean-duplicates 1 food`
     Then STDERR should be:
       """
-      Error: No meta data found.
+      Error: No meta values found for 'food'.
       """
     And the return code should be 1
