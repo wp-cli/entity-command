@@ -125,7 +125,7 @@ class Post_Meta_Command extends CommandWithMeta {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Delete dulpicate post meta.
+	 *     # Delete duplicate post meta.
 	 *     wp post meta clean-duplicates 1234 enclosure
 	 *     Success: Cleaned up duplicate 'enclosure' meta values.
 	 *
