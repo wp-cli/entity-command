@@ -526,6 +526,12 @@ Feature: Manage post custom fields
       Are you sure you want to delete 2 duplicate enclosures and keep 1 valid enclosures? [y/n]
       """
 
+    When I run `wp post meta list 1 --keys=foo --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
     When I run `wp post meta clean-duplicates 1 foo < session_yes`
     Then STDOUT should contain:
       """
