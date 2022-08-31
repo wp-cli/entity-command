@@ -59,87 +59,87 @@ Feature: Manage post custom fields
 
     When I run `wp post meta list 1`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value                              |
-      | 1       | apple    | banana                                  |
-      | 1       | apple    | banana                                  |
-      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
+      | post_id | meta_key | meta_value                             |
+      | 1       | apple    | banana                                 |
+      | 1       | apple    | banana                                 |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";} |
 
     When I run `wp post meta list 1 --unserialize`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
-      | 1       | banana   | ["apple","apple"]  |
+      | post_id | meta_key | meta_value        |
+      | 1       | apple    | banana            |
+      | 1       | apple    | banana            |
+      | 1       | banana   | ["apple","apple"] |
 
     When I run `wp post meta list 1 --orderby=id --order=desc`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value                              |
-      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
-      | 1       | apple    | banana                                  |
-      | 1       | apple    | banana                                  |
+      | post_id | meta_key | meta_value                             |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";} |
+      | 1       | apple    | banana                                 |
+      | 1       | apple    | banana                                 |
 
     When I run `wp post meta list 1 --orderby=id --order=desc --unserialize`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | banana   | ["apple","apple"]  |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
+      | post_id | meta_key | meta_value        |
+      | 1       | banana   | ["apple","apple"] |
+      | 1       | apple    | banana            |
+      | 1       | apple    | banana            |
 
     When I run `wp post meta list 1 --orderby=meta_key --order=asc`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value                              |
-      | 1       | apple    | banana                                  |
-      | 1       | apple    | banana                                  |
-      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
+      | post_id | meta_key | meta_value                             |
+      | 1       | apple    | banana                                 |
+      | 1       | apple    | banana                                 |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";} |
 
     When I run `wp post meta list 1 --orderby=meta_key --order=asc --unserialize`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
-      | 1       | banana   | ["apple","apple"]  |
+      | post_id | meta_key | meta_value        |
+      | 1       | apple    | banana            |
+      | 1       | apple    | banana            |
+      | 1       | banana   | ["apple","apple"] |
 
     When I run `wp post meta list 1 --orderby=meta_key --order=desc`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value                              |
-      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
-      | 1       | apple    | banana                                  |
-      | 1       | apple    | banana                                  |
+      | post_id | meta_key | meta_value                             |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";} |
+      | 1       | apple    | banana                                 |
+      | 1       | apple    | banana                                 |
 
     When I run `wp post meta list 1 --orderby=meta_key --order=desc --unserialize`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | banana   | ["apple","apple"]  |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
+      | post_id | meta_key | meta_value        |
+      | 1       | banana   | ["apple","apple"] |
+      | 1       | apple    | banana            |
+      | 1       | apple    | banana            |
 
     When I run `wp post meta list 1 --orderby=meta_value --order=asc`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value                              |
-      | 1       | apple    | banana                                  |
-      | 1       | apple    | banana                                  |
-      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
+      | post_id | meta_key | meta_value                             |
+      | 1       | apple    | banana                                 |
+      | 1       | apple    | banana                                 |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";} |
 
     When I run `wp post meta list 1 --orderby=meta_value --order=asc --unserialize`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
-      | 1       | banana   | ["apple","apple"]  |
+      | post_id | meta_key | meta_value        |
+      | 1       | apple    | banana            |
+      | 1       | apple    | banana            |
+      | 1       | banana   | ["apple","apple"] |
 
     When I run `wp post meta list 1 --orderby=meta_value --order=desc`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value                              |
-      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";}  |
-      | 1       | apple    | banana                                  |
-      | 1       | apple    | banana                                  |
+      | post_id | meta_key | meta_value                             |
+      | 1       | banana   | a:2:{i:0;s:5:"apple";i:1;s:5:"apple";} |
+      | 1       | apple    | banana                                 |
+      | 1       | apple    | banana                                 |
 
     When I run `wp post meta list 1 --orderby=meta_value --order=desc --unserialize`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | banana   | ["apple","apple"]  |
-      | 1       | apple    | banana             |
-      | 1       | apple    | banana             |
+      | post_id | meta_key | meta_value        |
+      | 1       | banana   | ["apple","apple"] |
+      | 1       | apple    | banana            |
+      | 1       | apple    | banana            |
 
   Scenario: Delete all post meta
     Given a WP install
@@ -186,8 +186,8 @@ Feature: Manage post custom fields
 
     When I run `wp post meta list 1`
     Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value         |
-      | 1       | foo      |                    |
+      | post_id | meta_key | meta_value |
+      | 1       | foo      |            |
 
   Scenario: Make sure WordPress receives the slashed data it expects in meta fields
     Given a WP install
@@ -225,7 +225,7 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-        "foo": "bar"
+      "foo": "bar"
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -242,14 +242,14 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-        "foo": {
-          "bar": {
-            "baz": "some value"
-          }
-        },
-        "foo.com": {
-          "visitors": 999
-        }
+      "foo": {
+      "bar": {
+      "baz": "some value"
+      }
+      },
+      "foo.com": {
+      "visitors": 999
+      }
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -307,7 +307,7 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-        "foo": "bar"
+      "foo": "bar"
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -322,7 +322,7 @@ Feature: Manage post custom fields
     Then STDOUT should be JSON containing:
       """
       {
-        "foo": "baz"
+      "foo": "baz"
       }
       """
 
@@ -332,10 +332,10 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-        "foo": {
-          "bar": "baz"
-        },
-        "bar": "bad"
+      "foo": {
+      "bar": "baz"
+      },
+      "bar": "bad"
       }
       """
     And a patch file:
@@ -354,10 +354,10 @@ Feature: Manage post custom fields
     Then STDOUT should be JSON containing:
       """
       {
-        "foo": {
-          "bar": "new value"
-        },
-        "bar": "bad"
+      "foo": {
+      "bar": "new value"
+      },
+      "bar": "bad"
       }
       """
 
@@ -367,10 +367,10 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-        "foo": {
-          "bar": "baz"
-        },
-        "bar": "bad"
+      "foo": {
+      "bar": "baz"
+      },
+      "bar": "bad"
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -389,10 +389,10 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-        "foo": {
-          "bar": "baz",
-          "abe": "lincoln"
-        }
+      "foo": {
+      "bar": "baz",
+      "abe": "lincoln"
+      }
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -407,9 +407,9 @@ Feature: Manage post custom fields
     Then STDOUT should be JSON containing:
       """
       {
-        "foo": {
-          "abe": "lincoln"
-        }
+      "foo": {
+      "abe": "lincoln"
+      }
       }
       """
 
@@ -419,9 +419,9 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-        "foo": {
-          "bar": "baz"
-        }
+      "foo": {
+      "bar": "baz"
+      }
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -449,7 +449,7 @@ Feature: Manage post custom fields
     Then STDOUT should be JSON containing:
       """
       {
-        "foo": "bar"
+      "foo": "bar"
       }
       """
 
@@ -488,65 +488,3 @@ Feature: Manage post custom fields
       """
       [ "new", "bar" ]
       """
-
-  Scenario: Clean up duplicate post meta values.
-    Given a WP install
-    And a session_no file:
-      """
-      n
-      """
-    And a session_yes file:
-      """
-      y
-      """
-
-    When I run `wp post meta add 1 foo bar`
-    Then STDOUT should be:
-      """
-      Success: Added custom field.
-      """
-
-    When I run the previous command again
-    Then the return code should be 0
-
-    When I run the previous command again
-    Then the return code should be 0
-
-    When I run `wp post meta list 1 --keys=foo`
-    Then STDOUT should be a table containing rows:
-      | post_id | meta_key | meta_value |
-      | 1       | foo      | bar        |
-      | 1       | foo      | bar        |
-      | 1       | foo      | bar        |
-
-    When I run `wp post meta clean-duplicates 1 foo < session_no`
-    # Check for contains only, as the string contains a trailing space.
-    Then STDOUT should contain:
-      """
-      Are you sure you want to delete 2 duplicate meta values and keep 1 valid meta value? [y/n]
-      """
-
-    When I run `wp post meta list 1 --keys=foo --format=count`
-    Then STDOUT should be:
-      """
-      3
-      """
-
-    When I run `wp post meta clean-duplicates 1 foo < session_yes`
-    Then STDOUT should contain:
-      """
-      Cleaned up duplicate 'foo' meta values.
-      """
-
-    When I try the previous command again
-    Then STDOUT should contain:
-      """
-      Success: Nothing to clean up: found 1 valid meta value and 0 duplicates.
-      """
-
-    When I try `wp post meta clean-duplicates 1 food`
-    Then STDERR should be:
-      """
-      Error: No meta data found.
-      """
-    And the return code should be 1
