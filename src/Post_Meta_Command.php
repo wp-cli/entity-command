@@ -97,18 +97,88 @@ class Post_Meta_Command extends CommandWithMeta {
 	 *
 	 * @param int    $object_id  ID of the object metadata is for
 	 * @param string $meta_key   Metadata key
-	 * @param mixed $meta_value  Optional. Metadata value. Must be serializable
-	 *                           if non-scalar. If specified, only delete
-	 *                           metadata entries with this value. Otherwise,
-	 *                           delete all entries with the specified meta_key.
-	 *                           Pass `null, `false`, or an empty string to skip
-	 *                           this check. For backward compatibility, it is
-	 *                           not possible to pass an empty string to delete
-	 *                           those entries with an empty string for a value.
+	 * @param mixed  $meta_value  Optional. Metadata value. Must be serializable
+	 *                            if non-scalar. If specified, only delete
+	 *                            metadata entries with this value. Otherwise,
+	 *                            delete all entries with the specified meta_key.
+	 *                            Pass `null, `false`, or an empty string to skip
+	 *                            this check. For backward compatibility, it is
+	 *                            not possible to pass an empty string to delete
+	 *                            those entries with an empty string for a value.
 	 *
 	 * @return bool True on successful delete, false on failure.
 	 */
 	protected function delete_metadata( $object_id, $meta_key, $meta_value = '' ) {
 		return delete_post_meta( $object_id, $meta_key, $meta_value );
+	}
+
+	/**
+	 * Cleans up duplicate post meta values on a post.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : ID of the post to clean.
+	 *
+	 * <key>
+	 * : Meta key to clean up.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Delete duplicate post meta.
+	 *     wp post meta clean-duplicates 1234 enclosure
+	 *     Success: Cleaned up duplicate 'enclosure' meta values.
+	 *
+	 * @subcommand clean-duplicates
+	 */
+	public function clean_duplicates( $args, $assoc_args ) {
+		global $wpdb;
+
+		list( $post_id, $key ) = $args;
+
+		$metas = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->postmeta} WHERE meta_key=%s AND post_id=%d",
+				$key,
+				$post_id
+			)
+		);
+
+		if ( empty( $metas ) ) {
+			WP_CLI::error( sprintf( 'No meta values found for \'%s\'.', $key ) );
+		}
+
+		$uniq_metas = array();
+		$dupe_metas = array();
+		foreach ( $metas as $meta ) {
+			if ( ! isset( $uniq_metas[ $meta->meta_value ] ) ) {
+				$uniq_metas[ $meta->meta_value ] = (int) $meta->meta_id;
+			} else {
+				$dupe_metas[] = (int) $meta->meta_id;
+			}
+		}
+
+		if ( count( $dupe_metas ) ) {
+			WP_CLI::confirm(
+				sprintf(
+					'Are you sure you want to delete %d duplicate meta values and keep %d valid meta value?',
+					count( $dupe_metas ),
+					count( $uniq_metas )
+				)
+			);
+			foreach ( $dupe_metas as $meta_id ) {
+				delete_metadata_by_mid( 'post', $meta_id );
+				WP_CLI::log( sprintf( 'Deleted meta id %d.', $meta_id ) );
+			}
+			WP_CLI::success( sprintf( 'Cleaned up duplicate \'%s\' meta values.', $key ) );
+		} else {
+			WP_CLI::success(
+				sprintf(
+					'Nothing to clean up: found %d valid meta value and %d duplicates.',
+					count( $uniq_metas ),
+					count( $dupe_metas )
+				)
+			);
+		}
 	}
 }
