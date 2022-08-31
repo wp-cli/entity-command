@@ -127,7 +127,7 @@ class Post_Meta_Command extends CommandWithMeta {
 	 *
 	 *     # Delete dulpicate post meta.
 	 *     wp post meta clean-duplicates 1234 enclosure
-	 *     Success: Cleaned up duplicate enclosures.
+	 *     Success: Cleaned up duplicate 'enclosure' meta values.
 	 *
 	 * @subcommand clean-duplicates
 	 */
@@ -145,38 +145,38 @@ class Post_Meta_Command extends CommandWithMeta {
 		);
 
 		if ( empty( $metas ) ) {
-			WP_CLI::error( 'No enclosures found.' );
+			WP_CLI::error( 'No meta data found.' );
 		}
 
-		$uniq_enclosures = array();
-		$dupe_enclosures = array();
+		$uniq_metas = [];
+		$dupe_metas = [];
 		foreach ( $metas as $meta ) {
-			if ( ! isset( $uniq_enclosures[ $meta->meta_value ] ) ) {
-				$uniq_enclosures[ $meta->meta_value ] = (int) $meta->meta_id;
+			if ( ! isset( $uniq_metas[ $meta->meta_value ] ) ) {
+				$uniq_metas[ $meta->meta_value ] = (int) $meta->meta_id;
 			} else {
-				$dupe_enclosures[] = (int) $meta->meta_id;
+				$dupe_metas[] = (int) $meta->meta_id;
 			}
 		}
 
-		if ( count( $dupe_enclosures ) ) {
+		if ( count( $dupe_metas ) ) {
 			WP_CLI::confirm(
 				sprintf(
-					'Are you sure you want to delete %d duplicate enclosures and keep %d valid enclosures?',
-					count( $dupe_enclosures ),
-					count( $uniq_enclosures )
+					'Are you sure you want to delete %d duplicate meta values and keep %d valid meta value?',
+					count( $dupe_metas ),
+					count( $uniq_metas )
 				)
 			);
-			foreach ( $dupe_enclosures as $meta_id ) {
+			foreach( $dupe_metas as $meta_id ) {
 				delete_metadata_by_mid( 'post', $meta_id );
 				WP_CLI::log( sprintf( 'Deleted meta id %d.', $meta_id ) );
 			}
-			WP_CLI::success( 'Cleaned up duplicate enclosures.' );
+			WP_CLI::success( sprintf( 'Cleaned up duplicate \'%s\' meta values.', $key ) );
 		} else {
 			WP_CLI::success(
 				sprintf(
-					'Nothing to clean up: found %d valid enclosures and %d duplicate enclosures.',
-					count( $uniq_enclosures ),
-					count( $dupe_enclosures )
+					'Nothing to clean up: found %d valid meta value and %d duplicates.',
+					count( $uniq_metas ),
+					count( $dupe_metas )
 				)
 			);
 		}

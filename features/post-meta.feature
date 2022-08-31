@@ -523,7 +523,7 @@ Feature: Manage post custom fields
     # Check for contains only, as the string contains a trailing space.
     Then STDOUT should contain:
       """
-      Are you sure you want to delete 2 duplicate enclosures and keep 1 valid enclosures? [y/n]
+      Are you sure you want to delete 2 duplicate meta values and keep 1 valid meta value? [y/n]
       """
 
     When I run `wp post meta list 1 --keys=foo --format=count`
@@ -535,18 +535,18 @@ Feature: Manage post custom fields
     When I run `wp post meta clean-duplicates 1 foo < session_yes`
     Then STDOUT should contain:
       """
-      Success: Cleaned up duplicate enclosures.
+      Cleaned up duplicate 'foo' meta values.
       """
 
     When I try the previous command again
     Then STDOUT should contain:
       """
-      Success: Nothing to clean up: found 1 valid enclosures and 0 duplicate enclosures.
+      Success: Nothing to clean up: found 1 valid meta value and 0 duplicates.
       """
 
     When I try `wp post meta clean-duplicates 1 food`
     Then STDERR should be:
       """
-      Error: No enclosures found.
+      Error: No meta data found.
       """
     And the return code should be 1
