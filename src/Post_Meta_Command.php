@@ -148,8 +148,8 @@ class Post_Meta_Command extends CommandWithMeta {
 			WP_CLI::error( 'No meta data found.' );
 		}
 
-		$uniq_metas = [];
-		$dupe_metas = [];
+		$uniq_metas = array();
+		$dupe_metas = array();
 		foreach ( $metas as $meta ) {
 			if ( ! isset( $uniq_metas[ $meta->meta_value ] ) ) {
 				$uniq_metas[ $meta->meta_value ] = (int) $meta->meta_id;
@@ -166,7 +166,7 @@ class Post_Meta_Command extends CommandWithMeta {
 					count( $uniq_metas )
 				)
 			);
-			foreach( $dupe_metas as $meta_id ) {
+			foreach ( $dupe_metas as $meta_id ) {
 				delete_metadata_by_mid( 'post', $meta_id );
 				WP_CLI::log( sprintf( 'Deleted meta id %d.', $meta_id ) );
 			}
