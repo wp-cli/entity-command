@@ -225,7 +225,7 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-      "foo": "bar"
+        "foo": "bar"
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -242,14 +242,14 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-      "foo": {
-      "bar": {
-      "baz": "some value"
-      }
-      },
-      "foo.com": {
-      "visitors": 999
-      }
+        "foo": {
+          "bar": {
+            "baz": "some value"
+          }
+        },
+        "foo.com": {
+          "visitors": 999
+        }
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -307,7 +307,7 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-      "foo": "bar"
+        "foo": "bar"
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -332,10 +332,10 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-      "foo": {
-      "bar": "baz"
-      },
-      "bar": "bad"
+        "foo": {
+          "bar": "baz"
+        },
+        "bar": "bad"
       }
       """
     And a patch file:
@@ -354,10 +354,10 @@ Feature: Manage post custom fields
     Then STDOUT should be JSON containing:
       """
       {
-      "foo": {
-      "bar": "new value"
-      },
-      "bar": "bad"
+        "foo": {
+          "bar": "new value"
+        },
+        "bar": "bad"
       }
       """
 
@@ -367,10 +367,10 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-      "foo": {
-      "bar": "baz"
-      },
-      "bar": "bad"
+        "foo": {
+          "bar": "baz"
+        },
+        "bar": "bad"
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -389,10 +389,10 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-      "foo": {
-      "bar": "baz",
-      "abe": "lincoln"
-      }
+        "foo": {
+          "bar": "baz",
+          "abe": "lincoln"
+        }
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -407,9 +407,9 @@ Feature: Manage post custom fields
     Then STDOUT should be JSON containing:
       """
       {
-      "foo": {
-      "abe": "lincoln"
-      }
+        "foo": {
+          "abe": "lincoln"
+        }
       }
       """
 
@@ -419,9 +419,9 @@ Feature: Manage post custom fields
     And an input.json file:
       """
       {
-      "foo": {
-      "bar": "baz"
-      }
+        "foo": {
+          "bar": "baz"
+        }
       }
       """
     And I run `wp post meta set 1 meta-key --format=json < input.json`
@@ -449,7 +449,7 @@ Feature: Manage post custom fields
     Then STDOUT should be JSON containing:
       """
       {
-      "foo": "bar"
+        "foo": "bar"
       }
       """
 
