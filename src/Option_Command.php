@@ -569,7 +569,13 @@ class Option_Command extends WP_CLI_Command {
 				: null;
 			$patch_value = ! empty( $stdin_value )
 				? WP_CLI::read_value( $stdin_value, $assoc_args )
-				: WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
+				: ( count( $key_path ) > 1
+					? WP_CLI::read_value( array_pop( $key_path ), $assoc_args )
+					: null );
+
+			if ( empty( $patch_value ) ) {
+				WP_CLI::error( "Please provide value to update." );
+			}
 		}
 
 		/* Need to make a copy of $current_value here as it is modified by reference */
