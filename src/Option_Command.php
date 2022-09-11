@@ -574,7 +574,7 @@ class Option_Command extends WP_CLI_Command {
 					: null );
 
 			if ( empty( $patch_value ) ) {
-				WP_CLI::error( "Please provide value to update." );
+				WP_CLI::error( 'Please provide value to update.' );
 			}
 		}
 
