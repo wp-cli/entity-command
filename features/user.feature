@@ -497,3 +497,12 @@ Feature: Manage WordPress users
       Success: Updated user 1.
       """
     And an email should not be sent
+
+  Scenario: Set user url when creating a user
+    Given a WP install
+    And I run `wp user create testurl sample@email.com --user_url='http://www.testsite.com'`
+
+    When I run `wp user get testurl --fields=user_url`
+    Then STDOUT should be a table containing rows:
+      | Field        | Value                   |
+      | user_url     | http://www.testsite.com |
