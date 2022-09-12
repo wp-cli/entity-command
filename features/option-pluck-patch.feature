@@ -318,9 +318,8 @@ Feature: Option commands have pluck and patch.
       """
     And the return code should be 1
 
-    When I try `wp option patch update option_name foo 0`
-    And STDERR should contain:
+    When I run `wp option patch update option_name foo 0`
+    And STDOUT should be:
       """
-      Please provide value to update.
+      Success: Updated 'option_name' option.
       """
-    And the return code should be 1
