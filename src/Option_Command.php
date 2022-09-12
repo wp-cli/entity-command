@@ -567,11 +567,16 @@ class Option_Command extends WP_CLI_Command {
 			$stdin_value = EntityUtils::has_stdin()
 				? trim( WP_CLI::get_value_from_arg_or_stdin( $args, -1 ) )
 				: null;
-			$patch_value = ! empty( $stdin_value )
-				? WP_CLI::read_value( $stdin_value, $assoc_args )
-				: ( count( $key_path ) > 1
-					? WP_CLI::read_value( array_pop( $key_path ), $assoc_args )
-					: null );
+
+			if ( ! empty( $stdin_value ) ) {
+				$patch_value = WP_CLI::read_value( $stdin_value, $assoc_args );
+			} else {
+				if ( count( $key_path ) > 1 ) {
+					$patch_value = WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
+				} else {
+					$patch_value = null;
+				}
+			}
 
 			if ( empty( $patch_value ) ) {
 				WP_CLI::error( 'Please provide value to update.' );

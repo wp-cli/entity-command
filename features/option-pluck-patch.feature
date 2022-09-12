@@ -317,3 +317,10 @@ Feature: Option commands have pluck and patch.
       Please provide value to update.
       """
     And the return code should be 1
+
+    When I try `wp option patch update option_name foo 0`
+    And STDERR should contain:
+      """
+      Please provide value to update.
+      """
+    And the return code should be 1
