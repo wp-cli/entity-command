@@ -548,6 +548,36 @@ class Option_Command extends WP_CLI_Command {
 	 *   - plaintext
 	 *   - json
 	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Patch insert.
+	 *     $ wp option patch insert option_name foo bar
+	 *     Success: Updated 'option_name' option.
+	 *
+	 *     # Patch Update.
+	 *     $ wp option patch update option_name foo new
+	 *     Success: Updated 'option_name' option.
+	 *
+	 *     # Patch Update using patch file.
+	 *     $ wp option patch update option_name foo bar < patch
+	 *     Success: Updated 'option_name' option.
+	 *
+	 *     # Patch Update using json file.
+	 *     $ wp option update option_name --format=json < input.json
+	 *     Success: Updated 'option_name' option.
+	 *
+	 *     # Patch Update when no key found.
+	 *     $ wp option patch update option_name foo not-a-key new-value
+	 *     Error: No data exists for key "not-a-key"
+	 *
+	 *     # Patch Update when don't pass all necessary argumants.
+	 *     $ wp option patch update option_name foo
+	 *     Error: Please provide value to update.
+	 *
+	 *     # Patch delete.
+	 *     $ wp option patch delete option_name foo bar
+	 *     Success: Updated 'option_name' option.
 	 */
 	public function patch( $args, $assoc_args ) {
 		list( $action, $key ) = $args;
