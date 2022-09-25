@@ -563,10 +563,6 @@ class Option_Command extends WP_CLI_Command {
 	 *     $ wp option patch update option_name foo bar < patch
 	 *     Success: Updated 'option_name' option.
 	 *
-	 *     # Patch Update using json file.
-	 *     $ wp option update option_name --format=json < input.json
-	 *     Success: Updated 'option_name' option.
-	 *
 	 *     # Patch Update when no key found.
 	 *     $ wp option patch update option_name foo not-a-key new-value
 	 *     Error: No data exists for key "not-a-key"
