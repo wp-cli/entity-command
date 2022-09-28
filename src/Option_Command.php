@@ -551,7 +551,7 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Patch insert.
+	 *     # Add 'bar' to the 'foo' key on an option with name 'option_name'
 	 *     $ wp option patch insert option_name foo bar
 	 *     Success: Updated 'option_name' option.
 	 *
