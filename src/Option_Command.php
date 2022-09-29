@@ -548,6 +548,32 @@ class Option_Command extends WP_CLI_Command {
 	 *   - plaintext
 	 *   - json
 	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Add 'bar' to the 'foo' key on an option with name 'option_name'
+	 *     $ wp option patch insert option_name foo bar
+	 *     Success: Updated 'option_name' option.
+	 *
+	 *     # Update the value of 'foo' key to 'new' on an option with name 'option_name'
+	 *     $ wp option patch update option_name foo new
+	 *     Success: Updated 'option_name' option.
+	 *
+	 *     # Set nested value of 'bar' key to value we have in the patch file on an option with name 'option_name'.
+	 *     $ wp option patch update option_name foo bar < patch
+	 *     Success: Updated 'option_name' option.
+	 *
+	 *     # Update the value for the key 'not-a-key' which is not exist on an option with name 'option_name'.
+	 *     $ wp option patch update option_name foo not-a-key new-value
+	 *     Error: No data exists for key "not-a-key"
+	 *
+	 *     # Update the value for the key 'foo' without passing value on an option with name 'option_name'.
+	 *     $ wp option patch update option_name foo
+	 *     Error: Please provide value to update.
+	 *
+	 *     # Delete the nested key 'bar' under 'foo' key on an option with name 'option_name'.
+	 *     $ wp option patch delete option_name foo bar
+	 *     Success: Updated 'option_name' option.
 	 */
 	public function patch( $args, $assoc_args ) {
 		list( $action, $key ) = $args;
