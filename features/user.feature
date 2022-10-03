@@ -17,6 +17,12 @@ Feature: Manage WordPress users
       | ID           | {USER_ID}  |
       | roles        | author     |
 
+    When I run `wp user get {USER_ID} --field=user_registered`
+    Then STDOUT should not contain:
+      """
+      0000-00-00 00:00:00
+      """
+
     When I run `wp user meta get {USER_ID} first_name`
     Then STDOUT should be:
       """
