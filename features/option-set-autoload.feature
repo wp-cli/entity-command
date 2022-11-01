@@ -45,6 +45,12 @@ Feature: Set 'autoload' value for an option
       Success: Updated autoload value for 'foo' option.
       """
 
+    When I run the previous command again
+    Then STDOUT should be:
+      """
+      Success: Autoload value passed for 'foo' option is unchanged.
+      """
+
     When I run `wp option get-autoload foo`
     Then STDOUT should be:
       """
