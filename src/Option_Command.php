@@ -458,7 +458,8 @@ class Option_Command extends WP_CLI_Command {
 			)
 		);
 		if ( ! $existing ) {
-			WP_CLI::error( "Could not get '{$option}' option. Does it exist?" );;
+			WP_CLI::error( "Could not get '{$option}' option. Does it exist?" );
+
 		}
 		WP_CLI::log( $existing->autoload );
 	}
@@ -493,7 +494,8 @@ class Option_Command extends WP_CLI_Command {
 			)
 		);
 		if ( ! $previous ) {
-			WP_CLI::error( "Could not get '{$option}' option. Does it exist?" );;
+			WP_CLI::error( "Could not get '{$option}' option. Does it exist?" );
+
 		}
 
 		if ( $previous->autoload === $autoload ) {
