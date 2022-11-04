@@ -517,7 +517,7 @@ class Option_Command extends WP_CLI_Command {
 			wp_cache_set( 'notoptions', $notoptions, 'options' );
 		}
 
-		if ( ! wp_installing() ) {
+		if ( ! defined( 'WP_INSTALLING' ) ) {
 			$alloptions = wp_load_alloptions( true );
 			if ( isset( $alloptions[ $option ] ) ) {
 				$alloptions[ $option ] = $previous->option_value;
