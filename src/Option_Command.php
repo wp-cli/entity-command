@@ -473,7 +473,7 @@ class Option_Command extends WP_CLI_Command {
 	 * : The name of the option to set 'autoload' for.
 	 *
 	 * <autoload>
-	 * : Requires WP 4.2. Should this option be automatically loaded.
+	 * : Should this option be automatically loaded.
 	 * ---
 	 * options:
 	 *   - 'yes'
