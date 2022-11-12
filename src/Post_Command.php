@@ -437,6 +437,10 @@ class Post_Command extends CommandWithDBObject {
 		$post_arr = get_object_vars( $post );
 		unset( $post_arr['filter'] );
 
+		if ( ! isset( $post_arr['url'] ) ) {
+			$post_arr['url'] = get_permalink( $post->ID );
+		}
+
 		if ( empty( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = array_keys( $post_arr );
 		}
