@@ -254,6 +254,12 @@ Feature: Manage WordPress posts
       https://example.com/?p={POST_ID}
       """
 
+    When I run `wp post get 1 --field=url`
+    Then STDOUT should be:
+      """
+      https://example.com/?p=1
+      """
+
   Scenario: Update a post from file or STDIN
     Given a content.html file:
       """
@@ -431,23 +437,4 @@ Feature: Manage WordPress posts
     Then STDOUT should be:
       """
       0
-      """
-
-  Scenario: Get the URL of a post
-
-    When I run `wp post create --post_title='Test post' --post_type="test" --porcelain`
-    Then STDOUT should be a number
-    And save STDOUT as {CUSTOM_POST_ID}
-
-    When I run `wp post exists {CUSTOM_POST_ID}`
-    Then STDOUT should be:
-      """
-      Success: Post with ID {CUSTOM_POST_ID} exists.
-      """
-    And the return code should be 0
-
-    When I run `wp post get {CUSTOM_POST_ID} --field=url`
-    Then STDOUT should be:
-      """
-      https://example.com/?p={CUSTOM_POST_ID}
       """
