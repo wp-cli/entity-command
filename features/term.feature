@@ -148,6 +148,12 @@ Feature: Manage WordPress terms
       https://example.com/?cat=2
       """
 
+    When I run `wp term get category 1 --field=url`
+    Then STDOUT should be:
+      """
+      https://example.com/?cat=1
+      """
+
   Scenario: Make sure WordPress receives the slashed data it expects
     When I run `wp term create category 'My\Term' --description='My\Term\Description' --porcelain`
     Then save STDOUT as {TERM_ID}

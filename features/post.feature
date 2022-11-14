@@ -254,6 +254,12 @@ Feature: Manage WordPress posts
       https://example.com/?p={POST_ID}
       """
 
+    When I run `wp post get 1 --field=url`
+    Then STDOUT should be:
+      """
+      https://example.com/?p=1
+      """
+
   Scenario: Update a post from file or STDIN
     Given a content.html file:
       """
