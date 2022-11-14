@@ -433,7 +433,7 @@ Feature: Manage WordPress posts
       0
       """
 
-  Scenario: Get Post URL
+  Scenario: Get the URL of a post
 
     When I run `wp post create --post_title='Test post' --post_type="test" --porcelain`
     Then STDOUT should be a number
