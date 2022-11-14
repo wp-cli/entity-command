@@ -432,3 +432,25 @@ Feature: Manage WordPress posts
       """
       0
       """
+
+  Scenario: Get Post URL
+
+    When I try `composer require --dev "wp-cli/rewrite-command":"^2"`
+    Then the return code should be 0
+
+    When I run `wp post create --post_title='Test post' --post_type="test" --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {CUSTOM_POST_ID}
+
+    When I run `wp post exists {CUSTOM_POST_ID}`
+    Then STDOUT should be:
+      """
+      Success: Post with ID {CUSTOM_POST_ID} exists.
+      """
+    And the return code should be 0
+
+    When I run `wp post get {CUSTOM_POST_ID} --field=url`
+    Then STDOUT should be:
+      """
+      https://example.com/?p={CUSTOM_POST_ID}
+      """
