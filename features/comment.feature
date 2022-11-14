@@ -105,6 +105,12 @@ Feature: Manage WordPress comments
       #comment-1
       """
 
+    When I run `wp comment get 1 --field=url`
+    Then STDOUT should contain:
+      """
+      #comment-1
+      """
+
   Scenario: List the URLs of comments
     When I run `wp comment create --comment_post_ID=1 --porcelain`
     Then save STDOUT as {COMMENT_ID}

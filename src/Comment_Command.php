@@ -241,6 +241,10 @@ class Comment_Command extends CommandWithDBObject {
 			WP_CLI::error( 'Invalid comment ID.' );
 		}
 
+		if ( ! isset( $comment->url ) ) {
+			$comment->url = get_comment_link( $comment );
+		}
+
 		if ( empty( $assoc_args['fields'] ) ) {
 			$comment_array        = get_object_vars( $comment );
 			$assoc_args['fields'] = array_keys( $comment_array );
