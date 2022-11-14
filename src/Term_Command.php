@@ -291,6 +291,10 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "Term doesn't exist." );
 		}
 
+		if ( ! isset( $term->url ) ) {
+			$term->url = get_term_link( $term );
+		}
+
 		if ( empty( $assoc_args['fields'] ) ) {
 			$term_array           = get_object_vars( $term );
 			$assoc_args['fields'] = array_keys( $term_array );
