@@ -435,9 +435,6 @@ Feature: Manage WordPress posts
 
   Scenario: Get Post URL
 
-    When I try `composer require --dev "wp-cli/rewrite-command":"^2"`
-    Then the return code should be 0
-
     When I run `wp post create --post_title='Test post' --post_type="test" --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {CUSTOM_POST_ID}
