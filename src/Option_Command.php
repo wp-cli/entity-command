@@ -437,6 +437,100 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Gets the 'autoload' value for an option.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <key>
+	 * : The name of the option to get 'autoload' of.
+	 *
+	 * @subcommand get-autoload
+	 */
+	public function get_autoload( $args ) {
+		global $wpdb;
+
+		list( $option ) = $args;
+
+		$existing = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT autoload FROM $wpdb->options WHERE option_name=%s",
+				$option
+			)
+		);
+		if ( ! $existing ) {
+			WP_CLI::error( "Could not get '{$option}' option. Does it exist?" );
+
+		}
+		WP_CLI::log( $existing->autoload );
+	}
+
+	/**
+	 * Sets the 'autoload' value for an option.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <key>
+	 * : The name of the option to set 'autoload' for.
+	 *
+	 * <autoload>
+	 * : Should this option be automatically loaded.
+	 * ---
+	 * options:
+	 *   - 'yes'
+	 *   - 'no'
+	 * ---
+	 *
+	 * @subcommand set-autoload
+	 */
+	public function set_autoload( $args ) {
+		global $wpdb;
+
+		list( $option, $autoload ) = $args;
+
+		$previous = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT autoload, option_value FROM $wpdb->options WHERE option_name=%s",
+				$option
+			)
+		);
+		if ( ! $previous ) {
+			WP_CLI::error( "Could not get '{$option}' option. Does it exist?" );
+
+		}
+
+		if ( $previous->autoload === $autoload ) {
+			WP_CLI::success( "Autoload value passed for '{$option}' option is unchanged." );
+			return;
+		}
+
+		$wpdb->update(
+			$wpdb->options,
+			array( 'autoload' => $autoload ),
+			array( 'option_name' => $option )
+		);
+
+		// Recreate cache refreshing from update_option().
+		$notoptions = wp_cache_get( 'notoptions', 'options' );
+
+		if ( is_array( $notoptions ) && isset( $notoptions[ $option ] ) ) {
+			unset( $notoptions[ $option ] );
+			wp_cache_set( 'notoptions', $notoptions, 'options' );
+		}
+
+		if ( ! defined( 'WP_INSTALLING' ) ) {
+			$alloptions = wp_load_alloptions( true );
+			if ( isset( $alloptions[ $option ] ) ) {
+				$alloptions[ $option ] = $previous->option_value;
+				wp_cache_set( 'alloptions', $alloptions, 'options' );
+			} else {
+				wp_cache_set( $option, $previous->option_value, 'options' );
+			}
+		}
+
+		WP_CLI::success( "Updated autoload value for '{$option}' option." );
+	}
+
+	/**
 	 * Deletes an option.
 	 *
 	 * ## OPTIONS
