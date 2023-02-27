@@ -1253,8 +1253,8 @@ class User_Command extends CommandWithDBObject {
 			foreach ( $blogs as $details ) {
 				$site = $this->sitefetcher->get_check( $details->site_id );
 
-				// Main blog shouldn't a spam !
-				if ( $details->userblog_id !== $site->blog_id ) {
+				// Only mark site as spam if not main site.
+				if ( ! is_main_site( $details->userblog_id ) ) {
 					update_blog_status( $details->userblog_id, $pref, $value );
 				}
 			}
