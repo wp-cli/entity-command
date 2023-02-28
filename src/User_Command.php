@@ -1250,7 +1250,7 @@ class User_Command extends CommandWithDBObject {
 			$blogs = (array) get_blogs_of_user( $user_id, true );
 			foreach ( $blogs as $details ) {
 				// Only mark site as spam if not main site.
-				if ( ! is_main_site( $details->userblog_id ) ) {
+				if ( ! is_main_site( $details->userblog_id, $details->site_id ) ) {
 					update_blog_status( $details->userblog_id, $pref, $value );
 				}
 			}
