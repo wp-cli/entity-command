@@ -2,7 +2,6 @@
 
 use WP_CLI\CommandWithDBObject;
 use WP_CLI\Entity\Utils as EntityUtils;
-use WP_CLI\Fetchers\Site as SiteFetcher;
 use WP_CLI\Fetchers\User as UserFetcher;
 use WP_CLI\Formatter;
 use WP_CLI\Iterators\CSV as CsvIterator;
@@ -51,8 +50,7 @@ class User_Command extends CommandWithDBObject {
 	];
 
 	public function __construct() {
-		$this->fetcher     = new UserFetcher();
-		$this->sitefetcher = new SiteFetcher();
+		$this->fetcher = new UserFetcher();
 	}
 
 	/**
@@ -1251,10 +1249,8 @@ class User_Command extends CommandWithDBObject {
 			// Make that user's blog as spam too.
 			$blogs = (array) get_blogs_of_user( $user_id, true );
 			foreach ( $blogs as $details ) {
-				$site = $this->sitefetcher->get_check( $details->site_id );
-
-				// Main blog shouldn't a spam !
-				if ( $details->userblog_id !== $site->blog_id ) {
+				// Only mark site as spam if not main site.
+				if ( ! is_main_site( $details->userblog_id, $details->site_id ) ) {
 					update_blog_status( $details->userblog_id, $pref, $value );
 				}
 			}

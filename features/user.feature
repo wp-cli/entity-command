@@ -435,6 +435,15 @@ Feature: Manage WordPress users
     And I run `wp user get oprime`
     Then STDOUT should not be empty
 
+    When I run `wp site create --slug=foo --porcelain`
+    Then save STDOUT as {SPAM_SITE_ID}
+
+    When I run `wp --url=example.com/foo user set-role {BBEE_ID} administrator`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
     When I run `wp user spam {BBEE_ID}`
     Then STDOUT should be:
       """
@@ -453,6 +462,18 @@ Feature: Manage WordPress users
       """
     And the return code should be 0
 
+   When I run `wp site list --site__in=1 --field=spam`
+   Then STDOUT should be:
+      """
+      0
+      """
+
+   When I run `wp site list --site__in={SPAM_SITE_ID} --field=spam`
+   Then STDOUT should be:
+      """
+      1
+      """
+
     When I try `wp user spam {OP_ID} 9999`
     Then STDOUT should be:
       """
@@ -465,6 +486,24 @@ Feature: Manage WordPress users
       Error: Only spammed 1 of 2 users.
       """
     And the return code should be 1
+
+    When I run `wp user unspam {BBEE_ID}`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+   When I run `wp site list --site__in=1 --field=spam`
+   Then STDOUT should be:
+      """
+      0
+      """
+
+   When I run `wp site list --site__in={SPAM_SITE_ID} --field=spam`
+   Then STDOUT should be:
+      """
+      0
+      """
 
   @require-wp-4.3
   Scenario: Sending emails on update
