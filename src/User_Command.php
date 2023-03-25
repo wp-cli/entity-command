@@ -1092,6 +1092,9 @@ class User_Command extends CommandWithDBObject {
 	 * [--skip-email]
 	 * : Don't send an email notification to the affected user(s).
 	 *
+	 * [--show-password]
+	 * : Show the new password(s).
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Reset the password for two users and send them the change email.
@@ -1104,19 +1107,24 @@ class User_Command extends CommandWithDBObject {
 	 */
 	public function reset_password( $args, $assoc_args ) {
 		$skip_email = Utils\get_flag_value( $assoc_args, 'skip-email' );
+		$show_new_pass = Utils\get_flag_value( $assoc_args, 'show-password' );
 		if ( $skip_email ) {
 			add_filter( 'send_password_change_email', '__return_false' );
 		}
 		$fetcher = new UserFetcher();
 		$users   = $fetcher->get_many( $args );
 		foreach ( $users as $user ) {
+			$new_pass = wp_generate_password();
 			wp_update_user(
 				[
 					'ID'        => $user->ID,
-					'user_pass' => wp_generate_password(),
+					'user_pass' => $new_pass,
 				]
 			);
 			WP_CLI::log( "Reset password for {$user->user_login}." );
+			if ( $show_new_pass ) {
+				WP_CLI::line( "Password: $new_pass" );
+			}
 		}
 		if ( $skip_email ) {
 			remove_filter( 'send_password_change_email', '__return_false' );
