@@ -1142,7 +1142,7 @@ class User_Command extends CommandWithDBObject {
 
 		$reset_user_count = count( $users );
 
-		if (! $porcelain) {
+		if ( ! $porcelain ) {
 			if ( 1 === $reset_user_count ) {
 				WP_CLI::success( "Password reset for {$reset_user_count} user." );
 			} elseif ( $reset_user_count > 1 ) {
