@@ -975,7 +975,7 @@ class User_Command extends CommandWithDBObject {
 		foreach ( $csv_data as $new_user ) {
 			$defaults = [
 				'role'            => get_option( 'default_role' ),
-				'user_pass'       => wp_generate_password(),
+				'user_pass'       => wp_generate_password( 24 ),
 				'user_registered' => current_time( 'mysql', true ),
 				'display_name'    => false,
 			];
@@ -1113,7 +1113,7 @@ class User_Command extends CommandWithDBObject {
 			wp_update_user(
 				[
 					'ID'        => $user->ID,
-					'user_pass' => wp_generate_password(),
+					'user_pass' => wp_generate_password( 24 ),
 				]
 			);
 			WP_CLI::log( "Reset password for {$user->user_login}." );

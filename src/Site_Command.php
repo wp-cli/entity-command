@@ -449,7 +449,7 @@ class Site_Command extends CommandWithDBObject {
 
 		$user_id = email_exists( $email );
 		if ( ! $user_id ) { // Create a new user with a random password
-			$password = wp_generate_password( 12, false );
+			$password = wp_generate_password( 24, false );
 			$user_id  = wpmu_create_user( $base, $password, $email );
 			if ( false === $user_id ) {
 				WP_CLI::error( "Can't create user." );
