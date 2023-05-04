@@ -255,7 +255,7 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 	 * : The ID of the object.
 	 *
 	 * <taxonomy>
-	 * : The slug of the taxonomy type to be updated.
+	 * : The name of the taxonomy type to be updated.
 	 *
 	 * <term>...
 	 * : The slug of the term or terms (space-separated) to be updated.
