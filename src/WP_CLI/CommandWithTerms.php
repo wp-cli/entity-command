@@ -121,7 +121,7 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 	 * : The name of the term's taxonomy.
 	 *
 	 * [<term>...]
-	 * : The slug of the term or terms (space-separated) to be removed from the object.
+	 * : The slug of the term or terms to be removed from the object.
 	 *
 	 * [--by=<field>]
 	 * : Explicitly handle the term value as a slug or id.
@@ -212,7 +212,7 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 	 * : The name of the taxonomy type to be added.
 	 *
 	 * <term>...
-	 * : The slug of the term or terms (space-separated) to be added.
+	 * : The slug of the term or terms to be added.
 	 *
 	 * [--by=<field>]
 	 * : Explicitly handle the term value as a slug or id.
@@ -258,7 +258,7 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 	 * : The name of the taxonomy type to be updated.
 	 *
 	 * <term>...
-	 * : The slug of the term or terms (space-separated) to be updated.
+	 * : The slug of the term or terms to be updated.
 	 *
 	 * [--by=<field>]
 	 * : Explicitly handle the term value as a slug or id.
