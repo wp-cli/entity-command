@@ -3429,7 +3429,7 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--field=
 
 	[--<field>=<value>]
 		Filter by one or more fields (see "Available Fields" section). However,
-		'url' isn't an available filter, because it's created from domain + path.
+		'url' isn't an available filter, as it comes from 'home' in wp_options.
 
 	[--site__in=<value>]
 		Only list the sites with these blog_id values (comma-separated).
