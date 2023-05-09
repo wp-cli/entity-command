@@ -1113,9 +1113,9 @@ class User_Command extends CommandWithDBObject {
 	 * @subcommand reset-password
 	 */
 	public function reset_password( $args, $assoc_args ) {
-		$skip_email = Utils\get_flag_value( $assoc_args, 'skip-email' );
+		$porcelain     = Utils\get_flag_value( $assoc_args, 'porcelain' );
+		$skip_email    = Utils\get_flag_value( $assoc_args, 'skip-email' );
 		$show_new_pass = Utils\get_flag_value( $assoc_args, 'show-password' );
-		$porcelain = Utils\get_flag_value( $assoc_args, 'porcelain' );
 
 		if ( $skip_email ) {
 			add_filter( 'send_password_change_email', '__return_false' );
