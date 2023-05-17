@@ -5280,7 +5280,7 @@ wp user remove-role <user> [<role>]
 Resets the password for one or more users.
 
 ~~~
-wp user reset-password <user>... [--skip-email]
+wp user reset-password <user>... [--skip-email] [--show-password] [--porcelain]
 ~~~
 
 **OPTIONS**
@@ -5291,6 +5291,12 @@ wp user reset-password <user>... [--skip-email]
 	[--skip-email]
 		Don't send an email notification to the affected user(s).
 
+	[--show-password]
+		Show the new password(s).
+
+	[--porcelain]
+		Output only the new password(s).
+
 **EXAMPLES**
 
     # Reset the password for two users and send them the change email.
@@ -5298,6 +5304,10 @@ wp user reset-password <user>... [--skip-email]
     Reset password for admin.
     Reset password for editor.
     Success: Passwords reset for 2 users.
+
+    # Reset the password for one user, displaying only the new password, and not sending the change email.
+    $ wp user reset-password admin --skip-email --porcelain
+    yV6BP*!d70wg
 
 
 
