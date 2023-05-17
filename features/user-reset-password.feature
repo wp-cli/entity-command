@@ -56,11 +56,11 @@ Feature: Reset passwords for one or more WordPress users.
       """
     And an email should not be sent
 
-  When I run `wp user get 1 --field=user_pass`
-  Then STDOUT should not contain:
-    """
-    {ORIGINAL_PASSWORD}
-    """
+    When I run `wp user get 1 --field=user_pass`
+    Then STDOUT should not contain:
+      """
+      {ORIGINAL_PASSWORD}
+      """
 
   @require-wp-4.3
   Scenario: Reset the password of a WordPress user, and show only the new password
@@ -73,8 +73,8 @@ Feature: Reset passwords for one or more WordPress users.
     Then STDOUT should not be empty
     And an email should not be sent
 
-  When I run `wp user get 1 --field=user_pass`
-  Then STDOUT should not contain:
-    """
-    {ORIGINAL_PASSWORD}
-    """
+    When I run `wp user get 1 --field=user_pass`
+    Then STDOUT should not contain:
+      """
+      {ORIGINAL_PASSWORD}
+      """
