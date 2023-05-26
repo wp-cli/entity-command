@@ -426,14 +426,15 @@ Feature: Manage WordPress users
 
   Scenario: Invalid User Role
     Given a WP install
+    And I run `wp user create testuser4@example.com testemail4@example.com`
 
-    When I run `wp user update admin --role=banana`
+    When I run `wp user update testuser4@example.com --role=banana`
     Then STDOUT should contain:
       """
       Warning:
       """
 
-    When I run `wp user update admin --role=admin`
+    When I run `wp user update testuser4@example.com --role=admin`
     Then STDOUT should not contain:
       """
       Warning:
