@@ -530,10 +530,7 @@ class User_Command extends CommandWithDBObject {
 		}
 
 		if ( isset( $assoc_args['role'] ) ) {
-			$role = $assoc_args['role'];
-			if ( ! in_array( $role, wp_roles()->role_names, true ) ) {
-				WP_CLI::warning( 'Invalid Role' );
-			}
+			self::validate_role( $assoc_args['role'], true );
 		}
 
 		$user_ids = [];
@@ -1163,12 +1160,17 @@ class User_Command extends CommandWithDBObject {
 	/**
 	 * Checks whether the role is valid
 	 *
-	 * @param string
+	 * @param $role string
+	 * @param $warn_user_only bool
 	 */
-	private static function validate_role( $role ) {
+	private static function validate_role( $role, $warn_user_only = false ) {
 
 		if ( ! empty( $role ) && null === get_role( $role ) ) {
-			WP_CLI::error( "Role doesn't exist: {$role}" );
+			if ( $warn_user_only ) {
+				WP_CLI::warning( "Role doesn't exist: {$role}" );
+			} else {
+				WP_CLI::error( "Role doesn't exist: {$role}" );
+			}
 		}
 
 	}
