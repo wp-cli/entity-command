@@ -239,6 +239,26 @@ Feature: Manage WordPress users
       | Field | Value |
       | roles |       |
 
+  Scenario: Invalid User Role
+    Given a WP install
+    When I run `wp user create testuser4 testemail4@example.com`
+    And I try `wp user update testuser4 --role=banana`
+    Then STDERR should be:
+      """
+      Warning: Role doesn't exist: banana
+      """
+    And STDOUT should contain:
+      """
+      Success:
+      """
+    And the return code should be 0
+
+    When I run `wp user get admin --field=roles`
+    Then STDOUT should be:
+      """
+      administrator
+      """
+
   Scenario: Managing user capabilities
     Given a WP install
 
@@ -422,22 +442,6 @@ Feature: Manage WordPress users
     Then STDOUT should be:
       """
       testuser4@example.com
-      """
-
-  Scenario: Invalid User Role
-    Given a WP install
-    And I run `wp user create testuser4@example.com testemail4@example.com`
-
-    When I run `wp user update testuser4@example.com --role=banana`
-    Then STDOUT should contain:
-      """
-      Warning:
-      """
-
-    When I run `wp user update testuser4@example.com --role=admin`
-    Then STDOUT should not contain:
-      """
-      Warning:
       """
 
   Scenario: Mark/remove a user from spam
