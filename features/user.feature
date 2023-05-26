@@ -424,6 +424,17 @@ Feature: Manage WordPress users
       testuser4@example.com
       """
 
+  Scenario: Invalid User Role
+    Given a WP install
+
+    When I run `wp user update admin --role=banana`
+    Then STDOUT should contain:
+      """
+      Warning:
+      """
+
+
+
   Scenario: Mark/remove a user from spam
     Given a WP multisite install
     And I run `wp user create bumblebee bbee@example.com --role=author --porcelain`
