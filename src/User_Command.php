@@ -529,6 +529,13 @@ class User_Command extends CommandWithDBObject {
 			unset( $assoc_args['user_login'] );
 		}
 
+		if ( isset( $assoc_args['role'] ) ) {
+			$role = $assoc_args['role'];
+			if ( ! in_array( $role, wp_roles()->role_names, true ) ) {
+				WP_CLI::warning( 'Invalid Role' );
+			}
+		}
+
 		$user_ids = [];
 		foreach ( $this->fetcher->get_many( $args ) as $user ) {
 			$user_ids[] = $user->ID;
