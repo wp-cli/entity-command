@@ -433,7 +433,11 @@ Feature: Manage WordPress users
       Warning:
       """
 
-
+    When I run `wp user update admin --role=admin`
+    Then STDOUT should not contain:
+      """
+      Warning:
+      """
 
   Scenario: Mark/remove a user from spam
     Given a WP multisite install
