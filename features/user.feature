@@ -152,6 +152,19 @@ Feature: Manage WordPress users
     Then STDERR should not be empty
     And the return code should be 1
 
+  Scenario: Trying to delete a existing user with no roles from subsite
+    Given a WP multisite install
+
+    When I run `wp user create bobjones bob@example.com --role=author --porcelain`
+    And save STDOUT as {BOB_ID}
+    And I try `wp user delete bobjones` 
+    And I try `wp user delete bobjones` again
+    Then STDERR should be:
+      """
+      Warning: No roles found for user {BOB_ID} on example.com, no users deleted.
+      """
+    And the return code should be 1
+
   @require-wp-4.0
   Scenario: Trying to delete super admin
     Given a WP multisite install
