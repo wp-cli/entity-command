@@ -290,14 +290,13 @@ class User_Command extends CommandWithDBObject {
 			$users,
 			$assoc_args,
 			function ( $user ) use ( $network, $reassign ) {
-				global $blog_id;
 				$user_id = $user->ID;
 
 				if ( $network ) {
 					$result  = wpmu_delete_user( $user_id );
 					$message = "Deleted user {$user_id}.";
-				} else if (is_multisite() && empty($user->roles)) {
-					$message = "No roles found for user {$user_id} on " . get_site_url($blog_id) . ', no users deleted.';
+				} elseif ( is_multisite() && empty( $user->roles ) ) {
+					$message = "No roles found for user {$user_id} on " . home_url() . ', no users deleted.';
 					return [ 'error', $message ];
 				} else {
 					$result  = wp_delete_user( $user_id, $reassign );
