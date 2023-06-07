@@ -158,7 +158,7 @@ Feature: Manage WordPress users
     When I run `wp user create bobjones bob@example.com --role=author --url=https://example.com --porcelain`
     And save STDOUT as {BOB_ID}
 
-    When I run `wp user delete bobjones`
+    When I run `wp user delete bobjones --yes`
     Then STDOUT should not be empty
 
     When I try `wp user delete bobjones --yes`
