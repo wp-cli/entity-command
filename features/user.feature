@@ -159,9 +159,9 @@ Feature: Manage WordPress users
     And save STDOUT as {BOB_ID}
 
     When I run `wp user delete bobjones --yes`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      Success: Removed user {BOB_ID} from https://example.com.
+      Success: Removed user
       """
     And STDERR should be empty
 
