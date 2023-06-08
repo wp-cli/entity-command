@@ -5329,6 +5329,18 @@ wp user reset-password <user>... [--skip-email] [--show-password] [--porcelain]
     $ wp user reset-password admin --skip-email --porcelain
     yV6BP*!d70wg
 
+    # Reset password for all users.
+    $ wp user reset-password $(wp user list --format=ids)
+    Reset password for admin
+    Reset password for editor
+    Reset password for subscriber
+    Success: Passwords reset for 3 users.
+
+    # Reset password for all users with a particular role.
+    $ wp user reset-password $(wp user list --format=ids --role=administrator)
+    Reset password for admin
+    Success: Password reset for 1 user.
+
 
 
 ### wp user session
