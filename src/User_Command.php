@@ -295,6 +295,9 @@ class User_Command extends CommandWithDBObject {
 				if ( $network ) {
 					$result  = wpmu_delete_user( $user_id );
 					$message = "Deleted user {$user_id}.";
+				} elseif ( is_multisite() && empty( $user->roles ) ) {
+					$message = "No roles found for user {$user_id} on " . home_url() . ', no users deleted.';
+					return [ 'error', $message ];
 				} else {
 					$result  = wp_delete_user( $user_id, $reassign );
 					$message = "Removed user {$user_id} from " . home_url() . '.';
