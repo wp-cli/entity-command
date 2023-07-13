@@ -316,7 +316,7 @@ class Site_Command extends CommandWithDBObject {
 	 * : Answer yes to the confirmation message.
 	 *
 	 * [--keep-tables]
-	 * : Delete the blog from the list, but don't drop it's tables.
+	 * : Delete the blog from the list, but don't drop its tables.
 	 *
 	 * ## EXAMPLES
 	 *
