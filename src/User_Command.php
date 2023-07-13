@@ -48,6 +48,7 @@ class User_Command extends CommandWithDBObject {
 	private $cap_fields = [
 		'name',
 	];
+	private $fetcher;
 
 	public function __construct() {
 		$this->fetcher = new UserFetcher();

@@ -33,6 +33,8 @@ use WP_CLI\Fetchers\Post as PostFetcher;
 class Post_Term_Command extends CommandWithTerms {
 	protected $obj_type = 'post';
 
+	private $fetcher;
+
 	public function __construct() {
 		$this->fetcher = new PostFetcher();
 	}

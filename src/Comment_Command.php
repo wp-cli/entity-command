@@ -41,6 +41,8 @@ class Comment_Command extends CommandWithDBObject {
 		'comment_author_email',
 	];
 
+	private $fetcher;
+
 	public function __construct() {
 		$this->fetcher = new CommentFetcher();
 	}

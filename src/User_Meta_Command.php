@@ -33,6 +33,8 @@ use WP_CLI\Fetchers\User as UserFetcher;
 class User_Meta_Command extends CommandWithMeta {
 	protected $meta_type = 'user';
 
+	private $fetcher;
+
 	public function __construct() {
 		$this->fetcher = new UserFetcher();
 	}
