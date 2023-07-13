@@ -33,6 +33,8 @@ class Site_Command extends CommandWithDBObject {
 	protected $obj_type   = 'site';
 	protected $obj_id_key = 'blog_id';
 
+	private $fetcher;
+
 	public function __construct() {
 		$this->fetcher = new SiteFetcher();
 	}

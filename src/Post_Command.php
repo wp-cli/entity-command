@@ -36,6 +36,8 @@ class Post_Command extends CommandWithDBObject {
 		'post_status',
 	];
 
+	private $fetcher;
+
 	public function __construct() {
 		$this->fetcher = new PostFetcher();
 	}
