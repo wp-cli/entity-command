@@ -172,3 +172,17 @@ Feature: Generate new WordPress posts
       """
       2000-01-01 02:11:00
       """
+
+  Scenario: Generating posts when the site timezone is ahead of UTC
+    When I run `wp option update timezone_string "Europe/Helsinki"`
+    And I run `wp post delete 1 --force`
+
+    When I run `wp post list --field=post_status`
+    Then STDOUT should be empty
+    
+    When I run `wp post generate --count=1`
+    And I run `wp post list --field=post_status`
+    Then STDOUT should be:
+      """
+      publish
+      """
