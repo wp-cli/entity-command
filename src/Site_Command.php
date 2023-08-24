@@ -978,4 +978,14 @@ class Site_Command extends CommandWithDBObject {
 			WP_CLI::success( "Site {$site->blog_id} {$action}." );
 		}
 	}
+
+	private function get_site_by_slug( $slug ) {
+		$blog = get_blog_details( trim( $slug, '/' ) );
+
+		if ( ! $blog ) {
+			WP_CLI::error( 'Site not found.' );
+		}
+
+		return $blog;
+	}
 }
