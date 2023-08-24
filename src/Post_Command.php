@@ -1003,18 +1003,18 @@ class Post_Command extends CommandWithDBObject {
 	/**
 	 * Convert a date-time string with a hyphen separator to a space separator.
 	 * 
-	 * @param string $dateString The date-time string to convert.
+	 * @param string $date_string The date-time string to convert.
 	 * @return string The converted date-time string.
 	 * 
 	 * Example:
-	 * maybeConvertHyphenatedDateFormat("2018-07-05-17:17:17");
+	 * maybe_convert_hyphenated_date_format( "2018-07-05-17:17:17" );
 	 * Returns: "2018-07-05 17:17:17"
 	 */
-	private function maybe_convert_hyphenated_date_format($dateString) {
-		// Check if the date string matches the format with the hyphen between date and time
-		if (preg_match('/^(\d{4}-\d{2}-\d{2})-(\d{2}:\d{2}:\d{2})$/', $dateString, $matches)) {
+	private function maybe_convert_hyphenated_date_format( $date_string ) {
+		// Check if the date string matches the format with the hyphen between date and time.
+		if ( preg_match( '/^(\d{4}-\d{2}-\d{2})-(\d{2}:\d{2}:\d{2})$/', $date_string, $matches ) ) {
 			return $matches[1] . ' ' . $matches[2];
 		}
-		return $dateString;
+		return $date_string;
 	}
 }
