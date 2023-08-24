@@ -775,8 +775,11 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to set as public.
+	 * [<id>...]
+	 * : One or more IDs of sites to set as public. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the blog to be set as public. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -785,8 +788,18 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * @subcommand public
 	 */
-	public function set_public( $args ) {
-		$this->update_site_status( $args, 'public', 1 );
+	public function set_public( $args, $assoc_args ) {
+		if ( isset( $assoc_args['slug'] ) ) {
+			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
+
+			if ( ! $blog ) {
+				WP_CLI::error( 'Site not found.' );
+			}
+
+			$this->update_site_status( [ $blog->blog_id ], 'public', 1 );
+		} else {
+			$this->update_site_status( $args, 'public', 1 );
+		}
 	}
 
 	/**
