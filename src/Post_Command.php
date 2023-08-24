@@ -702,10 +702,10 @@ class Post_Command extends CommandWithDBObject {
 	 * ---
 	 *
 	 * [--post_date=<yyyy-mm-dd-hh-ii-ss>]
-	 * : The date of the generated posts. Default: current date
+	 * : The date of the post. Default is the current time.
 	 *
 	 * [--post_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
-	 * : The GMT date of the generated posts. Default: value of post_date (or current date if it's not set)
+	 * : The date of the post in the GMT timezone. Default is the value of --post_date.
 	 *
 	 * [--post_content]
 	 * : If set, the command reads the post_content from STDIN.
@@ -753,23 +753,13 @@ class Post_Command extends CommandWithDBObject {
 			'post_type'     => 'post',
 			'post_status'   => 'publish',
 			'post_author'   => false,
-			'post_date'     => false,
-			'post_date_gmt' => false,
+			'post_date'     => '',
+			'post_date_gmt' => '',
 			'post_content'  => '',
 			'post_title'    => '',
 		];
 
 		$post_data = array_merge( $defaults, $assoc_args );
-
-		$call_time = current_time( 'mysql' );
-
-		if ( false === $post_data['post_date_gmt'] ) {
-			$post_data['post_date_gmt'] = $post_data['post_date'] ?: $call_time;
-		}
-
-		if ( false === $post_data['post_date'] ) {
-			$post_data['post_date'] = $post_data['post_date_gmt'] ?: $call_time;
-		}
 
 		if ( ! post_type_exists( $post_data['post_type'] ) ) {
 			WP_CLI::error( "'{$post_data['post_type']}' is not a registered post type." );
