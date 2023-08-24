@@ -688,16 +688,29 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to deactivate.
+	 * [<id>...]
+	 * : One or more IDs of sites to deactivate. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the blog to be deactivated. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site deactivate 123
 	 *     Success: Site 123 deactivated.
 	 */
-	public function deactivate( $args ) {
-		$this->update_site_status( $args, 'deleted', 1 );
+	public function deactivate( $args, $assoc_args ) {
+		if ( isset( $assoc_args['slug'] ) ) {
+			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
+
+			if ( ! $blog ) {
+				WP_CLI::error( 'Site not found.' );
+			}
+
+			$this->update_site_status( [ $blog->blog_id ], 'deleted', 1 );
+		} else {
+			$this->update_site_status( $args, 'deleted', 1 );
+		}
 	}
 
 	/**
