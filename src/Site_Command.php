@@ -758,16 +758,29 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to set as unmature.
+	 * [<id>...]
+	 * : One or more IDs of sites to set as unmature. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the blog to be set as unmature. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     $ wp site general 123
+	 *     $ wp site unmature 123
 	 *     Success: Site 123 marked as unmature.
 	 */
-	public function unmature( $args ) {
-		$this->update_site_status( $args, 'mature', 0 );
+	public function unmature( $args, $assoc_args ) {
+		if ( isset( $assoc_args['slug'] ) ) {
+			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
+
+			if ( ! $blog ) {
+				WP_CLI::error( 'Site not found.' );
+			}
+
+			$this->update_site_status( [ $blog->blog_id ], 'mature', 0 );
+		} else {
+			$this->update_site_status( $args, 'mature', 0 );
+		}
 	}
 
 	/**
