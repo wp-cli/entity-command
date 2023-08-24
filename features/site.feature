@@ -440,3 +440,208 @@ Feature: Manage sites in a multisite installation
       """
       My\Site
       """
+
+  Scenario: Activate/deactivate a site by slug
+    Given a WP multisite install
+
+    When I run `wp site create --slug=first`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created: http
+      """
+    And STDOUT should contain:
+      """
+      ://example.com/first/
+      """
+
+    When I run `wp site deactivate --slug=first`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 deactivated.
+      """
+
+    When I run `wp site list --fields=blog_id,deleted`
+    Then STDOUT should be a table containing rows:
+      | blog_id | deleted |
+      | 2       | 1       |
+
+    When I try `wp site deactivate --slug=first`
+    Then STDERR should be:
+      """
+      Warning: Site 2 already deactivated.
+      """
+
+    When I run `wp site activate --slug=first`
+    Then STDOUT should be:
+      """
+      Success: Site 2 activated.
+      """
+
+    When I run `wp site list --fields=blog_id,deleted`
+    Then STDOUT should be a table containing rows:
+      | blog_id | deleted |
+      | 2       | 0       |
+
+  Scenario: Archive/unarchive a site by slug
+    Given a WP multisite install
+
+    When I run `wp site create --slug=first`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created: http
+      """
+    And STDOUT should contain:
+      """
+      ://example.com/first/
+      """
+
+    When I run `wp site archive --slug=first`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 archived.
+      """
+
+    When I run `wp site list --fields=blog_id,archived`
+    Then STDOUT should be a table containing rows:
+      | blog_id | archived |
+      | 2       | 1        |
+
+    When I try `wp site archive --slug=first`
+    Then STDERR should be:
+      """
+      Warning: Site 2 already archived.
+      """
+
+    When I run `wp site unarchive --slug=first`
+    Then STDOUT should be:
+      """
+      Success: Site 2 unarchived.
+      """
+
+    When I run `wp site list --fields=blog_id,archived`
+    Then STDOUT should be a table containing rows:
+      | blog_id | archived |
+      | 2       | 0        |
+
+  Scenario: Mark/remove a site by slug from spam
+    Given a WP multisite install
+
+    When I run `wp site create --slug=first`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created: http
+      """
+    And STDOUT should contain:
+      """
+      ://example.com/first/
+      """
+
+    When I run `wp site spam --slug=first`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 marked as spam.
+      """
+
+    When I run `wp site list --fields=blog_id,spam`
+    Then STDOUT should be a table containing rows:
+      | blog_id | spam |
+      | 2       | 1    |
+
+    When I try `wp site spam --slug=first`
+    Then STDERR should be:
+      """
+      Warning: Site 2 already marked as spam.
+      """
+
+    When I run `wp site unspam --slug=first`
+    Then STDOUT should be:
+      """
+      Success: Site 2 removed from spam.
+      """
+
+    When I run `wp site list --fields=blog_id,spam`
+    Then STDOUT should be a table containing rows:
+      | blog_id | spam |
+      | 2       | 0    |
+
+  Scenario: Mark/remove a site by slug as mature
+    Given a WP multisite install
+
+    When I run `wp site create --slug=first`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created: http
+      """
+    And STDOUT should contain:
+      """
+      ://example.com/first/
+      """
+
+    When I run `wp site mature --slug=first`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 marked as mature.
+      """
+
+    When I run `wp site list --fields=blog_id,mature`
+    Then STDOUT should be a table containing rows:
+      | blog_id | mature |
+      | 2       | 1      |
+
+    When I try `wp site mature --slug=first`
+    Then STDERR should be:
+      """
+      Warning: Site 2 already marked as mature.
+      """
+
+    When I run `wp site unmature --slug=first`
+    Then STDOUT should be:
+      """
+      Success: Site 2 marked as unmature.
+      """
+
+    When I run `wp site list --fields=blog_id,mature`
+    Then STDOUT should be a table containing rows:
+      | blog_id | mature |
+      | 2       | 0      |
+
+  Scenario: Set/Unset a site by slug as public
+    Given a WP multisite install
+
+    When I run `wp site create --slug=first`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created: http
+      """
+    And STDOUT should contain:
+      """
+      ://example.com/first/
+      """
+
+    When I run `wp site private --slug=first`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 marked as private.
+      """
+
+    When I run `wp site list --fields=blog_id,public`
+    Then STDOUT should be a table containing rows:
+      | blog_id | public |
+      | 2       | 0      |
+
+    When I try `wp site private --slug=first`
+    Then STDERR should be:
+      """
+      Warning: Site 2 already marked as private.
+      """
+
+    When I run `wp site public --slug=first`
+    Then STDOUT should be:
+      """
+      Success: Site 2 marked as public.
+      """
+
+    When I run `wp site list --fields=blog_id,public`
+    Then STDOUT should be a table containing rows:
+      | blog_id | public |
+      | 2       | 1      |
