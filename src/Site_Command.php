@@ -650,12 +650,7 @@ class Site_Command extends CommandWithDBObject {
 	 */
 	public function archive( $args, $assoc_args ) {
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
-
-			if ( ! $blog ) {
-				WP_CLI::error( 'Site not found.' );
-			}
-
+			$blog = $this->get_site_by_slug( $assoc_args['slug'] );
 			$this->update_site_status( [ $blog->blog_id ], 'archived', 1 );
 		} else {
 			$this->update_site_status( $args, 'archived', 1 );
@@ -680,12 +675,7 @@ class Site_Command extends CommandWithDBObject {
 	 */
 	public function unarchive( $args, $assoc_args ) {
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
-
-			if ( ! $blog ) {
-				WP_CLI::error( 'Site not found.' );
-			}
-
+			$blog = $this->get_site_by_slug( $assoc_args['slug'] );
 			$this->update_site_status( [ $blog->blog_id ], 'archived', 0 );
 		} else {
 			$this->update_site_status( $args, 'archived', 0 );
@@ -710,12 +700,7 @@ class Site_Command extends CommandWithDBObject {
 	 */
 	public function activate( $args, $assoc_args ) {
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
-
-			if ( ! $blog ) {
-				WP_CLI::error( 'Site not found.' );
-			}
-
+			$blog = $this->get_site_by_slug( $assoc_args['slug'] );
 			$this->update_site_status( [ $blog->blog_id ], 'deleted', 0 );
 		} else {
 			$this->update_site_status( $args, 'deleted', 0 );
@@ -740,12 +725,7 @@ class Site_Command extends CommandWithDBObject {
 	 */
 	public function deactivate( $args, $assoc_args ) {
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
-
-			if ( ! $blog ) {
-				WP_CLI::error( 'Site not found.' );
-			}
-
+			$blog = $this->get_site_by_slug( $assoc_args['slug'] );
 			$this->update_site_status( [ $blog->blog_id ], 'deleted', 1 );
 		} else {
 			$this->update_site_status( $args, 'deleted', 1 );
@@ -770,12 +750,7 @@ class Site_Command extends CommandWithDBObject {
 	 */
 	public function spam( $args, $assoc_args ) {
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
-
-			if ( ! $blog ) {
-				WP_CLI::error( 'Site not found.' );
-			}
-
+			$blog = $this->get_site_by_slug( $assoc_args['slug'] );
 			$this->update_site_status( [ $blog->blog_id ], 'spam', 1 );
 		} else {
 			$this->update_site_status( $args, 'spam', 1 );
@@ -802,12 +777,7 @@ class Site_Command extends CommandWithDBObject {
 	 */
 	public function unspam( $args, $assoc_args ) {
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
-
-			if ( ! $blog ) {
-				WP_CLI::error( 'Site not found.' );
-			}
-
+			$blog = $this->get_site_by_slug( $assoc_args['slug'] );
 			$this->update_site_status( [ $blog->blog_id ], 'spam', 0 );
 		} else {
 			$this->update_site_status( $args, 'spam', 0 );
@@ -832,12 +802,7 @@ class Site_Command extends CommandWithDBObject {
 	 */
 	public function mature( $args, $assoc_args ) {
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
-
-			if ( ! $blog ) {
-				WP_CLI::error( 'Site not found.' );
-			}
-
+			$blog = $this->get_site_by_slug( $assoc_args['slug'] );
 			$this->update_site_status( [ $blog->blog_id ], 'mature', 1 );
 		} else {
 			$this->update_site_status( $args, 'mature', 1 );
@@ -862,12 +827,7 @@ class Site_Command extends CommandWithDBObject {
 	 */
 	public function unmature( $args, $assoc_args ) {
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
-
-			if ( ! $blog ) {
-				WP_CLI::error( 'Site not found.' );
-			}
-
+			$blog = $this->get_site_by_slug( $assoc_args['slug'] );
 			$this->update_site_status( [ $blog->blog_id ], 'mature', 0 );
 		} else {
 			$this->update_site_status( $args, 'mature', 0 );
@@ -894,12 +854,7 @@ class Site_Command extends CommandWithDBObject {
 	 */
 	public function set_public( $args, $assoc_args ) {
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
-
-			if ( ! $blog ) {
-				WP_CLI::error( 'Site not found.' );
-			}
-
+			$blog = $this->get_site_by_slug( $assoc_args['slug'] );
 			$this->update_site_status( [ $blog->blog_id ], 'public', 1 );
 		} else {
 			$this->update_site_status( $args, 'public', 1 );
@@ -926,12 +881,7 @@ class Site_Command extends CommandWithDBObject {
 	 */
 	public function set_private( $args, $assoc_args ) {
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
-
-			if ( ! $blog ) {
-				WP_CLI::error( 'Site not found.' );
-			}
-
+			$blog = $this->get_site_by_slug( $assoc_args['slug'] );
 			$this->update_site_status( [ $blog->blog_id ], 'public', 0 );
 		} else {
 			$this->update_site_status( $args, 'public', 0 );
