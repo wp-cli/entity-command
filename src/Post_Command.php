@@ -761,7 +761,7 @@ class Post_Command extends CommandWithDBObject {
 
 		$post_data = array_merge( $defaults, $assoc_args );
 
-		$post_data['post_date'] 	= $this->maybe_convert_hyphenated_date_format( $post_data['post_date'] );
+		$post_data['post_date']     = $this->maybe_convert_hyphenated_date_format( $post_data['post_date'] );
 		$post_data['post_date_gmt'] = $this->maybe_convert_hyphenated_date_format( $post_data['post_date_gmt'] );
 
 		if ( ! post_type_exists( $post_data['post_type'] ) ) {
@@ -1002,10 +1002,10 @@ class Post_Command extends CommandWithDBObject {
 
 	/**
 	 * Convert a date-time string with a hyphen separator to a space separator.
-	 * 
+	 *
 	 * @param string $date_string The date-time string to convert.
 	 * @return string The converted date-time string.
-	 * 
+	 *
 	 * Example:
 	 * maybe_convert_hyphenated_date_format( "2018-07-05-17:17:17" );
 	 * Returns: "2018-07-05 17:17:17"
