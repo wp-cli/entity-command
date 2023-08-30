@@ -176,7 +176,7 @@ class User_Session_Command extends WP_CLI_Command {
 
 		array_walk(
 			$sessions,
-			function( &$session, $token ) {
+			function ( &$session, $token ) {
 				$session['token']           = $token;
 				$session['login_time']      = date( 'Y-m-d H:i:s', $session['login'] ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 				$session['expiration_time'] = date( 'Y-m-d H:i:s', $session['expiration'] ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
@@ -195,5 +195,4 @@ class User_Session_Command extends WP_CLI_Command {
 	private function get_formatter( &$assoc_args ) {
 		return new Formatter( $assoc_args, $this->fields );
 	}
-
 }

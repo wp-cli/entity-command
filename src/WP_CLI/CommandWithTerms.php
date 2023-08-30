@@ -105,7 +105,6 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
-
 	}
 
 
@@ -366,4 +365,3 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 		return new Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
 }
-

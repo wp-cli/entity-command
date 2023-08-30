@@ -154,7 +154,7 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		$terms = array_map(
-			function( $term ) {
+			function ( $term ) {
 					$term->count  = (int) $term->count;
 					$term->parent = (int) $term->parent;
 					$term->url    = get_term_link( $term );
@@ -225,12 +225,10 @@ class Term_Command extends WP_CLI_Command {
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( $result->get_error_message() );
-		} else {
-			if ( $porcelain ) {
+		} elseif ( $porcelain ) {
 				WP_CLI::line( $result['term_id'] );
-			} else {
-				WP_CLI::success( "Created {$taxonomy} {$result['term_id']}." );
-			}
+		} else {
+			WP_CLI::success( "Created {$taxonomy} {$result['term_id']}." );
 		}
 	}
 
@@ -457,10 +455,10 @@ class Term_Command extends WP_CLI_Command {
 
 			if ( is_wp_error( $result ) ) {
 				WP_CLI::warning( $result );
-				$errors++;
+				++$errors;
 			} elseif ( $result ) {
 				WP_CLI::log( "Deleted {$taxonomy} {$term_id}." );
-				$successes++;
+				++$successes;
 			} else {
 				WP_CLI::warning( "{$taxonomy} {$term_id} doesn't exist." );
 			}
@@ -557,7 +555,7 @@ class Term_Command extends WP_CLI_Command {
 				if ( $previous_term_id && $this->maybe_make_child() && $current_depth < $max_depth ) {
 
 					$current_parent = $previous_term_id;
-					$current_depth++;
+					++$current_depth;
 
 				} elseif ( $this->maybe_reset_depth() ) {
 

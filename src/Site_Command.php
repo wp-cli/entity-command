@@ -615,7 +615,7 @@ class Site_Command extends CommandWithDBObject {
 
 		$iterator = Utils\iterator_map(
 			$iterator,
-			function( $blog ) {
+			function ( $blog ) {
 				$blog->url = trailingslashit( get_home_url( $blog->blog_id ) );
 				return $blog;
 			}

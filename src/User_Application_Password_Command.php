@@ -454,7 +454,7 @@ final class User_Application_Password_Command {
 
 			if ( $result instanceof WP_Error ) {
 				WP_CLI::warning( "Failed to delete UUID {$uuid}: " . $result->get_error_message() );
-				$errors++;
+				++$errors;
 			}
 		}
 

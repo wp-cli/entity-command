@@ -6,7 +6,7 @@ if ( ! class_exists( 'WP_CLI' ) ) {
 	return;
 }
 
-$wpcli_entity_autoloader = dirname( __FILE__ ) . '/vendor/autoload.php';
+$wpcli_entity_autoloader = __DIR__ . '/vendor/autoload.php';
 if ( file_exists( $wpcli_entity_autoloader ) ) {
 	require_once $wpcli_entity_autoloader;
 }
@@ -37,7 +37,7 @@ WP_CLI::add_command(
 	'site meta',
 	'Site_Meta_Command',
 	array(
-		'before_invoke' => function() {
+		'before_invoke' => function () {
 			if ( ! is_multisite() ) {
 				WP_CLI::error( 'This is not a multisite installation.' );
 			}
@@ -51,7 +51,7 @@ WP_CLI::add_command(
 	'site option',
 	'Site_Option_Command',
 	array(
-		'before_invoke' => function() {
+		'before_invoke' => function () {
 			if ( ! is_multisite() ) {
 				WP_CLI::error( 'This is not a multisite installation.' );
 			}
@@ -64,7 +64,7 @@ WP_CLI::add_command(
 	'term meta',
 	'Term_Meta_Command',
 	array(
-		'before_invoke' => function() {
+		'before_invoke' => function () {
 			if ( Utils\wp_version_compare( '4.4', '<' ) ) {
 				WP_CLI::error( 'Requires WordPress 4.4 or greater.' );
 			}
@@ -76,7 +76,7 @@ WP_CLI::add_command(
 	'user application-password',
 	'User_Application_Password_Command',
 	array(
-		'before_invoke' => function() {
+		'before_invoke' => function () {
 			if ( Utils\wp_version_compare( '5.6', '<' ) ) {
 				WP_CLI::error( 'Requires WordPress 5.6 or greater.' );
 			}
@@ -88,7 +88,7 @@ WP_CLI::add_command(
 	'user session',
 	'User_Session_Command',
 	array(
-		'before_invoke' => function() {
+		'before_invoke' => function () {
 			if ( Utils\wp_version_compare( '4.0', '<' ) ) {
 				WP_CLI::error( 'Requires WordPress 4.0 or greater.' );
 			}

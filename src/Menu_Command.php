@@ -68,13 +68,11 @@ class Menu_Command extends WP_CLI_Command {
 
 			WP_CLI::error( $menu_id->get_error_message() );
 
-		} else {
+		} elseif ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 
-			if ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 				WP_CLI::line( $menu_id );
-			} else {
-				WP_CLI::success( "Created menu {$menu_id}." );
-			}
+		} else {
+			WP_CLI::success( "Created menu {$menu_id}." );
 		}
 	}
 
@@ -99,10 +97,10 @@ class Menu_Command extends WP_CLI_Command {
 			$ret = wp_delete_nav_menu( $arg );
 			if ( ! $ret || is_wp_error( $ret ) ) {
 				WP_CLI::warning( "Couldn't delete menu '{$arg}'." );
-				$errors++;
+				++$errors;
 			} else {
 				WP_CLI::log( "Deleted menu '{$arg}'." );
-				$count++;
+				++$count;
 			}
 		}
 
@@ -185,7 +183,7 @@ class Menu_Command extends WP_CLI_Command {
 
 		if ( 'ids' === $formatter->format ) {
 			$ids = array_map(
-				function( $o ) {
+				function ( $o ) {
 					return $o->term_id;
 				},
 				$menus
@@ -199,5 +197,4 @@ class Menu_Command extends WP_CLI_Command {
 	protected function get_formatter( &$assoc_args ) {
 		return new Formatter( $assoc_args, $this->obj_fields, $this->obj_type );
 	}
-
 }

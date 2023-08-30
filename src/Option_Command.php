@@ -427,12 +427,10 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( $value === $old_value && null === $autoload ) {
 			WP_CLI::success( "Value passed for '{$key}' option is unchanged." );
-		} else {
-			if ( update_option( $key, $value, $autoload ) ) {
+		} elseif ( update_option( $key, $value, $autoload ) ) {
 				WP_CLI::success( "Updated '{$key}' option." );
-			} else {
-				WP_CLI::error( "Could not update option '{$key}'." );
-			}
+		} else {
+			WP_CLI::error( "Could not update option '{$key}'." );
 		}
 	}
 
@@ -591,7 +589,7 @@ class Option_Command extends WP_CLI_Command {
 		}
 
 		$key_path = array_map(
-			function( $key ) {
+			function ( $key ) {
 				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
 					return (int) $key;
 				}
@@ -672,7 +670,7 @@ class Option_Command extends WP_CLI_Command {
 	public function patch( $args, $assoc_args ) {
 		list( $action, $key ) = $args;
 		$key_path             = array_map(
-			function( $key ) {
+			function ( $key ) {
 				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
 					return (int) $key;
 				}
@@ -690,12 +688,10 @@ class Option_Command extends WP_CLI_Command {
 
 			if ( ! empty( $stdin_value ) ) {
 				$patch_value = WP_CLI::read_value( $stdin_value, $assoc_args );
-			} else {
-				if ( count( $key_path ) > 1 ) {
+			} elseif ( count( $key_path ) > 1 ) {
 					$patch_value = WP_CLI::read_value( array_pop( $key_path ), $assoc_args );
-				} else {
-					$patch_value = null;
-				}
+			} else {
+				$patch_value = null;
 			}
 
 			if ( null === $patch_value ) {
@@ -722,12 +718,10 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( $patched_value === $old_value ) {
 			WP_CLI::success( "Value passed for '{$key}' option is unchanged." );
-		} else {
-			if ( update_option( $key, $patched_value ) ) {
+		} elseif ( update_option( $key, $patched_value ) ) {
 				WP_CLI::success( "Updated '{$key}' option." );
-			} else {
-				WP_CLI::error( "Could not update option '{$key}'." );
-			}
+		} else {
+			WP_CLI::error( "Could not update option '{$key}'." );
 		}
 	}
 

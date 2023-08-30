@@ -172,7 +172,7 @@ class Taxonomy_Command extends WP_CLI_Command {
 		}
 
 		$taxonomies = array_map(
-			function( $taxonomy ) use ( $counts ) {
+			function ( $taxonomy ) use ( $counts ) {
 					$taxonomy->object_type = implode( ', ', $taxonomy->object_type );
 					$taxonomy->count       = isset( $counts[ $taxonomy->name ] ) ? $counts[ $taxonomy->name ] : 0;
 					return $taxonomy;

@@ -146,7 +146,7 @@ class Post_Type_Command extends WP_CLI_Command {
 		}
 
 		$types = array_map(
-			function( $type ) use ( $counts ) {
+			function ( $type ) use ( $counts ) {
 					$type->count = isset( $counts[ $type->name ] ) ? $counts[ $type->name ] : 0;
 					return $type;
 			},
