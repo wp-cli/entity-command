@@ -150,6 +150,7 @@ class Term_Command extends WP_CLI_Command {
 				}
 			}
 		} else {
+			// phpcs:ignore WordPress.WP.DeprecatedParameters.Get_termsParam2Found -- Required for backward compatibility.
 			$terms = get_terms( $args, $assoc_args );
 		}
 
@@ -635,6 +636,7 @@ class Term_Command extends WP_CLI_Command {
 				WP_CLI::warning( "Taxonomy {$taxonomy} does not exist." );
 			} else {
 
+				// phpcs:ignore WordPress.WP.DeprecatedParameters.Get_termsParam2Found -- Required for backward compatibility.
 				$terms             = get_terms( $taxonomy, [ 'hide_empty' => false ] );
 				$term_taxonomy_ids = wp_list_pluck( $terms, 'term_taxonomy_id' );
 
