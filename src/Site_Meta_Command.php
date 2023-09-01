@@ -111,5 +111,4 @@ class Site_Meta_Command extends CommandWithMeta {
 	protected function delete_metadata( $object_id, $meta_key, $meta_value = '' ) {
 		return delete_site_meta( $object_id, $meta_key, $meta_value );
 	}
-
 }

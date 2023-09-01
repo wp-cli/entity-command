@@ -202,7 +202,6 @@ class Comment_Command extends CommandWithDBObject {
 		if ( 'progress' === $format ) {
 			$notify->finish();
 		}
-
 	}
 
 	/**
@@ -376,7 +375,7 @@ class Comment_Command extends CommandWithDBObject {
 				$comments = wp_list_pluck( $comments, 'comment_ID' );
 			} elseif ( is_array( $comments ) ) {
 				$comments = array_map(
-					function( $comment ) {
+					function ( $comment ) {
 							$comment->url = get_comment_link( $comment->comment_ID );
 							return $comment;
 					},

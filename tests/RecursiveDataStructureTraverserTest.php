@@ -159,5 +159,4 @@ class RecursiveDataStructureTraverserTest extends TestCase {
 
 		$this->fail( 'Failed to assert that an exception was thrown when inserting a key into a string.' );
 	}
-
 }

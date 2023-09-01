@@ -450,11 +450,9 @@ class User_Command extends CommandWithDBObject {
 				$user_id = 'Unknown error creating new user.';
 			}
 			WP_CLI::error( $user_id );
-		} else {
-			if ( false === $user->role ) {
+		} elseif ( false === $user->role ) {
 				delete_user_option( $user_id, 'capabilities' );
 				delete_user_option( $user_id, 'user_level' );
-			}
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
@@ -1188,7 +1186,6 @@ class User_Command extends CommandWithDBObject {
 				WP_CLI::error( "Role doesn't exist: {$role}" );
 			}
 		}
-
 	}
 
 	/**
@@ -1314,7 +1311,7 @@ class User_Command extends CommandWithDBObject {
 			}
 
 			WP_CLI::log( "User {$user_id} {$action}." );
-			$successes++;
+			++$successes;
 		}
 
 		Utils\report_batch_operation_results( 'user', $verb, count( $user_ids ), $successes, $errors );
@@ -1364,5 +1361,4 @@ class User_Command extends CommandWithDBObject {
 			WP_CLI::halt( 1 );
 		}
 	}
-
 }

@@ -79,7 +79,7 @@ class Menu_Location_Command extends WP_CLI_Command {
 
 		if ( 'ids' === $formatter->format ) {
 			$ids = array_map(
-				function( $o ) {
+				function ( $o ) {
 					return $o->location;
 				},
 				$location_objs
@@ -166,7 +166,5 @@ class Menu_Location_Command extends WP_CLI_Command {
 		set_theme_mod( 'nav_menu_locations', $locations );
 
 		WP_CLI::success( 'Removed location from menu.' );
-
 	}
-
 }

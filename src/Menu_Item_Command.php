@@ -99,7 +99,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		// Correct position inconsistency and
 		// protected `url` param in WP-CLI
 		$items = array_map(
-			function( $item ) {
+			function ( $item ) {
 					$item->position = $item->menu_order;
 					$item->link     = $item->url;
 					return $item;
@@ -109,7 +109,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
 			$items = array_map(
-				function( $item ) {
+				function ( $item ) {
 						return $item->db_id;
 				},
 				$items
@@ -118,7 +118,6 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
-
 	}
 
 	/**
@@ -343,7 +342,6 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 		$type = get_post_meta( $args[1], '_menu_item_type', true );
 		$this->add_or_update_item( 'update', $type, $args, $assoc_args );
-
 	}
 
 	/**
@@ -375,7 +373,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			$result         = wp_delete_post( $arg, true );
 			if ( ! $result ) {
 				WP_CLI::warning( "Couldn't delete menu item {$arg}." );
-				$errors++;
+				++$errors;
 			} else {
 
 				if ( is_array( $menu_term ) && ! empty( $menu_term ) && $post ) {
@@ -395,9 +393,9 @@ class Menu_Item_Command extends WP_CLI_Command {
 				}
 			}
 
-			// phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison -- Will increase count for non existent menu.
+			// phpcs:ignore Universal.Operators.StrictComparisons.LooseNotEqual -- Will increase count for non existent menu.
 			if ( false != $result ) {
-				$count++;
+				++$count;
 			}
 		}
 
@@ -505,15 +503,12 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 			if ( 'add' === $method && ! empty( $assoc_args['porcelain'] ) ) {
 				WP_CLI::line( $result );
-			} else {
-				if ( 'add' === $method ) {
+			} elseif ( 'add' === $method ) {
 					WP_CLI::success( 'Menu item added.' );
-				} elseif ( 'update' === $method ) {
-					WP_CLI::success( 'Menu item updated.' );
-				}
+			} elseif ( 'update' === $method ) {
+				WP_CLI::success( 'Menu item updated.' );
 			}
 		}
-
 	}
 
 	/**
@@ -534,5 +529,4 @@ class Menu_Item_Command extends WP_CLI_Command {
 	protected function get_formatter( &$assoc_args ) {
 		return new Formatter( $assoc_args, $this->obj_fields );
 	}
-
 }

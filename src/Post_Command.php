@@ -654,7 +654,7 @@ class Post_Command extends CommandWithDBObject {
 		} else {
 			$query = new WP_Query( $query_args );
 			$posts = array_map(
-				function( $post ) {
+				function ( $post ) {
 						$post->url = get_permalink( $post->ID );
 						return $post;
 				},
@@ -817,7 +817,7 @@ class Post_Command extends CommandWithDBObject {
 				if ( $this->maybe_make_child() && $current_depth < $post_data['max_depth'] ) {
 
 					$current_parent = $previous_post_id;
-					$current_depth++;
+					++$current_depth;
 
 				} elseif ( $this->maybe_reset_depth() ) {
 

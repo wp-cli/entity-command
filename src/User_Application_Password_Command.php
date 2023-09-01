@@ -388,7 +388,7 @@ final class User_Application_Password_Command {
 	 * @param array $assoc_args Associative array of associative arguments.
 	 * @throws ExitException If the application password could not be created.
 	 */
-	public function record_usage( $args, $assoc_args ) {
+	public function record_usage( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$args = $this->replace_login_with_user_id( $args );
 
 		list( $user_id, $uuid ) = $args;
@@ -454,7 +454,7 @@ final class User_Application_Password_Command {
 
 			if ( $result instanceof WP_Error ) {
 				WP_CLI::warning( "Failed to delete UUID {$uuid}: " . $result->get_error_message() );
-				$errors++;
+				++$errors;
 			}
 		}
 
@@ -497,7 +497,7 @@ final class User_Application_Password_Command {
 	 * @param array $assoc_args Associative array of associative arguments.
 	 * @throws ExitException If the application password could not be created.
 	 */
-	public function exists( $args, $assoc_args ) {
+	public function exists( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$args = $this->replace_login_with_user_id( $args );
 
 		list( $user_id, $app_name ) = $args;

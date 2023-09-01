@@ -157,6 +157,7 @@ class Site_Command extends CommandWithDBObject {
 		/* translators: Default category slug */
 		$cat_slug = sanitize_title( _x( 'Uncategorized', 'Default category slug' ) );
 
+		// phpcs:ignore WordPress.WP.DeprecatedFunctions.global_terms_enabledFound -- Required for backwards compatibility.
 		if ( global_terms_enabled() ) {
 			$cat_id = $wpdb->get_var( $wpdb->prepare( "SELECT cat_ID FROM {$wpdb->sitecategories} WHERE category_nicename = %s", $cat_slug ) );
 			if ( null === $cat_id ) {
@@ -615,7 +616,7 @@ class Site_Command extends CommandWithDBObject {
 
 		$iterator = Utils\iterator_map(
 			$iterator,
-			function( $blog ) {
+			function ( $blog ) {
 				$blog->url = trailingslashit( get_home_url( $blog->blog_id ) );
 				return $blog;
 			}

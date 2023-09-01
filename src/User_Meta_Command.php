@@ -324,5 +324,4 @@ class User_Meta_Command extends CommandWithMeta {
 		$args[0] = $user->ID;
 		return $args;
 	}
-
 }

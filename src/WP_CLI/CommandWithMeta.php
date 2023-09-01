@@ -129,7 +129,6 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 
 		$formatter = new Formatter( $assoc_args, $fields, $this->meta_type );
 		$formatter->display_items( $items );
-
 	}
 
 	/**
@@ -311,7 +310,6 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 				WP_CLI::error( "Failed to update custom field '{$meta_key}'." );
 			}
 		}
-
 	}
 
 	/**
@@ -402,7 +400,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 		list( $action, $object_id, $meta_key ) = $args;
 		$object_id                             = $this->check_object_id( $object_id );
 		$key_path                              = array_map(
-			function( $key ) {
+			function ( $key ) {
 				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
 					return (int) $key;
 				}
@@ -549,5 +547,4 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 		// Needs to be set in subclass
 		return $object_id;
 	}
-
 }

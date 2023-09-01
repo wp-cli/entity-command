@@ -245,12 +245,10 @@ class Site_Option_Command extends WP_CLI_Command {
 
 		if ( $value === $old_value ) {
 			WP_CLI::success( "Value passed for '{$key}' site option is unchanged." );
-		} else {
-			if ( update_site_option( $key, $value ) ) {
+		} elseif ( update_site_option( $key, $value ) ) {
 				WP_CLI::success( "Updated '{$key}' site option." );
-			} else {
-				WP_CLI::error( "Could not update site option '{$key}'." );
-			}
+		} else {
+			WP_CLI::error( "Could not update site option '{$key}'." );
 		}
 	}
 
@@ -307,7 +305,7 @@ class Site_Option_Command extends WP_CLI_Command {
 		}
 
 		$key_path = array_map(
-			function( $key ) {
+			function ( $key ) {
 				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
 					return (int) $key;
 				}
@@ -362,7 +360,7 @@ class Site_Option_Command extends WP_CLI_Command {
 	public function patch( $args, $assoc_args ) {
 		list( $action, $key ) = $args;
 		$key_path             = array_map(
-			function( $key ) {
+			function ( $key ) {
 				if ( is_numeric( $key ) && ( (string) intval( $key ) === $key ) ) {
 					return (int) $key;
 				}
@@ -401,12 +399,10 @@ class Site_Option_Command extends WP_CLI_Command {
 
 		if ( $patched_value === $old_value ) {
 			WP_CLI::success( "Value passed for '{$key}' site option is unchanged." );
-		} else {
-			if ( update_site_option( $key, $patched_value ) ) {
+		} elseif ( update_site_option( $key, $patched_value ) ) {
 				WP_CLI::success( "Updated '{$key}' site option." );
-			} else {
-				WP_CLI::error( "Could not update site option '{$key}'." );
-			}
+		} else {
+			WP_CLI::error( "Could not update site option '{$key}'." );
 		}
 	}
 
