@@ -28,10 +28,10 @@ class RecursiveDataStructureTraverser {
 	 * @param string|int $key The key/property the data belongs to.
 	 * @param static $parent
 	 */
-	public function __construct( &$data, $key = null, $parent = null ) {
+	public function __construct( &$data, $key = null, $parent_instance = null ) {
 		$this->data   =& $data;
 		$this->key    = $key;
-		$this->parent = $parent;
+		$this->parent = $parent_instance;
 	}
 
 	/**
