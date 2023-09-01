@@ -393,8 +393,8 @@ class Menu_Item_Command extends WP_CLI_Command {
 				}
 			}
 
-			// phpcs:ignore WordPress.PHP.StrictComparisons.LooseComparison -- Will increase count for non existent menu.
-			if ( false !== $result ) {
+			// phpcs:ignore Universal.Operators.StrictComparisons.LooseNotEqual -- Will increase count for non existent menu.
+			if ( false != $result ) {
 				++$count;
 			}
 		}
