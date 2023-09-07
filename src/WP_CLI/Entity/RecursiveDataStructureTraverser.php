@@ -26,7 +26,7 @@ class RecursiveDataStructureTraverser {
 	 *
 	 * @param mixed $data The data to read/manipulate by reference.
 	 * @param string|int $key The key/property the data belongs to.
-	 * @param static $parent
+	 * @param static $parent_instance
 	 */
 	public function __construct( &$data, $key = null, $parent_instance = null ) {
 		$this->data   =& $data;
