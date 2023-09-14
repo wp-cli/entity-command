@@ -764,18 +764,19 @@ class Post_Command extends CommandWithDBObject {
 		$post_data['post_date']     = $this->maybe_convert_hyphenated_date_format( $post_data['post_date'] );
 		$post_data['post_date_gmt'] = $this->maybe_convert_hyphenated_date_format( $post_data['post_date_gmt'] );
 
-		$date = DateTime::createFromFormat('Y-m-d', $post_data['post_date']);
+		// Add time if the string is a valid date without time.
+		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
 		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
 		if ( $date && $date->format( 'Y-m-d' ) === $post_data['post_date'] ) {
 			$post_data['post_date'] .= ' 00:00:00';
 		}
-
+		
 		$date_gmt = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date_gmt'] );
 		if ( $date_gmt && $date_gmt->format( 'Y-m-d' ) === $post_data['post_date_gmt'] ) {
 			$post_data['post_date_gmt'] .= ' 00:00:00';
 		}
 
-		// Handle edge cases for how WP handle dates on wp_insert_post for older versions. If one of the values is empty, it's assigned to the current time.
+		// In older WordPress versions, wp_insert_post post dates default to the current time when a value is absent. We need to send a value for post_date_gmt if post_date is set and vice versa.
 		if ( ! empty( $post_data['post_date'] ) && empty( $post_data['post_date_gmt'] ) ) {
 			$post_data['post_date_gmt'] = get_gmt_from_date( $post_data['post_date'] );
 		}
