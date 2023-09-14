@@ -770,7 +770,7 @@ class Post_Command extends CommandWithDBObject {
 		if ( $date && $date->format( 'Y-m-d' ) === $post_data['post_date'] ) {
 			$post_data['post_date'] .= ' 00:00:00';
 		}
-		
+
 		$date_gmt = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date_gmt'] );
 		if ( $date_gmt && $date_gmt->format( 'Y-m-d' ) === $post_data['post_date_gmt'] ) {
 			$post_data['post_date_gmt'] .= ' 00:00:00';
