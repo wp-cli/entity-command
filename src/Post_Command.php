@@ -765,11 +765,11 @@ class Post_Command extends CommandWithDBObject {
 		$post_data['post_date_gmt'] = $this->maybe_convert_hyphenated_date_format( $post_data['post_date_gmt'] );
 
 		// Handle edge cases for how WP handle dates on wp_insert_post for older versions. If one of the values is empty, it's assigned to the current time. We need to avoid sending an empty value.
-		if ( isset( $post_data['post_date'] ) && empty( $post_data['post_date_gmt'] ) ) {
+		if ( ! empty( $post_data['post_date'] ) && empty( $post_data['post_date_gmt'] ) ) {
 			$post_data['post_date_gmt'] = get_gmt_from_date( $post_data['post_date'] );
 		}
-		
-		if ( isset( $post_data['post_date_gmt'] ) && empty( $post_data['post_date'] ) ) {
+
+		if ( ! empty( $post_data['post_date_gmt'] ) && empty( $post_data['post_date'] ) ) {
 			$post_data['post_date'] = get_date_from_gmt( $post_data['post_date_gmt'] );
 		}
 
