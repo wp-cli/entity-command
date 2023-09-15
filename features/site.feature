@@ -148,6 +148,17 @@ Feature: Manage sites in a multisite installation
       {SCHEME}://example.com/first/
       """
 
+  Scenario: Not providing a site ID or slug when running an update blog status command should throw an error
+    Given a WP multisite install
+
+    When I try `wp site private`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Please specify one or more IDs of sites, or pass the slug for a single site using --slug.
+      """
+    And STDOUT should be empty
+
   Scenario: Archive/unarchive a site
     Given a WP multisite install
     And I run `wp site create --slug=first --porcelain`
