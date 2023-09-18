@@ -3271,18 +3271,24 @@ wp site
 Activates one or more sites.
 
 ~~~
-wp site activate <id>...
+wp site activate [<id>...] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of sites to activate.
+	[<id>...]
+		One or more IDs of sites to activate. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the site to be activated. Subdomain on subdomain installs, directory on subdirectory installs.
 
 **EXAMPLES**
 
     $ wp site activate 123
     Success: Site 123 activated.
+
+     $ wp site activate --slug=demo
+     Success: Site 123 marked as activated.
 
 
 
@@ -3291,17 +3297,23 @@ wp site activate <id>...
 Archives one or more sites.
 
 ~~~
-wp site archive <id>...
+wp site archive [<id>...] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of sites to archive.
+	[<id>...]
+		One or more IDs of sites to archive. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the site to archive. Subdomain on subdomain installs, directory on subdirectory installs.
 
 **EXAMPLES**
 
     $ wp site archive 123
+    Success: Site 123 archived.
+
+    $ wp site archive --slug=demo
     Success: Site 123 archived.
 
 
@@ -3346,18 +3358,24 @@ wp site create --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<
 Deactivates one or more sites.
 
 ~~~
-wp site deactivate <id>...
+wp site deactivate [<id>...] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of sites to deactivate.
+	[<id>...]
+		One or more IDs of sites to deactivate. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the site to be deactivated. Subdomain on subdomain installs, directory on subdirectory installs.
 
 **EXAMPLES**
 
     $ wp site deactivate 123
     Success: Site 123 deactivated.
+
+     $ wp site deactivate --slug=demo
+     Success: Site 123 marked as deactivated.
 
 
 
@@ -3375,7 +3393,7 @@ wp site delete [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
 		The id of the site to delete. If not provided, you must set the --slug parameter.
 
 	[--slug=<slug>]
-		Path of the blog to be deleted. Subdomain on subdomain installs, directory on subdirectory installs.
+		Path of the site to be deleted. Subdomain on subdomain installs, directory on subdirectory installs.
 
 	[--yes]
 		Answer yes to the confirmation message.
@@ -3508,17 +3526,23 @@ These fields are optionally available:
 Sets one or more sites as mature.
 
 ~~~
-wp site mature <id>...
+wp site mature [<id>...] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of sites to set as mature.
+	[<id>...]
+		One or more IDs of sites to set as mature. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the site to be set as mature. Subdomain on subdomain installs, directory on subdirectory installs.
 
 **EXAMPLES**
 
     $ wp site mature 123
+    Success: Site 123 marked as mature.
+
+    $ wp site mature --slug=demo
     Success: Site 123 marked as mature.
 
 
@@ -3558,17 +3582,23 @@ wp site option
 Sets one or more sites as private.
 
 ~~~
-wp site private <id>...
+wp site private [<id>...] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of sites to set as private.
+	[<id>...]
+		One or more IDs of sites to set as private. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the site to be set as private. Subdomain on subdomain installs, directory on subdirectory installs.
 
 **EXAMPLES**
 
     $ wp site private 123
+    Success: Site 123 marked as private.
+
+    $ wp site private --slug=demo
     Success: Site 123 marked as private.
 
 
@@ -3578,18 +3608,24 @@ wp site private <id>...
 Sets one or more sites as public.
 
 ~~~
-wp site public <id>...
+wp site public [<id>...] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of sites to set as public.
+	[<id>...]
+		One or more IDs of sites to set as public. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the site to be set as public. Subdomain on subdomain installs, directory on subdirectory installs.
 
 **EXAMPLES**
 
     $ wp site public 123
     Success: Site 123 marked as public.
+
+     $ wp site public --slug=demo
+     Success: Site 123 marked as public.
 
 
 
@@ -3598,13 +3634,16 @@ wp site public <id>...
 Marks one or more sites as spam.
 
 ~~~
-wp site spam <id>...
+wp site spam [<id>...] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of sites to be marked as spam.
+	[<id>...]
+		One or more IDs of sites to be marked as spam. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the site to be marked as spam. Subdomain on subdomain installs, directory on subdirectory installs.
 
 **EXAMPLES**
 
@@ -3618,17 +3657,23 @@ wp site spam <id>...
 Unarchives one or more sites.
 
 ~~~
-wp site unarchive <id>...
+wp site unarchive [<id>...] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of sites to unarchive.
+	[<id>...]
+		One or more IDs of sites to unarchive. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the site to unarchive. Subdomain on subdomain installs, directory on subdirectory installs.
 
 **EXAMPLES**
 
     $ wp site unarchive 123
+    Success: Site 123 unarchived.
+
+    $ wp site unarchive --slug=demo
     Success: Site 123 unarchived.
 
 
@@ -3638,17 +3683,23 @@ wp site unarchive <id>...
 Sets one or more sites as immature.
 
 ~~~
-wp site unmature <id>...
+wp site unmature [<id>...] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of sites to set as unmature.
+	[<id>...]
+		One or more IDs of sites to set as unmature. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the site to be set as unmature. Subdomain on subdomain installs, directory on subdirectory installs.
 
 **EXAMPLES**
 
-    $ wp site general 123
+    $ wp site unmature 123
+    Success: Site 123 marked as unmature.
+
+    $ wp site unmature --slug=demo
     Success: Site 123 marked as unmature.
 
 
@@ -3658,13 +3709,16 @@ wp site unmature <id>...
 Removes one or more sites from spam.
 
 ~~~
-wp site unspam <id>...
+wp site unspam [<id>...] [--slug=<slug>]
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of sites to remove from spam.
+	[<id>...]
+		One or more IDs of sites to remove from spam. If not provided, you must set the --slug parameter.
+
+	[--slug=<slug>]
+		Path of the site to be removed from spam. Subdomain on subdomain installs, directory on subdirectory installs.
 
 **EXAMPLES**
 
