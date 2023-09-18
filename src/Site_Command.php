@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\CommandWithDBObject;
+use WP_CLI\ExitException;
 use WP_CLI\Fetchers\Site as SiteFetcher;
 use WP_CLI\Iterators\Query as QueryIterator;
 use WP_CLI\Iterators\Table as TableIterator;
@@ -311,7 +312,7 @@ class Site_Command extends CommandWithDBObject {
 	 * : The id of the site to delete. If not provided, you must set the --slug parameter.
 	 *
 	 * [--slug=<slug>]
-	 * : Path of the blog to be deleted. Subdomain on subdomain installs, directory on subdirectory installs.
+	 * : Path of the site to be deleted. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
@@ -638,16 +639,28 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to archive.
+	 * [<id>...]
+	 * : One or more IDs of sites to archive. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the site to archive. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site archive 123
 	 *     Success: Site 123 archived.
+	 *
+	 *     $ wp site archive --slug=demo
+	 *     Success: Site 123 archived.
 	 */
-	public function archive( $args ) {
-		$this->update_site_status( $args, 'archived', 1 );
+	public function archive( $args, $assoc_args ) {
+		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
+			return;
+		}
+
+		$ids = $this->get_sites_ids( $args, $assoc_args );
+
+		$this->update_site_status( $ids, 'archived', 1 );
 	}
 
 	/**
@@ -655,16 +668,28 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to unarchive.
+	 * [<id>...]
+	 * : One or more IDs of sites to unarchive. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the site to unarchive. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site unarchive 123
 	 *     Success: Site 123 unarchived.
+	 *
+	 *     $ wp site unarchive --slug=demo
+	 *     Success: Site 123 unarchived.
 	 */
-	public function unarchive( $args ) {
-		$this->update_site_status( $args, 'archived', 0 );
+	public function unarchive( $args, $assoc_args ) {
+		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
+			return;
+		}
+
+		$ids = $this->get_sites_ids( $args, $assoc_args );
+
+		$this->update_site_status( $ids, 'archived', 0 );
 	}
 
 	/**
@@ -672,16 +697,28 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to activate.
+	 * [<id>...]
+	 * : One or more IDs of sites to activate. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the site to be activated. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site activate 123
 	 *     Success: Site 123 activated.
+	 *
+	 *      $ wp site activate --slug=demo
+	 *      Success: Site 123 marked as activated.
 	 */
-	public function activate( $args ) {
-		$this->update_site_status( $args, 'deleted', 0 );
+	public function activate( $args, $assoc_args ) {
+		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
+			return;
+		}
+
+		$ids = $this->get_sites_ids( $args, $assoc_args );
+
+		$this->update_site_status( $ids, 'deleted', 0 );
 	}
 
 	/**
@@ -689,16 +726,28 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to deactivate.
+	 * [<id>...]
+	 * : One or more IDs of sites to deactivate. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the site to be deactivated. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site deactivate 123
 	 *     Success: Site 123 deactivated.
+	 *
+	 *      $ wp site deactivate --slug=demo
+	 *      Success: Site 123 marked as deactivated.
 	 */
-	public function deactivate( $args ) {
-		$this->update_site_status( $args, 'deleted', 1 );
+	public function deactivate( $args, $assoc_args ) {
+		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
+			return;
+		}
+
+		$ids = $this->get_sites_ids( $args, $assoc_args );
+
+		$this->update_site_status( $ids, 'deleted', 1 );
 	}
 
 	/**
@@ -706,16 +755,25 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to be marked as spam.
+	 * [<id>...]
+	 * : One or more IDs of sites to be marked as spam. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the site to be marked as spam. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site spam 123
 	 *     Success: Site 123 marked as spam.
 	 */
-	public function spam( $args ) {
-		$this->update_site_status( $args, 'spam', 1 );
+	public function spam( $args, $assoc_args ) {
+		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
+			return;
+		}
+
+		$ids = $this->get_sites_ids( $args, $assoc_args );
+
+		$this->update_site_status( $ids, 'spam', 1 );
 	}
 
 	/**
@@ -723,8 +781,11 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to remove from spam.
+	 * [<id>...]
+	 * : One or more IDs of sites to remove from spam. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the site to be removed from spam. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -733,8 +794,14 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * @subcommand unspam
 	 */
-	public function unspam( $args ) {
-		$this->update_site_status( $args, 'spam', 0 );
+	public function unspam( $args, $assoc_args ) {
+		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
+			return;
+		}
+
+		$ids = $this->get_sites_ids( $args, $assoc_args );
+
+		$this->update_site_status( $ids, 'spam', 0 );
 	}
 
 	/**
@@ -742,16 +809,28 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to set as mature.
+	 * [<id>...]
+	 * : One or more IDs of sites to set as mature. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the site to be set as mature. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site mature 123
 	 *     Success: Site 123 marked as mature.
+	 *
+	 *     $ wp site mature --slug=demo
+	 *     Success: Site 123 marked as mature.
 	 */
-	public function mature( $args ) {
-		$this->update_site_status( $args, 'mature', 1 );
+	public function mature( $args, $assoc_args ) {
+		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
+			return;
+		}
+
+		$ids = $this->get_sites_ids( $args, $assoc_args );
+
+		$this->update_site_status( $ids, 'mature', 1 );
 	}
 
 	/**
@@ -759,16 +838,28 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to set as unmature.
+	 * [<id>...]
+	 * : One or more IDs of sites to set as unmature. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the site to be set as unmature. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     $ wp site general 123
+	 *     $ wp site unmature 123
+	 *     Success: Site 123 marked as unmature.
+	 *
+	 *     $ wp site unmature --slug=demo
 	 *     Success: Site 123 marked as unmature.
 	 */
-	public function unmature( $args ) {
-		$this->update_site_status( $args, 'mature', 0 );
+	public function unmature( $args, $assoc_args ) {
+		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
+			return;
+		}
+
+		$ids = $this->get_sites_ids( $args, $assoc_args );
+
+		$this->update_site_status( $ids, 'mature', 0 );
 	}
 
 	/**
@@ -776,18 +867,30 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to set as public.
+	 * [<id>...]
+	 * : One or more IDs of sites to set as public. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the site to be set as public. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site public 123
 	 *     Success: Site 123 marked as public.
 	 *
+	 *      $ wp site public --slug=demo
+	 *      Success: Site 123 marked as public.
+	 *
 	 * @subcommand public
 	 */
-	public function set_public( $args ) {
-		$this->update_site_status( $args, 'public', 1 );
+	public function set_public( $args, $assoc_args ) {
+		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
+			return;
+		}
+
+		$ids = $this->get_sites_ids( $args, $assoc_args );
+
+		$this->update_site_status( $ids, 'public', 1 );
 	}
 
 	/**
@@ -795,18 +898,30 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of sites to set as private.
+	 * [<id>...]
+	 * : One or more IDs of sites to set as private. If not provided, you must set the --slug parameter.
+	 *
+	 * [--slug=<slug>]
+	 * : Path of the site to be set as private. Subdomain on subdomain installs, directory on subdirectory installs.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site private 123
 	 *     Success: Site 123 marked as private.
 	 *
+	 *     $ wp site private --slug=demo
+	 *     Success: Site 123 marked as private.
+	 *
 	 * @subcommand private
 	 */
-	public function set_private( $args ) {
-		$this->update_site_status( $args, 'public', 0 );
+	public function set_private( $args, $assoc_args ) {
+		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
+			return;
+		}
+
+		$ids = $this->get_sites_ids( $args, $assoc_args );
+
+		$this->update_site_status( $ids, 'public', 0 );
 	}
 
 	private function update_site_status( $ids, $pref, $value ) {
@@ -848,5 +963,46 @@ class Site_Command extends CommandWithDBObject {
 			update_blog_status( $site->blog_id, $pref, $value );
 			WP_CLI::success( "Site {$site->blog_id} {$action}." );
 		}
+	}
+
+	/**
+	 * Get an array of site IDs from the passed-in arguments or slug parameter.
+	 *
+	 * @param array $args Passed-in arguments.
+	 * @param array $assoc_args Passed-in parameters.
+	 *
+	 * @return array Site IDs.
+	 * @throws ExitException
+	 */
+	private function get_sites_ids( $args, $assoc_args ) {
+		$slug = Utils\get_flag_value( $assoc_args, 'slug', false );
+
+		if ( $slug ) {
+			$blog = get_blog_details( trim( $slug, '/' ) );
+			if ( ! $blog ) {
+				WP_CLI::error( sprintf( 'Could not find site with slug \'%s\'.', $slug ) );
+			}
+			return [ $blog->blog_id ];
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Check that the site IDs or slug are provided.
+	 *
+	 * @param  array  $args  Passed-in arguments.
+	 * @param  array  $assoc_args  Passed-in parameters.
+	 *
+	 * @return bool
+	 * @throws ExitException If neither site ids nor site slug using --slug were provided.
+	 */
+	private function check_site_ids_and_slug( $args, $assoc_args ) {
+		if ( ( empty( $args ) && empty( $assoc_args['slug'] ) )
+			|| ( ! empty( $args ) && ! empty( $assoc_args['slug'] ) ) ) {
+			WP_CLI::error( 'Please specify one or more IDs of sites, or pass the slug for a single site using --slug.' );
+		}
+
+		return true;
 	}
 }
