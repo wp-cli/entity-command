@@ -2297,10 +2297,10 @@ Creates a specified number of new posts with dummy data.
 		---
 
 	[--post_date=<yyyy-mm-dd-hh-ii-ss>]
-		The date of the generated posts. Default: current date
+		The date of the post. Default is the current time.
 
 	[--post_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
-		The GMT date of the generated posts. Default: value of post_date (or current date if it's not set)
+		The date of the post in the GMT timezone. Default is the value of --post_date.
 
 	[--post_content]
 		If set, the command reads the post_content from STDIN.
