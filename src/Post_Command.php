@@ -702,10 +702,10 @@ class Post_Command extends CommandWithDBObject {
 	 * ---
 	 *
 	 * [--post_date=<yyyy-mm-dd-hh-ii-ss>]
-	 * : The date of the generated posts. Default: current date
+	 * : The date of the post. Default is the current time.
 	 *
 	 * [--post_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
-	 * : The GMT date of the generated posts. Default: value of post_date (or current date if it's not set)
+	 * : The date of the post in the GMT timezone. Default is the value of --post_date.
 	 *
 	 * [--post_content]
 	 * : If set, the command reads the post_content from STDIN.
@@ -753,22 +753,36 @@ class Post_Command extends CommandWithDBObject {
 			'post_type'     => 'post',
 			'post_status'   => 'publish',
 			'post_author'   => false,
-			'post_date'     => false,
-			'post_date_gmt' => false,
+			'post_date'     => '',
+			'post_date_gmt' => '',
 			'post_content'  => '',
 			'post_title'    => '',
 		];
 
 		$post_data = array_merge( $defaults, $assoc_args );
 
-		$call_time = current_time( 'mysql' );
+		$post_data['post_date']     = $this->maybe_convert_hyphenated_date_format( $post_data['post_date'] );
+		$post_data['post_date_gmt'] = $this->maybe_convert_hyphenated_date_format( $post_data['post_date_gmt'] );
 
-		if ( false === $post_data['post_date_gmt'] ) {
-			$post_data['post_date_gmt'] = $post_data['post_date'] ?: $call_time;
+		// Add time if the string is a valid date without time.
+		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
+		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
+		if ( $date && $date->format( 'Y-m-d' ) === $post_data['post_date'] ) {
+			$post_data['post_date'] .= ' 00:00:00';
 		}
 
-		if ( false === $post_data['post_date'] ) {
-			$post_data['post_date'] = $post_data['post_date_gmt'] ?: $call_time;
+		$date_gmt = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date_gmt'] );
+		if ( $date_gmt && $date_gmt->format( 'Y-m-d' ) === $post_data['post_date_gmt'] ) {
+			$post_data['post_date_gmt'] .= ' 00:00:00';
+		}
+
+		// In older WordPress versions, wp_insert_post post dates default to the current time when a value is absent. We need to send a value for post_date_gmt if post_date is set and vice versa.
+		if ( ! empty( $post_data['post_date'] ) && empty( $post_data['post_date_gmt'] ) ) {
+			$post_data['post_date_gmt'] = get_gmt_from_date( $post_data['post_date'] );
+		}
+
+		if ( ! empty( $post_data['post_date_gmt'] ) && empty( $post_data['post_date'] ) ) {
+			$post_data['post_date'] = get_date_from_gmt( $post_data['post_date_gmt'] );
 		}
 
 		if ( ! post_type_exists( $post_data['post_type'] ) ) {
@@ -1005,5 +1019,23 @@ class Post_Command extends CommandWithDBObject {
 		} else {
 			WP_CLI::halt( 1 );
 		}
+	}
+
+	/**
+	 * Convert a date-time string with a hyphen separator to a space separator.
+	 *
+	 * @param string $date_string The date-time string to convert.
+	 * @return string The converted date-time string.
+	 *
+	 * Example:
+	 * maybe_convert_hyphenated_date_format( "2018-07-05-17:17:17" );
+	 * Returns: "2018-07-05 17:17:17"
+	 */
+	private function maybe_convert_hyphenated_date_format( $date_string ) {
+		// Check if the date string matches the format with the hyphen between date and time.
+		if ( preg_match( '/^(\d{4}-\d{2}-\d{2})-(\d{2}:\d{2}:\d{2})$/', $date_string, $matches ) ) {
+			return $matches[1] . ' ' . $matches[2];
+		}
+		return $date_string;
 	}
 }
