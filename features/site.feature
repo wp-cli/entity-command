@@ -159,6 +159,27 @@ Feature: Manage sites in a multisite installation
       """
     And STDOUT should be empty
 
+  Scenario: Site IDs or a slug can be provided, but not both.
+    Given a WP multisite install
+    And I run `wp site create --slug=first --porcelain`
+
+    When I try `wp site private 1 --slug=first`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Please specify one or more IDs of sites, or pass the slug for a single site using --slug.
+      """
+
+  Scenario: Errors for an invalid slug
+    Given a WP multisite install
+
+    When I try `wp site private --slug=first`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Could not find site with slug 'first'.
+      """
+
   Scenario: Archive/unarchive a site
     Given a WP multisite install
     And I run `wp site create --slug=first --porcelain`

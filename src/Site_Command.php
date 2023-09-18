@@ -976,17 +976,15 @@ class Site_Command extends CommandWithDBObject {
 	private function get_sites_ids( $args, $assoc_args ) {
 		$slug = Utils\get_flag_value( $assoc_args, 'slug', false );
 
-		$ids = $args;
-
 		if ( $slug ) {
 			$blog = get_blog_details( trim( $slug, '/' ) );
 			if ( ! $blog ) {
-				WP_CLI::error( sprintf( 'Could not find the site with slug %s.', $slug ) );
+				WP_CLI::error( sprintf( 'Could not find site with slug \'%s\'.', $slug ) );
 			}
-			$ids = [ $blog->blog_id ];
+			return [ $blog->blog_id ];
 		}
 
-		return $ids;
+		return $args;
 	}
 
 	/**
@@ -999,7 +997,8 @@ class Site_Command extends CommandWithDBObject {
 	 * @throws ExitException If neither site ids nor site slug using --slug were provided.
 	 */
 	private function check_site_ids_and_slug( $args, $assoc_args ) {
-		if ( empty( $args ) && empty( $assoc_args['slug'] ) ) {
+		if ( ( empty( $args ) && empty( $assoc_args['slug'] ) )
+			|| ( ! empty( $args ) && ! empty( $assoc_args['slug'] ) ) ) {
 			WP_CLI::error( 'Please specify one or more IDs of sites, or pass the slug for a single site using --slug.' );
 		}
 
