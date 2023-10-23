@@ -16,7 +16,7 @@ Feature: Create a new site on a WP multisite
       define( 'BLOG_ID_CURRENT_SITE', 1 );
       """
 
-    When I run `wp core config {CORE_CONFIG_SETTINGS} --extra-php < extra-config`
+    When I run `wp config create {CORE_CONFIG_SETTINGS} --skip-check --extra-php < extra-config`
     Then STDOUT should be:
       """
       Success: Generated 'wp-config.php' file.
