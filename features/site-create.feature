@@ -63,7 +63,7 @@ Feature: Create a new site on a WP multisite
 
       $super_admins = array( 1 => 'admin' );
       """
-    When I run `wp core config {CORE_CONFIG_SETTINGS} --extra-php < extra-config`
+    When I run `wp core config {CORE_CONFIG_SETTINGS} --skip-check --extra-php < extra-config`
     Then STDOUT should be:
       """
       Success: Generated 'wp-config.php' file.
