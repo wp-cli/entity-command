@@ -209,12 +209,48 @@ Feature: Manage WordPress users
   Scenario: Managing user roles
     Given a WP install
 
+    When I try `wp user add-role 1`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Please specify at least one role to add.
+      """
+    And STDOUT should be empty
+
     When I run `wp user add-role 1 editor`
-    Then STDOUT should not be empty
-    And I run `wp user get 1 --field=roles`
+    Then STDOUT should be:
+      """
+      Success: Added 'editor' role for admin (1).
+      """
+
+    When I run `wp user get 1 --field=roles`
     Then STDOUT should be:
       """
       administrator, editor
+      """
+
+    When I run `wp user add-role 1 editor contributor`
+    Then STDOUT should be:
+      """
+      Success: Added 'editor', 'contributor' roles for admin (1).
+      """
+
+    When I run `wp user get 1 --field=roles`
+    Then STDOUT should be:
+      """
+      administrator, editor, contributor
+      """
+
+    When I run `wp user remove-role 1 editor contributor`
+    Then STDOUT should be:
+      """
+      Success: Removed 'editor', 'contributor' roles from admin (1).
+      """
+
+    When I run `wp user get 1 --field=roles`
+    Then STDOUT should be:
+      """
+      administrator
       """
 
     When I try `wp user add-role 1 edit`
