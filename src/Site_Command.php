@@ -435,7 +435,7 @@ class Site_Command extends CommandWithDBObject {
 			$email        = '';
 			if ( ! empty( $super_admins ) && is_array( $super_admins ) ) {
 				// Just get the first one
-				$super_login = $super_admins[0];
+				$super_login = reset( $super_admins );
 				$super_user  = get_user_by( 'login', $super_login );
 				if ( $super_user ) {
 					$email = $super_user->user_email;
