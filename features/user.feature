@@ -209,6 +209,14 @@ Feature: Manage WordPress users
   Scenario: Managing user roles
     Given a WP install
 
+    When I run `wp user add-role 1`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Please specify at least one role to add.
+      """
+    And STDOUT should be empty
+
     When I run `wp user add-role 1 editor`
     Then STDOUT should not be empty
     And I run `wp user get 1 --field=roles`

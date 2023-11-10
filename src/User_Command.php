@@ -712,6 +712,10 @@ class User_Command extends CommandWithDBObject {
 		$roles = $args;
 		array_shift( $roles );
 
+		if ( empty( $roles ) ) {
+			WP_CLI::error( 'Please specify at least one role to add.' );
+		}
+
 		foreach ( $roles as $role ) {
 			self::validate_role( $role );
 		}
