@@ -701,8 +701,7 @@ class User_Command extends CommandWithDBObject {
 	 *     Success: Added 'author' role for johndoe (12).
 	 *
 	 *     $ wp user add-role 12 author editor
-	 *     Success: Added 'author' role for johndoe (12).
-	 *     Success: Added 'editor' role for johndoe (12).
+	 *     Success: Added 'author', 'editor' roles for johndoe (12).
 	 *
 	 * @subcommand add-role
 	 */
@@ -722,8 +721,10 @@ class User_Command extends CommandWithDBObject {
 
 		foreach ( $roles as $role ) {
 			$user->add_role( $role );
-			WP_CLI::success( "Added '{$role}' role for {$user->user_login} ({$user->ID})." );
 		}
+		$message = implode( "', '", $roles );
+		$label   = count( $roles ) > 1 ? 'roles' : 'role';
+		WP_CLI::success( "Added '{$message}' {$label} for {$user->user_login} ({$user->ID})." );
 	}
 
 	/**
@@ -743,8 +744,7 @@ class User_Command extends CommandWithDBObject {
 	 *     Success: Removed 'author' role for johndoe (12).
 	 *
 	 *     $ wp user remove-role 12 author editor
-	 *     Success: Removed 'author' role for johndoe (12).
-	 *     Success: Removed 'editor' role for johndoe (12).
+	 *     Success: Removed 'author', 'editor' roles for johndoe (12).
 	 *
 	 * @subcommand remove-role
 	 */
@@ -761,8 +761,10 @@ class User_Command extends CommandWithDBObject {
 
 			foreach ( $roles as $role ) {
 				$user->remove_role( $role );
-				WP_CLI::success( "Removed '{$role}' role for {$user->user_login} ({$user->ID})." );
 			}
+			$message = implode( "', '", $roles );
+			$label   = count( $roles ) > 1 ? 'roles' : 'role';
+			WP_CLI::success( "Removed '{$message}' {$label} from {$user->user_login} ({$user->ID})." );
 		} else {
 			// Multisite
 			if ( function_exists( 'remove_user_from_blog' ) ) {
