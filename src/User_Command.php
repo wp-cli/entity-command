@@ -692,26 +692,34 @@ class User_Command extends CommandWithDBObject {
 	 * <user>
 	 * : User ID, user email, or user login.
 	 *
-	 * <role>
-	 * : Add the specified role to the user.
+	 * [<role>...]
+	 * : Add the specified role(s) to the user.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user add-role 12 author
 	 *     Success: Added 'author' role for johndoe (12).
 	 *
+	 *     $ wp user add-role 12 author editor
+	 *     Success: Added 'author' role for johndoe (12).
+	 *     Success: Added 'editor' role for johndoe (12).
+	 *
 	 * @subcommand add-role
 	 */
 	public function add_role( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 
-		$role = $args[1];
+		$roles = $args;
+		array_shift( $roles );
 
-		self::validate_role( $role );
+		foreach ( $roles as $role ) {
+			self::validate_role( $role );
+		}
 
-		$user->add_role( $role );
-
-		WP_CLI::success( "Added '{$role}' role for {$user->user_login} ({$user->ID})." );
+		foreach ( $roles as $role ) {
+			$user->add_role( $role );
+			WP_CLI::success( "Added '{$role}' role for {$user->user_login} ({$user->ID})." );
+		}
 	}
 
 	/**
@@ -722,13 +730,17 @@ class User_Command extends CommandWithDBObject {
 	 * <user>
 	 * : User ID, user email, or user login.
 	 *
-	 * [<role>]
-	 * : A specific role to remove.
+	 * [<role>...]
+	 * : Remove the specified role(s) from the user.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user remove-role 12 author
 	 *     Success: Removed 'author' role for johndoe (12).
+	 *
+	 *     $ wp user remove-role 12 author editor
+	 *     Success: Removed 'author' role for johndoe (12).
+	 *     Success: Removed 'editor' role for johndoe (12).
 	 *
 	 * @subcommand remove-role
 	 */
@@ -736,13 +748,17 @@ class User_Command extends CommandWithDBObject {
 		$user = $this->fetcher->get_check( $args[0] );
 
 		if ( isset( $args[1] ) ) {
-			$role = $args[1];
+			$roles = $args;
+			array_shift( $roles );
 
-			self::validate_role( $role );
+			foreach ( $roles as $role ) {
+				self::validate_role( $role );
+			}
 
-			$user->remove_role( $role );
-
-			WP_CLI::success( "Removed '{$role}' role for {$user->user_login} ({$user->ID})." );
+			foreach ( $roles as $role ) {
+				$user->remove_role( $role );
+				WP_CLI::success( "Removed '{$role}' role for {$user->user_login} ({$user->ID})." );
+			}
 		} else {
 			// Multisite
 			if ( function_exists( 'remove_user_from_blog' ) ) {

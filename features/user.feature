@@ -217,6 +217,22 @@ Feature: Manage WordPress users
       administrator, editor
       """
 
+    When I run `wp user add-role 1 editor contributor`
+    Then STDOUT should not be empty
+    And I run `wp user get 1 --field=roles`
+    Then STDOUT should be:
+      """
+      administrator, editor, contributor
+      """
+
+    When I run `wp user remove-role 1 editor contributor`
+    Then STDOUT should not be empty
+    And I run `wp user get 1 --field=roles`
+    Then STDOUT should be:
+      """
+      administrator
+      """
+
     When I try `wp user add-role 1 edit`
     Then STDERR should contain:
       """
