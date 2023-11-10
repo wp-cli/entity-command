@@ -4637,7 +4637,7 @@ wp user add-cap <user> <cap>
 Adds a role for a user.
 
 ~~~
-wp user add-role <user> <role>
+wp user add-role <user> [<role>...]
 ~~~
 
 **OPTIONS**
@@ -4645,13 +4645,16 @@ wp user add-role <user> <role>
 	<user>
 		User ID, user email, or user login.
 
-	<role>
-		Add the specified role to the user.
+	[<role>...]
+		Add the specified role(s) to the user.
 
 **EXAMPLES**
 
     $ wp user add-role 12 author
     Success: Added 'author' role for johndoe (12).
+
+    $ wp user add-role 12 author editor
+    Success: Added 'author', 'editor' roles for johndoe (12).
 
 
 
@@ -5357,7 +5360,7 @@ wp user remove-cap <user> <cap>
 Removes a user's role.
 
 ~~~
-wp user remove-role <user> [<role>]
+wp user remove-role <user> [<role>...]
 ~~~
 
 **OPTIONS**
@@ -5365,13 +5368,16 @@ wp user remove-role <user> [<role>]
 	<user>
 		User ID, user email, or user login.
 
-	[<role>]
-		A specific role to remove.
+	[<role>...]
+		Remove the specified role(s) from the user.
 
 **EXAMPLES**
 
     $ wp user remove-role 12 author
     Success: Removed 'author' role for johndoe (12).
+
+    $ wp user remove-role 12 author editor
+    Success: Removed 'author', 'editor' roles for johndoe (12).
 
 
 
