@@ -1,5 +1,6 @@
 Feature: Empty a WordPress site of its data
 
+  @require-mysql
   Scenario: Empty a site
     Given a WP installation
     And I run `wp option update uploads_use_yearmonth_folders 0`

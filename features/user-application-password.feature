@@ -1,6 +1,7 @@
 Feature: Manage user custom fields
 
-  @less-than-php-8.0
+  # SQLite requires WordPress 6.0+.
+  @less-than-php-8.0 @require-mysql
   Scenario: User application passwords are disabled for WordPress lower than 5.6
     Given a WP install
     And I try `wp theme install twentytwenty --activate`

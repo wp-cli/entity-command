@@ -457,6 +457,7 @@ Feature: Manage WordPress posts
       2005-01-24 09:52:00
       """
 
+  @require-mysql
   Scenario: Publishing a post and setting a date succeeds if the edit_date flag is passed.
     Given a WP install
 
@@ -473,4 +474,26 @@ Feature: Manage WordPress posts
     Then STDOUT should contain:
       """
       2005-01-24 09:52:00
+      """
+
+  # Separate test because of a known bug in the SQLite plugin.
+  # See https://github.com/WordPress/sqlite-database-integration/issues/52.
+  # Once the bug is resolved, this separate test can be removed again.
+  @require-sqlite
+  Scenario: Publishing a post and setting a date succeeds if the edit_date flag is passed.
+    Given a WP install
+
+    When I run `wp post create --post_title='test' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_date='2005-01-24T09:52:00.000Z' --post_status='publish' --edit_date=1`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp post get {POST_ID} --field=post_date`
+    Then STDOUT should contain:
+      """
+      2005-01-24T09:52:00.000Z
       """

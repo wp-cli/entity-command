@@ -52,8 +52,8 @@ class Site_Command extends CommandWithDBObject {
 			wp_cache_delete( $comment_id, 'comment' );
 			wp_cache_delete( $comment_id, 'comment_meta' );
 		}
-		$wpdb->query( "TRUNCATE $wpdb->comments" );
-		$wpdb->query( "TRUNCATE $wpdb->commentmeta" );
+		$wpdb->query( "TRUNCATE TABLE $wpdb->comments" );
+		$wpdb->query( "TRUNCATE TABLE $wpdb->commentmeta" );
 	}
 
 	/**
@@ -80,8 +80,8 @@ class Site_Command extends CommandWithDBObject {
 
 			$posts->next();
 		}
-		$wpdb->query( "TRUNCATE $wpdb->posts" );
-		$wpdb->query( "TRUNCATE $wpdb->postmeta" );
+		$wpdb->query( "TRUNCATE TABLE $wpdb->posts" );
+		$wpdb->query( "TRUNCATE TABLE $wpdb->postmeta" );
 	}
 
 	/**
@@ -110,11 +110,11 @@ class Site_Command extends CommandWithDBObject {
 			wp_cache_delete( 'get', $taxonomy );
 			delete_option( "{$taxonomy}_children" );
 		}
-		$wpdb->query( "TRUNCATE $wpdb->terms" );
-		$wpdb->query( "TRUNCATE $wpdb->term_taxonomy" );
-		$wpdb->query( "TRUNCATE $wpdb->term_relationships" );
+		$wpdb->query( "TRUNCATE TABLE $wpdb->terms" );
+		$wpdb->query( "TRUNCATE TABLE $wpdb->term_taxonomy" );
+		$wpdb->query( "TRUNCATE TABLE $wpdb->term_relationships" );
 		if ( ! empty( $wpdb->termmeta ) ) {
-			$wpdb->query( "TRUNCATE $wpdb->termmeta" );
+			$wpdb->query( "TRUNCATE TABLE $wpdb->termmeta" );
 		}
 	}
 
@@ -143,7 +143,7 @@ class Site_Command extends CommandWithDBObject {
 		}
 
 		// Empty the table once link related cache and term is removed.
-		$wpdb->query( "TRUNCATE {$wpdb->links}" );
+		$wpdb->query( "TRUNCATE TABLE {$wpdb->links}" );
 	}
 
 	/**

@@ -158,6 +158,7 @@ Feature: Manage WordPress comments
       total_comments:  1
       """
 
+  @require-mysql
   Scenario: Approving/unapproving comments
     Given I run `wp comment create --comment_post_ID=1 --comment_approved=0 --porcelain`
     And save STDOUT as {COMMENT_ID}
@@ -176,6 +177,66 @@ Feature: Manage WordPress comments
       """
     And STDOUT should be empty
     And the return code should be 1
+
+    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp comment unapprove {COMMENT_ID} --url=www.example.com`
+    Then STDOUT should be:
+      """
+      Success: Unapproved comment {COMMENT_ID}.
+      """
+
+    When I run `wp comment get --field=comment_approved {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # Without site url set.
+    When I try `wp comment approve {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      Success: Approved comment {COMMENT_ID}.
+      """
+    And STDERR should be:
+      """
+      Warning: Site url not set - defaulting to 'example.com'. Any notification emails sent to post author may appear to come from 'example.com'.
+      """
+    And the return code should be 0
+
+    When I try `wp comment unapprove {COMMENT_ID}`
+    Then STDOUT should be:
+      """
+      Success: Unapproved comment {COMMENT_ID}.
+      """
+    And STDERR should be:
+      """
+      Warning: Site url not set - defaulting to 'example.com'. Any notification emails sent to post author may appear to come from 'example.com'.
+      """
+    And the return code should be 0
+
+  # Approving an approved comment works in SQLite
+  @require-sqlite
+  Scenario: Approving/unapproving comments
+    Given I run `wp comment create --comment_post_ID=1 --comment_approved=0 --porcelain`
+    And save STDOUT as {COMMENT_ID}
+
+    # With site url set.
+    When I run `wp comment approve {COMMENT_ID} --url=www.example.com`
+    Then STDOUT should be:
+      """
+      Success: Approved comment {COMMENT_ID}.
+      """
+
+    When I try the previous command again
+    Then STDOUT should be:
+      """
+      Success: Approved comment {COMMENT_ID}.
+      """
 
     When I run `wp comment get --field=comment_approved {COMMENT_ID}`
     Then STDOUT should be:

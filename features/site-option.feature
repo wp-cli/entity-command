@@ -127,6 +127,7 @@ Feature: Manage WordPress site options
       """
     And the return code should be 1
 
+  @require-mysql
   Scenario: Filter options by `--site_id`
     Given a WP multisite installation
 
