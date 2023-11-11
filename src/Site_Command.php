@@ -521,7 +521,7 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * [--site__in=<value>]
 	 * : Only list 1 the sites with these blog_id values (comma-separated).
-	 * 
+	 *
 	 * [--site__user_in=<value>]
 	 * : Only list the sites with this user.
 	 *
@@ -616,11 +616,16 @@ class Site_Command extends CommandWithDBObject {
 			if ( $user ) {
 				$blogs = get_blogs_of_user( $user->id );
 
-				foreach( $blogs as $blog ) {
+				foreach ( $blogs as $blog ) {
 					$where['blog_id'][] = $blog->userblog_id;
 				}
-				$append = 'ORDER BY FIELD( blog_id, ' . implode( ',', array_map( 'intval', $where['blog_id'] ) ) . ' )';
 			}
+
+			if ( ! isset( $where['blog_id'] ) ) {
+				WP_CLI::error( 'Could not find a site with the user provided.' );
+			}
+
+			$append = 'ORDER BY FIELD( blog_id, ' . implode( ',', array_map( 'intval', $where['blog_id'] ) ) . ' )';
 		}
 
 		$iterator_args = [

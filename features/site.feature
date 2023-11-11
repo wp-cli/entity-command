@@ -118,6 +118,13 @@ Feature: Manage sites in a multisite installation
       {SITE_URL}
       """
 
+    When I try `wp site list --site__user_in=invalid_user`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Could not find a site with the user provided.
+      """
+
   Scenario: Delete a site by slug
     Given a WP multisite install
 
