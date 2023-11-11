@@ -98,6 +98,26 @@ Feature: Manage sites in a multisite installation
       {SCHEME}://example.com/first/
       """
 
+  Scenario: Filter site list by user
+    Given a WP multisite install
+
+    When I run `wp site create --slug=first --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+    And I run `wp site list --site__in={SITE_ID} --field=url`
+    And save STDOUT as {SITE_URL}
+    And I run `wp user create newuser newuser@example.com --porcelain --url={SITE_URL}`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+    And I run `wp user get {USER_ID} --field=user_login`
+    And save STDOUT as {USER_LOGIN}
+
+    When I run `wp site list --field=url --site__user_in={USER_LOGIN}`
+    Then STDOUT should be:
+      """
+      {SITE_URL}
+      """
+
   Scenario: Delete a site by slug
     Given a WP multisite install
 

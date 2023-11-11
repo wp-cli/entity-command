@@ -520,7 +520,10 @@ class Site_Command extends CommandWithDBObject {
 	 * 'url' isn't an available filter, as it comes from 'home' in wp_options.
 	 *
 	 * [--site__in=<value>]
-	 * : Only list the sites with these blog_id values (comma-separated).
+	 * : Only list 1 the sites with these blog_id values (comma-separated).
+	 * 
+	 * [--site__user_in=<value>]
+	 * : Only list the sites with this user.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
@@ -605,6 +608,19 @@ class Site_Command extends CommandWithDBObject {
 
 		if ( isset( $assoc_args['network'] ) ) {
 			$where['site_id'] = $assoc_args['network'];
+		}
+
+		if ( isset( $assoc_args['site__user_in'] ) ) {
+			$user = get_user_by( 'login', $assoc_args['site__user_in'] );
+
+			if ( $user ) {
+				$blogs = get_blogs_of_user( $user->id );
+
+				foreach( $blogs as $blog ) {
+					$where['blog_id'][] = $blog->userblog_id;
+				}
+				$append = 'ORDER BY FIELD( blog_id, ' . implode( ',', array_map( 'intval', $where['blog_id'] ) ) . ' )';
+			}
 		}
 
 		$iterator_args = [
