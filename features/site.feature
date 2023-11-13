@@ -112,13 +112,13 @@ Feature: Manage sites in a multisite installation
     And I run `wp user get {USER_ID} --field=user_login`
     And save STDOUT as {USER_LOGIN}
 
-    When I run `wp site list --field=url --site__user_in={USER_LOGIN}`
+    When I run `wp site list --field=url --user__in={USER_LOGIN}`
     Then STDOUT should be:
       """
       {SITE_URL}
       """
 
-    When I try `wp site list --site__user_in=invalid_user`
+    When I try `wp site list --user__in=invalid_user`
     Then the return code should be 1
     And STDERR should be:
       """
