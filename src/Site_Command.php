@@ -332,7 +332,11 @@ class Site_Command extends CommandWithDBObject {
 		}
 
 		if ( isset( $assoc_args['slug'] ) ) {
-			$blog = get_blog_details( trim( $assoc_args['slug'], '/' ) );
+			$blog_id = get_id_from_blogname( $assoc_args['slug'] );
+			if ( null === $blog_id ) {
+				WP_CLI::error( "Site with slug '{$assoc_args['slug']}' does not exist." );
+			}
+			$blog = get_blog_details( $blog_id );
 		} else {
 			if ( empty( $args ) ) {
 				WP_CLI::error( 'Need to specify a blog id.' );
