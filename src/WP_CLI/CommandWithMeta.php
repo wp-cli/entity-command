@@ -5,8 +5,8 @@ namespace WP_CLI;
 use Exception;
 use WP_CLI;
 use WP_CLI_Command;
-use WP_CLI\Entity\Utils as EntityUtils;
 use WP_CLI\Traverser\RecursiveDataStructureTraverser;
+use WP_CLI\Utils;
 
 /**
  * Base class for WP-CLI commands that deal with metadata
@@ -412,7 +412,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 		if ( 'delete' === $action ) {
 			$patch_value = null;
 		} else {
-			$stdin_value = EntityUtils::has_stdin()
+			$stdin_value = Utils\has_stdin()
 				? trim( WP_CLI::get_value_from_arg_or_stdin( $args, -1 ) )
 				: null;
 			$patch_value = ! empty( $stdin_value )

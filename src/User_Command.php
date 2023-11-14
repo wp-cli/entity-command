@@ -1,7 +1,6 @@
 <?php
 
 use WP_CLI\CommandWithDBObject;
-use WP_CLI\Entity\Utils as EntityUtils;
 use WP_CLI\Fetchers\User as UserFetcher;
 use WP_CLI\Formatter;
 use WP_CLI\Iterators\CSV as CsvIterator;
@@ -964,7 +963,7 @@ class User_Command extends CommandWithDBObject {
 				WP_CLI::error( "Couldn't access remote CSV file (HTTP {$response_code} response)." );
 			}
 		} elseif ( '-' === $filename ) {
-			if ( ! EntityUtils::has_stdin() ) {
+			if ( ! Utils\has_stdin() ) {
 				WP_CLI::error( 'Unable to read content from STDIN.' );
 			}
 		} elseif ( ! file_exists( $filename ) ) {
