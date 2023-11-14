@@ -5,8 +5,8 @@ namespace WP_CLI;
 use Exception;
 use WP_CLI;
 use WP_CLI_Command;
-use WP_CLI\Entity\RecursiveDataStructureTraverser;
 use WP_CLI\Entity\Utils as EntityUtils;
+use WP_CLI\Traverser\RecursiveDataStructureTraverser;
 
 /**
  * Base class for WP-CLI commands that deal with metadata

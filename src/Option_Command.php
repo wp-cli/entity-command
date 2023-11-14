@@ -1,9 +1,9 @@
 <?php
 
-use WP_CLI\Entity\RecursiveDataStructureTraverser;
-use WP_CLI\Formatter;
-use WP_CLI\Utils;
 use WP_CLI\Entity\Utils as EntityUtils;
+use WP_CLI\Formatter;
+use WP_CLI\Traverser\RecursiveDataStructureTraverser;
+use WP_CLI\Utils;
 
 /**
  * Retrieves and sets site options, including plugin and WordPress settings.
