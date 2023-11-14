@@ -1,9 +1,9 @@
 <?php
 
-use WP_CLI\Entity\RecursiveDataStructureTraverser;
-use WP_CLI\Formatter;
-use WP_CLI\Utils;
 use WP_CLI\Entity\Utils as EntityUtils;
+use WP_CLI\Formatter;
+use WP_CLI\Traverser\RecursiveDataStructureTraverser;
+use WP_CLI\Utils;
 
 /**
  * Adds, updates, deletes, and lists site options in a multisite installation.
