@@ -1,7 +1,6 @@
 <?php
 
 use WP_CLI\CommandWithDBObject;
-use WP_CLI\Entity\Utils as EntityUtils;
 use WP_CLI\Fetchers\Post as PostFetcher;
 use WP_CLI\Fetchers\User as UserFetcher;
 use WP_CLI\Utils;
@@ -795,7 +794,7 @@ class Post_Command extends CommandWithDBObject {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'post_content' ) ) {
-			if ( ! EntityUtils::has_stdin() ) {
+			if ( ! Utils\has_stdin() ) {
 				WP_CLI::error( 'The parameter `post_content` reads from STDIN.' );
 			}
 

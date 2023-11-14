@@ -1,6 +1,5 @@
 <?php
 
-use WP_CLI\Entity\Utils as EntityUtils;
 use WP_CLI\Formatter;
 use WP_CLI\Traverser\RecursiveDataStructureTraverser;
 use WP_CLI\Utils;
@@ -682,7 +681,7 @@ class Option_Command extends WP_CLI_Command {
 		if ( 'delete' === $action ) {
 			$patch_value = null;
 		} else {
-			$stdin_value = EntityUtils::has_stdin()
+			$stdin_value = Utils\has_stdin()
 				? trim( WP_CLI::get_value_from_arg_or_stdin( $args, -1 ) )
 				: null;
 
