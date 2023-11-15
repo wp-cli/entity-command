@@ -443,6 +443,34 @@ Feature: Manage WordPress users
       6
       """
 
+    When I run `wp user list-caps bob --exclude-role-names`
+    Then STDOUT should be:
+      """
+      edit_posts
+      read
+      level_1
+      level_0
+      delete_posts
+      """
+
+    When I run `wp user add-cap bob newcap`
+    And I run `wp user list-caps bob --origin=role`
+    Then STDOUT should be:
+      """
+      edit_posts
+      read
+      level_1
+      level_0
+      delete_posts
+      contributor
+      """
+
+    And I run `wp user list-caps bob --origin=user`
+    Then STDOUT should be:
+      """
+      newcap
+      """
+
   Scenario: Make sure WordPress receives the slashed data it expects
     Given a WP install
 
