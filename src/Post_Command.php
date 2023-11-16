@@ -878,6 +878,31 @@ class Post_Command extends CommandWithDBObject {
 		}
 	}
 
+	/**
+	 * Gets post ID by URL.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <url>
+	 * : The URL of the post to get.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get post ID by URL
+	 *     $ wp post url-to-id post-url
+	 *
+	 * @subcommand url-to-id
+	 */
+	public function url_to_id( $args, $assoc_args ) {
+		$post_id = url_to_postid( $args[0] );
+
+		if ( ! $value ) {
+			WP_CLI::error( "Could not get post with url '{$args[0]}'." );
+		}
+
+		WP_CLI::print_value( $post_id, $assoc_args );
+	}
+
 	private function maybe_make_child() {
 		// 50% chance of making child post.
 		return ( wp_rand( 1, 2 ) === 1 );

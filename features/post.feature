@@ -259,6 +259,13 @@ Feature: Manage WordPress posts
       """
       https://example.com/?p=1
       """
+    And save STDOUT as {POST_URL}
+
+    When I run `wp post url-to-id {POST_URL}`
+    Then STDOUT should contain:
+      """
+      {POST_ID}
+      """
 
   Scenario: Update a post from file or STDIN
     Given a content.html file:
