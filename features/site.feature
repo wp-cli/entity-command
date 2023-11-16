@@ -120,6 +120,29 @@ Feature: Manage sites in a multisite installation
     When I try the previous command again
     Then the return code should be 1
 
+    When I run `wp site create --slug=42`
+    Then STDOUT should contain:
+      """
+      Success: Site 3 created: http
+      """
+    And STDOUT should contain:
+      """
+      ://example.com/42/
+      """
+
+    When I run `wp site delete --slug=42 --yes`
+    Then STDOUT should contain:
+      """
+      ://example.com/42/' was deleted.
+      """
+
+    When I try the previous command again
+    Then STDERR should contain:
+      """
+      Site with slug '42' does not exist.
+      """
+    And the return code should be 1
+
   Scenario: Get site info
     Given a WP multisite install
 
