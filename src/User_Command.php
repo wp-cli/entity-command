@@ -870,6 +870,19 @@ class User_Command extends CommandWithDBObject {
 	 *   - yaml
 	 * ---
 	 *
+	 * [--origin=<origin>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: all
+	 * options:
+	 *   - all
+	 *   - user
+	 *   - role
+	 * ---
+	 *
+	 * [--exclude-role-names]
+	 * : Exclude capabilities that match role names from output.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user list-caps 21
@@ -879,37 +892,69 @@ class User_Command extends CommandWithDBObject {
 	 * @subcommand list-caps
 	 */
 	public function list_caps( $args, $assoc_args ) {
-		$user = $this->fetcher->get_check( $args[0] );
+		$user               = $this->fetcher->get_check( $args[0] );
+		$exclude_role_names = Utils\get_flag_value( $assoc_args, 'exclude-role-names' );
 
-		if ( $user ) {
-			$user->get_role_caps();
+		$active_user_cap_list = [];
 
-			$user_caps_list = $user->allcaps;
+		$user_roles = $user->roles;
 
-			$active_user_cap_list = [];
+		switch ( $assoc_args['origin'] ) {
+			case 'all':
+				$user->get_role_caps();
+				$user_caps_list = $user->allcaps;
 
-			foreach ( $user_caps_list as $cap => $active ) {
-				if ( $active ) {
-					$active_user_cap_list[] = $cap;
+				foreach ( $user_caps_list as $capability => $active ) {
+					if ( $exclude_role_names && in_array( $capability, $user_roles, true ) ) {
+						continue;
+					}
+					if ( $active ) {
+						$active_user_cap_list[] = $capability;
+					}
 				}
+				break;
+			case 'user':
+				// Get the user's capabilities
+				$user_capabilities = get_user_meta( $user->ID, 'wp_capabilities', true );
+
+				// Loop through each capability and only return the non-inherited ones
+				foreach ( $user_capabilities as $capability => $active ) {
+					if ( true === $active && ! in_array( $capability, $user_roles, true ) ) {
+						$active_user_cap_list[] = $capability;
+					}
+				}
+				break;
+			case 'role':
+				// Get the user's capabilities
+				$user_capabilities = get_user_meta( $user->ID, 'wp_capabilities', true );
+
+				// Loop through each capability and only return the inherited ones (including the role name)
+				foreach ( $user->get_role_caps() as $capability => $active ) {
+					if ( true === $active && ! isset( $user_capabilities[ $capability ] ) ) {
+						$active_user_cap_list[] = $capability;
+					}
+					if ( true === $active && ! $exclude_role_names && in_array( $capability, $user_roles, true ) ) {
+						$active_user_cap_list[] = $capability;
+					}
+				}
+				break;
+		}
+
+		if ( 'list' === $assoc_args['format'] ) {
+			foreach ( $active_user_cap_list as $cap ) {
+				WP_CLI::line( $cap );
 			}
+		} else {
+			$output_caps = [];
+			foreach ( $active_user_cap_list as $cap ) {
+				$output_cap = new stdClass();
 
-			if ( 'list' === $assoc_args['format'] ) {
-				foreach ( $active_user_cap_list as $cap ) {
-					WP_CLI::line( $cap );
-				}
-			} else {
-				$output_caps = [];
-				foreach ( $active_user_cap_list as $cap ) {
-					$output_cap = new stdClass();
+				$output_cap->name = $cap;
 
-					$output_cap->name = $cap;
-
-					$output_caps[] = $output_cap;
-				}
-				$formatter = new Formatter( $assoc_args, $this->cap_fields );
-				$formatter->display_items( $output_caps );
+				$output_caps[] = $output_cap;
 			}
+			$formatter = new Formatter( $assoc_args, $this->cap_fields );
+			$formatter->display_items( $output_caps );
 		}
 	}
 
