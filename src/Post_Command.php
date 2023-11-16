@@ -897,7 +897,7 @@ class Post_Command extends CommandWithDBObject {
 		$post_id = url_to_postid( $args[0] );
 
 		if ( ! $value ) {
-			WP_CLI::error( "Could not get post with url '{$args[0]}'." );
+			WP_CLI::error( "Could not get post with url '$args[0]'." );
 		}
 
 		WP_CLI::print_value( $post_id, $assoc_args );

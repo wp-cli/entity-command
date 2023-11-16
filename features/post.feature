@@ -267,6 +267,12 @@ Feature: Manage WordPress posts
       {POST_ID}
       """
 
+    When I run `wp post url-to-id non-existent-url`
+    Then STDOUT should contain:
+      """
+      Could not get post with url 'non-existent-url'.
+      """
+
   Scenario: Update a post from file or STDIN
     Given a content.html file:
       """
