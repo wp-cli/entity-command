@@ -139,7 +139,33 @@ Feature: Manage sites in a multisite installation
     When I try the previous command again
     Then STDERR should contain:
       """
-      Site with slug '42' does not exist.
+      Error: Could not find site with slug '42'.
+      """
+    And the return code should be 1
+
+  Scenario: Archive a site by a numeric slug
+    Given a WP multisite install
+
+    When I run `wp site create --slug=42`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created: http
+      """
+    And STDOUT should contain:
+      """
+      ://example.com/42/
+      """
+
+    When I run `wp site archive --slug=42`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 archived.
+      """
+
+    When I try `wp site archive --slug=43`
+    Then STDERR should contain:
+      """
+      Error: Could not find site with slug '43'.
       """
     And the return code should be 1
 
