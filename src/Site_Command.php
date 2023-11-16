@@ -334,7 +334,7 @@ class Site_Command extends CommandWithDBObject {
 		if ( isset( $assoc_args['slug'] ) ) {
 			$blog_id = get_id_from_blogname( $assoc_args['slug'] );
 			if ( null === $blog_id ) {
-				WP_CLI::error( "Site with slug '{$assoc_args['slug']}' does not exist." );
+				WP_CLI::error( sprintf( 'Could not find site with slug \'%s\'.', $assoc_args['slug'] ) );
 			}
 			$blog = get_blog_details( $blog_id );
 		} else {
@@ -982,11 +982,11 @@ class Site_Command extends CommandWithDBObject {
 		$slug = Utils\get_flag_value( $assoc_args, 'slug', false );
 
 		if ( $slug ) {
-			$blog = get_blog_details( trim( $slug, '/' ) );
-			if ( ! $blog ) {
+			$blog_id = get_id_from_blogname( trim( $slug, '/' ) );
+			if ( null === $blog_id ) {
 				WP_CLI::error( sprintf( 'Could not find site with slug \'%s\'.', $slug ) );
 			}
-			return [ $blog->blog_id ];
+			return [ $blog_id ];
 		}
 
 		return $args;
