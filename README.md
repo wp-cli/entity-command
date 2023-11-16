@@ -4984,7 +4984,7 @@ These fields are optionally available:
 Lists all capabilities for a user.
 
 ~~~
-wp user list-caps <user> [--format=<format>]
+wp user list-caps <user> [--format=<format>] [--origin=<origin>] [--exclude-role-names]
 ~~~
 
 **OPTIONS**
@@ -5004,6 +5004,19 @@ wp user list-caps <user> [--format=<format>]
 		  - count
 		  - yaml
 		---
+
+	[--origin=<origin>]
+		Render output in a particular format.
+		---
+		default: all
+		options:
+		  - all
+		  - user
+		  - role
+		---
+
+	[--exclude-role-names]
+		Exclude capabilities that match role names from output.
 
 **EXAMPLES**
 
