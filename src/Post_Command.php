@@ -889,15 +889,17 @@ class Post_Command extends CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Get post ID by URL
-	 *     $ wp post url-to-id post-url
+	 *     $ wp post url-to-id https://example.com/?p=1
 	 *
 	 * @subcommand url-to-id
 	 */
 	public function url_to_id( $args, $assoc_args ) {
 		$post_id = url_to_postid( $args[0] );
 
-		if ( ! $post_id ) {
-			WP_CLI::error( "Could not get post with url '$args[0]'." );
+		$post = get_post( $post_id );
+
+		if ( null === $post ) {
+			WP_CLI::error( "Could not get post with url $args[0]." );
 		}
 
 		WP_CLI::print_value( $post_id, $assoc_args );
