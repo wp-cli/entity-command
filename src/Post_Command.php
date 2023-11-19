@@ -879,7 +879,7 @@ class Post_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Gets post ID by URL.
+	 * Gets the post ID for a given URL.
 	 *
 	 * ## OPTIONS
 	 *
@@ -890,6 +890,7 @@ class Post_Command extends CommandWithDBObject {
 	 *
 	 *     # Get post ID by URL
 	 *     $ wp post url-to-id https://example.com/?p=1
+	 *     1
 	 *
 	 * @subcommand url-to-id
 	 */

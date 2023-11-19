@@ -115,6 +115,7 @@
             "post term remove",
             "post term set",
             "post update",
+            "post url-to-id",
             "post-type",
             "post-type get",
             "post-type list",

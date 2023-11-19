@@ -3111,6 +3111,27 @@ wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [
 
 
 
+### wp post url-to-id
+
+Gets the post ID for a given URL.
+
+~~~
+wp post url-to-id <url>
+~~~
+
+**OPTIONS**
+
+	<url>
+		The URL of the post to get.
+
+**EXAMPLES**
+
+    # Get post ID by URL
+    $ wp post url-to-id https://example.com/?p=1
+    1
+
+
+
 ### wp post-type
 
 Retrieves details on the site's registered post types.
