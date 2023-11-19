@@ -3,7 +3,6 @@ Feature: Get the post ID for a given URL
   Background:
     Given a WP install
 
-  @daniel
   Scenario: Get the post ID for a given URL
     When I run `wp post get 1 --field=url`
     Then STDOUT should be:
