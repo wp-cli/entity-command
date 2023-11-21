@@ -92,6 +92,8 @@
             "option patch",
             "option pluck",
             "option update",
+            "option set-autoload",
+            "option get-autoload",
             "post",
             "post create",
             "post delete",
