@@ -2035,6 +2035,44 @@ wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
 
 
 
+### wp option set-autoload
+
+Sets the 'autoload' value for an option.
+
+~~~
+wp option set-autoload <key> <autoload>
+~~~
+
+**OPTIONS**
+
+	<key>
+		The name of the option to set 'autoload' for.
+
+	<autoload>
+		Should this option be automatically loaded.
+		---
+		options:
+		  - 'yes'
+		  - 'no'
+		---
+
+
+
+### wp option get-autoload
+
+Gets the 'autoload' value for an option.
+
+~~~
+wp option get-autoload <key>
+~~~
+
+**OPTIONS**
+
+	<key>
+		The name of the option to get 'autoload' of.
+
+
+
 ### wp post
 
 Manages posts, content, and meta.
