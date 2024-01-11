@@ -744,7 +744,7 @@ class Term_Command extends WP_CLI_Command {
 	}
 
 	private function maybe_reset_depth() {
-		// 10% chance of reseting to root depth.
+		// 10% chance of resetting to root depth.
 		return ( wp_rand( 1, 10 ) === 7 );
 	}
 

@@ -72,7 +72,7 @@ class Site_Option_Command extends WP_CLI_Command {
 	 * : The name of the site option to add.
 	 *
 	 * [<value>]
-	 * : The value of the site option to add. If ommited, the value is read from STDIN.
+	 * : The value of the site option to add. If omitted, the value is read from STDIN.
 	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value.
@@ -147,7 +147,7 @@ class Site_Option_Command extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # List all site options begining with "i2f_"
+	 *     # List all site options beginning with "i2f_"
 	 *     $ wp site option list --search="i2f_*"
 	 *     +-------------+--------------+
 	 *     | meta_key    | meta_value   |
@@ -214,7 +214,7 @@ class Site_Option_Command extends WP_CLI_Command {
 	 * : The name of the site option to update.
 	 *
 	 * [<value>]
-	 * : The new value. If ommited, the value is read from STDIN.
+	 * : The new value. If omitted, the value is read from STDIN.
 	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value.
