@@ -1669,7 +1669,7 @@ Errors if the option already exists.
 		The name of the option to add.
 
 	[<value>]
-		The value of the option to add. If ommited, the value is read from STDIN.
+		The value of the option to add. If omitted, the value is read from STDIN.
 
 	[--format=<format>]
 		The serialization format for the value.
@@ -1983,7 +1983,7 @@ wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
 		The name of the option to update.
 
 	[<value>]
-		The new value. If ommited, the value is read from STDIN.
+		The new value. If omitted, the value is read from STDIN.
 
 	[--autoload=<autoload>]
 		Requires WP 4.2. Should this option be automatically loaded.
