@@ -540,7 +540,7 @@ final class User_Application_Password_Command {
 			$passwords = WP_Application_Passwords::get_user_application_passwords( $user_id );
 
 			foreach ( $passwords as $password ) {
-				if ( strtolower( $password['name'] ) === strtolower( $name ) ) {
+				if ( strtolower( $password['name'] ) === strtolower( $app_name ) ) {
 					return true;
 				}
 			}
