@@ -94,7 +94,7 @@ class Option_Command extends WP_CLI_Command {
 	 * : The name of the option to add.
 	 *
 	 * [<value>]
-	 * : The value of the option to add. If ommited, the value is read from STDIN.
+	 * : The value of the option to add. If omitted, the value is read from STDIN.
 	 *
 	 * [--format=<format>]
 	 * : The serialization format for the value.
@@ -354,7 +354,7 @@ class Option_Command extends WP_CLI_Command {
 	 * : The name of the option to update.
 	 *
 	 * [<value>]
-	 * : The new value. If ommited, the value is read from STDIN.
+	 * : The new value. If omitted, the value is read from STDIN.
 	 *
 	 * [--autoload=<autoload>]
 	 * : Requires WP 4.2. Should this option be automatically loaded.
