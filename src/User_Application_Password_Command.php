@@ -39,6 +39,10 @@ use WP_CLI\Utils;
  *     $ wp user application-password update 123 6633824d-c1d7-4f79-9dd5-4586f734d69e --name=newappname
  *     Success: Updated application password.
  *
+ *     # Delete an existing application password
+ *     $ wp user application-password delete 123 6633824d-c1d7-4f79-9dd5-4586f734d69e
+ *     Success: Deleted 1 of 1 application password.
+ *
  *     # Check if an application password for a given application exists
  *     $ wp user application-password exists 123 myapp
  *     $ echo $?
@@ -418,9 +422,13 @@ final class User_Application_Password_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Record usage of an application password
-	 *     $ wp user application-password record-usage 123 6633824d-c1d7-4f79-9dd5-4586f734d69e
-	 *     Success: Recorded application password usage.
+	 *     # Delete an existing application password
+	 *     $ wp user application-password delete 123 6633824d-c1d7-4f79-9dd5-4586f734d69e
+	 *     Success: Deleted 1 of 1 application password.
+	 *
+	 *     # Delete all of the user's application passwords
+	 *     $ wp user application-password delete 123 --all
+	 *     Success: Deleted all application passwords.
 	 *
 	 * @param array $args       Indexed array of positional arguments.
 	 * @param array $assoc_args Associative array of associative arguments.
