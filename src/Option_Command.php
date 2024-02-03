@@ -577,6 +577,28 @@ class Option_Command extends WP_CLI_Command {
 	 *   - json
 	 *   - yaml
 	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get the value of the 'field_key' in the option with name 'option_name'
+	 *     $ wp option pluck option_name field_key
+	 *     field_value
+	 *
+	 *     # Get the value of the 'last_updated' field in a JSON value in the option with name 'app_updates'
+	 *     Option value: a:1:{s:4:"u558";a:1:{s:8:"required";b:0;}}
+	 *     $ wp option pluck fs_gdpr u558
+	 *     array (
+	 *         'required' => false,
+	 *     )
+	 *
+	 *     # Get the value of the 'last_updated' field in a JSON value in the option with name 'app_updates'
+	 *     Option value: a:1:{s:4:"u558";a:1:{s:8:"required";b:1;}}
+	 *     $ wp option pluck fs_gdpr u558 required
+	 *     1
+	 *
+	 *     # Get the value of the 'last_updated' field in a JSON value in the option with name 'app_updates'
+	 *     Option value: {"last_updated":1706931333,"next_update":2706931333}
+	 *     $ wp option pluck app_updates last_update
 	 */
 	public function pluck( $args, $assoc_args ) {
 		list( $key ) = $args;
@@ -596,6 +618,14 @@ class Option_Command extends WP_CLI_Command {
 			},
 			array_slice( $args, 1 )
 		);
+
+		if (function_exists('maybe_unserialize')) {
+		    $value = maybe_unserialize($value);
+		}
+
+		if (Utils\is_json($value)) {
+		    $value = json_decode($value);
+		}
 
 		$traverser = new RecursiveDataStructureTraverser( $value );
 
@@ -662,9 +692,27 @@ class Option_Command extends WP_CLI_Command {
 	 *     $ wp option patch update option_name foo
 	 *     Error: Please provide value to update.
 	 *
+	 *     # Update the value of the key 'required' in the 'u558' element to 1 for the option with name 'fs_gdpr'.
+	 *     Option value before: a:1:{s:4:"u558";a:1:{s:8:"required";b:0;}}
+	 *     Option value after: a:1:{s:4:"u558";a:1:{s:8:"required";b:1;}}
+	 *     $ wp option patch update fs_gdpr u558 required 1
+	 *     Success: Updated 'option_name' option.
+	 *
 	 *     # Delete the nested key 'bar' under 'foo' key on an option with name 'option_name'.
 	 *     $ wp option patch delete option_name foo bar
 	 *     Success: Updated 'option_name' option.
+	 *
+	 * ## NOTES
+	 *     # Blocking on STDIN
+	 *     This command attempts to read the value to use for patching from
+	 *     stdin before using a value from the command line. If no value is
+	 *     available then it will use the last value on the command line. On
+	 *     some consoles this will cause the command to block on stdin
+	 *     awaiting input. If this encountered, piping an empty string to the
+	 *     command can be used to work around the problem.
+	 *     E.g.; echo '' | wp option patch update an_option the_key the_value
+	 *
+	 *     Ref: https://github.com/wp-cli/entity-command/issues/164
 	 */
 	public function patch( $args, $assoc_args ) {
 		list( $action, $key ) = $args;
@@ -703,6 +751,14 @@ class Option_Command extends WP_CLI_Command {
 		$current_value = $old_value;
 		if ( is_object( $current_value ) ) {
 			$old_value = clone $current_value;
+		}
+
+		if (function_exists('maybe_unserialize')) {
+		    $current_value = maybe_unserialize($current_value);
+		}
+
+		if (Utils\is_json($current_value)) {
+		    $current_value = json_decode($current_value);
 		}
 
 		$traverser = new RecursiveDataStructureTraverser( $current_value );
