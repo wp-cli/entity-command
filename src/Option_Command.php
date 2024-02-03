@@ -619,12 +619,12 @@ class Option_Command extends WP_CLI_Command {
 			array_slice( $args, 1 )
 		);
 
-		if (function_exists('maybe_unserialize')) {
-		    $value = maybe_unserialize($value);
+		if (function_exists( 'maybe_unserialize' )) {
+		    $value = maybe_unserialize( $value );
 		}
 
-		if (Utils\is_json($value)) {
-		    $value = json_decode($value);
+		if (Utils\is_json( $value )) {
+		    $value = json_decode( $value );
 		}
 
 		$traverser = new RecursiveDataStructureTraverser( $value );
@@ -633,6 +633,12 @@ class Option_Command extends WP_CLI_Command {
 			$value = $traverser->get( $key_path );
 		} catch ( Exception $exception ) {
 			die( 1 );
+		}
+
+		if (function_exists( 'is_serialized' ) &&
+		    function_exists( 'maybe_serialize' ) &&
+		    !is_serialized( $value ) ) {
+	        $value = maybe_serialize( $value );
 		}
 
 		WP_CLI::print_value( $value, $assoc_args );
