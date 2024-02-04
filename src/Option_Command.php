@@ -635,6 +635,10 @@ class Option_Command extends WP_CLI_Command {
 			die( 1 );
 		}
 
+		if ( $value instanceof \stdClass ) {
+		    $value = json_encode( $value );
+		}
+
 		if ( function_exists( 'is_serialized' ) &&
 			function_exists( 'maybe_serialize' ) &&
 			! is_serialized( $value ) ) {

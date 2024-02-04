@@ -82,6 +82,83 @@ Feature: Option commands have pluck and patch.
       foo
       """
 
+  @pluck @pluck-array
+  Scenario: A value can be retrieved from an array by key.
+    Given a WP install
+    And I run `wp option update option_name 'a:1:{s:3:"key";s:5:"value";}'`
+
+    When I run `wp option pluck option_name key`
+    Then STDOUT should be:
+      """
+      value
+      """
+
+  @pluck @pluck-array
+  Scenario: A value can be retrieved from an array by index.
+    Given a WP install
+    And I run `wp option update option_name 'a:1:{i:0;s:5:"value";}'`
+
+    When I run `wp option pluck option_name 0`
+    Then STDOUT should be:
+      """
+      value
+      """
+
+  @pluck @pluck-array
+  Scenario: A value can be retrieved from an array within an array.
+    Given a WP install
+    And I run `wp option update option_name 'a:1:{s:3:"key";a:1:{i:0;s:10:"innerValue";}}'`
+
+    When I run `wp option pluck option_name key 0`
+    Then STDOUT should be:
+      """
+      innerValue
+      """
+
+  @pluck @pluck-array
+  Scenario: An array retrieved from an array by key.
+    Given a WP install
+    And I run `wp option update option_name 'a:1:{s:3:"key";a:1:{i:0;s:10:"innerValue";}}'`
+
+    When I run `wp option pluck option_name key`
+    Then STDOUT should be:
+      """
+      a:1:{i:0;s:10:"innerValue";}
+      """
+
+	@pluck @pluck-json
+	Scenario: A value can be retrieved from a Json object.
+		Given a WP install
+		And I run `wp option update option_name 's:15:"{"key":"value"}";'`
+		
+		When I run `wp option pluck option_name key`
+		Then STDOUT should be:
+			"""
+			value
+			"""
+
+  @pluck @pluck-json
+  Scenario: A value can be retrieved from a Json object within an object.
+    Given a WP install
+    And I run `wp option update option_name 's:38:"{"outerKey":{"innerKey":"innerValue"}}";'`
+
+    When I run `wp option pluck option_name outerKey innerKey`
+    Then STDOUT should be:
+      """
+      innerValue
+      """
+
+  @pluck @pluck-json
+  Scenario: A Json object can be retrieved from within a Json object.
+    Given a WP install
+    And I run `wp option update option_name 's:38:"{"outerKey":{"innerKey":"innerValue"}}";'`
+
+    When I run `wp option pluck option_name outerKey`
+    Then STDOUT should be:
+      """
+      {"innerKey":"innerValue"}
+      """
+
   @patch @patch-update @patch-arg
   Scenario: Nested values can be changed.
     Given a WP install
@@ -298,6 +375,128 @@ Feature: Option commands have pluck and patch.
     Then STDOUT should be:
       """
       1
+      """
+
+  @patch @pluck @patch-array
+  Scenario: An array value can be updated
+    Given a WP install
+    And a setup.php file:
+      """
+      <?php
+      $option = ['key' => 'origValue'];
+      $ret = update_option( 'wp_cli_test', $option );
+      """
+    And I run `wp eval-file setup.php`
+
+    When I run `wp option pluck wp_cli_test key`
+    Then STDOUT should be:
+      """
+      origValue
+      """
+
+    When I run `wp option patch update wp_cli_test key newValue`
+    Then STDOUT should be:
+      """
+      Success: Updated 'wp_cli_test' option.
+      """
+
+    When I run `wp option pluck wp_cli_test key`
+    Then STDOUT should be:
+      """
+      newValue
+      """
+
+  @patch @pluck @patch-array
+  Scenario: An array value can be updated within an array
+    Given a WP install
+    And a setup.php file:
+      """
+      <?php
+      $option = ['outerKey' => ['innerKey' => 'origValue']];
+      $ret = update_option( 'wp_cli_test', $option );
+      """
+    And I run `wp eval-file setup.php`
+
+    When I run `wp option pluck wp_cli_test outerKey innerKey`
+    Then STDOUT should be:
+      """
+      origValue
+      """
+
+    When I run `wp option patch update wp_cli_test outerKey innerKey newValue`
+    Then STDOUT should be:
+      """
+      Success: Updated 'wp_cli_test' option.
+      """
+
+    When I run `wp option pluck wp_cli_test outerKey innerKey`
+    Then STDOUT should be:
+      """
+      newValue
+      """
+
+  @patch @pluck @patch-json
+  Scenario: A Json object can be updated
+    Given a WP install
+    And a setup.php file:
+      """
+      <?php
+      $obj = new \stdClass();
+      $obj->key = 'origValue';
+      $json = json_encode( $obj );
+      $ret = update_option( 'wp_cli_test', $json );
+      """
+    And I run `wp eval-file setup.php`
+
+    When I run `wp option pluck wp_cli_test key`
+    Then STDOUT should be:
+      """
+      origValue
+      """
+
+    When I run `wp option patch update wp_cli_test key newValue`
+    Then STDOUT should be:
+      """
+      Success: Updated 'wp_cli_test' option.
+      """
+
+    When I run `wp option pluck wp_cli_test key`
+    Then STDOUT should be:
+      """
+      newValue
+      """
+
+  @patch @pluck @patch-json
+  Scenario: A value in a Json object can be updated within a json object
+    Given a WP install
+    And a setup.php file:
+      """
+      <?php
+      $inner = new \stdClass();
+      $inner->innerKey = 'origValue';
+      $outer = new \stdClass();
+      $outer->outerKey = $inner;
+      $json = json_encode( $outer );
+      $ret = update_option( 'wp_cli_test', $json );
+      """
+    And I run `wp eval-file setup.php`
+
+    When I run `wp option pluck wp_cli_test outerKey innerKey`
+    Then STDOUT should be:
+      """
+      origValue
+      """
+
+    When I run `wp option patch update wp_cli_test outerKey innerKey newValue`
+    Then STDOUT should be:
+      """
+      Success: Updated 'wp_cli_test' option.
+      """
+
+    When I run `wp option pluck wp_cli_test outerKey innerKey`
+    Then STDOUT should be:
+      """
+      newValue
       """
 
   @patch
