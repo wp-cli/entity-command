@@ -7,6 +7,7 @@ use WP_CLI\Iterators\Query as QueryIterator;
 use WP_CLI\Iterators\Table as TableIterator;
 use WP_CLI\Utils;
 use WP_CLI\Formatter;
+use WP_CLI\Fetchers\User as UserFetcher;
 
 /**
  * Creates, deletes, empties, moderates, and lists one or more sites on a multisite installation.
@@ -522,7 +523,7 @@ class Site_Command extends CommandWithDBObject {
 	 * [--site__in=<value>]
 	 * : Only list the sites with these blog_id values (comma-separated).
 	 *
-	 * [--user__in=<value>]
+	 * [--user=<value>]
 	 * : Only list the sites with this user.
 	 *
 	 * [--field=<field>]
@@ -610,19 +611,21 @@ class Site_Command extends CommandWithDBObject {
 			$where['site_id'] = $assoc_args['network'];
 		}
 
-		if ( isset( $assoc_args['user__in'] ) ) {
-			$user = get_user_by( 'login', $assoc_args['user__in'] );
+		if ( isset( $assoc_args['user'] ) ) {
+			$user    = ( new UserFetcher() )->get_check( $assoc_args['user'] );
 
 			if ( $user ) {
-				$blogs = get_blogs_of_user( $user->id );
+				$blogs = get_blogs_of_user( $user->ID );
 
 				foreach ( $blogs as $blog ) {
 					$where['blog_id'][] = $blog->userblog_id;
 				}
 			}
 
-			if ( ! isset( $where['blog_id'] ) ) {
-				WP_CLI::error( 'Could not find a site with the user provided.' );
+			if ( ! isset( $where['blog_id'] ) || empty( $where['blog_id'] ) ) {
+				$formatter = new Formatter( $assoc_args, [], 'site' );
+				$formatter->display_items( [] );
+				return;
 			}
 
 			$append = 'ORDER BY FIELD( blog_id, ' . implode( ',', array_map( 'intval', $where['blog_id'] ) ) . ' )';

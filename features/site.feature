@@ -104,7 +104,7 @@ Feature: Manage sites in a multisite installation
     When I run `wp site create --slug=first --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {SITE_ID}
-    And I run `wp site list --site__in={SITE_ID} --field=url`
+    And I run `wp site list --site={SITE_ID} --field=url`
     And save STDOUT as {SITE_URL}
     And I run `wp user create newuser newuser@example.com --porcelain --url={SITE_URL}`
     Then STDOUT should be a number
@@ -112,17 +112,17 @@ Feature: Manage sites in a multisite installation
     And I run `wp user get {USER_ID} --field=user_login`
     And save STDOUT as {USER_LOGIN}
 
-    When I run `wp site list --field=url --user__in={USER_LOGIN}`
+    When I run `wp site list --field=url --user={USER_LOGIN}`
     Then STDOUT should be:
       """
       {SITE_URL}
       """
 
-    When I try `wp site list --user__in=invalid_user`
+    When I try `wp site list --user=invalid_user`
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: Could not find a site with the user provided.
+      Error: Invalid user ID, email or login: 'invalid_user'
       """
 
   Scenario: Delete a site by slug
