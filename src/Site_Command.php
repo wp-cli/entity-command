@@ -523,7 +523,7 @@ class Site_Command extends CommandWithDBObject {
 	 * [--site__in=<value>]
 	 * : Only list the sites with these blog_id values (comma-separated).
 	 *
-	 * [--user=<value>]
+	 * [--site_user=<value>]
 	 * : Only list the sites with this user.
 	 *
 	 * [--field=<field>]
@@ -611,8 +611,8 @@ class Site_Command extends CommandWithDBObject {
 			$where['site_id'] = $assoc_args['network'];
 		}
 
-		if ( isset( $assoc_args['user'] ) ) {
-			$user = ( new UserFetcher() )->get_check( $assoc_args['user'] );
+		if ( isset( $assoc_args['site_user'] ) ) {
+			$user = ( new UserFetcher() )->get_check( $assoc_args['site_user'] );
 
 			if ( $user ) {
 				$blogs = get_blogs_of_user( $user->ID );
