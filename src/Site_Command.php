@@ -612,7 +612,7 @@ class Site_Command extends CommandWithDBObject {
 		}
 
 		if ( isset( $assoc_args['user'] ) ) {
-			$user    = ( new UserFetcher() )->get_check( $assoc_args['user'] );
+			$user = ( new UserFetcher() )->get_check( $assoc_args['user'] );
 
 			if ( $user ) {
 				$blogs = get_blogs_of_user( $user->ID );
