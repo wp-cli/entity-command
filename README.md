@@ -3542,7 +3542,7 @@ WP_CLI::add_hook( 'after_invoke:site empty', function(){
 Lists all sites in a multisite installation.
 
 ~~~
-wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_user=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -3556,6 +3556,9 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--field=
 
 	[--site__in=<value>]
 		Only list the sites with these blog_id values (comma-separated).
+
+	[--site_user=<value>]
+		Only list the sites with this user.
 
 	[--field=<field>]
 		Prints the value of a single field for each site.
