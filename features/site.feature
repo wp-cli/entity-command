@@ -125,6 +125,16 @@ Feature: Manage sites in a multisite installation
       Error: Invalid user ID, email or login: 'invalid_user'
       """
 
+    When I run `wp user remove-role {USER_LOGIN} --url={SITE_URL}`
+    Then STDOUT should contain:
+      """
+      Success: Removed
+      """
+
+    When I run `wp site list --field=url --site_user={USER_LOGIN}`
+    Then STDOUT should be empty
+
+
   Scenario: Delete a site by slug
     Given a WP multisite install
 
