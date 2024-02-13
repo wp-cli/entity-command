@@ -765,8 +765,8 @@ class Site_Command extends CommandWithDBObject {
 	 *     $ wp site deactivate 123
 	 *     Success: Site 123 deactivated.
 	 *
-	 *      $ wp site deactivate --slug=demo
-	 *      Success: Site 123 marked as deactivated.
+	 *     $ wp site deactivate --slug=demo
+	 *     Success: Site 123 deactivated.
 	 */
 	public function deactivate( $args, $assoc_args ) {
 		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
