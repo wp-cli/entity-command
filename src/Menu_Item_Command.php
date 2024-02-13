@@ -18,7 +18,7 @@ use WP_CLI\Utils;
  *
  *     # Delete menu item
  *     $ wp menu item delete 45
- *     Success: 1 menu item deleted.
+ *     Success: Deleted 1 of 1 menu items.
  */
 class Menu_Item_Command extends WP_CLI_Command {
 
@@ -355,7 +355,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp menu item delete 45
-	 *     Success: 1 menu item deleted.
+	 *     Success: Deleted 1 of 1 menu items.
 	 *
 	 * @subcommand delete
 	 */

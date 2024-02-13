@@ -29,7 +29,7 @@ use WP_CLI\Utils;
  *
  *     # Assign the 'my-menu' menu to the 'primary' location
  *     $ wp menu location assign my-menu primary
- *     Success: Assigned location to menu.
+ *     Success: Assigned location primary to menu my-menu.
  *
  * @package wp-cli
  */
@@ -87,7 +87,8 @@ class Menu_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     $ wp menu delete "My Menu"
-	 *     Success: 1 menu deleted.
+	 *     Deleted menu 'My Menu'.
+	 *     Success: Deleted 1 of 1 menus.
 	 */
 	public function delete( $args, $assoc_args ) {
 
