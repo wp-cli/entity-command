@@ -28,7 +28,7 @@ use WP_CLI\Utils;
  *
  *     # Delete user 123 and reassign posts to user 567
  *     $ wp user delete 123 --reassign=567
- *     Success: Removed user 123 from http://example.com
+ *     Success: Removed user 123 from http://example.com.
  *
  * @package wp-cli
  */
@@ -262,12 +262,12 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 *     # Delete user 123 and reassign posts to user 567
 	 *     $ wp user delete 123 --reassign=567
-	 *     Success: Removed user 123 from http://example.com
+	 *     Success: Removed user 123 from http://example.com.
 	 *
 	 *     # Delete all contributors and reassign their posts to user 2
 	 *     $ wp user delete $(wp user list --role=contributor --field=ID) --reassign=2
-	 *     Success: Removed user 813 from http://example.com
-	 *     Success: Removed user 578 from http://example.com
+	 *     Success: Removed user 813 from http://example.com.
+	 *     Success: Removed user 578 from http://example.com.
 	 *
 	 *     # Delete all contributors in batches of 100 (avoid error: argument list too long: wp)
 	 *     $ wp user delete $(wp user list --role=contributor --field=ID | head -n 100)
@@ -979,9 +979,9 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 *     # Import users from local CSV file
 	 *     $ wp user import-csv /path/to/users.csv
-	 *     Success: bobjones created
-	 *     Success: newuser1 created
-	 *     Success: existinguser created
+	 *     Success: bobjones created.
+	 *     Success: newuser1 created.
+	 *     Success: existinguser created.
 	 *
 	 *     # Import users from remote CSV file
 	 *     $ wp user import-csv http://example.com/users.csv
@@ -1178,20 +1178,26 @@ class User_Command extends CommandWithDBObject {
 	 *     Reset password for editor.
 	 *     Success: Passwords reset for 2 users.
 	 *
+	 *     # Reset and display the password.
+	 *     $ wp user reset-password editor --show-password
+	 *     Reset password for editor.
+	 *     Password: N6hAau0fXZMN#rLCIirdEGOh
+	 *     Success: Password reset for 1 user.
+	 *
 	 *     # Reset the password for one user, displaying only the new password, and not sending the change email.
 	 *     $ wp user reset-password admin --skip-email --porcelain
 	 *     yV6BP*!d70wg
 	 *
 	 *     # Reset password for all users.
 	 *     $ wp user reset-password $(wp user list --format=ids)
-	 *     Reset password for admin
-	 *     Reset password for editor
-	 *     Reset password for subscriber
+	 *     Reset password for admin.
+	 *     Reset password for editor.
+	 *     Reset password for subscriber.
 	 *     Success: Passwords reset for 3 users.
 	 *
 	 *     # Reset password for all users with a particular role.
 	 *     $ wp user reset-password $(wp user list --format=ids --role=administrator)
-	 *     Reset password for admin
+	 *     Reset password for admin.
 	 *     Success: Password reset for 1 user.
 	 *
 	 * @subcommand reset-password
@@ -1287,7 +1293,7 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 *     $ wp user spam 123
 	 *     User 123 marked as spam.
-	 *     Success: Spamed 1 of 1 users.
+	 *     Success: Spammed 1 of 1 users.
 	 */
 	public function spam( $args ) {
 		$this->update_msuser_status( $args, 'spam', '1' );
