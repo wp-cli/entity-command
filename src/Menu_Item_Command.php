@@ -488,6 +488,12 @@ class Menu_Item_Command extends WP_CLI_Command {
 				$this->reorder_menu_items( $menu->term_id, $menu_item_args['menu-item-position'], +1, $result );
 			}
 
+			$position_value = Utils\get_flag_value( $assoc_args, 'position' );
+
+			if ( 'update' === $method && ! empty( $position_value ) ) {
+				$this->update_menu_item_position( $menu->term_id, $menu_item_db_id, $position_value );
+			}
+
 			/**
 			 * Set the menu
 			 *
@@ -508,6 +514,47 @@ class Menu_Item_Command extends WP_CLI_Command {
 			} elseif ( 'update' === $method ) {
 				WP_CLI::success( 'Menu item updated.' );
 			}
+		}
+	}
+
+	/**
+	 * Update menu items positions.
+	 *
+	 * @param int $menu_id      ID of the nav_menu.
+	 * @param int $menu_item_id Menu item ID.
+	 * @param int $position     New menu item position.
+	 */
+	private function update_menu_item_position( $menu_id, $menu_item_id, $position ) {
+		global $wpdb;
+
+		$position = absint( $position );
+
+		// Bail if position is not numeric.
+		if ( 0 === $position ) {
+			return;
+		}
+
+		$menu_items = wp_get_nav_menu_items( $menu_id );
+
+		$position = ( $position > count( $menu_items ) ) ? count( $menu_items ) : $position;
+
+		$all_positions = wp_list_pluck( $menu_items, 'ID', 'menu_order' );
+
+		$old_key = array_search( (int) $menu_item_id, $all_positions, true );
+
+		// Bail if new position is same as existing.
+		if ( $old_key === $position ) {
+			return;
+		}
+
+		// Remove old item from the list.
+		unset( $all_positions[ $old_key ] );
+
+		// Add ID in new position.
+		array_splice( $all_positions, $position - 1, 0, (int) $menu_item_id );
+
+		foreach ( $all_positions as $key => $id ) {
+			$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET `menu_order`=%s WHERE ID=%s", ( $key + 1 ), $id ) );
 		}
 	}
 
