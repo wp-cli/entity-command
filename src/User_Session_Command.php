@@ -30,6 +30,8 @@ class User_Session_Command extends WP_CLI_Command {
 		'ua',
 	];
 
+	private $fetcher;
+
 	public function __construct() {
 		$this->fetcher = new UserFetcher();
 	}
