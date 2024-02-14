@@ -98,6 +98,43 @@ Feature: Manage sites in a multisite installation
       {SCHEME}://example.com/first/
       """
 
+  Scenario: Filter site list by user
+    Given a WP multisite install
+
+    When I run `wp site create --slug=first --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+    And I run `wp site list --blog_id={SITE_ID} --field=url`
+    And save STDOUT as {SITE_URL}
+    And I run `wp user create newuser newuser@example.com --porcelain --url={SITE_URL}`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+    And I run `wp user get {USER_ID} --field=user_login`
+    And save STDOUT as {USER_LOGIN}
+
+    When I run `wp site list --field=url --site_user={USER_LOGIN}`
+    Then STDOUT should be:
+      """
+      {SITE_URL}
+      """
+
+    When I try `wp site list --site_user=invalid_user`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Invalid user ID, email or login: 'invalid_user'
+      """
+
+    When I run `wp user remove-role {USER_LOGIN} --url={SITE_URL}`
+    Then STDOUT should contain:
+      """
+      Success: Removed
+      """
+
+    When I run `wp site list --field=url --site_user={USER_LOGIN}`
+    Then STDOUT should be empty
+
+
   Scenario: Delete a site by slug
     Given a WP multisite install
 

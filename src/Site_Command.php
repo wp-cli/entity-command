@@ -7,6 +7,7 @@ use WP_CLI\Iterators\Query as QueryIterator;
 use WP_CLI\Iterators\Table as TableIterator;
 use WP_CLI\Utils;
 use WP_CLI\Formatter;
+use WP_CLI\Fetchers\User as UserFetcher;
 
 /**
  * Creates, deletes, empties, moderates, and lists one or more sites on a multisite installation.
@@ -526,6 +527,9 @@ class Site_Command extends CommandWithDBObject {
 	 * [--site__in=<value>]
 	 * : Only list the sites with these blog_id values (comma-separated).
 	 *
+	 * [--site_user=<value>]
+	 * : Only list the sites with this user.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
 	 *
@@ -609,6 +613,26 @@ class Site_Command extends CommandWithDBObject {
 
 		if ( isset( $assoc_args['network'] ) ) {
 			$where['site_id'] = $assoc_args['network'];
+		}
+
+		if ( isset( $assoc_args['site_user'] ) ) {
+			$user = ( new UserFetcher() )->get_check( $assoc_args['site_user'] );
+
+			if ( $user ) {
+				$blogs = get_blogs_of_user( $user->ID );
+
+				foreach ( $blogs as $blog ) {
+					$where['blog_id'][] = $blog->userblog_id;
+				}
+			}
+
+			if ( ! isset( $where['blog_id'] ) || empty( $where['blog_id'] ) ) {
+				$formatter = new Formatter( $assoc_args, [], 'site' );
+				$formatter->display_items( [] );
+				return;
+			}
+
+			$append = 'ORDER BY FIELD( blog_id, ' . implode( ',', array_map( 'intval', $where['blog_id'] ) ) . ' )';
 		}
 
 		$iterator_args = [
@@ -741,8 +765,8 @@ class Site_Command extends CommandWithDBObject {
 	 *     $ wp site deactivate 123
 	 *     Success: Site 123 deactivated.
 	 *
-	 *      $ wp site deactivate --slug=demo
-	 *      Success: Site 123 marked as deactivated.
+	 *     $ wp site deactivate --slug=demo
+	 *     Success: Site 123 deactivated.
 	 */
 	public function deactivate( $args, $assoc_args ) {
 		if ( ! $this->check_site_ids_and_slug( $args, $assoc_args ) ) {
