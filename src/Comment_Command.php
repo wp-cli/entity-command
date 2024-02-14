@@ -672,12 +672,12 @@ class Comment_Command extends CommandWithDBObject {
 	 */
 	public function recount( $args ) {
 		foreach ( $args as $id ) {
-			wp_update_comment_count( $id );
 			$post = get_post( $id );
 			if ( $post ) {
+				wp_update_comment_count( $id );
 				WP_CLI::log( "Updated post {$post->ID} comment count to {$post->comment_count}." );
 			} else {
-				WP_CLI::warning( "Post {$post->ID} doesn't exist." );
+				WP_CLI::warning( "Post {$id} doesn't exist." );
 			}
 		}
 	}
