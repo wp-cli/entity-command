@@ -24,8 +24,8 @@ Feature: Recount comments on a post
       Updated post 1 comment count to 3.
       """
 
-    When I run `wp comment recount 99999999`
-    Then STDOUT should be:
+    When I try `wp comment recount 99999999`
+    Then STDERR should be:
       """
       Warning: Post 99999999 doesn't exist.
       """
