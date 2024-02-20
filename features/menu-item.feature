@@ -195,3 +195,49 @@ Feature: Manage WordPress menu items
       | type   | title  | position | link               |
       | custom | First  | 1        | https://first.com  |
       | custom | Third  | 2        | https://third.com  |
+
+  Scenario: Menu order is updated after item update
+    When I run `wp menu create "Sidebar Menu"`
+    Then STDOUT should not be empty
+
+    When I run `wp menu item add-custom sidebar-menu First https://first.com --porcelain`
+    Then save STDOUT as {ITEM_ID_1}
+
+    When I run `wp menu item add-custom sidebar-menu Second https://second.com --porcelain`
+    Then save STDOUT as {ITEM_ID_2}
+
+    When I run `wp menu item add-custom sidebar-menu Third https://third.com --porcelain`
+    Then save STDOUT as {ITEM_ID_3}
+
+    When I run `wp menu item list sidebar-menu --fields=type,title,position,link`
+    Then STDOUT should be a table containing rows:
+      | type   | title  | position | link               |
+      | custom | First  | 1        | https://first.com  |
+      | custom | Second | 2        | https://second.com |
+      | custom | Third  | 3        | https://third.com  |
+
+    When I run `wp menu item update {ITEM_ID_3} --position=1`
+    Then STDOUT should be:
+      """
+      Success: Menu item updated.
+      """
+
+    When I run `wp menu item list sidebar-menu --fields=type,title,position,link`
+    Then STDOUT should be a table containing rows:
+      | type   | title  | position | link               |
+      | custom | Third  | 1        | https://third.com  |
+      | custom | First  | 2        | https://first.com  |
+      | custom | Second | 3        | https://second.com |
+
+    When I run `wp menu item update {ITEM_ID_3} --position=2`
+    Then STDOUT should be:
+      """
+      Success: Menu item updated.
+      """
+
+    When I run `wp menu item list sidebar-menu --fields=type,title,position,link`
+    Then STDOUT should be a table containing rows:
+      | type   | title  | position | link               |
+      | custom | First  | 1        | https://first.com  |
+      | custom | Third  | 2        | https://third.com  |
+      | custom | Second | 3        | https://second.com |
