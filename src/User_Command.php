@@ -430,10 +430,8 @@ class User_Command extends CommandWithDBObject {
 			$result = wpmu_validate_user_signup( $user->user_login, $user->user_email );
 			if ( is_wp_error( $result['errors'] ) && ! empty( $result['errors']->errors ) ) {
 				$message = $result['errors']->get_error_message();
-				if ( false !== stripos( $message, '</strong>' ) ) {
-					$exploded = explode( '</strong>', $message );
-					$message  = trim( wp_strip_all_tags( $exploded[1] ) );
-				}
+				$message = trim( wp_strip_all_tags( $message ) );
+				$message = str_replace( 'Error: ', '', $message );
 				WP_CLI::error( $message );
 			}
 			$user_id = wpmu_create_user( $user->user_login, $user->user_pass, $user->user_email );
