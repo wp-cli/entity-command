@@ -218,6 +218,22 @@ Feature: Manage user custom fields
       | {UUID2} | 42     | myapp2 | {HASH2}  | {CREATED2} |           |         |
       | {UUID1} |        | myapp1 | {HASH1}  | {CREATED1} |           |         |
 
+    When I run `wp user application-password list admin --fields=uuid --format=csv --orderby=created --order=desc`
+    Then STDOUT should be:
+      """
+      uuid
+      {UUID2}
+      {UUID1}
+      """
+
+    When I run `wp user application-password list admin --fields=uuid --format=csv`
+    Then STDOUT should be:
+      """
+      uuid
+      {UUID2}
+      {UUID1}
+      """
+
     When I run `wp user application-password list admin --name=myapp2 --format=json`
     Then STDOUT should contain:
       """
