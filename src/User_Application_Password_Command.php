@@ -97,6 +97,7 @@ final class User_Application_Password_Command {
 	 *   - json
 	 *   - count
 	 *   - yaml
+	 *   - ids
 	 * ---
 	 *
 	 * [--orderby=<fields>]
@@ -197,8 +198,13 @@ final class User_Application_Password_Command {
 			$fields = explode( ',', $assoc_args['fields'] );
 		}
 
-		$formatter = new Formatter( $assoc_args, $fields );
-		$formatter->display_items( $application_passwords );
+		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
+			$formatter = new Formatter( $assoc_args, $fields );
+			$formatter->display_items( wp_list_pluck( $application_passwords, 'uuid' ) );
+		} else {
+			$formatter = new Formatter( $assoc_args, $fields );
+			$formatter->display_items( $application_passwords );
+		}
 	}
 
 	/**
