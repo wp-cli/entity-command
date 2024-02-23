@@ -3636,6 +3636,275 @@ wp site mature [<id>...] [--slug=<slug>]
 
 
 
+### wp site meta
+
+Adds, updates, deletes, and lists site custom fields.
+
+~~~
+wp site meta
+~~~
+
+**EXAMPLES**
+
+    # Set site meta
+    $ wp site meta set 123 bio "Mary is a WordPress developer."
+    Success: Updated custom field 'bio'.
+
+    # Get site meta
+    $ wp site meta get 123 bio
+    Mary is a WordPress developer.
+
+    # Update site meta
+    $ wp site meta update 123 bio "Mary is an awesome WordPress developer."
+    Success: Updated custom field 'bio'.
+
+    # Delete site meta
+    $ wp site meta delete 123 bio
+    Success: Deleted custom field.
+
+
+
+
+
+### wp site meta add
+
+Add a meta field.
+
+~~~
+wp site meta add <id> <key> [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	<key>
+		The name of the meta field to create.
+
+	[<value>]
+		The value of the meta field. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+
+
+### wp site meta delete
+
+Delete a meta field.
+
+~~~
+wp site meta delete <id> [<key>] [<value>] [--all]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	[<key>]
+		The name of the meta field to delete.
+
+	[<value>]
+		The value to delete. If omitted, all rows with key will deleted.
+
+	[--all]
+		Delete all meta for the object.
+
+
+
+### wp site meta get
+
+Get meta field value.
+
+~~~
+wp site meta get <id> <key> [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	<key>
+		The name of the meta field to get.
+
+	[--format=<format>]
+		Get value in a particular format.
+		---
+		default: var_export
+		options:
+		  - var_export
+		  - json
+		  - yaml
+		---
+
+
+
+### wp site meta list
+
+List all metadata associated with an object.
+
+~~~
+wp site meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>] [--unserialize]
+~~~
+
+**OPTIONS**
+
+	<id>
+		ID for the object.
+
+	[--keys=<keys>]
+		Limit output to metadata of specific keys.
+
+	[--fields=<fields>]
+		Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
+
+	[--orderby=<fields>]
+		Set orderby which field.
+		---
+		default: id
+		options:
+		 - id
+		 - meta_key
+		 - meta_value
+		---
+
+	[--order=<order>]
+		Set ascending or descending order.
+		---
+		default: asc
+		options:
+		 - asc
+		 - desc
+		---
+
+	[--unserialize]
+		Unserialize meta_value output.
+
+
+
+### wp site meta patch
+
+Update a nested value for a meta field.
+
+~~~
+wp site meta patch <action> <id> <key> <key-path>... [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<action>
+		Patch action to perform.
+		---
+		options:
+		  - insert
+		  - update
+		  - delete
+		---
+
+	<id>
+		The ID of the object.
+
+	<key>
+		The name of the meta field to update.
+
+	<key-path>...
+		The name(s) of the keys within the value to locate the value to patch.
+
+	[<value>]
+		The new value. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+
+
+### wp site meta pluck
+
+Get a nested value from a meta field.
+
+~~~
+wp site meta pluck <id> <key> <key-path>... [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	<key>
+		The name of the meta field to get.
+
+	<key-path>...
+		The name(s) of the keys within the value to locate the value to pluck.
+
+	[--format=<format>]
+		The output format of the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		  - yaml
+
+
+
+### wp site meta update
+
+Update a meta field.
+
+~~~
+wp site meta update <id> <key> [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	<key>
+		The name of the meta field to update.
+
+	[<value>]
+		The new value. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+
+
 ### wp site option
 
 Adds, updates, deletes, and lists site options in a multisite installation.
@@ -4718,6 +4987,63 @@ wp user add-role <user> [<role>...]
 
     $ wp user add-role 12 author editor
     Success: Added 'author', 'editor' roles for johndoe (12).
+
+
+
+### wp user application-password
+
+Creates, updates, deletes, lists and retrieves application passwords.
+
+~~~
+wp user application-password
+~~~
+
+**EXAMPLES**
+
+    # List user application passwords and only show app name and password hash
+    $ wp user application-password list 123 --fields=name,password
+    +--------+------------------------------------+
+    | name   | password                           |
+    +--------+------------------------------------+
+    | myapp  | $P$BVGeou1CUot114YohIemgpwxQCzb8O/ |
+    +--------+------------------------------------+
+
+    # Get a specific application password and only show app name and created timestamp
+    $ wp user application-password get 123 6633824d-c1d7-4f79-9dd5-4586f734d69e --fields=name,created
+    +--------+------------+
+    | name   | created    |
+    +--------+------------+
+    | myapp  | 1638395611 |
+    +--------+------------+
+
+    # Create user application password
+    $ wp user application-password create 123 myapp
+    Success: Created application password.
+    Password: ZG1bxdxdzjTwhsY8vK8l1C65
+
+    # Only print the password without any chrome
+    $ wp user application-password create 123 myapp --porcelain
+    ZG1bxdxdzjTwhsY8vK8l1C65
+
+    # Update an existing application password
+    $ wp user application-password update 123 6633824d-c1d7-4f79-9dd5-4586f734d69e --name=newappname
+    Success: Updated application password.
+
+    # Delete an existing application password
+    $ wp user application-password delete 123 6633824d-c1d7-4f79-9dd5-4586f734d69e
+    Success: Deleted 1 of 1 application password.
+
+    # Check if an application password for a given application exists
+    $ wp user application-password exists 123 myapp
+    $ echo $?
+    1
+
+    # Bash script for checking whether an application password exists and creating one if not
+    if ! wp user application-password exists 123 myapp; then
+        PASSWORD=$(wp user application-password create 123 myapp --porcelain)
+    fi
+
+
 
 
 
