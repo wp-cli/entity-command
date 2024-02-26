@@ -33,10 +33,10 @@ wp comment
     $ wp comment delete 1337 --force
     Success: Deleted comment 1337.
 
-    # Delete all spam comments.
+    # Trash all spam comments.
     $ wp comment delete $(wp comment list --status=spam --format=ids)
-    Success: Deleted comment 264.
-    Success: Deleted comment 262.
+    Success: Trashed comment 264.
+    Success: Trashed comment 262.
 
 
 
@@ -840,7 +840,7 @@ See the [Navigation Menus](https://developer.wordpress.org/themes/functionality/
 
     # Assign the 'my-menu' menu to the 'primary' location
     $ wp menu location assign my-menu primary
-    Success: Assigned location to menu.
+    Success: Assigned location primary to menu my-menu.
 
 
 
@@ -883,7 +883,8 @@ wp menu delete <menu>...
 **EXAMPLES**
 
     $ wp menu delete "My Menu"
-    Success: 1 menu deleted.
+    Deleted menu 'My Menu'.
+    Success: Deleted 1 of 1 menus.
 
 
 
@@ -907,7 +908,7 @@ wp menu item
 
     # Delete menu item
     $ wp menu item delete 45
-    Success: 1 menu item deleted.
+    Success: Deleted 1 of 1 menu items.
 
 
 
@@ -1079,7 +1080,7 @@ wp menu item delete <db-id>...
 **EXAMPLES**
 
     $ wp menu item delete 45
-    Success: 1 menu item deleted.
+    Success: Deleted 1 of 1 menu items.
 
 
 
@@ -1268,7 +1269,7 @@ wp menu location
 
     # Assign the 'primary-menu' menu to the 'primary' location
     $ wp menu location assign primary-menu primary
-    Success: Assigned location to menu.
+    Success: Assigned location primary to menu primary-menu.
 
     # Remove the 'primary-menu' menu from the 'primary' location
     $ wp menu location remove primary-menu primary
@@ -3459,8 +3460,8 @@ wp site deactivate [<id>...] [--slug=<slug>]
     $ wp site deactivate 123
     Success: Site 123 deactivated.
 
-     $ wp site deactivate --slug=demo
-     Success: Site 123 marked as deactivated.
+    $ wp site deactivate --slug=demo
+    Success: Site 123 deactivated.
 
 
 
@@ -3632,6 +3633,275 @@ wp site mature [<id>...] [--slug=<slug>]
 
     $ wp site mature --slug=demo
     Success: Site 123 marked as mature.
+
+
+
+### wp site meta
+
+Adds, updates, deletes, and lists site custom fields.
+
+~~~
+wp site meta
+~~~
+
+**EXAMPLES**
+
+    # Set site meta
+    $ wp site meta set 123 bio "Mary is a WordPress developer."
+    Success: Updated custom field 'bio'.
+
+    # Get site meta
+    $ wp site meta get 123 bio
+    Mary is a WordPress developer.
+
+    # Update site meta
+    $ wp site meta update 123 bio "Mary is an awesome WordPress developer."
+    Success: Updated custom field 'bio'.
+
+    # Delete site meta
+    $ wp site meta delete 123 bio
+    Success: Deleted custom field.
+
+
+
+
+
+### wp site meta add
+
+Add a meta field.
+
+~~~
+wp site meta add <id> <key> [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	<key>
+		The name of the meta field to create.
+
+	[<value>]
+		The value of the meta field. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+
+
+### wp site meta delete
+
+Delete a meta field.
+
+~~~
+wp site meta delete <id> [<key>] [<value>] [--all]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	[<key>]
+		The name of the meta field to delete.
+
+	[<value>]
+		The value to delete. If omitted, all rows with key will deleted.
+
+	[--all]
+		Delete all meta for the object.
+
+
+
+### wp site meta get
+
+Get meta field value.
+
+~~~
+wp site meta get <id> <key> [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	<key>
+		The name of the meta field to get.
+
+	[--format=<format>]
+		Get value in a particular format.
+		---
+		default: var_export
+		options:
+		  - var_export
+		  - json
+		  - yaml
+		---
+
+
+
+### wp site meta list
+
+List all metadata associated with an object.
+
+~~~
+wp site meta list <id> [--keys=<keys>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>] [--unserialize]
+~~~
+
+**OPTIONS**
+
+	<id>
+		ID for the object.
+
+	[--keys=<keys>]
+		Limit output to metadata of specific keys.
+
+	[--fields=<fields>]
+		Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
+
+	[--orderby=<fields>]
+		Set orderby which field.
+		---
+		default: id
+		options:
+		 - id
+		 - meta_key
+		 - meta_value
+		---
+
+	[--order=<order>]
+		Set ascending or descending order.
+		---
+		default: asc
+		options:
+		 - asc
+		 - desc
+		---
+
+	[--unserialize]
+		Unserialize meta_value output.
+
+
+
+### wp site meta patch
+
+Update a nested value for a meta field.
+
+~~~
+wp site meta patch <action> <id> <key> <key-path>... [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<action>
+		Patch action to perform.
+		---
+		options:
+		  - insert
+		  - update
+		  - delete
+		---
+
+	<id>
+		The ID of the object.
+
+	<key>
+		The name of the meta field to update.
+
+	<key-path>...
+		The name(s) of the keys within the value to locate the value to patch.
+
+	[<value>]
+		The new value. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+
+
+### wp site meta pluck
+
+Get a nested value from a meta field.
+
+~~~
+wp site meta pluck <id> <key> <key-path>... [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	<key>
+		The name of the meta field to get.
+
+	<key-path>...
+		The name(s) of the keys within the value to locate the value to pluck.
+
+	[--format=<format>]
+		The output format of the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		  - yaml
+
+
+
+### wp site meta update
+
+Update a meta field.
+
+~~~
+wp site meta update <id> <key> [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<id>
+		The ID of the object.
+
+	<key>
+		The name of the meta field to update.
+
+	[<value>]
+		The new value. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
 
 
 
@@ -4662,7 +4932,7 @@ See references for [Roles and Capabilities](https://codex.wordpress.org/Roles_an
 
     # Delete user 123 and reassign posts to user 567
     $ wp user delete 123 --reassign=567
-    Success: Removed user 123 from http://example.com
+    Success: Removed user 123 from http://example.com.
 
 
 
@@ -4717,6 +4987,328 @@ wp user add-role <user> [<role>...]
 
     $ wp user add-role 12 author editor
     Success: Added 'author', 'editor' roles for johndoe (12).
+
+
+
+### wp user application-password
+
+Creates, updates, deletes, lists and retrieves application passwords.
+
+~~~
+wp user application-password
+~~~
+
+**EXAMPLES**
+
+    # List user application passwords and only show app name and password hash
+    $ wp user application-password list 123 --fields=name,password
+    +--------+------------------------------------+
+    | name   | password                           |
+    +--------+------------------------------------+
+    | myapp  | $P$BVGeou1CUot114YohIemgpwxQCzb8O/ |
+    +--------+------------------------------------+
+
+    # Get a specific application password and only show app name and created timestamp
+    $ wp user application-password get 123 6633824d-c1d7-4f79-9dd5-4586f734d69e --fields=name,created
+    +--------+------------+
+    | name   | created    |
+    +--------+------------+
+    | myapp  | 1638395611 |
+    +--------+------------+
+
+    # Create user application password
+    $ wp user application-password create 123 myapp
+    Success: Created application password.
+    Password: ZG1bxdxdzjTwhsY8vK8l1C65
+
+    # Only print the password without any chrome
+    $ wp user application-password create 123 myapp --porcelain
+    ZG1bxdxdzjTwhsY8vK8l1C65
+
+    # Update an existing application password
+    $ wp user application-password update 123 6633824d-c1d7-4f79-9dd5-4586f734d69e --name=newappname
+    Success: Updated application password.
+
+    # Delete an existing application password
+    $ wp user application-password delete 123 6633824d-c1d7-4f79-9dd5-4586f734d69e
+    Success: Deleted 1 of 1 application password.
+
+    # Check if an application password for a given application exists
+    $ wp user application-password exists 123 myapp
+    $ echo $?
+    1
+
+    # Bash script for checking whether an application password exists and creating one if not
+    if ! wp user application-password exists 123 myapp; then
+        PASSWORD=$(wp user application-password create 123 myapp --porcelain)
+    fi
+
+
+
+
+
+### wp user application-password create
+
+Creates a new application password.
+
+~~~
+wp user application-password create <user> <app-name> [--app-id=<app-id>] [--porcelain]
+~~~
+
+**OPTIONS**
+
+	<user>
+		The user login, user email, or user ID of the user to create a new application password for.
+
+	<app-name>
+		Unique name of the application to create an application password for.
+
+	[--app-id=<app-id>]
+		Application ID to attribute to the application password.
+
+	[--porcelain]
+		Output just the new password.
+
+**EXAMPLES**
+
+    # Create user application password
+    $ wp user application-password create 123 myapp
+    Success: Created application password.
+    Password: ZG1bxdxdzjTwhsY8vK8l1C65
+
+    # Only print the password without any chrome
+    $ wp user application-password create 123 myapp --porcelain
+    ZG1bxdxdzjTwhsY8vK8l1C65
+
+    # Create user application with a custom application ID for internal tracking
+    $ wp user application-password create 123 myapp --app-id=42 --porcelain
+    ZG1bxdxdzjTwhsY8vK8l1C65
+
+
+
+### wp user application-password delete
+
+Delete an existing application password.
+
+~~~
+wp user application-password delete <user> [<uuid>...] [--all]
+~~~
+
+**OPTIONS**
+
+	<user>
+		The user login, user email, or user ID of the user to delete the application password for.
+
+	[<uuid>...]
+		Comma-separated list of UUIDs of the application passwords to delete.
+
+	[--all]
+		Delete all of the user's application password.
+
+**EXAMPLES**
+
+    # Delete an existing application password
+    $ wp user application-password delete 123 6633824d-c1d7-4f79-9dd5-4586f734d69e
+    Success: Deleted 1 of 1 application password.
+
+    # Delete all of the user's application passwords
+    $ wp user application-password delete 123 --all
+    Success: Deleted all application passwords.
+
+
+
+### wp user application-password exists
+
+Checks whether an application password for a given application exists.
+
+~~~
+wp user application-password exists <user> <app-name>
+~~~
+
+**OPTIONS**
+
+	<user>
+		The user login, user email, or user ID of the user to check the existence of an application password for.
+
+	<app-name>
+		Name of the application to check the existence of an application password for.
+
+**EXAMPLES**
+
+    # Check if an application password for a given application exists
+    $ wp user application-password exists 123 myapp
+    $ echo $?
+    1
+
+    # Bash script for checking whether an application password exists and creating one if not
+    if ! wp user application-password exists 123 myapp; then
+        PASSWORD=$(wp user application-password create 123 myapp --porcelain)
+    fi
+
+
+
+### wp user application-password get
+
+Gets a specific application password.
+
+~~~
+wp user application-password get <user> <uuid> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<user>
+		The user login, user email, or user ID of the user to get the application password for.
+
+	<uuid>
+		The universally unique ID of the application password.
+
+	[--field=<field>]
+		Prints the value of a single field for the application password.
+
+	[--fields=<fields>]
+		Limit the output to specific fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Get a specific application password and only show app name and created timestamp
+    $ wp user application-password get 123 6633824d-c1d7-4f79-9dd5-4586f734d69e --fields=name,created
+    +--------+------------+
+    | name   | created    |
+    +--------+------------+
+    | myapp  | 1638395611 |
+    +--------+------------+
+
+
+
+### wp user application-password list
+
+Lists all application passwords associated with a user.
+
+~~~
+wp user application-password list <user> [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
+~~~
+
+**OPTIONS**
+
+	<user>
+		The user login, user email, or user ID of the user to get application passwords for.
+
+	[--<field>=<value>]
+		Filter the list by a specific field.
+
+	[--field=<field>]
+		Prints the value of a single field for each application password.
+
+	[--fields=<fields>]
+		Limit the output to specific fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+	[--orderby=<fields>]
+		Set orderby which field.
+		---
+		default: created
+		options:
+		 - uuid
+		 - app_id
+		 - name
+		 - password
+		 - created
+		 - last_used
+		 - last_ip
+		---
+
+	[--order=<order>]
+		Set ascending or descending order.
+		---
+		default: desc
+		options:
+		 - asc
+		 - desc
+		---
+
+**EXAMPLES**
+
+    # List user application passwords and only show app name and password hash
+    $ wp user application-password list 123 --fields=name,password
+    +--------+------------------------------------+
+    | name   | password                           |
+    +--------+------------------------------------+
+    | myapp  | $P$BVGeou1CUot114YohIemgpwxQCzb8O/ |
+    +--------+------------------------------------+
+
+
+
+### wp user application-password record-usage
+
+Record usage of an application password.
+
+~~~
+wp user application-password record-usage <user> <uuid>
+~~~
+
+**OPTIONS**
+
+	<user>
+		The user login, user email, or user ID of the user to update the application password for.
+
+	<uuid>
+		The universally unique ID of the application password.
+
+**EXAMPLES**
+
+    # Record usage of an application password
+    $ wp user application-password record-usage 123 6633824d-c1d7-4f79-9dd5-4586f734d69e
+    Success: Recorded application password usage.
+
+
+
+### wp user application-password update
+
+Updates an existing application password.
+
+~~~
+wp user application-password update <user> <uuid> [--<field>=<value>]
+~~~
+
+**OPTIONS**
+
+	<user>
+		The user login, user email, or user ID of the user to update the application password for.
+
+	<uuid>
+		The universally unique ID of the application password.
+
+	[--<field>=<value>]
+		Update the <field> with a new <value>. Currently supported fields: name.
+
+**EXAMPLES**
+
+    # Update an existing application password
+    $ wp user application-password update 123 6633824d-c1d7-4f79-9dd5-4586f734d69e --name=newappname
+    Success: Updated application password.
 
 
 
@@ -4819,12 +5411,12 @@ make sure to reassign their posts prior to deleting the user.
 
     # Delete user 123 and reassign posts to user 567
     $ wp user delete 123 --reassign=567
-    Success: Removed user 123 from http://example.com
+    Success: Removed user 123 from http://example.com.
 
     # Delete all contributors and reassign their posts to user 2
     $ wp user delete $(wp user list --role=contributor --field=ID) --reassign=2
-    Success: Removed user 813 from http://example.com
-    Success: Removed user 578 from http://example.com
+    Success: Removed user 813 from http://example.com.
+    Success: Removed user 578 from http://example.com.
 
     # Delete all contributors in batches of 100 (avoid error: argument list too long: wp)
     $ wp user delete $(wp user list --role=contributor --field=ID | head -n 100)
@@ -4938,9 +5530,9 @@ the user is updated unless the `--skip-update` flag is used.
 
     # Import users from local CSV file
     $ wp user import-csv /path/to/users.csv
-    Success: bobjones created
-    Success: newuser1 created
-    Success: existinguser created
+    Success: bobjones created.
+    Success: newuser1 created.
+    Success: existinguser created.
 
     # Import users from remote CSV file
     $ wp user import-csv http://example.com/users.csv
@@ -5486,20 +6078,26 @@ wp user reset-password <user>... [--skip-email] [--show-password] [--porcelain]
     Reset password for editor.
     Success: Passwords reset for 2 users.
 
+    # Reset and display the password.
+    $ wp user reset-password editor --show-password
+    Reset password for editor.
+    Password: N6hAau0fXZMN#rLCIirdEGOh
+    Success: Password reset for 1 user.
+
     # Reset the password for one user, displaying only the new password, and not sending the change email.
     $ wp user reset-password admin --skip-email --porcelain
     yV6BP*!d70wg
 
     # Reset password for all users.
     $ wp user reset-password $(wp user list --format=ids)
-    Reset password for admin
-    Reset password for editor
-    Reset password for subscriber
+    Reset password for admin.
+    Reset password for editor.
+    Reset password for subscriber.
     Success: Passwords reset for 3 users.
 
     # Reset password for all users with a particular role.
     $ wp user reset-password $(wp user list --format=ids --role=administrator)
-    Reset password for admin
+    Reset password for admin.
     Success: Password reset for 1 user.
 
 
@@ -5665,7 +6263,7 @@ wp user spam <id>...
 
     $ wp user spam 123
     User 123 marked as spam.
-    Success: Spamed 1 of 1 users.
+    Success: Spammed 1 of 1 users.
 
 
 
