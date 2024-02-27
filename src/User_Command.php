@@ -1339,15 +1339,8 @@ class User_Command extends CommandWithDBObject {
 			$errors = count( $user_ids ) - count( $users );
 		}
 
-		foreach ( $user_ids as $user_id ) {
-
-			$user = get_userdata( $user_id );
-
-			// If no user found, then show warning.
-			if ( empty( $user ) ) {
-				WP_CLI::warning( "User {$user_id} doesn't exist." );
-				continue;
-			}
+		foreach ( $users as $user ) {
+			$user_id = $user->ID;
 
 			// Super admin should not be marked as spam.
 			if ( is_super_admin( $user->ID ) ) {
