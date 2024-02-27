@@ -199,7 +199,7 @@ final class User_Application_Password_Command {
 		}
 
 		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
-			$formatter = new Formatter( $assoc_args, $fields );
+			$formatter = new Formatter( $assoc_args );
 			$formatter->display_items( wp_list_pluck( $application_passwords, 'uuid' ) );
 		} else {
 			$formatter = new Formatter( $assoc_args, $fields );
