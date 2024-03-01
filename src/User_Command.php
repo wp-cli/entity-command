@@ -1282,7 +1282,7 @@ class User_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Marks one or more users as spam.
+	 * Marks one or more users as spam on multisite.
 	 *
 	 * ## OPTIONS
 	 *
@@ -1291,6 +1291,7 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Mark user as spam.
 	 *     $ wp user spam 123
 	 *     User 123 marked as spam.
 	 *     Success: Spammed 1 of 1 users.
@@ -1300,7 +1301,7 @@ class User_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Removes one or more users from spam.
+	 * Removes one or more users from spam on multisite.
 	 *
 	 * ## OPTIONS
 	 *
@@ -1309,6 +1310,7 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Remove user from spam.
 	 *     $ wp user unspam 123
 	 *     User 123 removed from spam.
 	 *     Success: Unspamed 1 of 1 users.
