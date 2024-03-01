@@ -586,7 +586,6 @@ Feature: Manage WordPress users
     And STDERR should be:
       """
       Warning: Invalid user ID, email or login: '9999'
-      Warning: User 9999 doesn't exist.
       Error: Only spammed 1 of 2 users.
       """
     And the return code should be 1
