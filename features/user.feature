@@ -136,6 +136,49 @@ Feature: Manage WordPress users
       3
       """
 
+  Scenario: Delete user with invalid reassign
+    Given a WP install
+    And a session_no file:
+      """
+      n
+      """
+    And a session_yes file:
+      """
+      y
+      """
+
+    When I run `wp user create bobjones bob@example.com --role=author --porcelain`
+    And save STDOUT as {BOB_ID}
+
+    When I run `wp post list --format=count`
+    And save STDOUT as {TOTAL_POSTS}
+
+    When I run `wp post generate --count=3 --format=ids --post_author=bobjones`
+    And I run `wp post list --author={BOB_ID} --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp user delete bobjones < session_no`
+    Then STDOUT should contain:
+      """
+      --reassign parameter not passed. All associated posts will be deleted. Proceed? [y/n]
+      """
+
+    When I run `wp user delete bobjones --reassign=99999 < session_no`
+    Then STDOUT should contain:
+      """
+      --reassign parameter is invalid. All associated posts will be deleted. Proceed? [y/n]
+      """
+
+    When I run `wp user delete bobjones < session_yes`
+    And I run `wp post list --format=count`
+    Then STDOUT should be:
+      """
+      {TOTAL_POSTS}
+      """
+
   Scenario: Deleting user from the whole network
     Given a WP multisite install
 

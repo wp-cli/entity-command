@@ -282,8 +282,10 @@ class User_Command extends CommandWithDBObject {
 
 		$is_reassign_valid = ( false === get_userdata( $reassign ) ) ? false : true;
 
-		if ( ! $reassign || ! $is_reassign_valid ) {
-			WP_CLI::confirm( '--reassign parameter not passed or invalid. All associated posts will be deleted. Proceed?', $assoc_args );
+		if ( ! $reassign ) {
+			WP_CLI::confirm( '--reassign parameter not passed. All associated posts will be deleted. Proceed?', $assoc_args );
+		} elseif ( ! $is_reassign_valid ) {
+			WP_CLI::confirm( '--reassign parameter is invalid. All associated posts will be deleted. Proceed?', $assoc_args );
 		}
 
 		$users = $this->fetcher->get_many( $args );
