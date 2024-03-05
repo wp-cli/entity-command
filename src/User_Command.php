@@ -1290,8 +1290,8 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of users to mark as spam.
+	 * <user>...
+	 * : The user login, user email, or user ID of the user(s) to mark as spam.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -1309,8 +1309,8 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of users to remove from spam.
+	 * <user>...
+	 * : The user login, user email, or user ID of the user(s) to remove from spam.
 	 *
 	 * ## EXAMPLES
 	 *

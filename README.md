@@ -6251,13 +6251,13 @@ wp user set-role <user> [<role>]
 Marks one or more users as spam on multisite.
 
 ~~~
-wp user spam <id>...
+wp user spam <user>...
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of users to mark as spam.
+	<user>...
+		The user login, user email, or user ID of the user(s) to mark as spam.
 
 **EXAMPLES**
 
@@ -6436,13 +6436,13 @@ Replaces existing terms on the object.
 Removes one or more users from spam on multisite.
 
 ~~~
-wp user unspam <id>...
+wp user unspam <user>...
 ~~~
 
 **OPTIONS**
 
-	<id>...
-		One or more IDs of users to remove from spam.
+	<user>...
+		The user login, user email, or user ID of the user(s) to remove from spam.
 
 **EXAMPLES**
 
