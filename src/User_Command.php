@@ -280,7 +280,7 @@ class User_Command extends CommandWithDBObject {
 			WP_CLI::error( 'Reassigning content to a different user is not supported on multisite.' );
 		}
 
-		$is_reassign_valid = ( false === get_userdata( $reassign ) ) ? false : true;
+		$is_reassign_valid = ( $reassign && false === get_userdata( $reassign ) ) ? false : true;
 
 		if ( ! $reassign ) {
 			WP_CLI::confirm( '--reassign parameter not passed. All associated posts will be deleted. Proceed?', $assoc_args );
