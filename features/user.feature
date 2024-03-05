@@ -17,6 +17,17 @@ Feature: Manage WordPress users
       | ID           | {USER_ID}  |
       | roles        | author     |
 
+    When I run `wp user exists {USER_ID}`
+    Then STDOUT should be:
+      """
+      Success: User with ID {USER_ID} exists.
+      """
+    And the return code should be 0
+
+    When I try `wp user exists 1000`
+    And STDOUT should be empty
+    And the return code should be 1
+
     When I run `wp user get {USER_ID} --field=user_registered`
     Then STDOUT should not contain:
       """
