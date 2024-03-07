@@ -158,6 +158,7 @@
             "user add-role",
             "user create",
             "user delete",
+            "user exists",
             "user generate",
             "user get",
             "user import-csv",
