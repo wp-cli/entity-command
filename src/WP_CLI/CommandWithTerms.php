@@ -36,6 +36,8 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 	/**
 	 * List all terms associated with an object.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <id>
 	 * : ID for the object.
 	 *
@@ -204,6 +206,8 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 	 *
 	 * Append the term to the existing set of terms on the object.
 	 *
+	 * ## OPTIONS
+	 *
 	 * <id>
 	 * : The ID of the object.
 	 *
@@ -249,6 +253,8 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 	 * Set object terms.
 	 *
 	 * Replaces existing terms on the object.
+	 *
+	 * ## OPTIONS
 	 *
 	 * <id>
 	 * : The ID of the object.
