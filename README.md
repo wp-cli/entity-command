@@ -2893,6 +2893,8 @@ wp post term add <id> <taxonomy> <term>... [--by=<field>]
 
 Append the term to the existing set of terms on the object.
 
+**OPTIONS**
+
 	<id>
 		The ID of the object.
 
@@ -2920,6 +2922,8 @@ List all terms associated with an object.
 ~~~
 wp post term list <id> <taxonomy>... [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
+
+**OPTIONS**
 
 	<id>
 		ID for the object.
@@ -3007,6 +3011,8 @@ wp post term set <id> <taxonomy> <term>... [--by=<field>]
 ~~~
 
 Replaces existing terms on the object.
+
+**OPTIONS**
 
 	<id>
 		The ID of the object.
@@ -6326,6 +6332,8 @@ wp user term add <id> <taxonomy> <term>... [--by=<field>]
 
 Append the term to the existing set of terms on the object.
 
+**OPTIONS**
+
 	<id>
 		The ID of the object.
 
@@ -6353,6 +6361,8 @@ List all terms associated with an object.
 ~~~
 wp user term list <id> <taxonomy>... [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
+
+**OPTIONS**
 
 	<id>
 		ID for the object.
@@ -6440,6 +6450,8 @@ wp user term set <id> <taxonomy> <term>... [--by=<field>]
 ~~~
 
 Replaces existing terms on the object.
+
+**OPTIONS**
 
 	<id>
 		The ID of the object.
