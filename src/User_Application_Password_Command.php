@@ -198,11 +198,13 @@ final class User_Application_Password_Command {
 			$fields = explode( ',', $assoc_args['fields'] );
 		}
 
-		if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
-			$formatter = new Formatter( $assoc_args );
+		$format = Utils\get_flag_value( $assoc_args, 'format', 'table' );
+
+		$formatter = new Formatter( $assoc_args, $fields );
+
+		if ( 'ids' === $format ) {
 			$formatter->display_items( wp_list_pluck( $application_passwords, 'uuid' ) );
 		} else {
-			$formatter = new Formatter( $assoc_args, $fields );
 			$formatter->display_items( $application_passwords );
 		}
 	}
