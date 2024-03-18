@@ -12,7 +12,7 @@ class Signup extends Base {
 	 *
 	 * @var string
 	 */
-	protected $msg = "Invalid signup ID, email, login or activation key: '%s'";
+	protected $msg = "Invalid signup ID, email, login, or activation key: '%s'";
 
 	/**
 	 * Get a signup.

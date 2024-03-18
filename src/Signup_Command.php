@@ -52,11 +52,11 @@ class Signup_Command extends CommandWithDBObject {
 	/**
 	 * Lists signups.
 	 *
+	 * [--<field>=<value>]
+	 * : Filter the list by a specific field.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each signup.
-	 *
-	 * [--<field>=<value>]
-	 * : Filter results by key=value pairs.
 	 *
 	 * [--fields=<fields>]
 	 * : Limit the output to specific object fields.
@@ -70,8 +70,8 @@ class Signup_Command extends CommandWithDBObject {
 	 *   - csv
 	 *   - ids
 	 *   - json
-	 *   - yaml
 	 *   - count
+	 *   - yaml
 	 * ---
 	 *
 	 * ## AVAILABLE FIELDS
@@ -150,18 +150,18 @@ class Signup_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Gets details about the signup.
+	 * Gets details about a signup.
 	 *
 	 * ## OPTIONS
 	 *
 	 * <signup>
-	 * : Signup ID, user login, user email or activation key.
+	 * : Signup ID, user login, user email, or activation key.
 	 *
 	 * [--field=<field>]
 	 * : Instead of returning the whole signup, returns the value of a single field.
 	 *
 	 * [--fields=<fields>]
-	 * : Get a specific subset of the signup's fields.
+	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -189,6 +189,10 @@ class Signup_Command extends CommandWithDBObject {
 	public function get( $args, $assoc_args ) {
 		$signup = $this->fetcher->get_check( $args[0] );
 
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = array_keys( (array) $signup );
+		}
+
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$formatter->display_items( array( $signup ) );
@@ -200,7 +204,7 @@ class Signup_Command extends CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <signup>
-	 * : Signup ID, user login, user email or activation key.
+	 * : Signup ID, user login, user email, or activation key.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -230,7 +234,7 @@ class Signup_Command extends CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <signup>
-	 * : Signup ID, user login, user email or activation key.
+	 * : Signup ID, user login, user email, or activation key.
 	 *
 	 * ## EXAMPLES
 	 *
