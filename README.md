@@ -3384,7 +3384,7 @@ wp signup activate <signup>
 **OPTIONS**
 
 	<signup>
-		Signup ID, user login, user email or activation key.
+		Signup ID, user login, user email, or activation key.
 
 **EXAMPLES**
 
@@ -3405,7 +3405,7 @@ wp signup delete <signup>
 **OPTIONS**
 
 	<signup>
-		Signup ID, user login, user email or activation key.
+		Signup ID, user login, user email, or activation key.
 
 **EXAMPLES**
 
@@ -3417,7 +3417,7 @@ wp signup delete <signup>
 
 ### wp signup get
 
-Gets details about the signup.
+Gets details about a signup.
 
 ~~~
 wp signup get <signup> [--field=<field>] [--fields=<fields>] [--format=<format>]
@@ -3426,13 +3426,13 @@ wp signup get <signup> [--field=<field>] [--fields=<fields>] [--format=<format>]
 **OPTIONS**
 
 	<signup>
-		Signup ID, user login, user email or activation key.
+		Signup ID, user login, user email, or activation key.
 
 	[--field=<field>]
 		Instead of returning the whole signup, returns the value of a single field.
 
 	[--fields=<fields>]
-		Get a specific subset of the signup's fields.
+		Limit the output to specific fields. Defaults to all fields.
 
 	[--format=<format>]
 		Render output in a particular format.
@@ -3462,14 +3462,14 @@ wp signup get <signup> [--field=<field>] [--fields=<fields>] [--format=<format>]
 Lists signups.
 
 ~~~
-wp signup list [--field=<field>] [--<field>=<value>] [--fields=<fields>] [--format=<format>]
+wp signup list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
+
+	[--<field>=<value>]
+		Filter the list by a specific field.
 
 	[--field=<field>]
 		Prints the value of a single field for each signup.
-
-	[--<field>=<value>]
-		Filter results by key=value pairs.
 
 	[--fields=<fields>]
 		Limit the output to specific object fields.
@@ -3483,8 +3483,8 @@ wp signup list [--field=<field>] [--<field>=<value>] [--fields=<fields>] [--form
 		  - csv
 		  - ids
 		  - json
-		  - yaml
 		  - count
+		  - yaml
 		---
 
 **AVAILABLE FIELDS**

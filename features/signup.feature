@@ -71,7 +71,7 @@ Feature: Manage signups in a multisite installation
 		When I try `wp signup get bobuser`
 		Then STDERR should be:
 			"""
-			Error: Invalid signup ID, email, login or activation key: 'bobuser'
+			Error: Invalid signup ID, email, login, or activation key: 'bobuser'
 			"""
 
 	Scenario: Activate signup
