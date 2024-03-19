@@ -3375,16 +3375,16 @@ wp signup
 
 ### wp signup activate
 
-Activates a signup.
+Activates one or more signups.
 
 ~~~
-wp signup activate <signup>
+wp signup activate <signup>...
 ~~~
 
 **OPTIONS**
 
-	<signup>
-		Signup ID, user login, user email, or activation key.
+	<signup>...
+		The signup ID, user login, user email, or activation key of the signup(s) to activate.
 
 **EXAMPLES**
 
@@ -3396,16 +3396,16 @@ wp signup activate <signup>
 
 ### wp signup delete
 
-Deletes a signup.
+Deletes one or more signups.
 
 ~~~
-wp signup delete <signup>
+wp signup delete <signup>...
 ~~~
 
 **OPTIONS**
 
-	<signup>
-		Signup ID, user login, user email, or activation key.
+	<signup>...
+		The signup ID, user login, user email, or activation key of the signup(s) to delete.
 
 **EXAMPLES**
 
@@ -3426,7 +3426,7 @@ wp signup get <signup> [--field=<field>] [--fields=<fields>] [--format=<format>]
 **OPTIONS**
 
 	<signup>
-		Signup ID, user login, user email, or activation key.
+		The signup ID, user login, user email, or activation key.
 
 	[--field=<field>]
 		Instead of returning the whole signup, returns the value of a single field.
