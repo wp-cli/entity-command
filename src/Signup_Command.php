@@ -155,7 +155,7 @@ class Signup_Command extends CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <signup>
-	 * : Signup ID, user login, user email, or activation key.
+	 * : The signup ID, user login, user email, or activation key.
 	 *
 	 * [--field=<field>]
 	 * : Instead of returning the whole signup, returns the value of a single field.
@@ -203,7 +203,7 @@ class Signup_Command extends CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <signup>...
-	 * : Signup ID, user login, user email, or activation key of the signup(s) to activate.
+	 * : The signup ID, user login, user email, or activation key of the signup(s) to activate.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -233,7 +233,7 @@ class Signup_Command extends CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * <signup>...
-	 * : Signup ID, user login, user email, or activation key of the signup(s) to delete.
+	 * : The signup ID, user login, user email, or activation key of the signup(s) to delete.
 	 *
 	 * ## EXAMPLES
 	 *
