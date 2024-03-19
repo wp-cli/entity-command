@@ -228,12 +228,12 @@ class Signup_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Deletes a signup.
+	 * Deletes one or more signups.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <signup>
-	 * : Signup ID, user login, user email, or activation key.
+	 * <signup>...
+	 * : Signup ID, user login, user email, or activation key of the signup(s) to delete.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -244,16 +244,29 @@ class Signup_Command extends CommandWithDBObject {
 	 * @package wp-cli
 	 */
 	public function delete( $args, $assoc_args ) {
+		$signups = $this->fetcher->get_many( $args );
+
+		parent::_delete( $signups, $assoc_args, [ $this, 'delete_callback' ] );
+	}
+
+	/**
+	 * Callback used to delete a signup.
+	 *
+	 * @param $signup
+	 * @param $assoc_args
+	 * @return array
+	 */
+	protected function delete_callback( $signup, $assoc_args ) {
 		global $wpdb;
 
-		$signup = $this->fetcher->get_check( $args[0] );
+		$signup_id = $signup->signup_id;
 
-		$result = $wpdb->delete( $wpdb->signups, array( 'signup_id' => $signup->signup_id ), array( '%d' ) );
+		$result = $wpdb->delete( $wpdb->signups, array( 'signup_id' => $signup_id ), array( '%d' ) );
 
 		if ( $result ) {
-			WP_CLI::success( "Signup {$signup->signup_id} deleted." );
+			return [ 'success', "Signup {$signup_id} deleted." ];
 		} else {
-			WP_CLI::error( "Failed deleting signup {$signup->signup_id}." );
+			return [ 'error', "Failed deleting signup {$signup_id}." ];
 		}
 	}
 }
