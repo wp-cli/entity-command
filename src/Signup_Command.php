@@ -198,12 +198,12 @@ class Signup_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Activates a signup.
+	 * Activates one or more signups.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <signup>
-	 * : Signup ID, user login, user email, or activation key.
+	 * <signup>...
+	 * : Signup ID, user login, user email, or activation key of the signup(s) to activate.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -214,16 +214,16 @@ class Signup_Command extends CommandWithDBObject {
 	 * @package wp-cli
 	 */
 	public function activate( $args, $assoc_args ) {
-		$signup = $this->fetcher->get_check( $args[0] );
+		$signups = $this->fetcher->get_many( $args );
 
-		if ( $signup ) {
+		foreach ( $signups as $signup ) {
 			$result = wpmu_activate_signup( $signup->activation_key );
-		}
 
-		if ( is_wp_error( $result ) ) {
-			WP_CLI::error( "Failed activating signup {$signup->signup_id}." );
-		} else {
-			WP_CLI::success( "Signup {$signup->signup_id} activated. Password: {$result['password']}" );
+			if ( is_wp_error( $result ) ) {
+				WP_CLI::warning( "Failed activating signup {$signup->signup_id}." );
+			} else {
+				WP_CLI::success( "Signup {$signup->signup_id} activated. Password: {$result['password']}" );
+			}
 		}
 	}
 
