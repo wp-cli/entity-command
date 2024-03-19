@@ -222,9 +222,9 @@ class Signup_Command extends CommandWithDBObject {
 		}
 
 		if ( is_wp_error( $result ) ) {
-			WP_CLI::error( 'Signup could not be activated. Reason: ' . $result->get_error_message() );
+			WP_CLI::error( "Failed activating signup {$signup->signup_id}." );
 		} else {
-			WP_CLI::success( "Signup activated. Password: {$result['password']}" );
+			WP_CLI::success( "Signup {$signup->signup_id} activated. Password: {$result['password']}" );
 		}
 	}
 
@@ -252,9 +252,9 @@ class Signup_Command extends CommandWithDBObject {
 		$result = $wpdb->delete( $wpdb->signups, array( 'signup_id' => $signup->signup_id ), array( '%d' ) );
 
 		if ( $result ) {
-			WP_CLI::success( 'Signup deleted.' );
+			WP_CLI::success( "Signup {$signup->signup_id} deleted." );
 		} else {
-			WP_CLI::error( 'Error occurred while deleting signup.' );
+			WP_CLI::error( "Failed deleting signup {$signup->signup_id}." );
 		}
 	}
 }

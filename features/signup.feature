@@ -31,7 +31,7 @@ Feature: Manage signups in a multisite installation
 		When I run `wp signup activate bobuser`
 		Then STDOUT should contain:
 			"""
-			Success: Signup activated.
+			Success: Signup 1 activated.
 			"""
 
 		When I run `wp signup list --fields=signup_id,user_login,user_email,active --format=csv --active=1`
@@ -65,7 +65,7 @@ Feature: Manage signups in a multisite installation
 		When I run `wp signup delete bobuser@example.com`
 		Then STDOUT should be:
 			"""
-			Success: Signup deleted.
+			Success: Signup 1 deleted.
 			"""
 
 		When I try `wp signup get bobuser`
@@ -87,7 +87,7 @@ Feature: Manage signups in a multisite installation
 		When I run `wp signup activate bobuser`
 		Then STDOUT should contain:
 			"""
-			Success: Signup activated.
+			Success: Signup 1 activated.
 			"""
 
 		When I run `wp signup get bobuser --field=active`
@@ -116,7 +116,7 @@ Feature: Manage signups in a multisite installation
 		When I run `wp signup activate bobuser`
 		Then STDOUT should contain:
 			"""
-			Success: Signup activated.
+			Success: Signup 1 activated.
 			"""
 
 		When I run `wp site list --fields=domain,path`
