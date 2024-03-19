@@ -53,7 +53,7 @@
 
 	<!-- Exclude existing classes from the prefix rule as it would break BC to prefix them now. -->
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound">
-		<exclude-pattern>*/src/WP_CLI/Fetchers/(Comment|Post|Site|User)\.php$</exclude-pattern>
+		<exclude-pattern>*/src/WP_CLI/Fetchers/(Comment|Post|Signup|Site|User)\.php$</exclude-pattern>
 		<exclude-pattern>*/src/WP_CLI/CommandWith(DBObject|Meta|Terms)\.php$</exclude-pattern>
 	</rule>
 
@@ -65,6 +65,7 @@
 		<exclude-pattern>*/src/Network_Namespace\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Option_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Post(_Meta|_Term|_Type)?_Command\.php$</exclude-pattern>
+		<exclude-pattern>*/src/Signup_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Site(_Meta|_Option)?_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Term(_Meta)?_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/User(_Application_Password|_Meta|_Session|_Term)?_Command\.php$</exclude-pattern>
