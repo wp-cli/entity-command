@@ -47,6 +47,7 @@ class Option_Command extends WP_CLI_Command {
 	 *   - var_export
 	 *   - json
 	 *   - yaml
+	 *   - raw
 	 * ---
 	 *
 	 * ## EXAMPLES
@@ -78,6 +79,16 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( false === $value ) {
 			WP_CLI::error( "Could not get '{$key}' option. Does it exist?" );
+		}
+
+		if ( 'raw' === Utils\get_flag_value( $assoc_args, 'format' ) ) {
+			global $wpdb;
+			$value = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT option_value FROM $wpdb->options WHERE option_name = %s",
+					$key
+				)
+			);
 		}
 
 		WP_CLI::print_value( $value, $assoc_args );

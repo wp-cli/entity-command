@@ -120,6 +120,15 @@ Feature: Manage WordPress options
       [1,2]
       """
 
+    # Raw values
+    When I run `wp option set raw_option '[ 1, 2 ]' --format=json`
+    Then STDOUT should not be empty
+
+    When I run `wp option get raw_option --format=raw`
+    Then STDOUT should be:
+      """
+      a:2:{i:0;i:1;i:1;i:2;}
+      """
 
     # Reading from files
     Given a value.json file:
