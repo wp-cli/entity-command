@@ -102,7 +102,7 @@ if ( class_exists( 'WP_CLI\Dispatcher\CommandNamespace' ) ) {
 }
 
 WP_CLI::add_command(
-	'signup',
+	'user signup',
 	'Signup_Command',
 	array(
 		'before_invoke' => function () {

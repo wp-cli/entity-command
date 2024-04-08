@@ -3,7 +3,7 @@ Feature: Manage signups in a multisite installation
 	Scenario: Not applicable in single installation site
 		Given a WP install
 
-    When I try `wp signup list`
+    When I try `wp user signup list`
     Then STDERR should be:
 			"""
 			Error: This is not a multisite installation.
@@ -14,7 +14,7 @@ Feature: Manage signups in a multisite installation
 		And I run `wp eval 'wpmu_signup_user( "bobuser", "bobuser@example.com" );'`
 		And I run `wp eval 'wpmu_signup_user( "johnuser", "johnuser@example.com" );'`
 
-		When I run `wp signup list --fields=signup_id,user_login,user_email,active --format=csv`
+		When I run `wp user signup list --fields=signup_id,user_login,user_email,active --format=csv`
 		Then STDOUT should be:
 			"""
 			signup_id,user_login,user_email,active
@@ -22,19 +22,19 @@ Feature: Manage signups in a multisite installation
 			2,johnuser,johnuser@example.com,0
 			"""
 
-		When I run `wp signup list --format=count --active=1`
+		When I run `wp user signup list --format=count --active=1`
 		Then STDOUT should be:
 			"""
 			0
 			"""
 
-		When I run `wp signup activate bobuser`
+		When I run `wp user signup activate bobuser`
 		Then STDOUT should contain:
 			"""
 			Success: Signup 1 activated.
 			"""
 
-		When I run `wp signup list --fields=signup_id,user_login,user_email,active --format=csv --active=1`
+		When I run `wp user signup list --fields=signup_id,user_login,user_email,active --format=csv --active=1`
 		Then STDOUT should be:
 			"""
 			signup_id,user_login,user_email,active
@@ -45,13 +45,13 @@ Feature: Manage signups in a multisite installation
 		Given a WP multisite install
 		And I run `wp eval 'wpmu_signup_user( "bobuser", "bobuser@example.com" );'`
 
-		When I run `wp signup get 1 --field=user_login`
+		When I run `wp user signup get 1 --field=user_login`
 		Then STDOUT should be:
 			"""
 			bobuser
 			"""
 
-		When I run `wp signup get bobuser --fields=signup_id,user_login,user_email,active --format=csv`
+		When I run `wp user signup get bobuser --fields=signup_id,user_login,user_email,active --format=csv`
 		Then STDOUT should be:
 			"""
 			signup_id,user_login,user_email,active
@@ -62,13 +62,13 @@ Feature: Manage signups in a multisite installation
 		Given a WP multisite install
 		And I run `wp eval 'wpmu_signup_user( "bobuser", "bobuser@example.com" );'`
 
-		When I run `wp signup get bobuser --field=active`
+		When I run `wp user signup get bobuser --field=active`
 		Then STDOUT should be:
 			"""
 			0
 			"""
 
-		When I run `wp signup activate bobuser`
+		When I run `wp user signup activate bobuser`
 		Then STDOUT should contain:
 			"""
 			Success: Signup 1 activated.
@@ -80,7 +80,7 @@ Feature: Manage signups in a multisite installation
 			Warning: Failed activating signup 1.
 			"""
 
-		When I run `wp signup get bobuser --field=active`
+		When I run `wp user signup get bobuser --field=active`
 		Then STDOUT should be:
 			"""
 			1
@@ -97,13 +97,13 @@ Feature: Manage signups in a multisite installation
 		And I run `wp eval 'wpmu_signup_user( "bobuser", "bobuser@example.com" );'`
     And I run `wp eval 'wpmu_signup_user( "johnuser", "johnuser@example.com" );'`
 
-		When I run `wp signup list --active=0 --format=count`
+		When I run `wp user signup list --active=0 --format=count`
 		Then STDOUT should be:
 			"""
 			2
 			"""
 
-		When I run `wp signup activate bobuser johnuser`
+		When I run `wp user signup activate bobuser johnuser`
 		Then STDOUT should contain:
 			"""
 			Success: Signup 1 activated.
@@ -113,7 +113,7 @@ Feature: Manage signups in a multisite installation
 			Success: Signup 2 activated.
 			"""
 
-		When I run `wp signup list --active=1 --format=count`
+		When I run `wp user signup list --active=1 --format=count`
 		Then STDOUT should be:
 			"""
 			2
@@ -123,14 +123,14 @@ Feature: Manage signups in a multisite installation
 		Given a WP multisite install
 		And I run `wp eval 'wpmu_signup_blog( "example.com", "/bobsite/", "My Awesome Title", "bobuser", "bobuser@example.com" );'`
 
-		When I run `wp signup get bobuser --fields=user_login,domain,path,active --format=csv`
+		When I run `wp user signup get bobuser --fields=user_login,domain,path,active --format=csv`
 		Then STDOUT should be:
 			"""
 			user_login,domain,path,active
 			bobuser,example.com,/bobsite/,0
 			"""
 
-		When I run `wp signup activate bobuser`
+		When I run `wp user signup activate bobuser`
 		Then STDOUT should contain:
 			"""
 			Success: Signup 1 activated.
@@ -147,26 +147,26 @@ Feature: Manage signups in a multisite installation
 		And I run `wp eval 'wpmu_signup_user( "bobuser", "bobuser@example.com" );'`
 		And I run `wp eval 'wpmu_signup_user( "johnuser", "johnuser@example.com" );'`
 
-		When I run `wp signup get bobuser --field=user_email`
+		When I run `wp user signup get bobuser --field=user_email`
 		Then STDOUT should be:
 			"""
 			bobuser@example.com
 			"""
 
-		When I run `wp signup get johnuser --field=user_email`
+		When I run `wp user signup get johnuser --field=user_email`
 		Then STDOUT should be:
 			"""
 			johnuser@example.com
 			"""
 
-		When I run `wp signup delete bobuser@example.com johnuser@example.com`
+		When I run `wp user signup delete bobuser@example.com johnuser@example.com`
 		Then STDOUT should be:
 			"""
 			Success: Signup 1 deleted.
 			Success: Signup 2 deleted.
 			"""
 
-		When I try `wp signup get bobuser`
+		When I try `wp user signup get bobuser`
 		Then STDERR should be:
 			"""
 			Error: Invalid signup ID, email, login, or activation key: 'bobuser'

@@ -10,7 +10,7 @@ use WP_CLI\Fetchers\Signup as SignupFetcher;
  * ## EXAMPLES
  *
  *     # List signups.
- *     $ wp signup list
+ *     $ wp user signup list
  *     +-----------+------------+---------------------+---------------------+--------+------------------+
  *     | signup_id | user_login | user_email          | registered          | active | activation_key   |
  *     +-----------+------------+---------------------+---------------------+--------+------------------+
@@ -19,11 +19,11 @@ use WP_CLI\Fetchers\Signup as SignupFetcher;
  *     +-----------+------------+---------------------+---------------------+--------+------------------+
  *
  *     # Activate signup.
- *     $ wp signup activate 2
+ *     $ wp user signup activate 2
  *     Success: Signup 2 activated. Password: bZFSGsfzb9xs
  *
  *     # Delete signup.
- *     $ wp signup delete 3
+ *     $ wp user signup delete 3
  *     Success: Signup 3 deleted.
  *
  * @package wp-cli
@@ -96,11 +96,11 @@ class Signup_Command extends CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # List signup IDs.
-	 *     $ wp signup list --field=signup_id
+	 *     $ wp user signup list --field=signup_id
 	 *     1
 	 *
 	 *     # List all signups.
-	 *     $ wp signup list
+	 *     $ wp user signup list
 	 *     +-----------+------------+---------------------+---------------------+--------+------------------+
 	 *     | signup_id | user_login | user_email          | registered          | active | activation_key   |
 	 *     +-----------+------------+---------------------+---------------------+--------+------------------+
@@ -177,11 +177,11 @@ class Signup_Command extends CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Get signup.
-	 *     $ wp signup get 1 --field=user_login
+	 *     $ wp user signup get 1 --field=user_login
 	 *     bobuser
 	 *
 	 *     # Get signup and export to JSON file.
-	 *     $ wp signup get bobuser --format=json > bobuser.json
+	 *     $ wp user signup get bobuser --format=json > bobuser.json
 	 *
 	 * @package wp-cli
 	 */
@@ -208,7 +208,7 @@ class Signup_Command extends CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Activate signup.
-	 *     $ wp signup activate 2
+	 *     $ wp user signup activate 2
 	 *     Success: Signup 2 activated. Password: bZFSGsfzb9xs
 	 *
 	 * @package wp-cli
@@ -238,7 +238,7 @@ class Signup_Command extends CommandWithDBObject {
 	 * ## EXAMPLES
 	 *
 	 *     # Delete signup.
-	 *     $ wp signup delete 3
+	 *     $ wp user signup delete 3
 	 *     Success: Signup 3 deleted.
 	 *
 	 * @package wp-cli
