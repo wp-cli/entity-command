@@ -2057,6 +2057,12 @@ wp option set-autoload <key> <autoload>
 		  - 'no'
 		---
 
+**EXAMPLES**
+
+    # Set the 'autoload' value for an option.
+    $ wp option set-autoload abc_options no
+    Success: Updated autoload value for 'abc_options' option.
+
 
 
 ### wp option get-autoload
@@ -2071,6 +2077,12 @@ wp option get-autoload <key>
 
 	<key>
 		The name of the option to get 'autoload' of.
+
+**EXAMPLES**
+
+    # Get the 'autoload' value for an option.
+    $ wp option get-autoload blogname
+    yes
 
 
 

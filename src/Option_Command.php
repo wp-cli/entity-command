@@ -441,6 +441,12 @@ class Option_Command extends WP_CLI_Command {
 	 * <key>
 	 * : The name of the option to get 'autoload' of.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get the 'autoload' value for an option.
+	 *     $ wp option get-autoload blogname
+	 *     yes
+	 *
 	 * @subcommand get-autoload
 	 */
 	public function get_autoload( $args ) {
@@ -476,6 +482,12 @@ class Option_Command extends WP_CLI_Command {
 	 *   - 'yes'
 	 *   - 'no'
 	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Set the 'autoload' value for an option.
+	 *     $ wp option set-autoload abc_options no
+	 *     Success: Updated autoload value for 'abc_options' option.
 	 *
 	 * @subcommand set-autoload
 	 */
