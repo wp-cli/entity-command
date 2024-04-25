@@ -140,6 +140,7 @@ Feature: Manage WordPress options
       """
 
   @require-wp-4.2
+  @less-than-wp-6.6
   Scenario: Update autoload value for custom option
     Given a WP install
     And I run `wp option add hello world --autoload=no`
@@ -160,7 +161,30 @@ Feature: Manage WordPress options
       | option_name  | option_value   | autoload |
       | hello        | island         | yes      |
 
+  @require-wp-6.6
+  Scenario: Update autoload value for custom option
+    Given a WP install
+    And I run `wp option add hello world --autoload=off`
+
+    When I run `wp option update hello universe`
+    Then STDOUT should not be empty
+
+    When I run `wp option list --search='hello' --fields=option_name,option_value,autoload`
+    Then STDOUT should be a table containing rows:
+      | option_name  | option_value   | autoload |
+      | hello        | universe       | off       |
+
+    When I run `wp option update hello island --autoload=on`
+    Then STDOUT should not be empty
+
+    When I run `wp option list --search='hello' --fields=option_name,option_value,autoload`
+    Then STDOUT should be a table containing rows:
+      | option_name  | option_value   | autoload |
+      | hello        | island         | on      |
+
+
   @require-wp-4.2
+  @less-than-wp-6.6
   Scenario: Managed autoloaded options
     Given a WP install
 
@@ -248,11 +272,11 @@ Feature: Manage WordPress options
       """
     And the return code should be 0
 
-    When I try `wp option list --search='auto_opt' --autoload=no`
+    When I try `wp option list --search='auto_opt' --autoload=nope`
     Then STDOUT should be empty
-    And STDERR should be:
+    And STDERR should contain:
       """
-      Error: Value of '--autoload' should be on or off.
+      Error: Value of '--autoload' should be
       """
     And the return code should be 1
 
@@ -264,7 +288,7 @@ Feature: Manage WordPress options
       """
     And the return code should be 0
 
-    When I try `wp option add str_opt_foo 'bar' --autoload=off`
+    When I try `wp option add str_opt_foo 'bar' --autoload=bad`
     Then STDOUT should be empty
     And STDERR should contain:
       """
