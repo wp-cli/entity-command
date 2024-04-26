@@ -620,7 +620,10 @@ class Site_Command extends CommandWithDBObject {
 			if ( 'progress' === $format ) {
 				$notify->tick();
 			} else {
-				WP_CLI::line( $id );
+				echo $id;
+				if ( $index < $limit -1 ) {
+					echo ' ';
+				}
 			}
 		}
 
