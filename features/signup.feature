@@ -31,7 +31,7 @@ Feature: Manage signups in a multisite installation
 		When I run `wp user signup activate bobuser`
 		Then STDOUT should contain:
 			"""
-			Success: Signup 1 activated.
+			Success: Activated 1 of 1 signups.
 			"""
 
 		When I run `wp user signup list --fields=signup_id,user_login,user_email,active --format=csv --active=1`
@@ -71,11 +71,11 @@ Feature: Manage signups in a multisite installation
 		When I run `wp user signup activate bobuser`
 		Then STDOUT should contain:
 			"""
-			Success: Signup 1 activated.
+			Success: Activated 1 of 1 signups.
 			"""
 
 		When I try the previous command again
-		Then STDERR should be:
+		Then STDERR should contain:
 			"""
 			Warning: Failed activating signup 1.
 			"""
@@ -106,11 +106,7 @@ Feature: Manage signups in a multisite installation
 		When I run `wp user signup activate bobuser johnuser`
 		Then STDOUT should contain:
 			"""
-			Success: Signup 1 activated.
-			"""
-		And STDOUT should contain:
-			"""
-			Success: Signup 2 activated.
+			Success: Activated 2 of 2 signups.
 			"""
 
 		When I run `wp user signup list --active=1 --format=count`
@@ -133,7 +129,7 @@ Feature: Manage signups in a multisite installation
 		When I run `wp user signup activate bobuser`
 		Then STDOUT should contain:
 			"""
-			Success: Signup 1 activated.
+			Success: Activated 1 of 1 signups.
 			"""
 
 		When I run `wp site list --fields=domain,path`

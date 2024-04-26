@@ -216,15 +216,22 @@ class Signup_Command extends CommandWithDBObject {
 	public function activate( $args, $assoc_args ) {
 		$signups = $this->fetcher->get_many( $args );
 
+		$successes = 0;
+		$errors    = 0;
+
 		foreach ( $signups as $signup ) {
 			$result = wpmu_activate_signup( $signup->activation_key );
 
 			if ( is_wp_error( $result ) ) {
 				WP_CLI::warning( "Failed activating signup {$signup->signup_id}." );
+				++$errors;
 			} else {
 				WP_CLI::success( "Signup {$signup->signup_id} activated. Password: {$result['password']}" );
+				++$successes;
 			}
 		}
+
+		Utils\report_batch_operation_results( 'signup', 'activate', count( $args ), $successes, $errors );
 	}
 
 	/**
