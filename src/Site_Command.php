@@ -552,8 +552,7 @@ class Site_Command extends CommandWithDBObject {
 		$is_subdomain_install = is_subdomain_install();
 		// If not a subdomain install, make sure the domain isn't a reserved word
 		if ( ! $is_subdomain_install ) {
-			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling WordPress native hook.
-			$subdirectory_reserved_names = apply_filters( 'subdirectory_reserved_names', [ 'page', 'comments', 'blog', 'files', 'feed' ] );
+			$subdirectory_reserved_names = get_subdirectory_reserved_names();
 			if ( in_array( $base, $subdirectory_reserved_names, true ) ) {
 				WP_CLI::error( 'The following words are reserved and cannot be used as blog names: ' . implode( ', ', $subdirectory_reserved_names ) );
 			}
