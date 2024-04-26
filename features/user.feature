@@ -708,3 +708,24 @@ Feature: Manage WordPress users
     Then STDOUT should be a table containing rows:
       | Field        | Value                   |
       | user_url     | http://www.testsite.com |
+
+  Scenario: Support nickname creating and updating user
+    Given a WP install
+
+    When I run `wp user create testuser testuser@example.com --nickname=customtestuser --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user meta get {USER_ID} nickname`
+    Then STDOUT should be:
+      """
+      customtestuser
+      """
+
+    When I run `wp user update {USER_ID} --nickname=newtestuser`
+    And I run `wp user meta get {USER_ID} nickname`
+    Then STDOUT should be:
+      """
+      newtestuser
+      """
+

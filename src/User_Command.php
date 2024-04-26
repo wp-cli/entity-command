@@ -407,6 +407,8 @@ class User_Command extends CommandWithDBObject {
 
 		$user->display_name = Utils\get_flag_value( $assoc_args, 'display_name', false );
 
+		$user->nickname = Utils\get_flag_value( $assoc_args, 'nickname', false );
+
 		$user->first_name = Utils\get_flag_value( $assoc_args, 'first_name', false );
 
 		$user->last_name = Utils\get_flag_value( $assoc_args, 'last_name', false );
