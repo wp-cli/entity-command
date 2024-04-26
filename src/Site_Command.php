@@ -424,8 +424,7 @@ class Site_Command extends CommandWithDBObject {
 
 		// If not a subdomain install, make sure the domain isn't a reserved word
 		if ( ! is_subdomain_install() ) {
-			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling WordPress native hook.
-			$subdirectory_reserved_names = apply_filters( 'subdirectory_reserved_names', [ 'page', 'comments', 'blog', 'files', 'feed' ] );
+			$subdirectory_reserved_names = $this->get_subdirectory_reserved_names();
 			if ( in_array( $base, $subdirectory_reserved_names, true ) ) {
 				WP_CLI::error( 'The following words are reserved and cannot be used as blog names: ' . implode( ', ', $subdirectory_reserved_names ) );
 			}
@@ -552,7 +551,7 @@ class Site_Command extends CommandWithDBObject {
 		$is_subdomain_install = is_subdomain_install();
 		// If not a subdomain install, make sure the domain isn't a reserved word
 		if ( ! $is_subdomain_install ) {
-			$subdirectory_reserved_names = get_subdirectory_reserved_names();
+			$subdirectory_reserved_names = $this->get_subdirectory_reserved_names();
 			if ( in_array( $base, $subdirectory_reserved_names, true ) ) {
 				WP_CLI::error( 'The following words are reserved and cannot be used as blog names: ' . implode( ', ', $subdirectory_reserved_names ) );
 			}
@@ -644,6 +643,35 @@ class Site_Command extends CommandWithDBObject {
 		if ( 'progress' === $format ) {
 			$notify->finish();
 		}
+	}
+
+	/**
+	 * Retrieves a list of reserved site on a sub-directory Multisite installation.
+	 *
+	 * Works on older WordPress versions where get_subdirectory_reserved_names() does not exist.
+	 *
+	 * @return string[] Array of reserved names.
+	 */
+	private function get_subdirectory_reserved_names() {
+		if ( function_exists( 'get_subdirectory_reserved_names' ) ) {
+			return get_subdirectory_reserved_names();
+		}
+
+		$names = array(
+			'page',
+			'comments',
+			'blog',
+			'files',
+			'feed',
+			'wp-admin',
+			'wp-content',
+			'wp-includes',
+			'wp-json',
+			'embed',
+		);
+
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling WordPress native hook.
+		return apply_filters( 'subdirectory_reserved_names', $names );
 	}
 
 	/**
