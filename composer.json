@@ -125,6 +125,7 @@
             "site activate",
             "site archive",
             "site create",
+            "site generate",
             "site deactivate",
             "site delete",
             "site empty",
