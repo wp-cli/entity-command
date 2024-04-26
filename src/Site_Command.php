@@ -608,8 +608,8 @@ class Site_Command extends CommandWithDBObject {
 		}
 
 		for ( $index = 1; $index <= $limit; $index++ ) {
-			$current_base  = $base . $index;
-			$title = ucfirst( $base ) . ' ' . $index;
+			$current_base = $base . $index;
+			$title        = ucfirst( $base ) . ' ' . $index;
 
 			if ( $is_subdomain_install ) {
 				$new_domain = $current_base . '.' . preg_replace( '|^www\.|', '', $network->domain );
@@ -635,7 +635,7 @@ class Site_Command extends CommandWithDBObject {
 				$notify->tick();
 			} else {
 				echo $id;
-				if ( $index < $limit -1 ) {
+				if ( $index < $limit - 1 ) {
 					echo ' ';
 				}
 			}
