@@ -21,10 +21,12 @@ use WP_CLI\Fetchers\Signup as SignupFetcher;
  *     # Activate signup.
  *     $ wp user signup activate 2
  *     Success: Signup 2 activated. Password: bZFSGsfzb9xs
+ *     Success: Activated 1 of 1 signups.
  *
  *     # Delete signup.
  *     $ wp user signup delete 3
  *     Success: Signup 3 deleted.
+ *     Success: Deleted 1 of 1 signups.
  *
  * @package wp-cli
  */
@@ -210,6 +212,7 @@ class Signup_Command extends CommandWithDBObject {
 	 *     # Activate signup.
 	 *     $ wp user signup activate 2
 	 *     Success: Signup 2 activated. Password: bZFSGsfzb9xs
+	 *     Success: Activated 1 of 1 signups.
 	 *
 	 * @package wp-cli
 	 */
@@ -239,41 +242,83 @@ class Signup_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <signup>...
+	 * [<signup>...]
 	 * : The signup ID, user login, user email, or activation key of the signup(s) to delete.
+	 *
+	 * [--all]
+	 * : If set, all signups will be deleted.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Delete signup.
 	 *     $ wp user signup delete 3
 	 *     Success: Signup 3 deleted.
+	 *     Success: Deleted 1 of 1 signups.
 	 *
 	 * @package wp-cli
 	 */
 	public function delete( $args, $assoc_args ) {
+		$count = count( $args );
+
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		if ( ( 0 < $count && true === $all ) || ( 0 === $count && true !== $all ) ) {
+			WP_CLI::error( 'You need to specify either one or more signups or provide the --all flag.' );
+		}
+
+		if ( true === $all ) {
+			if ( ! $this->delete_all_signups() ) {
+				WP_CLI::error( 'Error deleting signups.' );
+			}
+
+			WP_CLI::success( 'Deleted all signups.' );
+			WP_CLI::halt( 0 );
+		}
+
 		$signups = $this->fetcher->get_many( $args );
 
-		parent::_delete( $signups, $assoc_args, [ $this, 'delete_callback' ] );
+		$successes = 0;
+		$errors    = 0;
+
+		foreach ( $signups as $signup ) {
+			if ( $this->delete_signup( $signup ) ) {
+				WP_CLI::success( "Signup {$signup->signup_id} deleted." );
+				++$successes;
+			} else {
+				WP_CLI::error( "Failed deleting signup {$signup->signup_id}." );
+				++$errors;
+			}
+		}
+
+		Utils\report_batch_operation_results( 'signup', 'delete', $count, $successes, $errors );
 	}
 
 	/**
-	 * Callback used to delete a signup.
+	 * Deletes signup.
 	 *
-	 * @param $signup
-	 * @param $assoc_args
-	 * @return array
+	 * @param stdClasss $signup
+	 * @return bool True if success; otherwise false.
 	 */
-	protected function delete_callback( $signup, $assoc_args ) {
+	private function delete_signup( $signup ) {
 		global $wpdb;
 
 		$signup_id = $signup->signup_id;
 
 		$result = $wpdb->delete( $wpdb->signups, array( 'signup_id' => $signup_id ), array( '%d' ) );
 
-		if ( $result ) {
-			return [ 'success', "Signup {$signup_id} deleted." ];
-		} else {
-			return [ 'error', "Failed deleting signup {$signup_id}." ];
-		}
+		return $result ? true : false;
+	}
+
+	/**
+	 * Deletes all signup.
+	 *
+	 * @return bool True if success; otherwise false.
+	 */
+	private function delete_all_signups() {
+		global $wpdb;
+
+		$results = $wpdb->query( 'DELETE FROM ' . $wpdb->signups );
+
+		return $results ? true : false;
 	}
 }

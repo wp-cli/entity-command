@@ -1685,6 +1685,8 @@ Errors if the option already exists.
 		Should this option be automatically loaded.
 		---
 		options:
+		  - 'on'
+		  - 'off'
 		  - 'yes'
 		  - 'no'
 		---
@@ -1990,6 +1992,8 @@ wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
 		Requires WP 4.2. Should this option be automatically loaded.
 		---
 		options:
+		  - 'on'
+		  - 'off'
 		  - 'yes'
 		  - 'no'
 		---
@@ -2053,6 +2057,8 @@ wp option set-autoload <key> <autoload>
 		Should this option be automatically loaded.
 		---
 		options:
+		  - 'on'
+		  - 'off'
 		  - 'yes'
 		  - 'no'
 		---
@@ -6316,10 +6322,12 @@ wp user signup
     # Activate signup.
     $ wp user signup activate 2
     Success: Signup 2 activated. Password: bZFSGsfzb9xs
+    Success: Activated 1 of 1 signups.
 
     # Delete signup.
     $ wp user signup delete 3
     Success: Signup 3 deleted.
+    Success: Deleted 1 of 1 signups.
 
 
 
@@ -6343,6 +6351,7 @@ wp user signup activate <signup>...
     # Activate signup.
     $ wp user signup activate 2
     Success: Signup 2 activated. Password: bZFSGsfzb9xs
+    Success: Activated 1 of 1 signups.
 
 
 
@@ -6351,19 +6360,23 @@ wp user signup activate <signup>...
 Deletes one or more signups.
 
 ~~~
-wp user signup delete <signup>...
+wp user signup delete [<signup>...] [--all]
 ~~~
 
 **OPTIONS**
 
-	<signup>...
+	[<signup>...]
 		The signup ID, user login, user email, or activation key of the signup(s) to delete.
+
+	[--all]
+		If set, all signups will be deleted.
 
 **EXAMPLES**
 
     # Delete signup.
     $ wp user signup delete 3
     Success: Signup 3 deleted.
+    Success: Deleted 1 of 1 signups.
 
 
 

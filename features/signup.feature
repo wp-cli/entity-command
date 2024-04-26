@@ -156,10 +156,9 @@ Feature: Manage signups in a multisite installation
 			"""
 
 		When I run `wp user signup delete bobuser@example.com johnuser@example.com`
-		Then STDOUT should be:
+		Then STDOUT should contain:
 			"""
-			Success: Signup 1 deleted.
-			Success: Signup 2 deleted.
+			Success: Deleted 2 of 2 signups.
 			"""
 
 		When I try `wp user signup get bobuser`
@@ -167,3 +166,27 @@ Feature: Manage signups in a multisite installation
 			"""
 			Error: Invalid signup ID, email, login, or activation key: 'bobuser'
 			"""
+
+	Scenario: Delete all signups
+		Given a WP multisite install
+		And I run `wp eval 'wpmu_signup_user( "bobuser", "bobuser@example.com" );'`
+		And I run `wp eval 'wpmu_signup_user( "johnuser", "johnuser@example.com" );'`
+
+		When I try `wp user signup delete`
+		Then STDERR should be:
+			"""
+			Error: You need to specify either one or more signups or provide the --all flag.
+			"""
+
+		When I run `wp user signup delete --all`
+		Then STDOUT should contain:
+			"""
+			Success: Deleted all signups.
+			"""
+
+		When I run `wp user signup list --format=count`
+		Then STDOUT should be:
+			"""
+			0
+			"""
+
