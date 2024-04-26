@@ -24,7 +24,7 @@ Feature: Generate new WordPress sites
     When I try `wp site generate --count=4 --network_id=2`
     Then STDERR should contain:
       """
-      Network with id 2 does not exist.      
+      Network with id 2 does not exist.
       """
     And STDOUT should be empty
     And the return code should be 1
@@ -73,3 +73,30 @@ Feature: Generate new WordPress sites
 	  """
 	  1 2
 	  """
+
+  Scenario: Generate sites with a slug
+	Given a WP multisite subdirectory install
+	When I run `wp site generate --count=2 --slug=subsite`
+	Then STDOUT should be empty
+
+	When I run `wp site list --fields=blog_id,url`
+	Then STDOUT should be a table containing rows:
+	  | blog_id | url                       |
+	  | 1       | https://example.com/        |
+	  | 2       | https://example.com/subsite1/   |
+	  | 3       | https://example.com/subsite2/   |
+	When I run `wp site list --format=ids`
+	Then STDOUT should be:
+	  """
+	  1 2 3
+	  """
+
+  Scenario: Generate sites with reserved slug
+	Given a WP multisite subdirectory install
+	When I try `wp site generate --count=2 --slug=page`
+	Then STDERR should contain:
+	  """
+	  The following words are reserved and cannot be used as blog names: page, comments, blog, files, feed
+	  """
+	And STDOUT should be empty
+	And the return code should be 1
