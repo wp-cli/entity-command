@@ -6321,12 +6321,12 @@ wp user signup
 
     # Activate signup.
     $ wp user signup activate 2
-    Success: Signup 2 activated. Password: bZFSGsfzb9xs
+    Signup 2 activated. Password: bZFSGsfzb9xs
     Success: Activated 1 of 1 signups.
 
     # Delete signup.
     $ wp user signup delete 3
-    Success: Signup 3 deleted.
+    Signup 3 deleted.
     Success: Deleted 1 of 1 signups.
 
 
@@ -6350,7 +6350,7 @@ wp user signup activate <signup>...
 
     # Activate signup.
     $ wp user signup activate 2
-    Success: Signup 2 activated. Password: bZFSGsfzb9xs
+    Signup 2 activated. Password: bZFSGsfzb9xs
     Success: Activated 1 of 1 signups.
 
 
@@ -6375,7 +6375,7 @@ wp user signup delete [<signup>...] [--all]
 
     # Delete signup.
     $ wp user signup delete 3
-    Success: Signup 3 deleted.
+    Signup 3 deleted.
     Success: Deleted 1 of 1 signups.
 
 

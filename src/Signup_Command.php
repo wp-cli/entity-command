@@ -20,12 +20,12 @@ use WP_CLI\Fetchers\Signup as SignupFetcher;
  *
  *     # Activate signup.
  *     $ wp user signup activate 2
- *     Success: Signup 2 activated. Password: bZFSGsfzb9xs
+ *     Signup 2 activated. Password: bZFSGsfzb9xs
  *     Success: Activated 1 of 1 signups.
  *
  *     # Delete signup.
  *     $ wp user signup delete 3
- *     Success: Signup 3 deleted.
+ *     Signup 3 deleted.
  *     Success: Deleted 1 of 1 signups.
  *
  * @package wp-cli
@@ -211,7 +211,7 @@ class Signup_Command extends CommandWithDBObject {
 	 *
 	 *     # Activate signup.
 	 *     $ wp user signup activate 2
-	 *     Success: Signup 2 activated. Password: bZFSGsfzb9xs
+	 *     Signup 2 activated. Password: bZFSGsfzb9xs
 	 *     Success: Activated 1 of 1 signups.
 	 *
 	 * @package wp-cli
@@ -229,7 +229,7 @@ class Signup_Command extends CommandWithDBObject {
 				WP_CLI::warning( "Failed activating signup {$signup->signup_id}." );
 				++$errors;
 			} else {
-				WP_CLI::success( "Signup {$signup->signup_id} activated. Password: {$result['password']}" );
+				WP_CLI::log( "Signup {$signup->signup_id} activated. Password: {$result['password']}" );
 				++$successes;
 			}
 		}
@@ -252,7 +252,7 @@ class Signup_Command extends CommandWithDBObject {
 	 *
 	 *     # Delete signup.
 	 *     $ wp user signup delete 3
-	 *     Success: Signup 3 deleted.
+	 *     Signup 3 deleted.
 	 *     Success: Deleted 1 of 1 signups.
 	 *
 	 * @package wp-cli
@@ -282,10 +282,10 @@ class Signup_Command extends CommandWithDBObject {
 
 		foreach ( $signups as $signup ) {
 			if ( $this->delete_signup( $signup ) ) {
-				WP_CLI::success( "Signup {$signup->signup_id} deleted." );
+				WP_CLI::log( "Signup {$signup->signup_id} deleted." );
 				++$successes;
 			} else {
-				WP_CLI::error( "Failed deleting signup {$signup->signup_id}." );
+				WP_CLI::warning( "Failed deleting signup {$signup->signup_id}." );
 				++$errors;
 			}
 		}

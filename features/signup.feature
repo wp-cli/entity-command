@@ -189,4 +189,3 @@ Feature: Manage signups in a multisite installation
 			"""
 			0
 			"""
-
