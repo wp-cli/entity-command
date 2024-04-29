@@ -76,6 +76,9 @@ class Signup_Command extends CommandWithDBObject {
 	 *   - yaml
 	 * ---
 	 *
+	 * [--per_page=<per_page>]
+	 * : Limits the signups to the given number. Defaults to none.
+	 *
 	 * ## AVAILABLE FIELDS
 	 *
 	 * These fields will be displayed by default for each signup:
@@ -125,7 +128,14 @@ class Signup_Command extends CommandWithDBObject {
 
 		$signups = array();
 
-		$results = $wpdb->get_results( "SELECT * FROM $wpdb->signups", ARRAY_A );
+		$per_page = (int) Utils\get_flag_value( $assoc_args, 'per_page' );
+
+		$limit = $per_page ? $wpdb->prepare( 'LIMIT %d', $per_page ) : '';
+
+		$query = "SELECT * FROM $wpdb->signups {$limit}";
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Prepared properly above.
+		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		if ( $results ) {
 			foreach ( $results as $item ) {

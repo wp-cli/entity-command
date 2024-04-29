@@ -6426,7 +6426,7 @@ wp user signup get <signup> [--field=<field>] [--fields=<fields>] [--format=<for
 Lists signups.
 
 ~~~
-wp user signup list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp user signup list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--per_page=<per_page>]
 ~~~
 
 	[--<field>=<value>]
@@ -6450,6 +6450,9 @@ wp user signup list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [-
 		  - count
 		  - yaml
 		---
+
+	[--per_page=<per_page>]
+		Limits the signups to the given number. Defaults to none.
 
 **AVAILABLE FIELDS**
 

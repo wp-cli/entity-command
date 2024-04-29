@@ -41,6 +41,13 @@ Feature: Manage signups in a multisite installation
 			1,bobuser,bobuser@example.com,1
 			"""
 
+		When I run `wp user signup list --fields=signup_id,user_login,user_email,active --format=csv --per_page=1`
+		Then STDOUT should be:
+			"""
+			signup_id,user_login,user_email,active
+			1,bobuser,bobuser@example.com,1
+			"""
+
 	Scenario: Get signup
 		Given a WP multisite install
 		And I run `wp eval 'wpmu_signup_user( "bobuser", "bobuser@example.com" );'`
