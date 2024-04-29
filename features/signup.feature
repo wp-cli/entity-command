@@ -3,8 +3,8 @@ Feature: Manage signups in a multisite installation
 	Scenario: Not applicable in single installation site
 		Given a WP install
 
-    When I try `wp user signup list`
-    Then STDERR should be:
+		When I try `wp user signup list`
+		Then STDERR should be:
 			"""
 			Error: This is not a multisite installation.
 			"""
