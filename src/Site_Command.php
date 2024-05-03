@@ -488,6 +488,97 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	/**
+	 * Generate some sites.
+	 *
+	 * Creates a specified number of new sites.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--count=<number>]
+	 * : How many sites to generates?
+	 * ---
+	 * default: 100
+	 * ---
+	 *
+	 * [--slug=<slug>]
+	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
+	 *
+	 * [--email=<email>]
+	 * : Email for admin user. User will be created if none exists. Assignment to super admin if not included.
+	 *
+	 * [--network_id=<network-id>]
+	 * : Network to associate new site with. Defaults to current network (typically 1).
+	 *
+	 * [--private]
+	 * : If set, the new site will be non-public (not indexed)
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: progress
+	 * options:
+	 *  - progress
+	 *  - ids
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *    # Generate 10 sites.
+	 *    $ wp site generate --count=10
+	 *    Generating sites  100% [================================================] 0:01 / 0:04
+	 */
+	public function generate( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite installation.' );
+		}
+
+		$format = Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+
+		$defaults = [
+			'count'      => 100,
+			'email'      => '',
+			'network_id' => 1,
+			'slug'       => 'site',
+		];
+
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		$limit = $assoc_args['count'];
+
+		// Base.
+		$base = $assoc_args['slug'];
+		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
+			$base = strtolower( $base );
+		}
+
+		$notify = false;
+
+		if ( 'progress' === $format ) {
+			$notify = Utils\make_progress_bar( 'Generating sites', $assoc_args['count'] );
+		}
+
+		for ( $index = 1; $index <= $limit; $index++ ) {
+			$new_slug = $base . $index;
+
+			$status = WP_CLI::runcommand(
+				"site create --slug={$new_slug} --network_id={$assoc_args['network_id']} --email={$assoc_args['email']}",
+				[
+					'command_args' => [ '--quiet' ],
+					'exit_error'   => true,
+				]
+			);
+
+			if ( 'progress' === $format ) {
+				$notify->tick();
+			}
+		}
+
+		if ( 'progress' === $format ) {
+			$notify->finish();
+		}
+	}
+
+	/**
 	 * Gets network data for a given id.
 	 *
 	 * @param int     $network_id
