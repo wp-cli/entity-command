@@ -1685,6 +1685,8 @@ Errors if the option already exists.
 		Should this option be automatically loaded.
 		---
 		options:
+		  - 'on'
+		  - 'off'
 		  - 'yes'
 		  - 'no'
 		---
@@ -1990,6 +1992,8 @@ wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
 		Requires WP 4.2. Should this option be automatically loaded.
 		---
 		options:
+		  - 'on'
+		  - 'off'
 		  - 'yes'
 		  - 'no'
 		---
@@ -2053,6 +2057,8 @@ wp option set-autoload <key> <autoload>
 		Should this option be automatically loaded.
 		---
 		options:
+		  - 'on'
+		  - 'off'
 		  - 'yes'
 		  - 'no'
 		---
@@ -6291,6 +6297,196 @@ wp user set-role <user> [<role>]
 
     $ wp user set-role 12 author
     Success: Added johndoe (12) to http://example.com as author.
+
+
+
+### wp user signup
+
+Manages signups on a multisite installation.
+
+~~~
+wp user signup
+~~~
+
+**EXAMPLES**
+
+    # List signups.
+    $ wp user signup list
+    +-----------+------------+---------------------+---------------------+--------+------------------+
+    | signup_id | user_login | user_email          | registered          | active | activation_key   |
+    +-----------+------------+---------------------+---------------------+--------+------------------+
+    | 1         | bobuser    | bobuser@example.com | 2024-03-13 05:46:53 | 1      | 7320b2f009266618 |
+    | 2         | johndoe    | johndoe@example.com | 2024-03-13 06:24:44 | 0      | 9068d859186cd0b5 |
+    +-----------+------------+---------------------+---------------------+--------+------------------+
+
+    # Activate signup.
+    $ wp user signup activate 2
+    Signup 2 activated. Password: bZFSGsfzb9xs
+    Success: Activated 1 of 1 signups.
+
+    # Delete signup.
+    $ wp user signup delete 3
+    Signup 3 deleted.
+    Success: Deleted 1 of 1 signups.
+
+
+
+
+
+### wp user signup activate
+
+Activates one or more signups.
+
+~~~
+wp user signup activate <signup>...
+~~~
+
+**OPTIONS**
+
+	<signup>...
+		The signup ID, user login, user email, or activation key of the signup(s) to activate.
+
+**EXAMPLES**
+
+    # Activate signup.
+    $ wp user signup activate 2
+    Signup 2 activated. Password: bZFSGsfzb9xs
+    Success: Activated 1 of 1 signups.
+
+
+
+### wp user signup delete
+
+Deletes one or more signups.
+
+~~~
+wp user signup delete [<signup>...] [--all]
+~~~
+
+**OPTIONS**
+
+	[<signup>...]
+		The signup ID, user login, user email, or activation key of the signup(s) to delete.
+
+	[--all]
+		If set, all signups will be deleted.
+
+**EXAMPLES**
+
+    # Delete signup.
+    $ wp user signup delete 3
+    Signup 3 deleted.
+    Success: Deleted 1 of 1 signups.
+
+
+
+### wp user signup get
+
+Gets details about a signup.
+
+~~~
+wp user signup get <signup> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<signup>
+		The signup ID, user login, user email, or activation key.
+
+	[--field=<field>]
+		Instead of returning the whole signup, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Get signup.
+    $ wp user signup get 1 --field=user_login
+    bobuser
+
+    # Get signup and export to JSON file.
+    $ wp user signup get bobuser --format=json > bobuser.json
+
+
+
+### wp user signup list
+
+Lists signups.
+
+~~~
+wp user signup list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--per_page=<per_page>]
+~~~
+
+	[--<field>=<value>]
+		Filter the list by a specific field.
+
+	[--field=<field>]
+		Prints the value of a single field for each signup.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - ids
+		  - json
+		  - count
+		  - yaml
+		---
+
+	[--per_page=<per_page>]
+		Limits the signups to the given number. Defaults to none.
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each signup:
+
+* signup_id
+* user_login
+* user_email
+* registered
+* active
+* activation_key
+
+These fields are optionally available:
+
+* domain
+* path
+* title
+* activated
+* meta
+
+**EXAMPLES**
+
+    # List signup IDs.
+    $ wp user signup list --field=signup_id
+    1
+
+    # List all signups.
+    $ wp user signup list
+    +-----------+------------+---------------------+---------------------+--------+------------------+
+    | signup_id | user_login | user_email          | registered          | active | activation_key   |
+    +-----------+------------+---------------------+---------------------+--------+------------------+
+    | 1         | bobuser    | bobuser@example.com | 2024-03-13 05:46:53 | 1      | 7320b2f009266618 |
+    | 2         | johndoe    | johndoe@example.com | 2024-03-13 06:24:44 | 0      | 9068d859186cd0b5 |
+    +-----------+------------+---------------------+---------------------+--------+------------------+
 
 
 
