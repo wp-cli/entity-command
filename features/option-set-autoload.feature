@@ -24,6 +24,7 @@ Feature: Set 'autoload' value for an option
       Error: Invalid value specified for positional arg.
       """
 
+  @less-than-wp-6.6
   Scenario: Successfully updates autoload value
     Given a WP install
 
@@ -55,4 +56,38 @@ Feature: Set 'autoload' value for an option
     Then STDOUT should be:
       """
       no
+      """
+
+  @require-wp-6.6
+  Scenario: Successfully updates autoload value
+    Given a WP install
+
+    When I run `wp option add foo bar`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp option get-autoload foo`
+    Then STDOUT should be:
+      """
+      on
+      """
+
+    When I run `wp option set-autoload foo off`
+    Then STDOUT should be:
+      """
+      Success: Updated autoload value for 'foo' option.
+      """
+
+    When I run the previous command again
+    Then STDOUT should be:
+      """
+      Success: Autoload value passed for 'foo' option is unchanged.
+      """
+
+    When I run `wp option get-autoload foo`
+    Then STDOUT should be:
+      """
+      off
       """

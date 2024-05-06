@@ -2,11 +2,11 @@ Feature: Manage WordPress menu locations
 
   Background:
     Given a WP install
+    And I run `wp theme delete --all --force`
+    And I run `wp theme install twentytwelve --activate`
 
   Scenario: Assign / remove location from a menu
-
-    When I run `wp theme install p2 --activate`
-    And I run `wp menu location list`
+    When I run `wp menu location list`
     Then STDOUT should be a table containing rows:
       | location       | description        |
       | primary        | Primary Menu       |

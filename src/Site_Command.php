@@ -424,8 +424,7 @@ class Site_Command extends CommandWithDBObject {
 
 		// If not a subdomain install, make sure the domain isn't a reserved word
 		if ( ! is_subdomain_install() ) {
-			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling WordPress native hook.
-			$subdirectory_reserved_names = apply_filters( 'subdirectory_reserved_names', [ 'page', 'comments', 'blog', 'files', 'feed' ] );
+			$subdirectory_reserved_names = $this->get_subdirectory_reserved_names();
 			if ( in_array( $base, $subdirectory_reserved_names, true ) ) {
 				WP_CLI::error( 'The following words are reserved and cannot be used as blog names: ' . implode( ', ', $subdirectory_reserved_names ) );
 			}
@@ -485,6 +484,194 @@ class Site_Command extends CommandWithDBObject {
 			$site_url = trailingslashit( get_site_url( $id ) );
 			WP_CLI::success( "Site {$id} created: {$site_url}" );
 		}
+	}
+
+	/**
+	 * Generate some sites.
+	 *
+	 * Creates a specified number of new sites.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--count=<number>]
+	 * : How many sites to generates?
+	 * ---
+	 * default: 100
+	 * ---
+	 *
+	 * [--slug=<slug>]
+	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
+	 *
+	 * [--email=<email>]
+	 * : Email for admin user. User will be created if none exists. Assignment to super admin if not included.
+	 *
+	 * [--network_id=<network-id>]
+	 * : Network to associate new site with. Defaults to current network (typically 1).
+	 *
+	 * [--private]
+	 * : If set, the new site will be non-public (not indexed)
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: progress
+	 * options:
+	 *  - progress
+	 *  - ids
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *    # Generate 10 sites.
+	 *    $ wp site generate --count=10
+	 *    Generating sites  100% [================================================] 0:01 / 0:04
+	 */
+	public function generate( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite installation.' );
+		}
+
+		global $wpdb, $current_site;
+
+		$defaults = [
+			'count'      => 100,
+			'email'      => '',
+			'network_id' => 1,
+			'slug'       => 'site',
+		];
+
+		$assoc_args = array_merge( $defaults, $assoc_args );
+
+		// Base.
+		$base = $assoc_args['slug'];
+		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
+			$base = strtolower( $base );
+		}
+
+		$is_subdomain_install = is_subdomain_install();
+		// If not a subdomain install, make sure the domain isn't a reserved word
+		if ( ! $is_subdomain_install ) {
+			$subdirectory_reserved_names = $this->get_subdirectory_reserved_names();
+			if ( in_array( $base, $subdirectory_reserved_names, true ) ) {
+				WP_CLI::error( 'The following words are reserved and cannot be used as blog names: ' . implode( ', ', $subdirectory_reserved_names ) );
+			}
+		}
+
+		// Network.
+		if ( ! empty( $assoc_args['network_id'] ) ) {
+			$network = $this->get_network( $assoc_args['network_id'] );
+			if ( false === $network ) {
+				WP_CLI::error( "Network with id {$assoc_args['network_id']} does not exist." );
+			}
+		} else {
+			$network = $current_site;
+		}
+
+		// Public.
+		$public = ! Utils\get_flag_value( $assoc_args, 'private' );
+
+		// Limit.
+		$limit = $assoc_args['count'];
+
+		// Email.
+		$email = sanitize_email( $assoc_args['email'] );
+		if ( empty( $email ) || ! is_email( $email ) ) {
+			$super_admins = get_super_admins();
+			$email        = '';
+			if ( ! empty( $super_admins ) && is_array( $super_admins ) ) {
+				$super_login = reset( $super_admins );
+				$super_user  = get_user_by( 'login', $super_login );
+				if ( $super_user ) {
+					$email = $super_user->user_email;
+				}
+			}
+		}
+
+		$user_id = email_exists( $email );
+		if ( ! $user_id ) {
+			$password = wp_generate_password( 24, false );
+			$user_id  = wpmu_create_user( $base . '-admin', $password, $email );
+
+			if ( false === $user_id ) {
+				WP_CLI::error( "Can't create user." );
+			} else {
+				User_Command::wp_new_user_notification( $user_id, $password );
+			}
+		}
+
+		$format = Utils\get_flag_value( $assoc_args, 'format', 'progress' );
+
+		$notify = false;
+		if ( 'progress' === $format ) {
+			$notify = Utils\make_progress_bar( 'Generating sites', $limit );
+		}
+
+		for ( $index = 1; $index <= $limit; $index++ ) {
+			$current_base = $base . $index;
+			$title        = ucfirst( $base ) . ' ' . $index;
+
+			if ( $is_subdomain_install ) {
+				$new_domain = $current_base . '.' . preg_replace( '|^www\.|', '', $network->domain );
+				$path       = $network->path;
+			} else {
+				$new_domain = $network->domain;
+				$path       = $network->path . $current_base . '/';
+			}
+
+			$wpdb->hide_errors();
+			$title = wp_slash( $title );
+			$id    = wpmu_create_blog( $new_domain, $path, $title, $user_id, [ 'public' => $public ], $network->id );
+			$wpdb->show_errors();
+			if ( ! is_wp_error( $id ) ) {
+				if ( ! is_super_admin( $user_id ) && ! get_user_option( 'primary_blog', $user_id ) ) {
+					update_user_option( $user_id, 'primary_blog', $id, true );
+				}
+			} else {
+				WP_CLI::error( $id->get_error_message() );
+			}
+
+			if ( 'progress' === $format ) {
+				$notify->tick();
+			} else {
+				echo $id;
+				if ( $index < $limit - 1 ) {
+					echo ' ';
+				}
+			}
+		}
+
+		if ( 'progress' === $format ) {
+			$notify->finish();
+		}
+	}
+
+	/**
+	 * Retrieves a list of reserved site on a sub-directory Multisite installation.
+	 *
+	 * Works on older WordPress versions where get_subdirectory_reserved_names() does not exist.
+	 *
+	 * @return string[] Array of reserved names.
+	 */
+	private function get_subdirectory_reserved_names() {
+		if ( function_exists( 'get_subdirectory_reserved_names' ) ) {
+			return get_subdirectory_reserved_names();
+		}
+
+		$names = array(
+			'page',
+			'comments',
+			'blog',
+			'files',
+			'feed',
+			'wp-admin',
+			'wp-content',
+			'wp-includes',
+			'wp-json',
+			'embed',
+		);
+
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Calling WordPress native hook.
+		return apply_filters( 'subdirectory_reserved_names', $names );
 	}
 
 	/**

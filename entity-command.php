@@ -100,3 +100,15 @@ WP_CLI::add_command( 'user term', 'User_Term_Command' );
 if ( class_exists( 'WP_CLI\Dispatcher\CommandNamespace' ) ) {
 	WP_CLI::add_command( 'network', 'Network_Namespace' );
 }
+
+WP_CLI::add_command(
+	'user signup',
+	'Signup_Command',
+	array(
+		'before_invoke' => function () {
+			if ( ! is_multisite() ) {
+				WP_CLI::error( 'This is not a multisite installation.' );
+			}
+		},
+	)
+);

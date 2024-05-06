@@ -280,8 +280,12 @@ class User_Command extends CommandWithDBObject {
 			WP_CLI::error( 'Reassigning content to a different user is not supported on multisite.' );
 		}
 
+		$is_reassign_valid = ( $reassign && false === get_userdata( $reassign ) ) ? false : true;
+
 		if ( ! $reassign ) {
 			WP_CLI::confirm( '--reassign parameter not passed. All associated posts will be deleted. Proceed?', $assoc_args );
+		} elseif ( ! $is_reassign_valid ) {
+			WP_CLI::confirm( '--reassign parameter is invalid. All associated posts will be deleted. Proceed?', $assoc_args );
 		}
 
 		$users = $this->fetcher->get_many( $args );
@@ -402,6 +406,8 @@ class User_Command extends CommandWithDBObject {
 		);
 
 		$user->display_name = Utils\get_flag_value( $assoc_args, 'display_name', false );
+
+		$user->nickname = Utils\get_flag_value( $assoc_args, 'nickname', false );
 
 		$user->first_name = Utils\get_flag_value( $assoc_args, 'first_name', false );
 
@@ -647,6 +653,37 @@ class User_Command extends CommandWithDBObject {
 
 		if ( 'progress' === $format ) {
 			$notify->finish();
+		}
+	}
+
+	/**
+	 * Verifies whether a user exists.
+	 *
+	 * Displays a success message if the user does exist.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the user to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # The user exists.
+	 *     $ wp user exists 1337
+	 *     Success: User with ID 1337 exists.
+	 *     $ echo $?
+	 *     0
+	 *
+	 *     # The user does not exist.
+	 *     $ wp user exists 10000
+	 *     $ echo $?
+	 *     1
+	 */
+	public function exists( $args ) {
+		if ( $this->fetcher->get( $args[0] ) ) {
+			WP_CLI::success( "User with ID {$args[0]} exists." );
+		} else {
+			WP_CLI::halt( 1 );
 		}
 	}
 
@@ -1285,15 +1322,16 @@ class User_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Marks one or more users as spam.
+	 * Marks one or more users as spam on multisite.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of users to mark as spam.
+	 * <user>...
+	 * : The user login, user email, or user ID of the user(s) to mark as spam.
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Mark user as spam.
 	 *     $ wp user spam 123
 	 *     User 123 marked as spam.
 	 *     Success: Spammed 1 of 1 users.
@@ -1303,15 +1341,16 @@ class User_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Removes one or more users from spam.
+	 * Removes one or more users from spam on multisite.
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
-	 * : One or more IDs of users to remove from spam.
+	 * <user>...
+	 * : The user login, user email, or user ID of the user(s) to remove from spam.
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Remove user from spam.
 	 *     $ wp user unspam 123
 	 *     User 123 removed from spam.
 	 *     Success: Unspamed 1 of 1 users.
@@ -1342,15 +1381,8 @@ class User_Command extends CommandWithDBObject {
 			$errors = count( $user_ids ) - count( $users );
 		}
 
-		foreach ( $user_ids as $user_id ) {
-
-			$user = get_userdata( $user_id );
-
-			// If no user found, then show warning.
-			if ( empty( $user ) ) {
-				WP_CLI::warning( "User {$user_id} doesn't exist." );
-				continue;
-			}
+		foreach ( $users as $user ) {
+			$user_id = $user->ID;
 
 			// Super admin should not be marked as spam.
 			if ( is_super_admin( $user->ID ) ) {

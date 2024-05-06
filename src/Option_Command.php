@@ -109,6 +109,8 @@ class Option_Command extends WP_CLI_Command {
 	 * : Should this option be automatically loaded.
 	 * ---
 	 * options:
+	 *   - 'on'
+	 *   - 'off'
 	 *   - 'yes'
 	 *   - 'no'
 	 * ---
@@ -125,7 +127,7 @@ class Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::get_value_from_arg_or_stdin( $args, 1 );
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
-		if ( Utils\get_flag_value( $assoc_args, 'autoload' ) === 'no' ) {
+		if ( in_array( Utils\get_flag_value( $assoc_args, 'autoload' ), [ 'no', 'off' ], true ) ) {
 			$autoload = 'no';
 		} else {
 			$autoload = 'yes';
@@ -271,12 +273,13 @@ class Option_Command extends WP_CLI_Command {
 		}
 
 		if ( isset( $assoc_args['autoload'] ) ) {
-			if ( 'on' === $assoc_args['autoload'] ) {
+			$autoload = $assoc_args['autoload'];
+			if ( 'on' === $autoload || 'yes' === $autoload ) {
 				$autoload_query = " AND autoload='yes'";
-			} elseif ( 'off' === $assoc_args['autoload'] ) {
+			} elseif ( 'off' === $autoload || 'no' === $autoload ) {
 				$autoload_query = " AND autoload='no'";
 			} else {
-				WP_CLI::error( "Value of '--autoload' should be on or off." );
+				WP_CLI::error( "Value of '--autoload' should be 'on', 'off', 'yes', or 'no'." );
 			}
 		}
 
@@ -360,6 +363,8 @@ class Option_Command extends WP_CLI_Command {
 	 * : Requires WP 4.2. Should this option be automatically loaded.
 	 * ---
 	 * options:
+	 *   - 'on'
+	 *   - 'off'
 	 *   - 'yes'
 	 *   - 'no'
 	 * ---
@@ -413,7 +418,7 @@ class Option_Command extends WP_CLI_Command {
 		$value = WP_CLI::read_value( $value, $assoc_args );
 
 		$autoload = Utils\get_flag_value( $assoc_args, 'autoload' );
-		if ( ! in_array( $autoload, [ 'yes', 'no' ], true ) ) {
+		if ( ! in_array( $autoload, [ 'on', 'off', 'yes', 'no' ], true ) ) {
 			$autoload = null;
 		}
 
@@ -440,6 +445,12 @@ class Option_Command extends WP_CLI_Command {
 	 *
 	 * <key>
 	 * : The name of the option to get 'autoload' of.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get the 'autoload' value for an option.
+	 *     $ wp option get-autoload blogname
+	 *     yes
 	 *
 	 * @subcommand get-autoload
 	 */
@@ -473,9 +484,17 @@ class Option_Command extends WP_CLI_Command {
 	 * : Should this option be automatically loaded.
 	 * ---
 	 * options:
+	 *   - 'on'
+	 *   - 'off'
 	 *   - 'yes'
 	 *   - 'no'
 	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Set the 'autoload' value for an option.
+	 *     $ wp option set-autoload abc_options no
+	 *     Success: Updated autoload value for 'abc_options' option.
 	 *
 	 * @subcommand set-autoload
 	 */

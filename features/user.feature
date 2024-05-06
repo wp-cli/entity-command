@@ -17,6 +17,17 @@ Feature: Manage WordPress users
       | ID           | {USER_ID}  |
       | roles        | author     |
 
+    When I run `wp user exists {USER_ID}`
+    Then STDOUT should be:
+      """
+      Success: User with ID {USER_ID} exists.
+      """
+    And the return code should be 0
+
+    When I try `wp user exists 1000`
+    And STDOUT should be empty
+    And the return code should be 1
+
     When I run `wp user get {USER_ID} --field=user_registered`
     Then STDOUT should not contain:
       """
@@ -134,6 +145,49 @@ Feature: Manage WordPress users
     Then STDOUT should be:
       """
       3
+      """
+
+  Scenario: Delete user with invalid reassign
+    Given a WP install
+    And a session_no file:
+      """
+      n
+      """
+    And a session_yes file:
+      """
+      y
+      """
+
+    When I run `wp user create bobjones bob@example.com --role=author --porcelain`
+    And save STDOUT as {BOB_ID}
+
+    When I run `wp post list --format=count`
+    And save STDOUT as {TOTAL_POSTS}
+
+    When I run `wp post generate --count=3 --format=ids --post_author=bobjones`
+    And I run `wp post list --author={BOB_ID} --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp user delete bobjones < session_no`
+    Then STDOUT should contain:
+      """
+      --reassign parameter not passed. All associated posts will be deleted. Proceed? [y/n]
+      """
+
+    When I run `wp user delete bobjones --reassign=99999 < session_no`
+    Then STDOUT should contain:
+      """
+      --reassign parameter is invalid. All associated posts will be deleted. Proceed? [y/n]
+      """
+
+    When I run `wp user delete bobjones < session_yes`
+    And I run `wp post list --format=count`
+    Then STDOUT should be:
+      """
+      {TOTAL_POSTS}
       """
 
   Scenario: Deleting user from the whole network
@@ -590,7 +644,6 @@ Feature: Manage WordPress users
     And STDERR should be:
       """
       Warning: Invalid user ID, email or login: '9999'
-      Warning: User 9999 doesn't exist.
       Error: Only spammed 1 of 2 users.
       """
     And the return code should be 1
@@ -659,3 +712,24 @@ Feature: Manage WordPress users
     Then STDOUT should be a table containing rows:
       | Field        | Value                   |
       | user_url     | http://www.testsite.com |
+
+  Scenario: Support nickname creating and updating user
+    Given a WP install
+
+    When I run `wp user create testuser testuser@example.com --nickname=customtestuser --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user meta get {USER_ID} nickname`
+    Then STDOUT should be:
+      """
+      customtestuser
+      """
+
+    When I run `wp user update {USER_ID} --nickname=newtestuser`
+    And I run `wp user meta get {USER_ID} nickname`
+    Then STDOUT should be:
+      """
+      newtestuser
+      """
+

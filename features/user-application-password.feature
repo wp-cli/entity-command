@@ -244,6 +244,12 @@ Feature: Manage user custom fields
       myapp2
       """
 
+    When I run `wp user application-password list 1 --format=ids --orderby=name --order=asc`
+    Then STDOUT should be:
+      """
+      {UUID1} {UUID2}
+      """
+
   @require-wp-5.6
   Scenario: Get particular user application password hash
     Given a WP install
