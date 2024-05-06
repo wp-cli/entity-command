@@ -260,6 +260,10 @@ Feature: Manage WordPress users
       Bob Jones
       """
 
+    When I try `wp user create bobjones1 bobjones@example.com`
+    Then STDERR should not be empty
+    And the return code should be 1
+
   Scenario: Managing user roles
     Given a WP install
 

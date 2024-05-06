@@ -435,7 +435,9 @@ class User_Command extends CommandWithDBObject {
 		if ( is_multisite() ) {
 			$result = wpmu_validate_user_signup( $user->user_login, $user->user_email );
 			if ( is_wp_error( $result['errors'] ) && ! empty( $result['errors']->errors ) ) {
-				WP_CLI::error( $result['errors'] );
+				$message = Utils\strip_tags( $result['errors']->get_error_message() );
+				$message = trim( str_replace( 'Error:', '', $message ) );
+				WP_CLI::error( $message );
 			}
 			$user_id = wpmu_create_user( $user->user_login, $user->user_pass, $user->user_email );
 			if ( ! $user_id ) {
