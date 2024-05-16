@@ -488,6 +488,14 @@ class Menu_Item_Command extends WP_CLI_Command {
 				$this->reorder_menu_items( $menu->term_id, $menu_item_args['menu-item-position'], +1, $result );
 			}
 
+			if ( ( 'update' === $method ) && $menu_item_args['menu-item-position'] ) {
+				if ( $menu_item_args['menu-item-position'] > $position ) {
+					$this->reorder_menu_items( $menu->term_id, $menu_item_args['menu-item-position'], -1, $result );
+				} elseif ( $menu_item_args['menu-item-position'] < $position ) {
+					$this->reorder_menu_items( $menu->term_id, $menu_item_args['menu-item-position'] - 1, +1, $result );
+				}
+			}
+
 			/**
 			 * Set the menu
 			 *
@@ -504,7 +512,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			if ( 'add' === $method && ! empty( $assoc_args['porcelain'] ) ) {
 				WP_CLI::line( $result );
 			} elseif ( 'add' === $method ) {
-					WP_CLI::success( 'Menu item added.' );
+				WP_CLI::success( 'Menu item added.' );
 			} elseif ( 'update' === $method ) {
 				WP_CLI::success( 'Menu item updated.' );
 			}
