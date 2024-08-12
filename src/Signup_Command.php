@@ -54,6 +54,8 @@ class Signup_Command extends CommandWithDBObject {
 	/**
 	 * Lists signups.
 	 *
+	 * ## OPTIONS
+	 *
 	 * [--<field>=<value>]
 	 * : Filter the list by a specific field.
 	 *
