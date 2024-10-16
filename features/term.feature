@@ -57,6 +57,16 @@ Feature: Manage WordPress terms
       """
     And the return code should be 1
 
+  Scenario: Updating an invalid term should exit with an error
+    Given a WP install
+
+    When I try `wp term update category 22 --name=Foo`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error: Term doesn't exist.
+      """
+
   Scenario: Creating/deleting a term
     When I run `wp term create post_tag 'Test delete term' --slug=test-delete --description='This is a test term to be deleted' --porcelain`
     Then STDOUT should be a number

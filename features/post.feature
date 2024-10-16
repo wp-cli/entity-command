@@ -57,6 +57,16 @@ Feature: Manage WordPress posts
     When I try the previous command again
     Then the return code should be 1
 
+  Scenario: Updating an invalid post should exit with an error
+    Given a WP install
+
+    When I try `wp post update 22 --post_title=Foo`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Warning: Invalid post ID.
+      """
+
   Scenario: Setting post categories
     When I run `wp term create category "First Category" --porcelain`
     And save STDOUT as {TERM_ID}
