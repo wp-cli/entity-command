@@ -118,7 +118,7 @@ class Comment_Command extends CommandWithDBObject {
 			$assoc_args,
 			function ( $params ) {
 				if ( ! wp_update_comment( $params ) ) {
-					return new WP_Error( 'Could not update comment.' );
+					return new WP_Error( 'db_error', 'Could not update comment.' );
 				}
 
 				return true;

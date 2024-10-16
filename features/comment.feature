@@ -70,6 +70,16 @@ Feature: Manage WordPress comments
       """
     And the return code should be 1
 
+  Scenario: Updating an invalid comment should return an error
+    Given a WP install
+
+    When I try `wp comment update 22 --comment_author=Foo`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Warning: Could not update comment.
+      """
+
   Scenario: Get details about an existing comment
     When I run `wp comment get 1`
     Then STDOUT should be a table containing rows:
