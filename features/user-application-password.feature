@@ -250,7 +250,9 @@ Feature: Manage user custom fields
       {UUID1} {UUID2}
       """
 
-  @require-wp-5.6
+  # WordPress 6.8 uses BLAKE2b with wp_fast_hash() / wp_verify_fast_hash() for hashing application passwords.
+  # See https://make.wordpress.org/core/2025/02/17/wordpress-6-8-will-use-bcrypt-for-password-hashing/
+  @require-wp-5.6 @less-than-wp-6.8
   Scenario: Get particular user application password hash
     Given a WP install
 
@@ -270,6 +272,31 @@ Feature: Manage user custom fields
     And save STDOUT as {HASH}
 
     When I run `wp eval "var_export( wp_check_password( '{PASSWORD}', '{HASH}', {USER_ID} ) );"`
+    Then STDOUT should contain:
+      """
+      true
+      """
+
+  @require-wp-6.8
+  Scenario: Get particular user application password hash
+    Given a WP install
+
+    When I run `wp user create testuser testuser@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I try the previous command again
+    Then the return code should be 1
+
+    Given I run `wp user application-password create {USER_ID} someapp --porcelain`
+    And save STDOUT as {PASSWORD}
+    And I run `wp user application-password list {USER_ID} --name=someapp --field=uuid`
+    And save STDOUT as {UUID}
+
+    Given I run `wp user application-password get {USER_ID} {UUID} --field=password | sed 's/\$/\\\$/g'`
+    And save STDOUT as {HASH}
+
+    When I run `wp eval "var_export( wp_verify_fast_hash( '{PASSWORD}', '{HASH}', {USER_ID} ) );"`
     Then STDOUT should contain:
       """
       true
