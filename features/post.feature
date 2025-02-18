@@ -365,6 +365,18 @@ Feature: Manage WordPress posts
       | Publish post | publish-post | publish      |
       | Sample Page  | sample-page  | publish      |
 
+	When I run `wp post create --post_title='old post' --post_date='2023-01-24T09:52:00.000Z'`
+	And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
+	And I run `wp post list --field=post_title --date_query='{"before":{"year":"2024"}}'`
+	Then STDOUT should contain:
+      """
+      old post
+      """
+	And STDOUT should not contain:
+	  """
+      new post
+      """
+
   Scenario: Update categories on a post
     When I run `wp term create category "Test Category" --porcelain`
     Then save STDOUT as {TERM_ID}

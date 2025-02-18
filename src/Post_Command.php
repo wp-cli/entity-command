@@ -632,12 +632,14 @@ class Post_Command extends CommandWithDBObject {
 	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		$defaults   = [
+		$defaults        = [
 			'posts_per_page' => -1,
 			'post_status'    => 'any',
 		];
-		$query_args = array_merge( $defaults, $assoc_args );
-		$query_args = self::process_csv_arguments_to_arrays( $query_args );
+		$array_arguments = [ 'date_query' ];
+		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+		$query_args      = array_merge( $defaults, $assoc_args );
+		$query_args      = self::process_csv_arguments_to_arrays( $query_args );
 		if ( isset( $query_args['post_type'] ) && 'any' !== $query_args['post_type'] ) {
 			$query_args['post_type'] = explode( ',', $query_args['post_type'] );
 		}
