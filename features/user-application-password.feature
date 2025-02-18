@@ -263,12 +263,12 @@ Feature: Manage user custom fields
     When I try the previous command again
     Then the return code should be 1
 
-    Given I run `wp user application-password create {USER_ID} someapp --porcelain`
+    When I run `wp user application-password create {USER_ID} someapp --porcelain`
     And save STDOUT as {PASSWORD}
     And I run `wp user application-password list {USER_ID} --name=someapp --field=uuid`
     And save STDOUT as {UUID}
 
-    Given I run `wp user application-password get {USER_ID} {UUID} --field=password | sed 's/\$/\\\$/g'`
+    When I run `wp user application-password get {USER_ID} {UUID} --field=password | sed 's/\$/\\\$/g'`
     And save STDOUT as {HASH}
 
     When I run `wp eval "var_export( wp_check_password( '{PASSWORD}', '{HASH}', {USER_ID} ) );"`
@@ -288,12 +288,12 @@ Feature: Manage user custom fields
     When I try the previous command again
     Then the return code should be 1
 
-    Given I run `wp user application-password create {USER_ID} someapp --porcelain`
+    When I run `wp user application-password create {USER_ID} someapp --porcelain`
     And save STDOUT as {PASSWORD}
     And I run `wp user application-password list {USER_ID} --name=someapp --field=uuid`
     And save STDOUT as {UUID}
 
-    Given I run `wp user application-password get {USER_ID} {UUID} --field=password | sed 's/\$/\\\$/g'`
+    When I run `wp user application-password get {USER_ID} {UUID} --field=password | sed 's/\$/\\\$/g'`
     And save STDOUT as {HASH}
 
     When I run `wp eval "var_export( wp_verify_fast_hash( '{PASSWORD}', '{HASH}', {USER_ID} ) );"`
