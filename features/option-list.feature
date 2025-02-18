@@ -148,3 +148,53 @@ Feature: List WordPress options
         option_value:
           value: 1
       """
+
+  Scenario: Using the `--autoload=on` flag
+    Given a WP install
+    And I run `wp option add sample_autoload_one 'sample_value_one' --autoload=yes`
+    And I run `wp option add sample_autoload_two 'sample_value_two' --autoload=no`
+    And I run `wp option add sample_autoload_three 'sample_value_three' --autoload=on`
+    And I run `wp option add sample_autoload_four 'sample_value_four' --autoload=off`
+
+    When I run `wp option list --autoload=on`
+    Then STDOUT should not contain:
+      """
+      sample_value_two
+      """
+    And STDOUT should not contain:
+      """
+      sample_value_four
+      """
+    And STDOUT should contain:
+      """
+      sample_value_one
+      """
+    And STDOUT should contain:
+      """
+      sample_value_three
+      """
+
+  Scenario: Using the `--autoload=off` flag
+    Given a WP install
+    And I run `wp option add sample_autoload_one 'sample_value_one' --autoload=yes`
+    And I run `wp option add sample_autoload_two 'sample_value_two' --autoload=no`
+    And I run `wp option add sample_autoload_three 'sample_value_three' --autoload=on`
+    And I run `wp option add sample_autoload_four 'sample_value_four' --autoload=off`
+
+    When I run `wp option list --autoload=off`
+    Then STDOUT should not contain:
+      """
+      sample_value_one
+      """
+    And STDOUT should not contain:
+      """
+      sample_value_three
+      """
+    And STDOUT should contain:
+      """
+      sample_value_two
+      """
+    And STDOUT should contain:
+      """
+      sample_value_four
+      """
