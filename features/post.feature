@@ -365,16 +365,36 @@ Feature: Manage WordPress posts
       | Publish post | publish-post | publish      |
       | Sample Page  | sample-page  | publish      |
 
-	When I run `wp post create --post_title='old post' --post_date='2023-01-24T09:52:00.000Z'`
-	And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
-	And I run `wp post list --field=post_title --date_query='{"before":{"year":"2024"}}'`
-	Then STDOUT should contain:
+  Scenario: List posts with date query
+    When I run `wp post create --post_title='old post' --post_date='2023-01-24T09:52:00.000Z'`
+    And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
+    And I run `wp post list --field=post_title --date_query='{"before":{"year":"2024"}}'`
+    Then STDOUT should contain:
       """
       old post
       """
-	And STDOUT should not contain:
-	  """
+    And STDOUT should not contain:
+      """
       new post
+      """
+
+  Scenario: List posts with tax query
+    When I run `wp term create category "First Category" --porcelain`
+    And save STDOUT as {TERM_ID}
+    And I run `wp term create category "Second Category" --porcelain`
+    And save STDOUT as {SECOND_TERM_ID}
+
+    When I run `wp post create --post_title='post-1' --post_category="First Category"`
+    When I run `wp post create --post_title='post-2' --post_category="Second Category"`
+    And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
+    And I run `wp post list --field=post_title --tax_query='[{"taxonomy":"category","field":"slug","terms":"first-category"}]'`
+    Then STDOUT should contain:
+      """
+      post-1
+      """
+    And STDOUT should not contain:
+      """
+      post-2
       """
 
   Scenario: Update categories on a post
