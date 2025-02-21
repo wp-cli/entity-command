@@ -447,6 +447,12 @@ Feature: Manage WordPress posts
       | {POST_ID} | key2     | value2b    |
       | {POST_ID} | key3     | value3     |
 
+    When I run `wp post list --field=post_title --meta_query='[{"key":"key2","value":"value2b"}]'`
+    Then STDOUT should contain:
+      """
+      Test Post
+      """
+
   @less-than-wp-4.4
   Scenario: Creating/updating posts with meta keys for WP < 4.4 has no effect so should give warning
     When I try `wp post create --post_title='Test Post' --post_content='Test post content' --meta_input='{"key1":"value1","key2":"value2"}' --porcelain`
