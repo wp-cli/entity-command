@@ -380,10 +380,7 @@ Feature: Manage WordPress posts
 
   Scenario: List posts with tax query
     When I run `wp term create category "First Category" --porcelain`
-    And save STDOUT as {TERM_ID}
-    And I run `wp term create category "Second Category" --porcelain`
-    And save STDOUT as {SECOND_TERM_ID}
-
+    When I run `wp term create category "Second Category" --porcelain`
     When I run `wp post create --post_title='post-1' --post_category="First Category"`
     When I run `wp post create --post_title='post-2' --post_category="Second Category"`
     And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
