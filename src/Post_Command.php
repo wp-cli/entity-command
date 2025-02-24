@@ -636,7 +636,7 @@ class Post_Command extends CommandWithDBObject {
 			'posts_per_page' => -1,
 			'post_status'    => 'any',
 		];
-		$array_arguments = [ 'date_query' ];
+		$array_arguments = [ 'date_query', 'tax_query', 'meta_query' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 		$query_args      = array_merge( $defaults, $assoc_args );
 		$query_args      = self::process_csv_arguments_to_arrays( $query_args );

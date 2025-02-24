@@ -365,16 +365,33 @@ Feature: Manage WordPress posts
       | Publish post | publish-post | publish      |
       | Sample Page  | sample-page  | publish      |
 
-	When I run `wp post create --post_title='old post' --post_date='2023-01-24T09:52:00.000Z'`
-	And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
-	And I run `wp post list --field=post_title --date_query='{"before":{"year":"2024"}}'`
-	Then STDOUT should contain:
+  Scenario: List posts with date query
+    When I run `wp post create --post_title='old post' --post_date='2023-01-24T09:52:00.000Z'`
+    And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
+    And I run `wp post list --field=post_title --date_query='{"before":{"year":"2024"}}'`
+    Then STDOUT should contain:
       """
       old post
       """
-	And STDOUT should not contain:
-	  """
+    And STDOUT should not contain:
+      """
       new post
+      """
+
+  Scenario: List posts with tax query
+    When I run `wp term create category "First Category" --porcelain`
+    When I run `wp term create category "Second Category" --porcelain`
+    When I run `wp post create --post_title='post-1' --post_category="First Category"`
+    When I run `wp post create --post_title='post-2' --post_category="Second Category"`
+    And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
+    And I run `wp post list --field=post_title --tax_query='[{"taxonomy":"category","field":"slug","terms":"first-category"}]'`
+    Then STDOUT should contain:
+      """
+      post-1
+      """
+    And STDOUT should not contain:
+      """
+      post-2
       """
 
   Scenario: Update categories on a post
@@ -426,6 +443,12 @@ Feature: Manage WordPress posts
       | {POST_ID} | key1     | value1     |
       | {POST_ID} | key2     | value2b    |
       | {POST_ID} | key3     | value3     |
+
+    When I run `wp post list --field=post_title --meta_query='[{"key":"key2","value":"value2b"}]'`
+    Then STDOUT should contain:
+      """
+      Test Post
+      """
 
   @less-than-wp-4.4
   Scenario: Creating/updating posts with meta keys for WP < 4.4 has no effect so should give warning
