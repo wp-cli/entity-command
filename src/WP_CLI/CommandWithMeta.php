@@ -165,8 +165,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 		list( $object_id, $meta_key ) = $args;
 
 		$object_id = $this->check_object_id( $object_id );
+		$is_single = isset( $assoc_args['is-single'] ) ? $assoc_args['is-single'] : 1;
 
-		$value = $this->get_metadata( $object_id, $meta_key, $assoc_args['is-single'] );
+		$value = $this->get_metadata( $object_id, $meta_key, $is_single );
 
 		if ( '' === $value ) {
 			die( 1 );
