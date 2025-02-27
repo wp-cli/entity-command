@@ -223,7 +223,7 @@ Scenario: List post meta with or without single flag
     Given a WP install
 
     When I run `wp post meta add 1 apple banana`
-    And I run the previous command again
+    And I run `wp post meta add 1 apple mango`
     Then STDOUT should not be empty
 
     When I run `wp post meta get 1 apple`
@@ -243,13 +243,13 @@ Scenario: List post meta with or without single flag
       """
       array (
         0 => 'banana',
-        1 => 'banana',
+        1 => 'mango',
       )
       """
     When I run `wp post meta get 1 apple --no-single --format=json`
     Then STDOUT should be:
       """
-      ["banana","banana"]
+      ["banana","mango"]
       """
 
   @pluck
