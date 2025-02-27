@@ -143,7 +143,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 * : The name of the meta field to get.
 	 *
 	 * [--single]
-	 * : Whether to return a single value. This parameter has no effect if $key is not specified.
+	 * : Whether to return a single value.
 	 *
 	 * [--format=<format>]
 	 * : Get value in a particular format.
@@ -159,7 +159,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 		list( $object_id, $meta_key ) = $args;
 
 		$object_id = $this->check_object_id( $object_id );
-		$single    = Utils\get_flag_value( $assoc_args, 'single', true );
+		$single    = Utils\get_flag_value($assoc_args, 'single', true );
 
 		$value = $this->get_metadata( $object_id, $meta_key, $single );
 
