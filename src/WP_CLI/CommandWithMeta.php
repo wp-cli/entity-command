@@ -159,7 +159,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 		list( $object_id, $meta_key ) = $args;
 
 		$object_id = $this->check_object_id( $object_id );
-		$single    = Utils\get_flag_value($assoc_args, 'single', true );
+		$single    = Utils\get_flag_value( $assoc_args, 'single', true );
 
 		$value = $this->get_metadata( $object_id, $meta_key, $single );
 
