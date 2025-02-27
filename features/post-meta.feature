@@ -223,7 +223,7 @@ Scenario: List post meta with or without single flag
     Given a WP install
 
     When I run `wp post meta add 1 apple banana`
-    And I run `wp post meta add 1 apple banana`
+    And I run the previous command again
     Then STDOUT should not be empty
 
     When I run `wp post meta get 1 apple`
