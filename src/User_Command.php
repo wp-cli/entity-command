@@ -546,7 +546,7 @@ class User_Command extends CommandWithDBObject {
 		}
 
 		if ( empty( $user_ids ) ) {
-			exit( 1 );
+			WP_CLI::error( 'No valid users found.' );
 		}
 
 		$skip_email = Utils\get_flag_value( $assoc_args, 'skip-email' );

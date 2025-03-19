@@ -728,4 +728,12 @@ Feature: Manage WordPress users
       """
       newtestuser
       """
+  Scenario: Updating an invalid user should return an error
+    Given a WP install
+    When I try `wp user update 9999 --user_pass=securepassword`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      Error: No valid users found.
+      """
 
