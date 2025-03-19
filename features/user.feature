@@ -735,3 +735,4 @@ Feature: Manage WordPress users
       """
       newtestuser
       """
+
