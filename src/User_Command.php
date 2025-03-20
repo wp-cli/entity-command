@@ -536,6 +536,49 @@ class User_Command extends CommandWithDBObject {
 			unset( $assoc_args['user_login'] );
 		}
 
+		// Define valid fields for wp_update_user().
+		$valid_fields = array(
+			'user_pass',
+			'user_nicename',
+			'user_url',
+			'user_email',
+			'display_name',
+			'nickname',
+			'first_name',
+			'last_name',
+			'description',
+			'rich_editing',
+			'user_registered',
+			'role',
+			'syntax_highlighting',
+			'comment_shortcuts',
+			'admin_color',
+			'use_ssl',
+			'show_admin_bar_front',
+			'locale',
+		);
+
+		// Check for invalid field names.
+		$invalid_fields = array();
+		foreach ( array_keys( $assoc_args ) as $field ) {
+			// Skip special flags like 'skip-email'.
+			if ( 'skip-email' === $field ) {
+				continue;
+			}
+
+			if ( ! in_array( $field, $valid_fields, true ) ) {
+				$invalid_fields[] = $field;
+			}
+		}
+
+		// Warn about invalid fields.
+		if ( ! empty( $invalid_fields ) ) {
+			foreach ( $invalid_fields as $field ) {
+				WP_CLI::warning( "Unknown --{$field} parameter." );
+				unset( $assoc_args[ $field ] );
+			}
+		}
+
 		if ( isset( $assoc_args['role'] ) ) {
 			self::validate_role( $assoc_args['role'], true );
 		}
