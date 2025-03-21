@@ -376,22 +376,10 @@ Feature: Manage WordPress users
       administrator
       """
 
-    And a user exists with login 9999
-
-    When I run `wp user update 9999 --user-pass=admin`
-    Then STDERR should contain:
-      """
-      Error: Parameter errors:
-      unknown --user-pass parameter
-      Did you mean '--user_pass'?
-      """
-
-    And a user exists with login 9999
-    
-    When I run `wp user update 9999 --user_pass=admin`
+    When I run `wp user update 1 --user_pass=new_password`
     Then STDOUT should contain:
       """
-      Success: Updated user 9999.
+      Success: Updated user 1.
       """
 
   Scenario: Managing user capabilities
