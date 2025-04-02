@@ -1,4 +1,4 @@
-Feature: Manage term custom fields
+Feature: Migrate term custom fields
 
   @require-wp-4.4
   Scenario: Migrate an existing term by slug

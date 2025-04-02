@@ -124,7 +124,7 @@ Feature: Manage WordPress terms
   Scenario: Filter terms by term_id
     When I run `wp term generate category --count=10`
     And I run `wp term create category "My Test Category" --porcelain`
-    And save STDOUT as {TERM_ID}
+    Then save STDOUT as {TERM_ID}
 
     When I run `wp term list category --term_id={TERM_ID} --field=name`
     Then STDOUT should be:
@@ -134,9 +134,10 @@ Feature: Manage WordPress terms
 
   Scenario: Fetch term url
     When I run `wp term create category "First Category" --porcelain`
-    And save STDOUT as {TERM_ID}
-    And I run `wp term create category "Second Category" --porcelain`
-    And save STDOUT as {SECOND_TERM_ID}
+    Then save STDOUT as {TERM_ID}
+
+    When I run `wp term create category "Second Category" --porcelain`
+    Then save STDOUT as {SECOND_TERM_ID}
 
     When I run `wp term url category {TERM_ID}`
     Then STDOUT should be:

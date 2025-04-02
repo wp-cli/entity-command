@@ -32,7 +32,7 @@ Feature: Generate new WordPress sites
   Scenario: Generate sites and output ids
     Given a WP multisite install
     When I run `wp site generate --count=3 --format=ids`
-    When I run `wp site list --format=ids`
+    And I run `wp site list --format=ids`
     Then STDOUT should be:
       """
       1 2 3 4
@@ -76,7 +76,7 @@ Feature: Generate new WordPress sites
       """
 
   Scenario: Generate sites with a slug
-	  Given a WP multisite subdirectory install
+    Given a WP multisite subdirectory install
     When I run `wp site generate --count=2 --slug=subsite`
     Then STDOUT should be empty
     And I run `wp site list --site__in=2 --field=url | sed -e's,^\(.*\)://.*,\1,g'`

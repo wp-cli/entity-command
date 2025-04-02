@@ -312,14 +312,14 @@ Feature: Option commands have pluck and patch.
     And I run `wp option update option_name --format=json < input.json`
 
     When I try `wp option patch update option_name foo`
-    And STDERR should contain:
+    Then STDERR should contain:
       """
       Please provide value to update.
       """
     And the return code should be 1
 
     When I run `wp option patch update option_name foo 0`
-    And STDOUT should be:
+    Then STDOUT should be:
       """
       Success: Updated 'option_name' option.
       """

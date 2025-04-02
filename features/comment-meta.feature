@@ -80,4 +80,3 @@ Feature: Manage comment custom fields
       | 1          | apple    | banana             |
       | 1          | apple    | banana             |
       | 1          | banana   | ["apple","apple"]  |
-

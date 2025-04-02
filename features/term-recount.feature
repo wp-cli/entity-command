@@ -3,7 +3,6 @@ Feature: Recount terms on a taxonomy
   Background:
     Given a WP install
 
-
   Scenario: Term recount with an invalid taxonomy
     When I try `wp term recount some-fake-taxonomy`
     Then STDERR should be:
@@ -30,7 +29,7 @@ Feature: Recount terms on a taxonomy
   Scenario: Fixes an invalid term count for a taxonomy
     When I run `wp term create category "Term Recount Category" --porcelain`
     Then STDOUT should be a number
-    Then save STDOUT as {TERM_ID}
+    And save STDOUT as {TERM_ID}
 
     When I run `wp post create --post_title='Term Recount Test' --post_status=publish --post_category={TERM_ID} --porcelain`
     Then STDOUT should be a number

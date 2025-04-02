@@ -93,4 +93,3 @@ Feature: Create a new site on a WP multisite
       | blog_id | url                           |
       | 1       | http://localhost/         |
       | 2       | http://localhost/newsite/ |
-

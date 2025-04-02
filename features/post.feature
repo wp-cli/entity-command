@@ -20,7 +20,7 @@ Feature: Manage WordPress posts
     And the return code should be 0
 
     When I try `wp post exists 1000`
-    And STDOUT should be empty
+    Then STDOUT should be empty
     And the return code should be 1
 
     When I run `wp post update {POST_ID} --post_title='Updated post'`
@@ -69,9 +69,10 @@ Feature: Manage WordPress posts
 
   Scenario: Setting post categories
     When I run `wp term create category "First Category" --porcelain`
-    And save STDOUT as {TERM_ID}
-    And I run `wp term create category "Second Category" --porcelain`
-    And save STDOUT as {SECOND_TERM_ID}
+    Then save STDOUT as {TERM_ID}
+
+    When I run `wp term create category "Second Category" --porcelain`
+    Then save STDOUT as {SECOND_TERM_ID}
 
     When I run `wp post create --post_title="Test category" --post_category="First Category" --porcelain`
     Then STDOUT should be a number
@@ -246,7 +247,7 @@ Feature: Manage WordPress posts
 
     When I run `EDITOR='ex -i NONE -c %s/content/bunkum -c wq' wp post edit {POST_ID}`
     Then STDERR should be empty
-    Then STDOUT should contain:
+    And STDOUT should contain:
       """
       Updated post {POST_ID}.
       """
@@ -380,9 +381,9 @@ Feature: Manage WordPress posts
 
   Scenario: List posts with tax query
     When I run `wp term create category "First Category" --porcelain`
-    When I run `wp term create category "Second Category" --porcelain`
-    When I run `wp post create --post_title='post-1' --post_category="First Category"`
-    When I run `wp post create --post_title='post-2' --post_category="Second Category"`
+    And I run `wp term create category "Second Category" --porcelain`
+    And I run `wp post create --post_title='post-1' --post_category="First Category"`
+    And I run `wp post create --post_title='post-2' --post_category="Second Category"`
     And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
     And I run `wp post list --field=post_title --tax_query='[{"taxonomy":"category","field":"slug","terms":"first-category"}]'`
     Then STDOUT should contain:
