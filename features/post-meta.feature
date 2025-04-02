@@ -219,7 +219,7 @@ Feature: Manage post custom fields
       My\New\Meta
       """
 
-Scenario: List post meta with or without single flag
+  Scenario: List post meta with or without single flag
     Given a WP install
 
     When I run `wp post meta add 1 apple banana`

@@ -106,7 +106,8 @@ Feature: Manage sites in a multisite installation
     And save STDOUT as {SITE_ID}
     And I run `wp site list --blog_id={SITE_ID} --field=url`
     And save STDOUT as {SITE_URL}
-    And I run `wp user create newuser newuser@example.com --porcelain --url={SITE_URL}`
+
+    When I run `wp user create newuser newuser@example.com --porcelain --url={SITE_URL}`
     Then STDOUT should be a number
     And save STDOUT as {USER_ID}
     And I run `wp user get {USER_ID} --field=user_login`
@@ -133,7 +134,6 @@ Feature: Manage sites in a multisite installation
 
     When I run `wp site list --field=url --site_user={USER_LOGIN}`
     Then STDOUT should be empty
-
 
   Scenario: Delete a site by slug
     Given a WP multisite install

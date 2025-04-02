@@ -25,7 +25,7 @@ Feature: Manage WordPress users
     And the return code should be 0
 
     When I try `wp user exists 1000`
-    And STDOUT should be empty
+    Then STDOUT should be empty
     And the return code should be 1
 
     When I run `wp user get {USER_ID} --field=user_registered`
@@ -56,7 +56,7 @@ Feature: Manage WordPress users
 
     When I try `wp user create testuser2 testuser2@example.com --role=wrongrole --porcelain`
     Then the return code should be 1
-    Then STDOUT should be empty
+    And STDOUT should be empty
 
     When I run `wp user create testuser testuser@example.com --porcelain`
     Then STDOUT should be a number
@@ -128,10 +128,10 @@ Feature: Manage WordPress users
     Given a WP multisite install
 
     When I run `wp user create bobjones bob@example.com --role=author --porcelain`
-    And save STDOUT as {BOB_ID}
+    Then save STDOUT as {BOB_ID}
 
-    And I run `wp user create sally sally@example.com --role=editor --porcelain`
-    And save STDOUT as {SALLY_ID}
+    When I run `wp user create sally sally@example.com --role=editor --porcelain`
+    Then save STDOUT as {SALLY_ID}
 
     When I run `wp post generate --count=3 --post_author=bobjones`
     And I run `wp post list --author={BOB_ID} --format=count`
@@ -166,10 +166,10 @@ Feature: Manage WordPress users
       """
 
     When I run `wp user create bobjones bob@example.com --role=author --porcelain`
-    And save STDOUT as {BOB_ID}
+    Then save STDOUT as {BOB_ID}
 
     When I run `wp post list --format=count`
-    And save STDOUT as {TOTAL_POSTS}
+    Then save STDOUT as {TOTAL_POSTS}
 
     When I run `wp post generate --count=3 --format=ids --post_author=bobjones`
     And I run `wp post list --author={BOB_ID} --format=count`
@@ -201,7 +201,7 @@ Feature: Manage WordPress users
     Given a WP multisite install
 
     When I run `wp user create bobjones bob@example.com --role=author --porcelain`
-    And save STDOUT as {BOB_ID}
+    Then save STDOUT as {BOB_ID}
 
     When I run `wp user get bobjones`
     Then STDOUT should not be empty
@@ -217,7 +217,7 @@ Feature: Manage WordPress users
     Given a WP multisite install
 
     When I run `wp user create bobjones bob@example.com --role=author --url=https://example.com --porcelain`
-    And save STDOUT as {BOB_ID}
+    Then save STDOUT as {BOB_ID}
 
     When I run `wp user delete bobjones --yes`
     Then STDOUT should contain:
@@ -238,7 +238,7 @@ Feature: Manage WordPress users
     Given a WP multisite install
 
     When I run `wp user create bobjones bob@example.com --role=author --porcelain`
-    And save STDOUT as {BOB_ID}
+    Then save STDOUT as {BOB_ID}
 
     When I run `wp super-admin add {BOB_ID}`
     And I try `wp user delete bobjones --network --yes`
@@ -337,21 +337,24 @@ Feature: Manage WordPress users
 
     When I run `wp user set-role 1 author`
     Then STDOUT should not be empty
-    And I run `wp user get 1`
+
+    When I run `wp user get 1`
     Then STDOUT should be a table containing rows:
       | Field | Value  |
       | roles | author |
 
     When I run `wp user remove-role 1 editor`
     Then STDOUT should not be empty
-    And I run `wp user get 1`
+
+    When I run `wp user get 1`
     Then STDOUT should be a table containing rows:
       | Field | Value  |
       | roles | author |
 
     When I run `wp user remove-role 1`
     Then STDOUT should not be empty
-    And I run `wp user get 1`
+
+    When I run `wp user get 1`
     Then STDOUT should be a table containing rows:
       | Field | Value |
       | roles |       |
@@ -385,19 +388,19 @@ Feature: Manage WordPress users
       Success: Added 'edit_vip_product' capability for admin (1).
       """
 
-    And I run `wp user list-caps 1 | tail -n 1`
+    When I run `wp user list-caps 1 | tail -n 1`
     Then STDOUT should be:
       """
       edit_vip_product
       """
 
-    And I run `wp user remove-cap 1 edit_vip_product`
+    When I run `wp user remove-cap 1 edit_vip_product`
     Then STDOUT should be:
       """
       Success: Removed 'edit_vip_product' cap for admin (1).
       """
 
-    And I try the previous command again
+    When I try the previous command again
     Then the return code should be 1
     And STDERR should be:
       """
@@ -423,7 +426,7 @@ Feature: Manage WordPress users
       """
     And STDOUT should be empty
 
-    And I run `wp user list-caps 1`
+    When I run `wp user list-caps 1`
     Then STDOUT should contain:
       """
       publish_posts
@@ -492,13 +495,13 @@ Feature: Manage WordPress users
       contributor
       """
 
-    And I run `wp user list-caps bob --format=json`
+    When I run `wp user list-caps bob --format=json`
     Then STDOUT should be:
       """
       [{"name":"edit_posts"},{"name":"read"},{"name":"level_1"},{"name":"level_0"},{"name":"delete_posts"},{"name":"contributor"}]
       """
 
-    And I run `wp user list-caps bob --format=count`
+    When I run `wp user list-caps bob --format=count`
     Then STDOUT should be:
       """
       6
@@ -526,7 +529,7 @@ Feature: Manage WordPress users
       contributor
       """
 
-    And I run `wp user list-caps bob --origin=user`
+    When I run `wp user list-caps bob --origin=user`
     Then STDOUT should be:
       """
       newcap
@@ -596,9 +599,9 @@ Feature: Manage WordPress users
     And I run `wp user create oprime oprime@example.com --role=author --porcelain`
     And save STDOUT as {OP_ID}
     And I run `wp user get bumblebee`
-    Then STDOUT should not be empty
+    And STDOUT should not be empty
     And I run `wp user get oprime`
-    Then STDOUT should not be empty
+    And STDOUT should not be empty
 
     When I run `wp site create --slug=foo --porcelain`
     Then save STDOUT as {SPAM_SITE_ID}
@@ -627,14 +630,14 @@ Feature: Manage WordPress users
       """
     And the return code should be 0
 
-   When I run `wp site list --site__in=1 --field=spam`
-   Then STDOUT should be:
+    When I run `wp site list --site__in=1 --field=spam`
+    Then STDOUT should be:
       """
       0
       """
 
-   When I run `wp site list --site__in={SPAM_SITE_ID} --field=spam`
-   Then STDOUT should be:
+    When I run `wp site list --site__in={SPAM_SITE_ID} --field=spam`
+    Then STDOUT should be:
       """
       1
       """
@@ -657,14 +660,14 @@ Feature: Manage WordPress users
       Success:
       """
 
-   When I run `wp site list --site__in=1 --field=spam`
-   Then STDOUT should be:
+    When I run `wp site list --site__in=1 --field=spam`
+    Then STDOUT should be:
       """
       0
       """
 
-   When I run `wp site list --site__in={SPAM_SITE_ID} --field=spam`
-   Then STDOUT should be:
+    When I run `wp site list --site__in={SPAM_SITE_ID} --field=spam`
+    Then STDOUT should be:
       """
       0
       """
@@ -735,4 +738,3 @@ Feature: Manage WordPress users
       """
       newtestuser
       """
-
