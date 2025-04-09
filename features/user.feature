@@ -392,7 +392,7 @@ Feature: Manage WordPress users
       contributor
       """
 
-    When I run `wp user remove-cap {USER_ID}` contributor
+    When I run `wp user remove-cap {USER_ID} contributor`
     Then the return code should be 1
     And STDERR should be:
       """
