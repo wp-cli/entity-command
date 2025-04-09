@@ -884,8 +884,9 @@ class User_Command extends CommandWithDBObject {
 				}
 				WP_CLI::error( "No such '{$cap}' cap for {$user->user_login} ({$user->ID})." );
 			}
+
 			$user_roles = $user->roles;
-			if ( ! empty( $user_role ) && in_array( $cap, $user_roles, true ) ) {
+			if ( ! empty( $user_roles ) && in_array( $cap, $user_roles, true ) ) {
 				WP_CLI::error( "There is a role similar to '{$cap}' capability. Use `wp user remove-role` instead." );
 			}
 			$user->remove_cap( $cap );
