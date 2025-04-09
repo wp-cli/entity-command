@@ -379,6 +379,26 @@ Feature: Manage WordPress users
       administrator
       """
 
+  Scenario: Show error when trying to remove capability same as role
+    Given a WP install
+
+    When I run `wp user create testuser2 testuser2@example.com --first_name=test --last_name=user --role=contributor --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user list-caps {USER_ID}`
+    Then STDOUT should contain:
+      """
+      contributor
+      """
+
+    When I run `wp user remove-cap {USER_ID}` contributor
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: There is a role similar to 'contributor' capability. Use `wp user remove-role` instead.
+      """
+
   Scenario: Managing user capabilities
     Given a WP install
 
