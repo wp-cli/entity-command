@@ -4,9 +4,9 @@ Feature: Generate new WordPress sites
     Given a WP install
     When I try `wp site generate`
     Then STDERR should contain:
-    """
-    This is not a multisite installation.
-    """
+      """
+      This is not a multisite installation.
+      """
     And STDOUT should be empty
     And the return code should be 1
 
