@@ -83,9 +83,9 @@ Feature: Manage WordPress users
 
     When I run `wp user create testuser3 testuser3@example.com --user_pass=testuser3pass`
     Then STDOUT should not contain:
-       """
-       Password:
-       """
+      """
+      Password:
+      """
 
     # Check with valid password.
     When I run `wp user check-password testuser3 testuser3pass`
@@ -104,9 +104,9 @@ Feature: Manage WordPress users
 
     When I run `wp user create testuser3b testuser3b@example.com --user_pass="test\"user3b's\pass\!"`
     Then STDOUT should not contain:
-       """
-       Password:
-       """
+      """
+      Password:
+      """
 
     # Check password without the `--escape-chars` option.
     When I try `wp user check-password testuser3b "test\"user3b's\pass\!"`
@@ -437,15 +437,15 @@ Feature: Manage WordPress users
 
     When I run `wp user create testrandompass testrandompass@example.com`
     Then STDOUT should contain:
-       """
-       Password:
-       """
+      """
+      Password:
+      """
 
     When I run `wp user create testsuppliedpass testsuppliedpass@example.com --user_pass=suppliedpass`
     Then STDOUT should not contain:
-       """
-       Password:
-       """
+      """
+      Password:
+      """
 
   Scenario: List network users
     Given a WP multisite install
