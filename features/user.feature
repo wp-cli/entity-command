@@ -379,6 +379,12 @@ Feature: Manage WordPress users
       administrator
       """
 
+    When I run `wp user update 1 --user_pass=new_password`
+    Then STDOUT should contain:
+      """
+      Success: Updated user 1.
+      """
+
   Scenario: Managing user capabilities
     Given a WP install
 
