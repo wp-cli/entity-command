@@ -861,6 +861,9 @@ class User_Command extends CommandWithDBObject {
 	 * <cap>
 	 * : The capability to be removed.
 	 *
+	 * [--force]
+	 * : Forcefully remove a capability.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user remove-cap 11 publish_newsletters
@@ -871,6 +874,9 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 *     $ wp user remove-cap 11 nonexistent_cap
 	 *     Error: No such 'nonexistent_cap' cap for supervisor (11).
+	 *
+	 *     $ wp user remove-cap 11 publish_newsletters --force
+	 *     Success: Removed 'publish_newsletters' cap for supervisor (11).
 	 *
 	 * @subcommand remove-cap
 	 */
@@ -886,8 +892,8 @@ class User_Command extends CommandWithDBObject {
 			}
 
 			$user_roles = $user->roles;
-			if ( ! empty( $user_roles ) && in_array( $cap, $user_roles, true ) ) {
-				WP_CLI::error( "There is a role similar to '{$cap}' capability. Use `wp user remove-role` instead." );
+			if ( ! empty( $user_roles ) && in_array( $cap, $user_roles, true ) && ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
+				WP_CLI::error( "There is a role similar to '{$cap}' capability. Use `wp user remove-cap {$user->ID} {$cap} --force` to remove capability." );
 			}
 			$user->remove_cap( $cap );
 

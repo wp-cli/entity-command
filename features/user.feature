@@ -455,9 +455,15 @@ Feature: Manage WordPress users
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: There is a role similar to 'contributor' capability. Use `wp user remove-role` instead.
+      Error: There is a role similar to 'contributor' capability. Use `wp user remove-cap {USER_ID} contributor --force` to remove capability.
       """
     And STDOUT should be empty
+
+    When I run `wp user remove-cap {USER_ID} contributor --force`
+    Then STDOUT should be:
+      """
+      Success: Removed 'contributor' cap for testuser2 ({USER_ID}).
+      """
 
   Scenario: Show password when creating a user
     Given a WP install
