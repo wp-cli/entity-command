@@ -395,6 +395,25 @@ Feature: Manage WordPress posts
       post-2
       """
 
+  Scenario: Creating/updating posts with taxonomies
+    When I run `wp term create category "First Category" --porcelain`
+    And save STDOUT as {CAT_1}
+    And I run `wp term create category "Second Category" --porcelain`
+    And save STDOUT as {CAT_2}
+    And I run `wp term create post_tag "Term One" --porcelain`
+    And I run `wp term create post_tag "Term Two" --porcelain`
+    When I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"category":[{CAT_1},{CAT_2}],"post_tag":["term-one", "term-two"]}' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post term list {POST_ID} category post_tag --format=table --fields=name,taxonomy`
+    Then STDOUT should be a table containing rows:
+      | name            | taxonomy |
+      | First Category  | category |
+      | Second Category | category |
+      | Term One        | post_tag |
+      | Term Two        | post_tag |
+
   Scenario: Update categories on a post
     When I run `wp term create category "Test Category" --porcelain`
     Then save STDOUT as {TERM_ID}
