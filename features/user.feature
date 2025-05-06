@@ -455,7 +455,7 @@ Feature: Manage WordPress users
     Then the return code should be 1
     And STDERR should be:
       """
-      Error: There is a role similar to 'contributor' capability. Use `wp user remove-cap {USER_ID} contributor --force` to remove capability.
+      Error: Aborting because a role has the same name as 'contributor'. Use `wp user remove-cap {USER_ID} contributor --force` to proceed with the removal.
       """
     And STDOUT should be empty
 

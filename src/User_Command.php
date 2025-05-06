@@ -893,7 +893,7 @@ class User_Command extends CommandWithDBObject {
 
 			$user_roles = $user->roles;
 			if ( ! empty( $user_roles ) && in_array( $cap, $user_roles, true ) && ! Utils\get_flag_value( $assoc_args, 'force' ) ) {
-				WP_CLI::error( "There is a role similar to '{$cap}' capability. Use `wp user remove-cap {$user->ID} {$cap} --force` to remove capability." );
+				WP_CLI::error( "Aborting because a role has the same name as '{$cap}'. Use `wp user remove-cap {$user->ID} {$cap} --force` to proceed with the removal." );
 			}
 			$user->remove_cap( $cap );
 
