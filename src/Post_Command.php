@@ -186,7 +186,7 @@ class Post_Command extends CommandWithDBObject {
 			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
 		}
 
-		$array_arguments = [ 'meta_input' ];
+		$array_arguments = [ 'meta_input', 'tax_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		if ( isset( $assoc_args['from-post'] ) ) {
