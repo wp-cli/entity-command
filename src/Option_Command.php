@@ -322,8 +322,8 @@ class Option_Command extends WP_CLI_Command {
 				function ( $a, $b ) use ( $orderby, $order ) {
 					// Sort array.
 					return 'asc' === $order
-						? $a[ $orderby ] <=> $b[ $orderby ]
-						: $b[ $orderby ] <=> $a[ $orderby ];
+						? $a->$orderby <=> $b->$orderby
+						: $b->$orderby <=> $a->$orderby;
 				}
 			);
 		} elseif ( 'option_id' === $orderby && 'desc' === $order ) { // Sort by default descending.
