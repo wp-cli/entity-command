@@ -89,6 +89,9 @@ class Site_Command extends CommandWithDBObject {
 	 * Delete terms, taxonomies, and tax relationships.
 	 */
 	private function empty_taxonomies() {
+		/**
+		 * @var \wpdb $wpdb
+		 */
 		global $wpdb;
 
 		// Empty taxonomies and terms
@@ -360,7 +363,7 @@ class Site_Command extends CommandWithDBObject {
 
 		WP_CLI::confirm( "Are you sure you want to delete the '{$site_url}' site?", $assoc_args );
 
-		wpmu_delete_blog( $blog->blog_id, ! Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
+		wpmu_delete_blog( (int) $blog->blog_id, ! Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
 		WP_CLI::success( "The site at '{$site_url}' was deleted." );
 	}
@@ -479,7 +482,7 @@ class Site_Command extends CommandWithDBObject {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
-			WP_CLI::line( $id );
+			WP_CLI::line( (string) $id );
 		} else {
 			$site_url = trailingslashit( get_site_url( $id ) );
 			WP_CLI::success( "Site {$id} created: {$site_url}" );
@@ -830,6 +833,9 @@ class Site_Command extends CommandWithDBObject {
 
 		$iterator = new TableIterator( $iterator_args );
 
+		/**
+		 * @var iterable $iterator
+		 */
 		$iterator = Utils\iterator_map(
 			$iterator,
 			function ( $blog ) {
@@ -1142,6 +1148,8 @@ class Site_Command extends CommandWithDBObject {
 	private function update_site_status( $ids, $pref, $value ) {
 		$value = (int) $value;
 
+		$action = 'updated';
+
 		switch ( $pref ) {
 			case 'archived':
 				$action = $value ? 'archived' : 'unarchived';
@@ -1175,7 +1183,7 @@ class Site_Command extends CommandWithDBObject {
 				continue;
 			}
 
-			update_blog_status( $site->blog_id, $pref, $value );
+			update_blog_status( $site->blog_id, $pref, (string) $value );
 			WP_CLI::success( "Site {$site->blog_id} {$action}." );
 		}
 	}

@@ -308,7 +308,7 @@ class Signup_Command extends CommandWithDBObject {
 	/**
 	 * Deletes signup.
 	 *
-	 * @param stdClasss $signup
+	 * @param object{signup_id: int|string} $signup
 	 * @return bool True if success; otherwise false.
 	 */
 	private function delete_signup( $signup ) {

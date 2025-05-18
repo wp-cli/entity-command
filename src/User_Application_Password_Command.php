@@ -163,8 +163,8 @@ final class User_Application_Password_Command {
 			static function ( $a, $b ) use ( $orderby, $order ) {
 				// Sort array.
 				return 'asc' === $order
-					? $a[ $orderby ] > $b[ $orderby ]
-					: $a[ $orderby ] < $b[ $orderby ];
+					? $a[ $orderby ] <=> $b[ $orderby ]
+					: $b[ $orderby ] <=> $a[ $orderby ];
 			}
 		);
 

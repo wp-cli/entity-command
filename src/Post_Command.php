@@ -182,10 +182,6 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
-			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
-		}
-
 		$array_arguments = [ 'meta_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
@@ -351,10 +347,6 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
-			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
-		}
-
 		$array_arguments = [ 'meta_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
@@ -387,7 +379,7 @@ class Post_Command extends CommandWithDBObject {
 		$result = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
 
 		if ( false === $result ) {
-			WP_CLI::warning( 'No change made to post content.', 'Aborted' );
+			WP_CLI::warning( 'No change made to post content.' );
 		} else {
 			$this->update( $args, [ 'post_content' => $result ] );
 		}
@@ -644,9 +636,12 @@ class Post_Command extends CommandWithDBObject {
 			$query_args['post_type'] = explode( ',', $query_args['post_type'] );
 		}
 
+		// To be fixed in wp-cli/wp-cli.
+		// @phpstan-ignore property.notFound
 		if ( 'ids' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
 			$query                = new WP_Query( $query_args );
+			// @phpstan-ignore argument.type
 			echo implode( ' ', $query->posts );
 		} elseif ( 'count' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
@@ -656,8 +651,13 @@ class Post_Command extends CommandWithDBObject {
 			$query = new WP_Query( $query_args );
 			$posts = array_map(
 				function ( $post ) {
-						$post->url = get_permalink( $post->ID );
-						return $post;
+					/**
+					 * @var \WP_Post $post
+					 */
+
+					// @phpstan-ignore property.notFound
+					$post->url = get_permalink( $post->ID );
+					return $post;
 				},
 				$query->posts
 			);

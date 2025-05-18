@@ -133,6 +133,9 @@ class Term_Command extends WP_CLI_Command {
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
 		if ( ! empty( $assoc_args['term_id'] ) ) {
+			/**
+			 * @var \WP_Term $term
+			 */
 			$term  = get_term_by( 'id', $assoc_args['term_id'], $args[0] );
 			$terms = [ $term ];
 		} elseif ( ! empty( $assoc_args['include'] )
@@ -143,13 +146,16 @@ class Term_Command extends WP_CLI_Command {
 			$term_ids = explode( ',', $assoc_args['include'] );
 			foreach ( $term_ids as $term_id ) {
 				$term = get_term_by( 'id', $term_id, $args[0] );
-				if ( $term && ! is_wp_error( $term ) ) {
+				if ( $term instanceof \WP_Term ) {
 					$terms[] = $term;
 				} else {
 					WP_CLI::warning( "Invalid term {$term_id}." );
 				}
 			}
 		} else {
+			/**
+			 * @var \WP_Term[] $terms
+			 */
 			// phpcs:ignore WordPress.WP.DeprecatedParameters.Get_termsParam2Found -- Required for backward compatibility.
 			$terms = get_terms( $args, $assoc_args );
 		}
@@ -158,7 +164,9 @@ class Term_Command extends WP_CLI_Command {
 			function ( $term ) {
 					$term->count  = (int) $term->count;
 					$term->parent = (int) $term->parent;
-					$term->url    = get_term_link( $term );
+
+					// @phpstan-ignore property.notFound
+					$term->url = get_term_link( $term );
 					return $term;
 			},
 			$terms
@@ -227,7 +235,7 @@ class Term_Command extends WP_CLI_Command {
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( $result->get_error_message() );
 		} elseif ( $porcelain ) {
-				WP_CLI::line( $result['term_id'] );
+				WP_CLI::line( (string) $result['term_id'] );
 		} else {
 			WP_CLI::success( "Created {$taxonomy} {$result['term_id']}." );
 		}
@@ -291,6 +299,7 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		if ( ! isset( $term->url ) ) {
+			// @phpstan-ignore property.notFound
 			$term->url = get_term_link( $term );
 		}
 
@@ -709,9 +718,9 @@ class Term_Command extends WP_CLI_Command {
 		$post_ids = get_objects_in_term( $term->term_id, $original_taxonomy->name );
 
 		foreach ( $post_ids as $post_id ) {
-			$type = get_post_type( $post_id );
+			$type = get_post_type( (int) $post_id );
 			if ( in_array( $type, $original_taxonomy->object_type, true ) ) {
-				$term_taxonomy_id = wp_set_object_terms( $post_id, $id['term_id'], $destination_taxonomy, true );
+				$term_taxonomy_id = wp_set_object_terms( (int) $post_id, $id['term_id'], $destination_taxonomy, true );
 
 				if ( is_wp_error( $term_taxonomy_id ) ) {
 					WP_CLI::error( "Failed to assign the term '{$term->slug}' to the post {$post_id}. Reason: " . $term_taxonomy_id->get_error_message() );
@@ -720,7 +729,7 @@ class Term_Command extends WP_CLI_Command {
 				WP_CLI::log( "Term '{$term->slug}' assigned to post {$post_id}." );
 			}
 
-			clean_post_cache( $post_id );
+			clean_post_cache( (int) $post_id );
 		}
 
 		clean_term_cache( $term->term_id );

@@ -152,6 +152,8 @@ class User_Command extends CommandWithDBObject {
 
 		$formatter = $this->get_formatter( $assoc_args );
 
+		// To be fixed in wp-cli/wp-cli.
+		// @phpstan-ignore property.notFound
 		if ( in_array( $formatter->format, [ 'ids', 'count' ], true ) ) {
 			$assoc_args['fields'] = 'ids';
 		} else {
@@ -184,8 +186,14 @@ class User_Command extends CommandWithDBObject {
 						return $user;
 					}
 
+					/**
+					 * @var \WP_User $user
+					 */
+
+					// @phpstan-ignore assign.propertyType
 					$user->roles = implode( ',', $user->roles );
-					$user->url   = get_author_posts_url( $user->ID, $user->user_nicename );
+					// @phpstan-ignore property.notFound
+					$user->url = get_author_posts_url( $user->ID, $user->user_nicename );
 					return $user;
 				}
 			);
@@ -434,7 +442,7 @@ class User_Command extends CommandWithDBObject {
 
 		if ( is_multisite() ) {
 			$result = wpmu_validate_user_signup( $user->user_login, $user->user_email );
-			if ( is_wp_error( $result['errors'] ) && ! empty( $result['errors']->errors ) ) {
+			if ( ! empty( $result['errors']->errors ) ) {
 				WP_CLI::error( $result['errors'] );
 			}
 			$user_id = wpmu_create_user( $user->user_login, $user->user_pass, $user->user_email );
@@ -465,7 +473,7 @@ class User_Command extends CommandWithDBObject {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
-			WP_CLI::line( $user_id );
+			WP_CLI::line( (string) $user_id );
 		} else {
 			WP_CLI::success( "Created user {$user_id}." );
 			if ( isset( $generated_pass ) ) {
@@ -710,7 +718,7 @@ class User_Command extends CommandWithDBObject {
 	public function set_role( $args, $assoc_args ) {
 		$user = $this->fetcher->get_check( $args[0] );
 
-		$role = Utils\get_flag_value( $args, 1, get_option( 'default_role' ) );
+		$role = $args[1] ?? get_option( 'default_role' );
 
 		self::validate_role( $role );
 
@@ -881,6 +889,9 @@ class User_Command extends CommandWithDBObject {
 	 * @subcommand remove-cap
 	 */
 	public function remove_cap( $args, $assoc_args ) {
+		/**
+		 * @var \WP_User $user
+		 */
 		$user = $this->fetcher->get_check( $args[0] );
 		if ( $user ) {
 			$cap = $args[1];
@@ -1086,6 +1097,8 @@ class User_Command extends CommandWithDBObject {
 					continue;
 				}
 
+				$data = [];
+
 				foreach ( $indexes as $n => $key ) {
 					$data[ $key ] = $line[ $n ];
 				}
@@ -1157,7 +1170,7 @@ class User_Command extends CommandWithDBObject {
 
 				if ( is_multisite() ) {
 					$result = wpmu_validate_user_signup( $new_user['user_login'], $new_user['user_email'] );
-					if ( is_wp_error( $result['errors'] ) && ! empty( $result['errors']->errors ) ) {
+					if ( ! empty( $result['errors']->errors ) ) {
 						WP_CLI::warning( $result['errors'] );
 						continue;
 					}
@@ -1313,24 +1326,13 @@ class User_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Accommodates three different behaviors for wp_new_user_notification()
-	 * - 4.3.1 and above: expect second argument to be deprecated
-	 * - 4.3: Second argument was repurposed as $notify
-	 * - Below 4.3: Send the password in the notification
+	 * Wrapper around wp_new_user_notification().
 	 *
-	 * @param string $user_id
-	 * @param string $password
+	 * @param string|int $user_id
+	 * @param mixed $password
 	 */
 	public static function wp_new_user_notification( $user_id, $password ) {
-		if ( Utils\wp_version_compare( '4.3.1', '>=' ) ) {
-			wp_new_user_notification( $user_id, null, 'both' );
-		} elseif ( Utils\wp_version_compare( '4.3', '>=' ) ) {
-			// phpcs:ignore WordPress.WP.DeprecatedParameters.Wp_new_user_notificationParam2Found -- Only called in valid conditions.
-			wp_new_user_notification( $user_id, 'both' );
-		} else {
-			// phpcs:ignore WordPress.WP.DeprecatedParameters.Wp_new_user_notificationParam2Found -- Only called in valid conditions.
-			wp_new_user_notification( $user_id, $password );
-		}
+		wp_new_user_notification( $user_id, null, 'both' );
 	}
 
 	/**
@@ -1380,6 +1382,9 @@ class User_Command extends CommandWithDBObject {
 		if ( ! is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite installation.' );
 		}
+
+		$action = 'updated';
+		$verb   = 'update';
 
 		if ( 'spam' === $pref ) {
 			$action = (int) $value ? 'marked as spam' : 'removed from spam';

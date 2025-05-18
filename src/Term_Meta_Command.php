@@ -29,7 +29,7 @@ class Term_Meta_Command extends CommandWithMeta {
 	/**
 	 * Check that the term ID exists
 	 *
-	 * @param int
+	 * @param int $object_id
 	 */
 	protected function check_object_id( $object_id ) {
 		$term = get_term( $object_id );

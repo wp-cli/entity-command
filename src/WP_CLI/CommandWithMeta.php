@@ -112,8 +112,8 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 				function ( $a, $b ) use ( $orderby, $order ) {
 					// Sort array.
 					return 'asc' === $order
-						? $a->$orderby > $b->$orderby
-						: $a->$orderby < $b->$orderby;
+					? $a[ $orderby ] <=> $b[ $orderby ]
+					: $b[ $orderby ] <=> $a[ $orderby ];
 				}
 			);
 
@@ -545,7 +545,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	/**
 	 * Check that the object ID exists
 	 *
-	 * @param int
+	 * @param int $object_id
 	 */
 	protected function check_object_id( $object_id ) {
 		// Needs to be set in subclass

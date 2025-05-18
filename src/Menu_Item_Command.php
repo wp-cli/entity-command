@@ -92,7 +92,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 
 		$items = wp_get_nav_menu_items( $args[0] );
-		if ( false === $items || is_wp_error( $items ) ) {
+		if ( false === $items ) {
 			WP_CLI::error( 'Invalid menu.' );
 		}
 
@@ -408,10 +408,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 	private function add_or_update_item( $method, $type, $args, $assoc_args ) {
 
 		$menu            = $args[0];
-		$menu_item_db_id = Utils\get_flag_value( $args, 1, 0 );
+		$menu_item_db_id = $args[1] ?? 0;
 
 		$menu = wp_get_nav_menu_object( $menu );
-		if ( ! $menu || is_wp_error( $menu ) ) {
+		if ( false === $menu ) {
 			WP_CLI::error( 'Invalid menu.' );
 		}
 
@@ -502,7 +502,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			}
 
 			if ( 'add' === $method && ! empty( $assoc_args['porcelain'] ) ) {
-				WP_CLI::line( $result );
+				WP_CLI::line( (string) $result );
 			} elseif ( 'add' === $method ) {
 					WP_CLI::success( 'Menu item added.' );
 			} elseif ( 'update' === $method ) {

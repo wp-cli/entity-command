@@ -133,6 +133,7 @@ class Option_Command extends WP_CLI_Command {
 			$autoload = 'yes';
 		}
 
+		// @phpstan-ignore argument.type
 		if ( ! add_option( $key, $value, '', $autoload ) ) {
 			WP_CLI::error( "Could not add option '{$key}'. Does it already exist?" );
 		} else {
@@ -321,8 +322,8 @@ class Option_Command extends WP_CLI_Command {
 				function ( $a, $b ) use ( $orderby, $order ) {
 					// Sort array.
 					return 'asc' === $order
-						? $a->$orderby > $b->$orderby
-						: $a->$orderby < $b->$orderby;
+						? $a[ $orderby ] <=> $b[ $orderby ]
+						: $b[ $orderby ] <=> $a[ $orderby ];
 				}
 			);
 		} elseif ( 'option_id' === $orderby && 'desc' === $order ) { // Sort by default descending.
@@ -431,6 +432,7 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( $value === $old_value && null === $autoload ) {
 			WP_CLI::success( "Value passed for '{$key}' option is unchanged." );
+			// @phpstan-ignore argument.type
 		} elseif ( update_option( $key, $value, $autoload ) ) {
 				WP_CLI::success( "Updated '{$key}' option." );
 		} else {

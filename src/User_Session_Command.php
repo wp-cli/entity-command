@@ -71,7 +71,7 @@ class User_Session_Command extends WP_CLI_Command {
 	 */
 	public function destroy( $args, $assoc_args ) {
 		$user    = $this->fetcher->get_check( $args[0] );
-		$token   = Utils\get_flag_value( $args, 1, null );
+		$token   = $args[1] ?? null;
 		$all     = Utils\get_flag_value( $assoc_args, 'all', false );
 		$manager = WP_Session_Tokens::get_instance( $user->ID );
 

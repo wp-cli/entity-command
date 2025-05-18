@@ -243,6 +243,7 @@ class Comment_Command extends CommandWithDBObject {
 		}
 
 		if ( ! isset( $comment->url ) ) {
+			// @phpstan-ignore property.notFound
 			$comment->url = get_comment_link( $comment );
 		}
 
@@ -366,6 +367,8 @@ class Comment_Command extends CommandWithDBObject {
 	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
+		// To be fixed in wp-cli/wp-cli.
+		// @phpstan-ignore property.notFound
 		if ( 'ids' === $formatter->format ) {
 			$assoc_args['fields'] = 'comment_ID';
 		}
@@ -642,16 +645,17 @@ class Comment_Command extends CommandWithDBObject {
 	 *     total_comments:  19
 	 */
 	public function count( $args, $assoc_args ) {
-		$post_id = Utils\get_flag_value( $args, 0, 0 );
+		$post_id = $args[0] ?? null;
 
 		$count = wp_count_comments( $post_id );
 
 		// Move total_comments to the end of the object
 		$total = $count->total_comments;
 		unset( $count->total_comments );
+		// @phpstan-ignore assign.propertyReadOnly
 		$count->total_comments = $total;
 
-		foreach ( $count as $status => $count ) {
+		foreach ( (array) $count as $status => $count ) {
 			WP_CLI::line( str_pad( "$status:", 17 ) . $count );
 		}
 	}

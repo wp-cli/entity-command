@@ -316,7 +316,7 @@ class User_Meta_Command extends CommandWithMeta {
 	 * Replaces user_login value with user ID
 	 * user meta is a special case that also supports user_login
 	 *
-	 * @param array
+	 * @param array $args
 	 * @return array
 	 */
 	private function replace_login_with_user_id( $args ) {
