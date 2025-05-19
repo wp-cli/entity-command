@@ -72,7 +72,7 @@ class User_Session_Command extends WP_CLI_Command {
 	public function destroy( $args, $assoc_args ) {
 		$user    = $this->fetcher->get_check( $args[0] );
 		$token   = $args[1] ?? null;
-		$all     = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all     = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
 		$manager = WP_Session_Tokens::get_instance( $user->ID );
 
 		if ( $token && $all ) {
@@ -174,6 +174,10 @@ class User_Session_Command extends WP_CLI_Command {
 		// Make the private session data accessible to WP-CLI
 		$get_sessions = new ReflectionMethod( $manager, 'get_sessions' );
 		$get_sessions->setAccessible( true );
+
+		/**
+		 * @var array<array{token: string|int, login_time: string, login: int, expiration_time: string, expiration: int}> $sessions
+		 */
 		$sessions = $get_sessions->invoke( $manager );
 
 		array_walk(

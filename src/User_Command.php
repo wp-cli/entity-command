@@ -283,8 +283,13 @@ class User_Command extends CommandWithDBObject {
 	 *     $ wp user delete $(wp user list --role=contributor --field=ID | head -n 100)
 	 */
 	public function delete( $args, $assoc_args ) {
-		$network  = Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
+		$network = Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
+
+		/**
+		 * @var string|null $reassign
+		 */
 		$reassign = Utils\get_flag_value( $assoc_args, 'reassign' );
+		$reassign = (int) $reassign;
 
 		if ( $network && $reassign ) {
 			WP_CLI::error( 'Reassigning content to a different user is not supported on multisite.' );
@@ -982,7 +987,9 @@ class User_Command extends CommandWithDBObject {
 				}
 				break;
 			case 'user':
-				// Get the user's capabilities
+				/**
+				 * @var array<string, int> $user_capabilities
+				 */
 				$user_capabilities = get_user_meta( $user->ID, 'wp_capabilities', true );
 
 				// Loop through each capability and only return the non-inherited ones
@@ -993,7 +1000,9 @@ class User_Command extends CommandWithDBObject {
 				}
 				break;
 			case 'role':
-				// Get the user's capabilities
+				/**
+				 * @var array<string, int> $user_capabilities
+				 */
 				$user_capabilities = get_user_meta( $user->ID, 'wp_capabilities', true );
 
 				// Loop through each capability and only return the inherited ones (including the role name)
@@ -1092,6 +1101,10 @@ class User_Command extends CommandWithDBObject {
 			$file_object->setFlags( SplFileObject::READ_CSV );
 			$csv_data = [];
 			$indexes  = [];
+
+			/**
+			 * @var string[] $line
+			 */
 			foreach ( $file_object as $line ) {
 				if ( empty( $line[0] ) ) {
 					continue;
@@ -1102,6 +1115,9 @@ class User_Command extends CommandWithDBObject {
 					continue;
 				}
 
+				/**
+				 * @var array<string, string> $data
+				 */
 				$data = [];
 
 				foreach ( $indexes as $n => $key ) {
@@ -1114,6 +1130,9 @@ class User_Command extends CommandWithDBObject {
 			$csv_data = new CsvIterator( $filename );
 		}
 
+		/**
+		 * @var array{ID: string, role: string, roles: string, user_pass: string, user_registered: string, display_name: string|false, user_login: string, user_email: string} $new_user
+		 */
 		foreach ( $csv_data as $new_user ) {
 			$defaults = [
 				'role'            => get_option( 'default_role' ),
@@ -1281,7 +1300,7 @@ class User_Command extends CommandWithDBObject {
 	 */
 	public function reset_password( $args, $assoc_args ) {
 		$porcelain     = Utils\get_flag_value( $assoc_args, 'porcelain' );
-		$skip_email    = Utils\get_flag_value( $assoc_args, 'skip-email' );
+		$skip_email    = (bool) Utils\get_flag_value( $assoc_args, 'skip-email' );
 		$show_new_pass = Utils\get_flag_value( $assoc_args, 'show-password' );
 
 		if ( $skip_email ) {

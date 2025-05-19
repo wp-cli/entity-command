@@ -287,7 +287,12 @@ class Term_Command extends WP_CLI_Command {
 
 		list( $taxonomy, $term ) = $args;
 
-		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term, $taxonomy );
+		/**
+		 * @var string $field
+		 */
+		$field = Utils\get_flag_value( $assoc_args, 'by' );
+
+		$term = get_term_by( $field, $term, $taxonomy );
 
 		if ( ! $term ) {
 			WP_CLI::error( "Term doesn't exist." );
@@ -372,7 +377,12 @@ class Term_Command extends WP_CLI_Command {
 
 		$assoc_args = wp_slash( $assoc_args );
 
-		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term, $taxonomy );
+		/**
+		 * @var string $field
+		 */
+		$field = Utils\get_flag_value( $assoc_args, 'by' );
+
+		$term = get_term_by( $field, $term, $taxonomy );
 
 		if ( ! $term ) {
 			WP_CLI::error( "Term doesn't exist." );
@@ -691,11 +701,23 @@ class Term_Command extends WP_CLI_Command {
 	 *     Success: Migrated the term 'video' from taxonomy 'category' to taxonomy 'post_tag' for 1 post.
 	 */
 	public function migrate( $args, $assoc_args ) {
-		$term_reference       = $args[0];
-		$original_taxonomy    = Utils\get_flag_value( $assoc_args, 'from' );
+		$term_reference = $args[0];
+
+		/**
+		 * @var string $original_taxonomy
+		 */
+		$original_taxonomy = Utils\get_flag_value( $assoc_args, 'from' );
+		/**
+		 * @var string $destination_taxonomy
+		 */
 		$destination_taxonomy = Utils\get_flag_value( $assoc_args, 'to' );
 
-		$term = get_term_by( Utils\get_flag_value( $assoc_args, 'by' ), $term_reference, $original_taxonomy );
+		/**
+		 * @var string $field
+		 */
+		$field = Utils\get_flag_value( $assoc_args, 'by' );
+
+		$term = get_term_by( $field, $term_reference, $original_taxonomy );
 
 		if ( ! $term ) {
 			WP_CLI::error( "Taxonomy term '{$term_reference}' for taxonomy '{$original_taxonomy}' doesn't exist." );

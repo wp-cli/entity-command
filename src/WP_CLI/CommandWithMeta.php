@@ -91,7 +91,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 			foreach ( $values as $item_value ) {
 
 				if ( Utils\get_flag_value( $assoc_args, 'unserialize' ) ) {
-					$item_value = maybe_unserialize( $item_value );
+					$item_value = maybe_unserialize( (string) $item_value );
 				}
 
 				$items[] = (object) [
@@ -159,7 +159,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 		list( $object_id, $meta_key ) = $args;
 
 		$object_id = $this->check_object_id( $object_id );
-		$single    = Utils\get_flag_value( $assoc_args, 'single', true );
+		$single    = (bool) Utils\get_flag_value( $assoc_args, 'single', true );
 
 		$value = $this->get_metadata( $object_id, $meta_key, $single );
 
@@ -504,6 +504,8 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *                          specified.
 	 *
 	 * @return mixed Single metadata value, or array of values.
+	 *
+	 * @phpstan-return ($single is true ? string : array<string>)
 	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
 		return get_metadata( $this->meta_type, $object_id, $meta_key, $single );

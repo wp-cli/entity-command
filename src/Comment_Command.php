@@ -435,7 +435,7 @@ class Comment_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $comment_id, $assoc_args ) {
-				$force = Utils\get_flag_value( $assoc_args, 'force' );
+				$force = (bool) Utils\get_flag_value( $assoc_args, 'force' );
 
 				$status = wp_get_comment_status( $comment_id );
 				$result = wp_delete_comment( $comment_id, $force );

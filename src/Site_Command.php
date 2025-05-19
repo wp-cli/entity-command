@@ -283,6 +283,10 @@ class Site_Command extends CommandWithDBObject {
 			$files_to_unlink       = [];
 			$directories_to_delete = [];
 			$is_main_site          = is_main_site();
+
+			/**
+			 * @var \SplFileInfo $fileinfo
+			 */
 			foreach ( $files as $fileinfo ) {
 				$realpath = $fileinfo->getRealPath();
 				// Don't clobber subsites when operating on the main site
@@ -405,7 +409,11 @@ class Site_Command extends CommandWithDBObject {
 
 		global $wpdb, $current_site;
 
-		$base  = $assoc_args['slug'];
+		$base = $assoc_args['slug'];
+
+		/**
+		 * @var string $title
+		 */
 		$title = Utils\get_flag_value( $assoc_args, 'title', ucfirst( $base ) );
 
 		$email = empty( $assoc_args['email'] ) ? '' : $assoc_args['email'];
@@ -1203,6 +1211,9 @@ class Site_Command extends CommandWithDBObject {
 	 * @throws ExitException
 	 */
 	private function get_sites_ids( $args, $assoc_args ) {
+		/**
+		 * @var string|false $slug
+		 */
 		$slug = Utils\get_flag_value( $assoc_args, 'slug', false );
 
 		if ( $slug ) {
