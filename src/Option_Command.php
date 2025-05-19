@@ -746,17 +746,11 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	private static function esc_like( $old ) {
+		/**
+		 * @var \wpdb $wpdb
+		 */
 		global $wpdb;
 
-		// Remove notices in 4.0 and support backwards compatibility
-		if ( method_exists( $wpdb, 'esc_like' ) ) {
-			// 4.0
-			$old = $wpdb->esc_like( $old );
-		} else {
-			// phpcs:ignore WordPress.WP.DeprecatedFunctions.like_escapeFound -- called in WordPress 3.9 or less.
-			$old = like_escape( esc_sql( $old ) );
-		}
-
-		return $old;
+		return $wpdb->esc_like( $old );
 	}
 }

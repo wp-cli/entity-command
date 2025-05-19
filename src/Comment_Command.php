@@ -379,29 +379,22 @@ class Comment_Command extends CommandWithDBObject {
 			$assoc_args['count'] = true;
 		}
 
-		if ( ! empty( $assoc_args['comment__in'] )
-			&& ! empty( $assoc_args['orderby'] )
-			&& 'comment__in' === $assoc_args['orderby']
-			&& Utils\wp_version_compare( '4.4', '<' ) ) {
-			$comments = [];
-			foreach ( $assoc_args['comment__in'] as $comment_id ) {
-				$comment = get_comment( $comment_id );
-				if ( $comment ) {
-					$comments[] = $comment;
-				} else {
-					WP_CLI::warning( "Invalid comment {$comment_id}." );
-				}
-			}
-		} else {
-			$query    = new WP_Comment_Query();
-			$comments = $query->query( $assoc_args );
-		}
+		$query    = new WP_Comment_Query();
+		$comments = $query->query( $assoc_args );
 
 		if ( 'count' === $formatter->format ) {
+			/**
+			 * @var int $comments
+			 */
 			echo $comments;
 		} else {
 			if ( 'ids' === $formatter->format ) {
-				$comments = wp_list_pluck( $comments, 'comment_ID' );
+				/**
+				 * @var \WP_Comment[] $comments
+				 */
+				$items = wp_list_pluck( $comments, 'comment_ID' );
+
+				$comments = $items;
 			} elseif ( is_array( $comments ) ) {
 				$comments = array_map(
 					function ( $comment ) {
@@ -460,6 +453,9 @@ class Comment_Command extends CommandWithDBObject {
 	private function call( $args, $status, $success, $failure ) {
 		$comment_id = absint( $args );
 
+		/**
+		 * @var callable $func
+		 */
 		$func = "wp_{$status}_comment";
 
 		if ( ! $func( $comment_id ) ) {

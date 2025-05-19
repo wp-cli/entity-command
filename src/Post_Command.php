@@ -933,7 +933,7 @@ class Post_Command extends CommandWithDBObject {
 		} else {
 			$readfile = 'php://stdin';
 		}
-		return file_get_contents( $readfile );
+		return (string) file_get_contents( $readfile );
 	}
 
 	/**
@@ -1010,7 +1010,7 @@ class Post_Command extends CommandWithDBObject {
 	private function get_tags( $post_id ) {
 		$tag_data = get_the_tags( $post_id );
 		$tag_arr  = [];
-		if ( $tag_data ) {
+		if ( $tag_data && ! is_wp_error( $tag_data ) ) {
 			foreach ( $tag_data as $tag ) {
 				array_push( $tag_arr, $tag->slug );
 			}

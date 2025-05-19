@@ -422,6 +422,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 		if ( 'update' === $method ) {
 
 			$menu_item_obj = get_post( $menu_item_db_id );
+
+			/**
+			 * @var object{title: string, url: string, description: string, object: string, object_id: int, menu_item_parent: int, attr_title: string, target: string, classes: string[], xfn: string, post_status: string, menu_order: int} $menu_item_obj
+			 */
 			$menu_item_obj = wp_setup_nav_menu_item( $menu_item_obj );
 
 			// Correct the menu position if this was the first item. See https://core.trac.wordpress.org/ticket/28140

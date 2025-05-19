@@ -103,6 +103,9 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 			$taxonomy_args['fields'] = 'ids';
 		}
 
+		/**
+		 * @var \WP_Term[] $items
+		 */
 		$items = wp_get_object_terms( $object_id, $taxonomy_names, $taxonomy_args );
 
 		$formatter = $this->get_formatter( $assoc_args );

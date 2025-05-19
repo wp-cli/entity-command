@@ -33,7 +33,7 @@ class Term_Meta_Command extends CommandWithMeta {
 	 */
 	protected function check_object_id( $object_id ) {
 		$term = get_term( $object_id );
-		if ( ! $term ) {
+		if ( ! $term || is_wp_error( $term ) ) {
 			WP_CLI::error( "Could not find the term with ID {$object_id}." );
 		}
 		return $term->term_id;
@@ -52,7 +52,7 @@ class Term_Meta_Command extends CommandWithMeta {
 	 *                           value for the specified metadata key, no change
 	 *                           will be made.
 	 *
-	 * @return int|false The meta ID on success, false on failure.
+	 * @return int|false|WP_Error The meta ID on success, false on failure, WP_Error when term_id is ambiguous between taxonomies.
 	 */
 	protected function add_metadata( $object_id, $meta_key, $meta_value, $unique = false ) {
 		return add_term_meta( $object_id, $meta_key, $meta_value, $unique );
@@ -69,8 +69,8 @@ class Term_Meta_Command extends CommandWithMeta {
 	 *                           metadata entries with the specified value.
 	 *                           Otherwise, update all entries.
 	 *
-	 * @return int|bool Meta ID if the key didn't exist, true on successful
-	 *                  update, false on failure.
+	 * @return int|bool|WP_Error Meta ID if the key didn't exist, true on successful
+	 *                  update, false on failure, WP_Error when term_id is ambiguous between taxonomies.
 	 */
 	protected function update_metadata( $object_id, $meta_key, $meta_value, $prev_value = '' ) {
 		return update_term_meta( $object_id, $meta_key, $meta_value, $prev_value );

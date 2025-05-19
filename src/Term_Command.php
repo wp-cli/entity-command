@@ -223,11 +223,6 @@ class Term_Command extends WP_CLI_Command {
 		$porcelain = Utils\get_flag_value( $assoc_args, 'porcelain' );
 		unset( $assoc_args['porcelain'] );
 
-		// Compatibility for < WP 4.0
-		if ( $assoc_args['parent'] > 0 && ! term_exists( (int) $assoc_args['parent'] ) ) {
-			WP_CLI::error( 'Parent term does not exist.' );
-		}
-
 		$assoc_args = wp_slash( $assoc_args );
 		$term       = wp_slash( $term );
 		$result     = wp_insert_term( $term, $taxonomy, $assoc_args );
@@ -537,10 +532,13 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "'{$taxonomy}' is not a registered taxonomy." );
 		}
 
-		$label = get_taxonomy( $taxonomy )->labels->singular_name;
-		$slug  = sanitize_title_with_dashes( $label );
+		/**
+		 * @var \WP_Taxonomy $tax
+		 */
+		$tax = get_taxonomy( $taxonomy );
 
-		$hierarchical = get_taxonomy( $taxonomy )->hierarchical;
+		$label = $tax->labels->singular_name;
+		$slug  = sanitize_title_with_dashes( $label );
 
 		$format = Utils\get_flag_value( $assoc_args, 'format', 'progress' );
 
@@ -560,7 +558,7 @@ class Term_Command extends WP_CLI_Command {
 
 		for ( $index = $max_id + 1; $index <= $max_id + $count; $index++ ) {
 
-			if ( $hierarchical ) {
+			if ( $tax->hierarchical ) {
 
 				if ( $previous_term_id && $this->maybe_make_child() && $current_depth < $max_depth ) {
 
@@ -645,6 +643,10 @@ class Term_Command extends WP_CLI_Command {
 				WP_CLI::warning( "Taxonomy {$taxonomy} does not exist." );
 			} else {
 
+				/**
+				 * @var \WP_Term[] $terms
+				 */
+
 				// phpcs:ignore WordPress.WP.DeprecatedParameters.Get_termsParam2Found -- Required for backward compatibility.
 				$terms             = get_terms( $taxonomy, [ 'hide_empty' => false ] );
 				$term_taxonomy_ids = wp_list_pluck( $terms, 'term_taxonomy_id' );
@@ -699,7 +701,11 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "Taxonomy term '{$term_reference}' for taxonomy '{$original_taxonomy}' doesn't exist." );
 		}
 
-		$original_taxonomy = get_taxonomy( $original_taxonomy );
+		$tax = get_taxonomy( $original_taxonomy );
+
+		if ( ! $tax ) {
+			WP_CLI::error( "Taxonomy '{$original_taxonomy}' doesn't exist." );
+		}
 
 		$id = wp_insert_term(
 			$term->name,
@@ -715,11 +721,14 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( $id->get_error_message() );
 		}
 
-		$post_ids = get_objects_in_term( $term->term_id, $original_taxonomy->name );
+		/**
+		 * @var string[] $post_ids
+		 */
+		$post_ids = get_objects_in_term( $term->term_id, $tax->name );
 
 		foreach ( $post_ids as $post_id ) {
 			$type = get_post_type( (int) $post_id );
-			if ( in_array( $type, $original_taxonomy->object_type, true ) ) {
+			if ( in_array( $type, $tax->object_type, true ) ) {
 				$term_taxonomy_id = wp_set_object_terms( (int) $post_id, $id['term_id'], $destination_taxonomy, true );
 
 				if ( is_wp_error( $term_taxonomy_id ) ) {
@@ -736,7 +745,7 @@ class Term_Command extends WP_CLI_Command {
 
 		WP_CLI::log( "Term '{$term->slug}' migrated." );
 
-		$del = wp_delete_term( $term->term_id, $original_taxonomy->name );
+		$del = wp_delete_term( $term->term_id, $tax->name );
 
 		if ( is_wp_error( $del ) ) {
 			WP_CLI::error( "Failed to delete the term '{$term->slug}'. Reason: " . $del->get_error_message() );
@@ -745,7 +754,7 @@ class Term_Command extends WP_CLI_Command {
 		WP_CLI::log( "Old instance of term '{$term->slug}' removed from its original taxonomy." );
 		$post_count  = count( $post_ids );
 		$post_plural = Utils\pluralize( 'post', $post_count );
-		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{$original_taxonomy->name}' to taxonomy '{$destination_taxonomy}' for {$post_count} {$post_plural}." );
+		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{$tax->name}' to taxonomy '{$destination_taxonomy}' for {$post_count} {$post_plural}." );
 	}
 
 	private function maybe_make_child() {

@@ -29,6 +29,8 @@ use WP_CLI\Fetchers\User as UserFetcher;
  *     Success: The site at 'http://www.example.com/example' was deleted.
  *
  * @package wp-cli
+ *
+ * @phpstan-type UserSite object{userblog_id: int, blogname: string, domain: string, path: string, site_id: int, siteurl: string, archived: int, spam: int, deleted: int}
  */
 class Site_Command extends CommandWithDBObject {
 
@@ -809,6 +811,9 @@ class Site_Command extends CommandWithDBObject {
 			$user = ( new UserFetcher() )->get_check( $assoc_args['site_user'] );
 
 			if ( $user ) {
+				/**
+				 * @phpstan-var UserSite[] $blogs
+				 */
 				$blogs = get_blogs_of_user( $user->ID );
 
 				foreach ( $blogs as $blog ) {

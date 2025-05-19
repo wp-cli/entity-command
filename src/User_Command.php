@@ -31,6 +31,8 @@ use WP_CLI\Utils;
  *     Success: Removed user 123 from http://example.com.
  *
  * @package wp-cli
+ *
+ * @phpstan-import-type UserSite from Site_Command
  */
 class User_Command extends CommandWithDBObject {
 
@@ -645,7 +647,7 @@ class User_Command extends CommandWithDBObject {
 				]
 			);
 
-			if ( false === $role ) {
+			if ( false === $role && ! is_wp_error( $user_id ) ) {
 				delete_user_option( $user_id, 'capabilities' );
 				delete_user_option( $user_id, 'user_level' );
 			}
@@ -653,7 +655,10 @@ class User_Command extends CommandWithDBObject {
 			if ( 'progress' === $format ) {
 				$notify->tick();
 			} elseif ( 'ids' === $format ) {
-				echo $user_id;
+				if ( ! is_wp_error( $user_id ) ) {
+					echo $user_id;
+				}
+
 				if ( $index < $limit - 1 ) {
 					echo ' ';
 				}
@@ -1164,6 +1169,11 @@ class User_Command extends CommandWithDBObject {
 					WP_CLI::log( "{$existing_user->user_login} added as {$new_user['role']}." );
 				}
 
+				if ( is_wp_error( $user_id ) ) {
+					WP_CLI::warning( $user_id );
+					continue;
+				}
+
 				// Create the user
 			} else {
 				unset( $new_user['ID'] ); // Unset else it will just return the ID
@@ -1189,15 +1199,14 @@ class User_Command extends CommandWithDBObject {
 					$user_id = wp_insert_user( $new_user );
 				}
 
+				if ( is_wp_error( $user_id ) ) {
+					WP_CLI::warning( $user_id );
+					continue;
+				}
+
 				if ( Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
 					self::wp_new_user_notification( $user_id, $new_user['user_pass'] );
 				}
-			}
-
-			if ( is_wp_error( $user_id ) ) {
-				WP_CLI::warning( $user_id );
-				continue;
-
 			}
 
 			if ( false === $new_user['role'] ) {
@@ -1205,6 +1214,9 @@ class User_Command extends CommandWithDBObject {
 				delete_user_option( $user_id, 'user_level' );
 			}
 
+			/**
+			 * @var \WP_User $user
+			 */
 			$user = get_user_by( 'id', $user_id );
 			foreach ( $secondary_roles as $secondary_role ) {
 				$user->add_role( $secondary_role );
@@ -1332,7 +1344,7 @@ class User_Command extends CommandWithDBObject {
 	 * @param mixed $password
 	 */
 	public static function wp_new_user_notification( $user_id, $password ) {
-		wp_new_user_notification( $user_id, null, 'both' );
+		wp_new_user_notification( (int) $user_id, null, 'both' );
 	}
 
 	/**
@@ -1414,6 +1426,10 @@ class User_Command extends CommandWithDBObject {
 			}
 
 			// Make that user's blog as spam too.
+
+			/**
+			 * @phpstan-var UserSite[] $blogs
+			 */
 			$blogs = (array) get_blogs_of_user( $user_id, true );
 			foreach ( $blogs as $details ) {
 				// Only mark site as spam if not main site.
