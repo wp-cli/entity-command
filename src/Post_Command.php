@@ -806,11 +806,14 @@ class Post_Command extends CommandWithDBObject {
 		// Get the total number of posts.
 		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_data['post_type'] ) );
 
+		/**
+		 * @var \WP_Post_Type $post_type
+		 */
+		$post_type = get_post_type_object( $post_data['post_type'] );
+
 		$label = ! empty( $post_data['post_title'] )
 			? $post_data['post_title']
-			: get_post_type_object( $post_data['post_type'] )->labels->singular_name;
-
-		$hierarchical = get_post_type_object( $post_data['post_type'] )->hierarchical;
+			: $post_type->labels->singular_name;
 
 		$limit = $post_data['count'] + $total;
 
@@ -827,7 +830,7 @@ class Post_Command extends CommandWithDBObject {
 
 		for ( $index = $total; $index < $limit; $index++ ) {
 
-			if ( $hierarchical ) {
+			if ( $post_type->hierarchical ) {
 
 				if ( $this->maybe_make_child() && $current_depth < $post_data['max_depth'] ) {
 

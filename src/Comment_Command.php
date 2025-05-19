@@ -673,6 +673,9 @@ class Comment_Command extends CommandWithDBObject {
 	public function recount( $args ) {
 		foreach ( $args as $id ) {
 			if ( wp_update_comment_count( $id ) ) {
+				/**
+				 * @var \WP_Post $post
+				 */
 				$post = get_post( $id );
 				WP_CLI::log( "Updated post {$post->ID} comment count to {$post->comment_count}." );
 			} else {

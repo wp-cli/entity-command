@@ -423,6 +423,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 			$menu_item_obj = get_post( $menu_item_db_id );
 
+			if ( ! $menu_item_obj ) {
+				WP_CLI::error( 'Invalid menu.' );
+			}
+
 			/**
 			 * @var object{title: string, url: string, description: string, object: string, object_id: int, menu_item_parent: int, attr_title: string, target: string, classes: string[], xfn: string, post_status: string, menu_order: int} $menu_item_obj
 			 */
