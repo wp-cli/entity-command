@@ -30,11 +30,11 @@ class Site_Meta_Command extends CommandWithMeta {
 	/**
 	 * Check that the site ID exists
 	 *
-	 * @param int
+	 * @param int $object_id
 	 */
 	protected function check_object_id( $object_id ) {
 		$fetcher = new SiteFetcher();
-		$site    = $fetcher->get_check( $object_id );
+		$site    = $fetcher->get_check( (string) $object_id );
 		return $site->blog_id;
 	}
 

@@ -70,7 +70,7 @@ class Menu_Command extends WP_CLI_Command {
 
 		} elseif ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
 
-				WP_CLI::line( $menu_id );
+				WP_CLI::line( (string) $menu_id );
 		} else {
 			WP_CLI::success( "Created menu {$menu_id}." );
 		}
@@ -166,6 +166,7 @@ class Menu_Command extends WP_CLI_Command {
 		$menu_locations = get_nav_menu_locations();
 		foreach ( $menus as &$menu ) {
 
+			// @phpstan-ignore property.notFound
 			$menu->locations = [];
 			foreach ( $menu_locations as $location => $term_id ) {
 

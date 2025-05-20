@@ -20,14 +20,15 @@
         "wp-cli/extension-command": "^1.2 || ^2",
         "wp-cli/media-command": "^1.1 || ^2",
         "wp-cli/super-admin-command": "^1 || ^2",
-        "wp-cli/wp-cli-tests": "^4"
+        "wp-cli/wp-cli-tests": "dev-main"
     },
     "config": {
         "process-timeout": 7200,
         "sort-packages": true,
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
-            "johnpbloch/wordpress-core-installer": true
+            "johnpbloch/wordpress-core-installer": true,
+            "phpstan/extension-installer": true
         },
         "lock": false
     },
@@ -230,12 +231,14 @@
         "behat-rerun": "rerun-behat-tests",
         "lint": "run-linter-tests",
         "phpcs": "run-phpcs-tests",
+        "phpstan": "run-phpstan-tests",
         "phpunit": "run-php-unit-tests",
         "phpcbf": "run-phpcbf-cleanup",
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",
             "@phpcs",
+            "@phpstan",
             "@phpunit",
             "@behat"
         ]
