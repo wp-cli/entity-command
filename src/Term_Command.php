@@ -138,20 +138,6 @@ class Term_Command extends WP_CLI_Command {
 			 */
 			$term  = get_term_by( 'id', $assoc_args['term_id'], $args[0] );
 			$terms = [ $term ];
-		} elseif ( ! empty( $assoc_args['include'] )
-			&& ! empty( $assoc_args['orderby'] )
-			&& 'include' === $assoc_args['orderby']
-			&& Utils\wp_version_compare( '4.7', '<' ) ) {
-			$terms    = [];
-			$term_ids = explode( ',', $assoc_args['include'] );
-			foreach ( $term_ids as $term_id ) {
-				$term = get_term_by( 'id', $term_id, $args[0] );
-				if ( $term instanceof \WP_Term ) {
-					$terms[] = $term;
-				} else {
-					WP_CLI::warning( "Invalid term {$term_id}." );
-				}
-			}
 		} else {
 			/**
 			 * @var \WP_Term[] $terms
