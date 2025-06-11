@@ -66,6 +66,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 * : Unserialize meta_value output.
 	 *
 	 * @subcommand list
+	 *
+	 * @param array{0: string} $args Positional arguments..
+	 * @param array{keys?: string, fields?: string, format: 'table'|'csv'|'json'|'yaml'|'count', orderby: 'id'|'meta_key'|'meta_value', order: 'asc'|'desc', unserialize?: bool} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
 
@@ -547,10 +550,11 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	/**
 	 * Check that the object ID exists
 	 *
-	 * @param int $object_id
+	 * @param string|int $object_id
+	 * @return int
 	 */
 	protected function check_object_id( $object_id ) {
 		// Needs to be set in subclass
-		return $object_id;
+		return (int) $object_id;
 	}
 }

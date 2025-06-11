@@ -1,5 +1,5 @@
 parameters:
-  level: 6
+  level: 9
   paths:
     - src
     - entity-command.php
@@ -9,10 +9,6 @@ parameters:
   scanFiles:
     - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
   treatPhpDocTypesAsCertain: false
-  dynamicConstantNames:
-  	- WP_DEBUG
-  	- WP_DEBUG_LOG
-  	- WP_DEBUG_DISPLAY
   ignoreErrors:
     - identifier: missingType.iterableValue
     - identifier: missingType.property

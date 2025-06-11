@@ -104,7 +104,8 @@ class Comment_Meta_Command extends CommandWithMeta {
 	/**
 	 * Check that the comment ID exists
 	 *
-	 * @param int $object_id
+	 * @param string|int $object_id
+	 * @return int|never
 	 */
 	protected function check_object_id( $object_id ) {
 		$fetcher = new CommentFetcher();

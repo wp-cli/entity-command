@@ -241,6 +241,9 @@ class Option_Command extends WP_CLI_Command {
 	 *     Success: Deleted 'theme_mods_twentyfourteen' option.
 	 *
 	 * @subcommand list
+	 *
+	 * @param string[] $args Positional arguments. Unused.
+	 * @param array{search?: string, exclude: string, autoload: string, transients?: bool, unserialize?: bool, field?: string, fields: string, format: 'table'|'csv'|'json'|'yaml'|'count'|'total_bytes', orderby: 'option_id'|'option_name'|'option_value', order: 'asc'|'desc'} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
 

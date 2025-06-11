@@ -974,6 +974,9 @@ class Post_Command extends CommandWithDBObject {
 	 * @return array
 	 */
 	private function get_metadata( $post_id ) {
+		/**
+		 * @var array<string, array<string>> $metadata
+		 */
 		$metadata = get_metadata( 'post', $post_id );
 		$items    = [];
 		foreach ( $metadata as $key => $values ) {

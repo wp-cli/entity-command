@@ -1458,8 +1458,8 @@ class User_Command extends CommandWithDBObject {
 			}
 
 			if ( Utils\wp_version_compare( '5.3', '<' ) ) {
-				// phpcs:ignore WordPress.WP.DeprecatedFunctions.update_user_statusFound -- Fallback for older versions.
-				update_user_status( $user_id, $pref, $value );
+				// @phpstan-ignore function.deprecated
+				update_user_status( $user_id, $pref, $value ); // phpcs:ignore WordPress.WP.DeprecatedFunctions.update_user_statusFound -- Fallback for older versions.
 			} else {
 				wp_update_user(
 					[

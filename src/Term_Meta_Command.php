@@ -29,10 +29,11 @@ class Term_Meta_Command extends CommandWithMeta {
 	/**
 	 * Check that the term ID exists
 	 *
-	 * @param int $object_id
+	 * @param string|int $object_id
+	 * @return int|never
 	 */
 	protected function check_object_id( $object_id ) {
-		$term = get_term( $object_id );
+		$term = get_term( (int) $object_id );
 		if ( ! $term || is_wp_error( $term ) ) {
 			WP_CLI::error( "Could not find the term with ID {$object_id}." );
 		}

@@ -387,7 +387,12 @@ class Comment_Command extends CommandWithDBObject {
 			 * @var int $comments
 			 */
 			echo $comments;
+			return;
 		} else {
+			/**
+			 * @var array $comments
+			 */
+
 			if ( 'ids' === $formatter->format ) {
 				/**
 				 * @var \WP_Comment[] $comments
