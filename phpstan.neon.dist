@@ -5,7 +5,6 @@ parameters:
     - entity-command.php
   scanDirectories:
     - vendor/wp-cli/wp-cli/php
-    - vendor/wp-cli/wp-cli-tests
   scanFiles:
     - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
   treatPhpDocTypesAsCertain: false
