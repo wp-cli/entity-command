@@ -287,7 +287,10 @@ class User_Command extends CommandWithDBObject {
 		 * @var string|null $reassign
 		 */
 		$reassign = Utils\get_flag_value( $assoc_args, 'reassign' );
-		$reassign = (int) $reassign;
+
+		if ( null !== $reassign ) {
+			$reassign = (int) $reassign;
+		}
 
 		if ( $network && $reassign ) {
 			WP_CLI::error( 'Reassigning content to a different user is not supported on multisite.' );
