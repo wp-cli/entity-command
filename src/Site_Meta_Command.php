@@ -36,8 +36,6 @@ class Site_Meta_Command extends CommandWithMeta {
 	protected function check_object_id( $object_id ) {
 		$fetcher = new SiteFetcher();
 		$site    = $fetcher->get_check( (string) $object_id );
-		// TODO: Fix upstream.
-		// @phpstan-ignore property.notFound
 		return $site->blog_id;
 	}
 
