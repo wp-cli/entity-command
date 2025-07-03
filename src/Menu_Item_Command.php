@@ -367,8 +367,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		foreach ( $args as $arg ) {
 
-			$post           = get_post( $arg );
-			$menu_term      = get_the_terms( $arg, 'nav_menu' );
+			$post      = get_post( $arg );
+			$menu_term = get_the_terms( $arg, 'nav_menu' );
+
+			// @phpstan-ignore cast.int
 			$parent_menu_id = (int) get_post_meta( $arg, '_menu_item_menu_item_parent', true );
 			$result         = wp_delete_post( $arg, true );
 			if ( ! $result ) {

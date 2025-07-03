@@ -72,7 +72,12 @@ class Site_Command extends CommandWithDBObject {
 		$taxonomies = get_taxonomies();
 
 		while ( $posts->valid() ) {
-			$post_id = $posts->current()->ID;
+			/**
+			 * @var object{ID: int} $post
+			 */
+			$post = $posts->current();
+
+			$post_id = $post->ID;
 
 			wp_cache_delete( $post_id, 'posts' );
 			wp_cache_delete( $post_id, 'post_meta' );
@@ -138,7 +143,12 @@ class Site_Command extends CommandWithDBObject {
 		wp_cache_delete( 'get_bookmarks', 'bookmark' );
 
 		while ( $links->valid() ) {
-			$link_id = $links->current()->link_id;
+			/**
+			 * @var object{link_id: int} $link
+			 */
+			$link = $links->current();
+
+			$link_id = $link->link_id;
 
 			// Remove cache for the link.
 			wp_delete_object_term_relationships( $link_id, 'link_category' );

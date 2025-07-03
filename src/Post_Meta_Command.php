@@ -88,8 +88,11 @@ class Post_Meta_Command extends CommandWithMeta {
 	 *                          specified.
 	 *
 	 * @return mixed Single metadata value, or array of values.
+	 *
+	 * @phpstan-return ($single is true ? string : $meta_key is "" ? array<array<string>> : array<string>)
 	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
+		// @phpstan-ignore return.type
 		return get_post_meta( $object_id, $meta_key, $single );
 	}
 

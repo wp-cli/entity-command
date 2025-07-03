@@ -329,7 +329,7 @@ class Option_Command extends WP_CLI_Command {
 						: $b->$orderby <=> $a->$orderby;
 				}
 			);
-		} elseif ( 'option_id' === $orderby && 'desc' === $order ) { // Sort by default descending.
+		} elseif ( 'desc' === $order ) { // Sort by default descending.
 			krsort( $results );
 		}
 

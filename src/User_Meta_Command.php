@@ -100,6 +100,9 @@ class User_Meta_Command extends CommandWithMeta {
 	 *     +---------+-----------------+--------------------------------+
 	 *
 	 * @subcommand list
+	 *
+	 * @param array{0: string} $args Positional arguments.
+	 * @param array{keys?: string, fields?: string, format: 'table'|'csv'|'json'|'count'|'yaml', orderby: 'id'|'meta_key'|'meta_value', order: 'asc'|'desc', unserialize?: bool} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
@@ -137,6 +140,9 @@ class User_Meta_Command extends CommandWithMeta {
 	 *     # Get the primary site of a user (for multisite)
 	 *     $ wp user meta get 2 primary_blog
 	 *     3
+	 *
+	 * @param array{0: string, 1: string} $args Positional arguments.
+	 * @param array{format: 'table'|'csv'|'json'|'yaml'} $assoc_args Associative arguments.
 	 */
 	public function get( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
@@ -162,6 +168,8 @@ class User_Meta_Command extends CommandWithMeta {
 	 *     # Delete user meta
 	 *     $ wp user meta delete 123 bio
 	 *     Success: Deleted custom field.
+	 *
+	 * @param array<string> $args Positional arguments.
 	 */
 	public function delete( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
@@ -196,6 +204,9 @@ class User_Meta_Command extends CommandWithMeta {
 	 *     # Add user meta
 	 *     $ wp user meta add 123 bio "Mary is an WordPress developer."
 	 *     Success: Added custom field.
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{format: 'plaintext'|'json'} $assoc_args Associative arguments.
 	 */
 	public function add( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
@@ -232,6 +243,9 @@ class User_Meta_Command extends CommandWithMeta {
 	 *     Success: Updated custom field 'bio'.
 	 *
 	 * @alias set
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{format: 'plaintext'|'json'} $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
@@ -287,8 +301,11 @@ class User_Meta_Command extends CommandWithMeta {
 	 *                          specified.
 	 *
 	 * @return mixed Single metadata value, or array of values.
+	 *
+	 * @phpstan-return ($single is true ? string : $meta_key is "" ? array<array<string>> : array<string>)
 	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
+		// @phpstan-ignore return.type
 		return get_user_meta( $object_id, $meta_key, $single );
 	}
 
@@ -316,8 +333,10 @@ class User_Meta_Command extends CommandWithMeta {
 	 * Replaces user_login value with user ID
 	 * user meta is a special case that also supports user_login
 	 *
-	 * @param array $args
-	 * @return array
+	 * @template T of array
+	 *
+	 * @param T $args
+	 * @return T
 	 */
 	private function replace_login_with_user_id( $args ) {
 		$user    = $this->fetcher->get_check( $args[0] );

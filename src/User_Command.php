@@ -154,8 +154,6 @@ class User_Command extends CommandWithDBObject {
 
 		$formatter = $this->get_formatter( $assoc_args );
 
-		// To be fixed in wp-cli/wp-cli.
-		// @phpstan-ignore property.notFound
 		if ( in_array( $formatter->format, [ 'ids', 'count' ], true ) ) {
 			$assoc_args['fields'] = 'ids';
 		} else {
@@ -398,6 +396,9 @@ class User_Command extends CommandWithDBObject {
 	 *     # Create user without showing password upon success
 	 *     $ wp user create ann ann@example.com --porcelain
 	 *     4
+	 *
+	 * @param array{0: string, 1: string} $args Positional arguments.
+	 * @param array{role?: string, user_pass?: string, user_registered?: string, display_name?: string, user_nicename?: string, user_url?: string, nickname?: string, first_name?: string, last_name?: string, description?: string, rich_editing?: string, send_email?: bool, porcelain?: bool} $assoc_args Associative arguments.
 	 */
 	public function create( $args, $assoc_args ) {
 		$user = new stdClass();
@@ -439,7 +440,12 @@ class User_Command extends CommandWithDBObject {
 			$generated_pass  = true;
 		}
 
-		$user->role = Utils\get_flag_value( $assoc_args, 'role', get_option( 'default_role' ) );
+		/**
+		 * @var string $default_role
+		 */
+		$default_role = get_option( 'default_role' );
+
+		$user->role = Utils\get_flag_value( $assoc_args, 'role', $default_role );
 		self::validate_role( $user->role );
 
 		if ( ! Utils\get_flag_value( $assoc_args, 'send-email' ) ) {
@@ -1131,14 +1137,19 @@ class User_Command extends CommandWithDBObject {
 		}
 
 		/**
-		 * @var array{ID: string, role: string, roles: string, user_pass: string, user_registered: string, display_name: string|false, user_login: string, user_email: string} $new_user
+		 * @var string $default_role
+		 */
+		$default_role = get_option( 'default_role' );
+
+		/**
+		 * @var array{ID: string, role: string, roles: string, user_pass: string, user_registered: string, display_name: string, user_login: string, user_email: string} $new_user
 		 */
 		foreach ( $csv_data as $new_user ) {
 			$defaults = [
-				'role'            => get_option( 'default_role' ),
+				'role'            => $default_role,
 				'user_pass'       => wp_generate_password( 24 ),
 				'user_registered' => current_time( 'mysql', true ),
-				'display_name'    => false,
+				'display_name'    => '',
 			];
 			$new_user = array_merge( $defaults, $new_user );
 
@@ -1159,7 +1170,7 @@ class User_Command extends CommandWithDBObject {
 				$new_user['role'] = array_shift( $roles );
 				$secondary_roles  = $roles;
 			} elseif ( 'none' === $new_user['role'] ) {
-				$new_user['role'] = false;
+				$new_user['role'] = '';
 			} elseif ( null === get_role( $new_user['role'] ) ) {
 				WP_CLI::warning( "{$new_user['user_login']} has an invalid role." );
 				continue;

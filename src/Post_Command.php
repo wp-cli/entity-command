@@ -636,8 +636,6 @@ class Post_Command extends CommandWithDBObject {
 			$query_args['post_type'] = explode( ',', $query_args['post_type'] );
 		}
 
-		// To be fixed in wp-cli/wp-cli.
-		// @phpstan-ignore property.notFound
 		if ( 'ids' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
 			$query                = new WP_Query( $query_args );
@@ -744,6 +742,9 @@ class Post_Command extends CommandWithDBObject {
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
+	 *
+	 * @param array<string> $args Positional arguments. Unused.
+	 * @param array{count: string, post_type: string, post_status: string, post_title: string, post_author: string, post_date?: string, post_date_gmt?: string, post_content?: string, max_depth: string, format: string} $assoc_args Associative arguments.
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
@@ -800,7 +801,7 @@ class Post_Command extends CommandWithDBObject {
 				WP_CLI::error( 'The parameter `post_content` reads from STDIN.' );
 			}
 
-			$post_data['post_content'] = file_get_contents( 'php://stdin' );
+			$post_data['post_content'] = (string) file_get_contents( 'php://stdin' );
 		}
 
 		// Get the total number of posts.
@@ -821,7 +822,7 @@ class Post_Command extends CommandWithDBObject {
 
 		$notify = false;
 		if ( 'progress' === $format ) {
-			$notify = Utils\make_progress_bar( 'Generating posts', $post_data['count'] );
+			$notify = Utils\make_progress_bar( 'Generating posts', (int) $post_data['count'] );
 		}
 
 		$previous_post_id = 0;
@@ -851,7 +852,7 @@ class Post_Command extends CommandWithDBObject {
 					? $label
 					: "{$label} {$index}",
 				'post_status'   => $post_data['post_status'],
-				'post_author'   => $post_data['post_author'],
+				'post_author'   => (int) $post_data['post_author'],
 				'post_parent'   => $current_parent,
 				'post_name'     => ! empty( $post_data['post_title'] )
 					? sanitize_title( $post_data['post_title'] . ( $index === $total ? '' : "-{$index}" ) )
@@ -875,10 +876,12 @@ class Post_Command extends CommandWithDBObject {
 			}
 
 			if ( 'progress' === $format ) {
+				// @phpstan-ignore method.nonObject
 				$notify->tick();
 			}
 		}
 		if ( 'progress' === $format ) {
+			// @phpstan-ignore method.nonObject
 			$notify->finish();
 		}
 	}

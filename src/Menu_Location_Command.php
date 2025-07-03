@@ -77,8 +77,6 @@ class Menu_Location_Command extends WP_CLI_Command {
 
 		$formatter = new Formatter( $assoc_args, [ 'location', 'description' ] );
 
-		// To be fixed in wp-cli/wp-cli.
-		// @phpstan-ignore property.notFound
 		if ( 'ids' === $formatter->format ) {
 			$ids = array_map(
 				function ( $o ) {

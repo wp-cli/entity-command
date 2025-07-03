@@ -367,8 +367,6 @@ class Comment_Command extends CommandWithDBObject {
 	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		// To be fixed in wp-cli/wp-cli.
-		// @phpstan-ignore property.notFound
 		if ( 'ids' === $formatter->format ) {
 			$assoc_args['fields'] = 'comment_ID';
 		}

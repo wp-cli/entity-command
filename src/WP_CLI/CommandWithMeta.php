@@ -120,7 +120,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 				}
 			);
 
-		} elseif ( 'id' === $orderby && 'desc' === $order ) { // Sort by default descending.
+		} elseif ( 'desc' === $order ) { // Sort by default descending.
 			krsort( $items );
 		}
 
@@ -157,6 +157,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *   - json
 	 *   - yaml
 	 * ---
+	 *
+	 * @param array{0: string, 1: string} $args Positional arguments.
+	 * @param array{single?: bool, format: 'table'|'csv'|'json'|'yaml'} $assoc_args Associative arguments.
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -189,6 +192,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *
 	 * [--all]
 	 * : Delete all meta for the object.
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{all?: bool} $assoc_args Associative arguments.
 	 */
 	public function delete( $args, $assoc_args ) {
 		list( $object_id ) = $args;
@@ -250,6 +256,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *   - plaintext
 	 *   - json
 	 * ---
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{format: 'plaintext'|'json'} $assoc_args Associative arguments.
 	 */
 	public function add( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -293,6 +302,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 * ---
 	 *
 	 * @alias set
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{format: 'plaintext'|'json'} $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -508,9 +520,10 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *
 	 * @return mixed Single metadata value, or array of values.
 	 *
-	 * @phpstan-return ($single is true ? string : array<string>)
+	 * @phpstan-return ($single is true ? string : $meta_key is "" ? array<array<string>> : array<string>)
 	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
+		// @phpstan-ignore return.type
 		return get_metadata( $this->meta_type, $object_id, $meta_key, $single );
 	}
 
