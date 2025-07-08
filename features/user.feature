@@ -190,7 +190,7 @@ Feature: Manage WordPress users
       --reassign parameter is invalid. All associated posts will be deleted. Proceed? [y/n]
       """
 
-    When I try `wp user delete bobjones < session_yes`
+    When I run `wp user delete bobjones < session_yes`
     And I run `wp post list --format=count`
     Then STDOUT should be:
       """
