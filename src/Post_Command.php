@@ -182,10 +182,6 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
-			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
-		}
-
 		$array_arguments = [ 'meta_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
@@ -351,10 +347,6 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
-			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
-		}
-
 		$array_arguments = [ 'meta_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
@@ -387,7 +379,7 @@ class Post_Command extends CommandWithDBObject {
 		$result = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
 
 		if ( false === $result ) {
-			WP_CLI::warning( 'No change made to post content.', 'Aborted' );
+			WP_CLI::warning( 'No change made to post content.' );
 		} else {
 			$this->update( $args, [ 'post_content' => $result ] );
 		}
@@ -647,6 +639,7 @@ class Post_Command extends CommandWithDBObject {
 		if ( 'ids' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
 			$query                = new WP_Query( $query_args );
+			// @phpstan-ignore argument.type
 			echo implode( ' ', $query->posts );
 		} elseif ( 'count' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
@@ -656,8 +649,13 @@ class Post_Command extends CommandWithDBObject {
 			$query = new WP_Query( $query_args );
 			$posts = array_map(
 				function ( $post ) {
-						$post->url = get_permalink( $post->ID );
-						return $post;
+					/**
+					 * @var \WP_Post $post
+					 */
+
+					// @phpstan-ignore property.notFound
+					$post->url = get_permalink( $post->ID );
+					return $post;
 				},
 				$query->posts
 			);
@@ -744,6 +742,9 @@ class Post_Command extends CommandWithDBObject {
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
+	 *
+	 * @param array<string> $args Positional arguments. Unused.
+	 * @param array{count: string, post_type: string, post_status: string, post_title: string, post_author: string, post_date?: string, post_date_gmt?: string, post_content?: string, max_depth: string, format: string} $assoc_args Associative arguments.
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
@@ -800,17 +801,20 @@ class Post_Command extends CommandWithDBObject {
 				WP_CLI::error( 'The parameter `post_content` reads from STDIN.' );
 			}
 
-			$post_data['post_content'] = file_get_contents( 'php://stdin' );
+			$post_data['post_content'] = (string) file_get_contents( 'php://stdin' );
 		}
 
 		// Get the total number of posts.
 		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_data['post_type'] ) );
 
+		/**
+		 * @var \WP_Post_Type $post_type
+		 */
+		$post_type = get_post_type_object( $post_data['post_type'] );
+
 		$label = ! empty( $post_data['post_title'] )
 			? $post_data['post_title']
-			: get_post_type_object( $post_data['post_type'] )->labels->singular_name;
-
-		$hierarchical = get_post_type_object( $post_data['post_type'] )->hierarchical;
+			: $post_type->labels->singular_name;
 
 		$limit = $post_data['count'] + $total;
 
@@ -818,7 +822,7 @@ class Post_Command extends CommandWithDBObject {
 
 		$notify = false;
 		if ( 'progress' === $format ) {
-			$notify = Utils\make_progress_bar( 'Generating posts', $post_data['count'] );
+			$notify = Utils\make_progress_bar( 'Generating posts', (int) $post_data['count'] );
 		}
 
 		$previous_post_id = 0;
@@ -827,7 +831,7 @@ class Post_Command extends CommandWithDBObject {
 
 		for ( $index = $total; $index < $limit; $index++ ) {
 
-			if ( $hierarchical ) {
+			if ( $post_type->hierarchical ) {
 
 				if ( $this->maybe_make_child() && $current_depth < $post_data['max_depth'] ) {
 
@@ -848,7 +852,7 @@ class Post_Command extends CommandWithDBObject {
 					? $label
 					: "{$label} {$index}",
 				'post_status'   => $post_data['post_status'],
-				'post_author'   => $post_data['post_author'],
+				'post_author'   => (int) $post_data['post_author'],
 				'post_parent'   => $current_parent,
 				'post_name'     => ! empty( $post_data['post_title'] )
 					? sanitize_title( $post_data['post_title'] . ( $index === $total ? '' : "-{$index}" ) )
@@ -872,10 +876,12 @@ class Post_Command extends CommandWithDBObject {
 			}
 
 			if ( 'progress' === $format ) {
+				// @phpstan-ignore method.nonObject
 				$notify->tick();
 			}
 		}
 		if ( 'progress' === $format ) {
+			// @phpstan-ignore method.nonObject
 			$notify->finish();
 		}
 	}
@@ -933,7 +939,7 @@ class Post_Command extends CommandWithDBObject {
 		} else {
 			$readfile = 'php://stdin';
 		}
-		return file_get_contents( $readfile );
+		return (string) file_get_contents( $readfile );
 	}
 
 	/**
@@ -971,6 +977,9 @@ class Post_Command extends CommandWithDBObject {
 	 * @return array
 	 */
 	private function get_metadata( $post_id ) {
+		/**
+		 * @var array<string, array<string>> $metadata
+		 */
 		$metadata = get_metadata( 'post', $post_id );
 		$items    = [];
 		foreach ( $metadata as $key => $values ) {
@@ -1010,7 +1019,7 @@ class Post_Command extends CommandWithDBObject {
 	private function get_tags( $post_id ) {
 		$tag_data = get_the_tags( $post_id );
 		$tag_arr  = [];
-		if ( $tag_data ) {
+		if ( $tag_data && ! is_wp_error( $tag_data ) ) {
 			foreach ( $tag_data as $tag ) {
 				array_push( $tag_arr, $tag->slug );
 			}

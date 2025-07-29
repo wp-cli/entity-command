@@ -107,6 +107,8 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *     Success: Assigned location primary to menu primary-menu.
 	 *
 	 * @subcommand assign
+	 *
+	 * @param array{string, string} $args
 	 */
 	public function assign( $args, $assoc_args ) {
 
@@ -147,18 +149,20 @@ class Menu_Location_Command extends WP_CLI_Command {
 	 *     Success: Removed location from menu.
 	 *
 	 * @subcommand remove
+	 *
+	 * @param array{string, string} $args
 	 */
 	public function remove( $args, $assoc_args ) {
 
 		list( $menu, $location ) = $args;
 
 		$menu = wp_get_nav_menu_object( $menu );
-		if ( ! $menu || is_wp_error( $menu ) ) {
+		if ( false === $menu ) {
 			WP_CLI::error( 'Invalid menu.' );
 		}
 
 		$locations = get_nav_menu_locations();
-		if ( Utils\get_flag_value( $locations, $location ) !== $menu->term_id ) {
+		if ( ( $locations[ $location ] ?? null ) !== $menu->term_id ) {
 			WP_CLI::error( "Menu isn't assigned to location." );
 		}
 
