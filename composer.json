@@ -234,6 +234,7 @@
         "phpstan": "run-phpstan-tests",
         "phpunit": "run-php-unit-tests",
         "phpcbf": "run-phpcbf-cleanup",
+        "phpstan": "run-phpstan-tests",
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",
