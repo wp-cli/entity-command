@@ -243,6 +243,7 @@ class Comment_Command extends CommandWithDBObject {
 		}
 
 		if ( ! isset( $comment->url ) ) {
+			// @phpstan-ignore property.notFound
 			$comment->url = get_comment_link( $comment );
 		}
 
@@ -376,29 +377,27 @@ class Comment_Command extends CommandWithDBObject {
 			$assoc_args['count'] = true;
 		}
 
-		if ( ! empty( $assoc_args['comment__in'] )
-			&& ! empty( $assoc_args['orderby'] )
-			&& 'comment__in' === $assoc_args['orderby']
-			&& Utils\wp_version_compare( '4.4', '<' ) ) {
-			$comments = [];
-			foreach ( $assoc_args['comment__in'] as $comment_id ) {
-				$comment = get_comment( $comment_id );
-				if ( $comment ) {
-					$comments[] = $comment;
-				} else {
-					WP_CLI::warning( "Invalid comment {$comment_id}." );
-				}
-			}
-		} else {
-			$query    = new WP_Comment_Query();
-			$comments = $query->query( $assoc_args );
-		}
+		$query    = new WP_Comment_Query();
+		$comments = $query->query( $assoc_args );
 
 		if ( 'count' === $formatter->format ) {
+			/**
+			 * @var int $comments
+			 */
 			echo $comments;
+			return;
 		} else {
+			/**
+			 * @var array $comments
+			 */
+
 			if ( 'ids' === $formatter->format ) {
-				$comments = wp_list_pluck( $comments, 'comment_ID' );
+				/**
+				 * @var \WP_Comment[] $comments
+				 */
+				$items = wp_list_pluck( $comments, 'comment_ID' );
+
+				$comments = $items;
 			} elseif ( is_array( $comments ) ) {
 				$comments = array_map(
 					function ( $comment ) {
@@ -439,7 +438,7 @@ class Comment_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $comment_id, $assoc_args ) {
-				$force = Utils\get_flag_value( $assoc_args, 'force' );
+				$force = (bool) Utils\get_flag_value( $assoc_args, 'force' );
 
 				$status = wp_get_comment_status( $comment_id );
 				$result = wp_delete_comment( $comment_id, $force );
@@ -457,6 +456,9 @@ class Comment_Command extends CommandWithDBObject {
 	private function call( $args, $status, $success, $failure ) {
 		$comment_id = absint( $args );
 
+		/**
+		 * @var callable $func
+		 */
 		$func = "wp_{$status}_comment";
 
 		if ( ! $func( $comment_id ) ) {
@@ -642,16 +644,17 @@ class Comment_Command extends CommandWithDBObject {
 	 *     total_comments:  19
 	 */
 	public function count( $args, $assoc_args ) {
-		$post_id = Utils\get_flag_value( $args, 0, 0 );
+		$post_id = $args[0] ?? null;
 
 		$count = wp_count_comments( $post_id );
 
 		// Move total_comments to the end of the object
 		$total = $count->total_comments;
 		unset( $count->total_comments );
+		// @phpstan-ignore assign.propertyReadOnly
 		$count->total_comments = $total;
 
-		foreach ( $count as $status => $count ) {
+		foreach ( (array) $count as $status => $count ) {
 			WP_CLI::line( str_pad( "$status:", 17 ) . $count );
 		}
 	}
@@ -673,6 +676,9 @@ class Comment_Command extends CommandWithDBObject {
 	public function recount( $args ) {
 		foreach ( $args as $id ) {
 			if ( wp_update_comment_count( $id ) ) {
+				/**
+				 * @var \WP_Post $post
+				 */
 				$post = get_post( $id );
 				WP_CLI::log( "Updated post {$post->ID} comment count to {$post->comment_count}." );
 			} else {

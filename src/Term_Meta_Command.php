@@ -29,11 +29,12 @@ class Term_Meta_Command extends CommandWithMeta {
 	/**
 	 * Check that the term ID exists
 	 *
-	 * @param int
+	 * @param string|int $object_id
+	 * @return int|never
 	 */
 	protected function check_object_id( $object_id ) {
-		$term = get_term( $object_id );
-		if ( ! $term ) {
+		$term = get_term( (int) $object_id );
+		if ( ! $term || is_wp_error( $term ) ) {
 			WP_CLI::error( "Could not find the term with ID {$object_id}." );
 		}
 		return $term->term_id;
@@ -52,7 +53,9 @@ class Term_Meta_Command extends CommandWithMeta {
 	 *                           value for the specified metadata key, no change
 	 *                           will be made.
 	 *
-	 * @return int|false The meta ID on success, false on failure.
+	 * @return int|false|WP_Error The meta ID on success, false on failure, WP_Error when term_id is ambiguous between taxonomies.
+	 *
+	 * @phpstan-ignore method.childReturnType
 	 */
 	protected function add_metadata( $object_id, $meta_key, $meta_value, $unique = false ) {
 		return add_term_meta( $object_id, $meta_key, $meta_value, $unique );
@@ -69,8 +72,10 @@ class Term_Meta_Command extends CommandWithMeta {
 	 *                           metadata entries with the specified value.
 	 *                           Otherwise, update all entries.
 	 *
-	 * @return int|bool Meta ID if the key didn't exist, true on successful
-	 *                  update, false on failure.
+	 * @return int|bool|WP_Error Meta ID if the key didn't exist, true on successful
+	 *                  update, false on failure, WP_Error when term_id is ambiguous between taxonomies.
+	 *
+	 * @phpstan-ignore method.childReturnType
 	 */
 	protected function update_metadata( $object_id, $meta_key, $meta_value, $prev_value = '' ) {
 		return update_term_meta( $object_id, $meta_key, $meta_value, $prev_value );
@@ -88,8 +93,11 @@ class Term_Meta_Command extends CommandWithMeta {
 	 *                          specified.
 	 *
 	 * @return mixed Single metadata value, or array of values.
+	 *
+	 * @phpstan-return ($single is true ? string : $meta_key is "" ? array<array<string>> : array<string>)
 	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
+		// @phpstan-ignore return.type
 		return get_term_meta( $object_id, $meta_key, $single );
 	}
 

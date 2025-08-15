@@ -29,6 +29,8 @@ use WP_CLI\Fetchers\User as UserFetcher;
  *     Success: The site at 'http://www.example.com/example' was deleted.
  *
  * @package wp-cli
+ *
+ * @phpstan-type UserSite object{userblog_id: int, blogname: string, domain: string, path: string, site_id: int, siteurl: string, archived: int, spam: int, deleted: int}
  */
 class Site_Command extends CommandWithDBObject {
 
@@ -70,7 +72,12 @@ class Site_Command extends CommandWithDBObject {
 		$taxonomies = get_taxonomies();
 
 		while ( $posts->valid() ) {
-			$post_id = $posts->current()->ID;
+			/**
+			 * @var object{ID: int} $post
+			 */
+			$post = $posts->current();
+
+			$post_id = $post->ID;
 
 			wp_cache_delete( $post_id, 'posts' );
 			wp_cache_delete( $post_id, 'post_meta' );
@@ -89,6 +96,9 @@ class Site_Command extends CommandWithDBObject {
 	 * Delete terms, taxonomies, and tax relationships.
 	 */
 	private function empty_taxonomies() {
+		/**
+		 * @var \wpdb $wpdb
+		 */
 		global $wpdb;
 
 		// Empty taxonomies and terms
@@ -133,7 +143,12 @@ class Site_Command extends CommandWithDBObject {
 		wp_cache_delete( 'get_bookmarks', 'bookmark' );
 
 		while ( $links->valid() ) {
-			$link_id = $links->current()->link_id;
+			/**
+			 * @var object{link_id: int} $link
+			 */
+			$link = $links->current();
+
+			$link_id = $link->link_id;
 
 			// Remove cache for the link.
 			wp_delete_object_term_relationships( $link_id, 'link_category' );
@@ -159,8 +174,8 @@ class Site_Command extends CommandWithDBObject {
 		/* translators: Default category slug */
 		$cat_slug = sanitize_title( _x( 'Uncategorized', 'Default category slug' ) );
 
-		// phpcs:ignore WordPress.WP.DeprecatedFunctions.global_terms_enabledFound -- Required for backwards compatibility.
-		if ( global_terms_enabled() ) {
+		// @phpstan-ignore function.deprecated
+		if ( global_terms_enabled() ) { // phpcs:ignore WordPress.WP.DeprecatedFunctions.global_terms_enabledFound -- Required for backwards compatibility.
 			$cat_id = $wpdb->get_var( $wpdb->prepare( "SELECT cat_ID FROM {$wpdb->sitecategories} WHERE category_nicename = %s", $cat_slug ) );
 			if ( null === $cat_id ) {
 				$wpdb->insert(
@@ -278,6 +293,10 @@ class Site_Command extends CommandWithDBObject {
 			$files_to_unlink       = [];
 			$directories_to_delete = [];
 			$is_main_site          = is_main_site();
+
+			/**
+			 * @var \SplFileInfo $fileinfo
+			 */
 			foreach ( $files as $fileinfo ) {
 				$realpath = $fileinfo->getRealPath();
 				// Don't clobber subsites when operating on the main site
@@ -360,7 +379,7 @@ class Site_Command extends CommandWithDBObject {
 
 		WP_CLI::confirm( "Are you sure you want to delete the '{$site_url}' site?", $assoc_args );
 
-		wpmu_delete_blog( $blog->blog_id, ! Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
+		wpmu_delete_blog( (int) $blog->blog_id, ! Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
 		WP_CLI::success( "The site at '{$site_url}' was deleted." );
 	}
@@ -400,7 +419,11 @@ class Site_Command extends CommandWithDBObject {
 
 		global $wpdb, $current_site;
 
-		$base  = $assoc_args['slug'];
+		$base = $assoc_args['slug'];
+
+		/**
+		 * @var string $title
+		 */
 		$title = Utils\get_flag_value( $assoc_args, 'title', ucfirst( $base ) );
 
 		$email = empty( $assoc_args['email'] ) ? '' : $assoc_args['email'];
@@ -479,7 +502,7 @@ class Site_Command extends CommandWithDBObject {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
-			WP_CLI::line( $id );
+			WP_CLI::line( (string) $id );
 		} else {
 			$site_url = trailingslashit( get_site_url( $id ) );
 			WP_CLI::success( "Site {$id} created: {$site_url}" );
@@ -806,6 +829,9 @@ class Site_Command extends CommandWithDBObject {
 			$user = ( new UserFetcher() )->get_check( $assoc_args['site_user'] );
 
 			if ( $user ) {
+				/**
+				 * @phpstan-var UserSite[] $blogs
+				 */
 				$blogs = get_blogs_of_user( $user->ID );
 
 				foreach ( $blogs as $blog ) {
@@ -830,6 +856,9 @@ class Site_Command extends CommandWithDBObject {
 
 		$iterator = new TableIterator( $iterator_args );
 
+		/**
+		 * @var iterable $iterator
+		 */
 		$iterator = Utils\iterator_map(
 			$iterator,
 			function ( $blog ) {
@@ -1142,6 +1171,8 @@ class Site_Command extends CommandWithDBObject {
 	private function update_site_status( $ids, $pref, $value ) {
 		$value = (int) $value;
 
+		$action = 'updated';
+
 		switch ( $pref ) {
 			case 'archived':
 				$action = $value ? 'archived' : 'unarchived';
@@ -1175,7 +1206,7 @@ class Site_Command extends CommandWithDBObject {
 				continue;
 			}
 
-			update_blog_status( $site->blog_id, $pref, $value );
+			update_blog_status( $site->blog_id, $pref, (string) $value );
 			WP_CLI::success( "Site {$site->blog_id} {$action}." );
 		}
 	}
@@ -1190,6 +1221,9 @@ class Site_Command extends CommandWithDBObject {
 	 * @throws ExitException
 	 */
 	private function get_sites_ids( $args, $assoc_args ) {
+		/**
+		 * @var string|false $slug
+		 */
 		$slug = Utils\get_flag_value( $assoc_args, 'slug', false );
 
 		if ( $slug ) {

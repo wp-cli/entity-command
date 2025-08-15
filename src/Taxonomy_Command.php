@@ -38,16 +38,6 @@ class Taxonomy_Command extends WP_CLI_Command {
 		'public',
 	);
 
-	public function __construct() {
-
-		if ( Utils\wp_version_compare( 3.7, '<' ) ) {
-			// remove description for wp <= 3.7
-			$this->fields = array_values( array_diff( $this->fields, array( 'description' ) ) );
-		}
-
-		parent::__construct();
-	}
-
 	/**
 	 * Gets the term counts for each supplied taxonomy.
 	 *
@@ -173,8 +163,11 @@ class Taxonomy_Command extends WP_CLI_Command {
 
 		$taxonomies = array_map(
 			function ( $taxonomy ) use ( $counts ) {
+					// @phpstan-ignore assign.propertyType
 					$taxonomy->object_type = implode( ', ', $taxonomy->object_type );
-					$taxonomy->count       = isset( $counts[ $taxonomy->name ] ) ? $counts[ $taxonomy->name ] : 0;
+
+					// @phpstan-ignore property.notFound
+					$taxonomy->count = isset( $counts[ $taxonomy->name ] ) ? $counts[ $taxonomy->name ] : 0;
 					return $taxonomy;
 			},
 			$taxonomies

@@ -92,7 +92,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 
 		$items = wp_get_nav_menu_items( $args[0] );
-		if ( false === $items || is_wp_error( $items ) ) {
+		if ( false === $items ) {
 			WP_CLI::error( 'Invalid menu.' );
 		}
 
@@ -367,8 +367,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		foreach ( $args as $arg ) {
 
-			$post           = get_post( $arg );
-			$menu_term      = get_the_terms( $arg, 'nav_menu' );
+			$post      = get_post( $arg );
+			$menu_term = get_the_terms( $arg, 'nav_menu' );
+
+			// @phpstan-ignore cast.int
 			$parent_menu_id = (int) get_post_meta( $arg, '_menu_item_menu_item_parent', true );
 			$result         = wp_delete_post( $arg, true );
 			if ( ! $result ) {
@@ -408,10 +410,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 	private function add_or_update_item( $method, $type, $args, $assoc_args ) {
 
 		$menu            = $args[0];
-		$menu_item_db_id = Utils\get_flag_value( $args, 1, 0 );
+		$menu_item_db_id = $args[1] ?? 0;
 
 		$menu = wp_get_nav_menu_object( $menu );
-		if ( ! $menu || is_wp_error( $menu ) ) {
+		if ( false === $menu ) {
 			WP_CLI::error( 'Invalid menu.' );
 		}
 
@@ -422,6 +424,14 @@ class Menu_Item_Command extends WP_CLI_Command {
 		if ( 'update' === $method ) {
 
 			$menu_item_obj = get_post( $menu_item_db_id );
+
+			if ( ! $menu_item_obj ) {
+				WP_CLI::error( 'Invalid menu.' );
+			}
+
+			/**
+			 * @var object{title: string, url: string, description: string, object: string, object_id: int, menu_item_parent: int, attr_title: string, target: string, classes: string[], xfn: string, post_status: string, menu_order: int} $menu_item_obj
+			 */
 			$menu_item_obj = wp_setup_nav_menu_item( $menu_item_obj );
 
 			// Correct the menu position if this was the first item. See https://core.trac.wordpress.org/ticket/28140
@@ -502,7 +512,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			}
 
 			if ( 'add' === $method && ! empty( $assoc_args['porcelain'] ) ) {
-				WP_CLI::line( $result );
+				WP_CLI::line( (string) $result );
 			} elseif ( 'add' === $method ) {
 					WP_CLI::success( 'Menu item added.' );
 			} elseif ( 'update' === $method ) {

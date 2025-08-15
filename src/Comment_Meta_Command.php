@@ -76,8 +76,11 @@ class Comment_Meta_Command extends CommandWithMeta {
 	 *                          specified.
 	 *
 	 * @return mixed Single metadata value, or array of values.
+	 *
+	 * @phpstan-return ($single is true ? string : $meta_key is "" ? array<array<string>> : array<string>)
 	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
+		// @phpstan-ignore return.type
 		return get_comment_meta( $object_id, $meta_key, $single );
 	}
 
@@ -104,11 +107,12 @@ class Comment_Meta_Command extends CommandWithMeta {
 	/**
 	 * Check that the comment ID exists
 	 *
-	 * @param int
+	 * @param string|int $object_id
+	 * @return int|never
 	 */
 	protected function check_object_id( $object_id ) {
 		$fetcher = new CommentFetcher();
-		$comment = $fetcher->get_check( $object_id );
-		return $comment->comment_ID;
+		$comment = $fetcher->get_check( (string) $object_id );
+		return (int) $comment->comment_ID;
 	}
 }
