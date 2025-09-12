@@ -49,6 +49,7 @@ Feature: Recount terms on a taxonomy
 
     When I run `wp term recount category`
     And I run `wp term get category {TERM_ID} --field=count`
+    Then STDOUT should be:
       """
       1
       """
