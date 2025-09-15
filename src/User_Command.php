@@ -542,9 +542,6 @@ class User_Command extends CommandWithDBObject {
 	 * [--role=<role>]
 	 * : A string used to set the user's role.
 	 *
-	 * --<field>=<value>
-	 * : One or more fields to update. For accepted fields, see wp_update_user().
-	 *
 	 * [--skip-email]
 	 * : Don't send an email notification to the user.
 	 *
