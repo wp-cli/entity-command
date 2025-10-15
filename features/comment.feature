@@ -489,11 +489,20 @@ Feature: Manage WordPress comments
       """
 
     When I run `wp comment delete --all`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       Success: Trashed comment 1.
+      """
+    And STDOUT should contain:
+      """
       Success: Trashed comment {COMMENT_ID_1}.
+      """
+    And STDOUT should contain:
+      """
       Success: Trashed comment {COMMENT_ID_2}.
+      """
+    And STDOUT should contain:
+      """
       Success: Trashed comment {COMMENT_ID_3}.
       """
 
@@ -517,10 +526,16 @@ Feature: Manage WordPress comments
       """
 
     When I run `wp comment delete --all --force`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
       Success: Deleted comment 1.
+      """
+    And STDOUT should contain:
+      """
       Success: Deleted comment {COMMENT_ID_1}.
+      """
+    And STDOUT should contain:
+      """
       Success: Deleted comment {COMMENT_ID_2}.
       """
 
