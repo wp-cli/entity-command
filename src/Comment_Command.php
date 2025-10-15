@@ -760,7 +760,6 @@ class Comment_Command extends CommandWithDBObject {
 	 * @param string $verb Optional. Verb to use. Defaults to 'delete'.
 	 * @param string $exclude Comma separated list of comment IDs.
 	 * @return array Same as $args if not all, otherwise all comment IDs.
-	 * @throws ExitException If neither comment ID nor --all were provided.
 	 */
 	private function check_optional_args_and_all( $args, $all, $verb = 'delete', $exclude = null ) {
 		if ( $all ) {
