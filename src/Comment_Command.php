@@ -800,7 +800,7 @@ class Comment_Command extends CommandWithDBObject {
 			)
 		);
 
-		if (!is_array($comments)) {
+		if ( ! is_array( $comments ) ) {
 			return [];
 		}
 
