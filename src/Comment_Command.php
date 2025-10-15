@@ -795,11 +795,13 @@ class Comment_Command extends CommandWithDBObject {
 	 * @return array Array of comment IDs.
 	 */
 	private function get_all_comment_ids() {
-		$query = new WP_Comment_Query();
-		$comments = $query->query( array(
-			'fields' => 'ids',
-			'number' => 0, // Get all comments
-		) );
+		$query    = new WP_Comment_Query();
+		$comments = $query->query(
+			array(
+				'fields' => 'ids',
+				'number' => 0, // Get all comments
+			)
+		);
 
 		return $comments;
 	}
