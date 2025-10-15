@@ -16,7 +16,7 @@ use WP_CLI\Utils;
  *     # Update an existing comment.
  *     $ wp comment update 123 --comment_author='That Guy'
  *     Success: Updated comment 123.
- *
+
  *     # Delete an existing comment.
  *     $ wp comment delete 1337 --force
  *     Success: Deleted comment 1337.
@@ -416,8 +416,11 @@ class Comment_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
+	 * [<id>...]
 	 * : One or more IDs of comments to delete.
+	 *
+	 * [--all]
+	 * : If set, all comments will be deleted.
 	 *
 	 * [--force]
 	 * : Skip the trash bin.
@@ -432,8 +435,22 @@ class Comment_Command extends CommandWithDBObject {
 	 *     $ wp comment delete 1337 2341 --force
 	 *     Success: Deleted comment 1337.
 	 *     Success: Deleted comment 2341.
+	 *
+	 *     # Delete all comments.
+	 *     $ wp comment delete --all --force
+	 *     Success: Deleted comment 1337.
+	 *     Success: Deleted comment 2341.
+	 *     Success: Deleted 2 of 2 comments.
 	 */
 	public function delete( $args, $assoc_args ) {
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+
+		// Check if comment IDs or --all is passed.
+		$args = $this->check_optional_args_and_all( $args, $all, 'delete' );
+		if ( ! $args ) {
+			return;
+		}
+
 		parent::_delete(
 			$args,
 			$assoc_args,
@@ -733,5 +750,57 @@ class Comment_Command extends CommandWithDBObject {
 		if ( $this->fetcher->get( $args[0] ) ) {
 			WP_CLI::success( "Comment with ID {$args[0]} exists." );
 		}
+	}
+
+	/**
+	 * If have optional args ([<id>...]) and an all option, then check have something to do.
+	 *
+	 * @param array  $args Passed-in arguments.
+	 * @param bool   $all All flag.
+	 * @param string $verb Optional. Verb to use. Defaults to 'delete'.
+	 * @param string $exclude Comma separated list of comment IDs.
+	 * @return array Same as $args if not all, otherwise all comment IDs.
+	 * @throws ExitException If neither comment ID nor --all were provided.
+	 */
+	private function check_optional_args_and_all( $args, $all, $verb = 'delete', $exclude = null ) {
+		if ( $all ) {
+			$args = $this->get_all_comment_ids();
+		}
+
+		if ( $all && $exclude ) {
+			$exclude_list = array_map( 'intval', explode( ',', trim( $exclude, ',' ) ) );
+			$args         = array_filter(
+				$args,
+				static function ( $id ) use ( $exclude_list ) {
+					return ! in_array( (int) $id, $exclude_list, true );
+				}
+			);
+		}
+
+		if ( empty( $args ) ) {
+			if ( ! $all ) {
+				WP_CLI::error( 'Please specify one or more comment IDs, or use --all.' );
+			}
+
+			$past_tense_verb = Utils\past_tense_verb( $verb );
+			WP_CLI::success( "No comments {$past_tense_verb}." );
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Gets all available comment IDs.
+	 *
+	 * @return array Array of comment IDs.
+	 */
+	private function get_all_comment_ids() {
+		$query = new WP_Comment_Query();
+		$comments = $query->query( array(
+			'fields' => 'ids',
+			'number' => 0, // Get all comments
+		) );
+
+		return $comments;
 	}
 }
