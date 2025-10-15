@@ -791,7 +791,7 @@ class Comment_Command extends CommandWithDBObject {
 	/**
 	 * Gets all available comment IDs.
 	 */
-	private function get_all_comment_ids(): array|int {
+	private function get_all_comment_ids(): array {
 		$query    = new WP_Comment_Query();
 		$comments = $query->query(
 			array(
@@ -799,6 +799,10 @@ class Comment_Command extends CommandWithDBObject {
 				'number' => 0, // Get all comments
 			)
 		);
+
+		if (!is_array($comments)) {
+			return [];
+		}
 
 		return $comments;
 	}
