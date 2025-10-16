@@ -758,22 +758,11 @@ class Comment_Command extends CommandWithDBObject {
 	 * @param array  $args Passed-in arguments.
 	 * @param bool   $all All flag.
 	 * @param string $verb Optional. Verb to use. Defaults to 'delete'.
-	 * @param string $exclude Comma separated list of comment IDs.
 	 * @return array Same as $args if not all, otherwise all comment IDs.
 	 */
-	private function check_optional_args_and_all( $args, $all, $verb = 'delete', $exclude = null ) {
+	private function check_optional_args_and_all( $args, $all, $verb = 'delete' ) {
 		if ( $all ) {
 			$args = $this->get_all_comment_ids();
-		}
-
-		if ( $all && $exclude ) {
-			$exclude_list = array_map( 'intval', explode( ',', trim( $exclude, ',' ) ) );
-			$args         = array_filter(
-				$args,
-				static function ( $id ) use ( $exclude_list ) {
-					return ! in_array( (int) $id, $exclude_list, true );
-				}
-			);
 		}
 
 		if ( empty( $args ) ) {
