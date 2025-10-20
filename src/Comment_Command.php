@@ -498,7 +498,11 @@ class Comment_Command extends CommandWithDBObject {
 			WP_CLI::error( "Failed deleting {$error_count} comments." );
 		}
 
-		exit( 0 == $status ? 0 : 1 );
+		if ( $status ) {
+			exit( 0 );
+		} else {
+			exit( 1 );
+		}
 	}
 
 	private function call( $args, $status, $success, $failure ) {
