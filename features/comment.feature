@@ -55,6 +55,7 @@ Feature: Manage WordPress comments
       """
       Success: Trashed comment 3.
       Success: Trashed comment 4.
+      Success: Deleted 2 comments.
       """
 
     When I run `wp comment delete 3`
