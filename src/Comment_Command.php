@@ -451,23 +451,54 @@ class Comment_Command extends CommandWithDBObject {
 			return;
 		}
 
-		parent::_delete(
-			$args,
-			$assoc_args,
-			function ( $comment_id, $assoc_args ) {
-				$force = (bool) Utils\get_flag_value( $assoc_args, 'force' );
+		$defer_term_counting = Utils\get_flag_value( $assoc_args, 'defer-term-counting', false );
 
-				$status = wp_get_comment_status( $comment_id );
-				$result = wp_delete_comment( $comment_id, $force );
+		if ( $all && ! $defer_term_counting ) {
+			$assoc_args['defer-term-counting'] = true;
+		}
 
-				if ( ! $result ) {
-					return [ 'error', "Failed deleting comment {$comment_id}." ];
-				}
+		$status = 0;
 
-				$verb = ( $force || 'trash' === $status ) ? 'Deleted' : 'Trashed';
-				return [ 'success', "{$verb} comment {$comment_id}." ];
+		if ( $defer_term_counting ) {
+			wp_defer_term_counting( true );
+		}
+
+		$total                = count( $args );
+		$successfully_deleted = 0;
+
+		$force = (bool) Utils\get_flag_value( $assoc_args, 'force' );
+
+		foreach ( $args as $comment_id ) {
+
+			$comment_status = wp_get_comment_status( $comment_id );
+			$result         = wp_delete_comment( $comment_id, $force );
+
+			if ( ! $result ) {
+				$response = [ 'error', "Failed deleting comment {$comment_id}." ];
+			} else {
+				$verb     = ( $force || 'trash' === $comment_status ) ? 'Deleted' : 'Trashed';
+				$response = [ 'success', "{$verb} comment {$comment_id}." ];
+				++$successfully_deleted;
 			}
-		);
+
+			$status = $this->success_or_failure( $response );
+			if ( $status ) {
+				++$successfully_deleted;
+			}
+		}
+
+		if ( $defer_term_counting ) {
+			wp_defer_term_counting( false );
+		}
+
+		if ( $status ) {
+			WP_CLI::success( "Deleted {$successfully_deleted} comments." );
+		} else {
+			$error_count = $total - $successfully_deleted;
+			WP_CLI::error( "Failed deleting {$error_count} comments." );
+		}
+
+		exit( 0 === $status ? 0 : 1 );
 	}
 
 	private function call( $args, $status, $success, $failure ) {
