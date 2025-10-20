@@ -604,6 +604,32 @@ Feature: Manage WordPress comments
       Success: Deleted 2 comments.
       """
 
+  Scenario: Delete comments with mixed success and failure
+    Given a WP install
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 1' --porcelain`
+    And save STDOUT as {COMMENT_ID_1}
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 2' --porcelain`
+    And save STDOUT as {COMMENT_ID_2}
+
+    When I run `wp comment delete {COMMENT_ID_1} {COMMENT_ID_2} 99999`
+    Then STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID_1}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID_2}.
+      """
+    And STDERR should contain:
+      """
+      Warning: Failed deleting comment 99999.
+      """
+    And STDERR should contain:
+      """
+      Error: Failed deleting 1 comments.
+      """
+    And the return code should be 1
+
   Scenario: Error when no comment IDs and no --all flag provided
     Given a WP install
 
