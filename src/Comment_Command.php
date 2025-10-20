@@ -490,7 +490,9 @@ class Comment_Command extends CommandWithDBObject {
 		}
 
 		if ( 0 === $status ) {
-			WP_CLI::success( "Deleted {$successfully_deleted} comments." );
+			if ( $total > 1 ) {
+				WP_CLI::success( "Deleted {$successfully_deleted} comments." );
+			}
 		} else {
 			$error_count = $total - $successfully_deleted;
 			WP_CLI::error( "Failed deleting {$error_count} comments." );
