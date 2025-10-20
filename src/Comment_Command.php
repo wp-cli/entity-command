@@ -475,14 +475,12 @@ class Comment_Command extends CommandWithDBObject {
 
 			if ( ! $result ) {
 				$response = [ 'error', "Failed deleting comment {$comment_id}." ];
+				$status   = $this->success_or_failure( $response );
+				// Keep status as 1 (error) if any deletion fails
 			} else {
 				$verb     = ( $force || 'trash' === $comment_status ) ? 'Deleted' : 'Trashed';
 				$response = [ 'success', "{$verb} comment {$comment_id}." ];
-				++$successfully_deleted;
-			}
-
-			$status = $this->success_or_failure( $response );
-			if ( $status ) {
+				$this->success_or_failure( $response );
 				++$successfully_deleted;
 			}
 		}
@@ -491,18 +489,14 @@ class Comment_Command extends CommandWithDBObject {
 			wp_defer_term_counting( false );
 		}
 
-		if ( $status ) {
+		if ( 0 === $status ) {
 			WP_CLI::success( "Deleted {$successfully_deleted} comments." );
 		} else {
 			$error_count = $total - $successfully_deleted;
 			WP_CLI::error( "Failed deleting {$error_count} comments." );
 		}
 
-		if ( $status ) {
-			exit( 0 );
-		} else {
-			exit( 1 );
-		}
+		exit( $status );
 	}
 
 	private function call( $args, $status, $success, $failure ) {
