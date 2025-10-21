@@ -599,11 +599,11 @@ Feature: Manage WordPress comments
       """
       Success: Trashed comment {COMMENT_ID_2}.
       """
-    And STDERR should contain:
+    And STDOUT should contain:
       """
       Warning: Failed deleting comment 99999.
       """
-    And STDERR should contain:
+    And STDOUT should contain:
       """
       Error: Failed deleting 1 comments.
       """
