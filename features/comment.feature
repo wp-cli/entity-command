@@ -583,27 +583,6 @@ Feature: Manage WordPress comments
       Success: Deleted 3 comments.
       """
 
-  Scenario: Delete comments with explicit defer-term-counting flag
-    Given a WP install
-    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 1' --porcelain`
-    And save STDOUT as {COMMENT_ID_1}
-    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 2' --porcelain`
-    And save STDOUT as {COMMENT_ID_2}
-
-    When I run `wp comment delete {COMMENT_ID_1} {COMMENT_ID_2} --defer-term-counting`
-    Then STDOUT should contain:
-      """
-      Success: Trashed comment {COMMENT_ID_1}.
-      """
-    And STDOUT should contain:
-      """
-      Success: Trashed comment {COMMENT_ID_2}.
-      """
-    And STDOUT should contain:
-      """
-      Success: Deleted 2 comments.
-      """
-
   Scenario: Delete comments with mixed success and failure
     Given a WP install
     And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 1' --porcelain`

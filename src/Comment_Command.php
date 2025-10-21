@@ -451,15 +451,10 @@ class Comment_Command extends CommandWithDBObject {
 			return;
 		}
 
-		$defer_term_counting = Utils\get_flag_value( $assoc_args, 'defer-term-counting', false );
-
-		if ( $all && ! $defer_term_counting ) {
-			$assoc_args['defer-term-counting'] = true;
-		}
-
 		$status = 0;
 
-		if ( $defer_term_counting ) {
+		$defer_term_counting = wp_defer_comment_counting();
+		if ( $all ) {
 			wp_defer_term_counting( true );
 		}
 
@@ -485,8 +480,8 @@ class Comment_Command extends CommandWithDBObject {
 			}
 		}
 
-		if ( $defer_term_counting ) {
-			wp_defer_term_counting( false );
+		if ( $all ) {
+			wp_defer_term_counting( $defer_term_counting );
 		}
 
 		if ( 0 === $status ) {
