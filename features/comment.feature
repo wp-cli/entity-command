@@ -594,17 +594,8 @@ Feature: Manage WordPress comments
     Then STDOUT should contain:
       """
       Success: Trashed comment {COMMENT_ID_1}.
-      """
-    And STDOUT should contain:
-      """
       Success: Trashed comment {COMMENT_ID_2}.
-      """
-    And STDOUT should contain:
-      """
       Warning: Failed deleting comment 99999.
-      """
-    And STDOUT should contain:
-      """
       Error: Failed deleting 1 comments.
       """
     And the return code should be 1
