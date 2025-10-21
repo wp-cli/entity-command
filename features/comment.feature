@@ -590,7 +590,7 @@ Feature: Manage WordPress comments
     And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 2' --porcelain`
     And save STDOUT as {COMMENT_ID_2}
 
-    When I run `wp comment delete {COMMENT_ID_1} {COMMENT_ID_2} 99999`
+    When I try `wp comment delete {COMMENT_ID_1} {COMMENT_ID_2} 99999`
     Then STDOUT should contain:
       """
       Success: Trashed comment {COMMENT_ID_1}.
@@ -599,11 +599,11 @@ Feature: Manage WordPress comments
       """
       Success: Trashed comment {COMMENT_ID_2}.
       """
-    And STDOUT should contain:
+    And STDERR should contain:
       """
       Warning: Failed deleting comment 99999.
       """
-    And STDOUT should contain:
+    And STDERR should contain:
       """
       Error: Failed deleting 1 comments.
       """
