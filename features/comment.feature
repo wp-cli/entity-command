@@ -591,11 +591,13 @@ Feature: Manage WordPress comments
     And save STDOUT as {COMMENT_ID_2}
 
     When I run `wp comment delete {COMMENT_ID_1} {COMMENT_ID_2} 99999`
-    Then STDOUT should contain:
+    Then STDOUT should be:
       """
       Success: Trashed comment {COMMENT_ID_1}.
       Success: Trashed comment {COMMENT_ID_2}.
-      
+      """
+    And STDERR should be:
+      """
       Warning: Failed deleting comment 99999.
       Error: Failed deleting 1 comments.
       """
