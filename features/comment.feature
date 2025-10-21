@@ -603,7 +603,7 @@ Feature: Manage WordPress comments
       """
       Warning: Failed deleting comment 99999.
       """
-    And STDERR should contain:
+    And STDOUT should contain:
       """
       Error: Failed deleting 1 comments.
       """
