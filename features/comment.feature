@@ -595,6 +595,7 @@ Feature: Manage WordPress comments
       """
       Success: Trashed comment {COMMENT_ID_1}.
       Success: Trashed comment {COMMENT_ID_2}.
+      
       Warning: Failed deleting comment 99999.
       Error: Failed deleting 1 comments.
       """
