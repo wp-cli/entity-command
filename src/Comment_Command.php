@@ -420,7 +420,7 @@ class Comment_Command extends CommandWithDBObject {
 	 * : One or more IDs of comments to delete.
 	 *
 	 * [--all]
-	 * : If set, all comments will be deleted.
+	 * : If set, all comments will be deleted. This command might be slow on a site with lots of comments.
 	 *
 	 * [--force]
 	 * : Skip the trash bin.
