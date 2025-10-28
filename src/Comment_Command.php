@@ -16,7 +16,7 @@ use WP_CLI\Utils;
  *     # Update an existing comment.
  *     $ wp comment update 123 --comment_author='That Guy'
  *     Success: Updated comment 123.
-
+ *
  *     # Delete an existing comment.
  *     $ wp comment delete 1337 --force
  *     Success: Deleted comment 1337.
