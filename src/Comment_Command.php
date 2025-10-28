@@ -808,16 +808,14 @@ class Comment_Command extends CommandWithDBObject {
 	 */
 	private function get_all_comment_ids(): array {
 		$query    = new WP_Comment_Query();
+
+		/** @var array $comments */
 		$comments = $query->query(
 			array(
 				'fields' => 'ids',
 				'number' => 0, // Get all comments
 			)
 		);
-
-		if ( ! is_array( $comments ) ) {
-			return [];
-		}
 
 		return $comments;
 	}
