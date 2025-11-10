@@ -142,8 +142,14 @@ class Term_Command extends WP_CLI_Command {
 			/**
 			 * @var \WP_Term[] $terms
 			 */
-			// phpcs:ignore WordPress.WP.DeprecatedParameters.Get_termsParam2Found -- Required for backward compatibility.
-			$terms = get_terms( $args, $assoc_args );
+			$terms = get_terms(
+				array_merge(
+					$assoc_args,
+					[
+						'taxonomy' => $args,
+					]
+				)
+			);
 		}
 
 		$terms = array_map(
@@ -211,7 +217,11 @@ class Term_Command extends WP_CLI_Command {
 
 		$assoc_args = wp_slash( $assoc_args );
 		$term       = wp_slash( $term );
-		$result     = wp_insert_term( $term, $taxonomy, $assoc_args );
+
+		/**
+		 * @var string $term
+		 */
+		$result = wp_insert_term( $term, $taxonomy, $assoc_args );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( $result->get_error_message() );
@@ -643,8 +653,13 @@ class Term_Command extends WP_CLI_Command {
 				 * @var \WP_Term[] $terms
 				 */
 
-				// phpcs:ignore WordPress.WP.DeprecatedParameters.Get_termsParam2Found -- Required for backward compatibility.
-				$terms             = get_terms( $taxonomy, [ 'hide_empty' => false ] );
+				$terms = get_terms(
+					[
+						'taxonomy'   => $taxonomy,
+						'hide_empty' => false,
+					]
+				);
+
 				$term_taxonomy_ids = wp_list_pluck( $terms, 'term_taxonomy_id' );
 
 				wp_update_term_count( $term_taxonomy_ids, $taxonomy );
