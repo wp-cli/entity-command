@@ -320,7 +320,14 @@ class Ability_Command extends WP_CLI_Command {
 		if ( 'json' === $format ) {
 			WP_CLI::line( wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
 		} elseif ( 'yaml' === $format ) {
-			WP_CLI::line( WP_CLI\Utils\mustache_render( '{{#.}}{{key}}: {{value}}{{/.}}', $result ) );
+			// Convert to YAML-like output
+			foreach ( $result as $key => $value ) {
+				if ( is_array( $value ) || is_object( $value ) ) {
+					WP_CLI::line( $key . ': ' . wp_json_encode( $value ) );
+				} else {
+					WP_CLI::line( $key . ': ' . $value );
+				}
+			}
 		}
 
 		WP_CLI::success( 'Ability executed successfully.' );
