@@ -98,7 +98,7 @@ WP_CLI::add_command(
 	'Ability_Command',
 	array(
 		'before_invoke' => function () {
-			if ( Utils\wp_version_compare( '6.8', '<=' ) ) {
+			if ( Utils\wp_version_compare( '6.9-beta1', '<' ) ) {
 				WP_CLI::error( 'Requires WordPress 6.9 or greater.' );
 			}
 		},
@@ -109,7 +109,7 @@ WP_CLI::add_command(
 	'Ability_Category_Command',
 	array(
 		'before_invoke' => function () {
-			if ( Utils\wp_version_compare( '6.8', '<=' ) ) {
+			if ( Utils\wp_version_compare( '6.9-beta1', '<' ) ) {
 				WP_CLI::error( 'Requires WordPress 6.9 or greater.' );
 			}
 		},
