@@ -85,7 +85,7 @@ class Ability_Category_Command extends WP_CLI_Command {
 		if ( function_exists( 'wp_get_ability_categories' ) ) {
 			$categories = wp_get_ability_categories();
 		} elseif ( function_exists( 'wp_ability_categories' ) ) {
-			$registry = wp_ability_categories();
+			$registry   = wp_ability_categories();
 			$categories = $registry->get_all();
 		} else {
 			$categories = array();

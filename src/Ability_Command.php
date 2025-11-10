@@ -105,7 +105,7 @@ class Ability_Command extends WP_CLI_Command {
 		if ( function_exists( 'wp_get_abilities' ) ) {
 			$abilities = wp_get_abilities();
 		} elseif ( function_exists( 'wp_abilities' ) ) {
-			$registry = wp_abilities();
+			$registry  = wp_abilities();
 			$abilities = $registry->get_all();
 		} else {
 			$abilities = array();
