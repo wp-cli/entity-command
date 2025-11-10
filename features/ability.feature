@@ -15,7 +15,7 @@ Feature: Manage WordPress abilities
   @require-wp-6.9
   Scenario: List abilities
     When I run `wp ability list --format=count`
-      Then save STDOUT as {ABILITIES_COUNT}
+    Then save STDOUT as {ABILITIES_COUNT}
 
     Given a wp-content/mu-plugins/test-abilities.php file:
       """
