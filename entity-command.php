@@ -92,3 +92,26 @@ WP_CLI::add_command(
 		},
 	)
 );
+
+WP_CLI::add_command(
+	'ability',
+	'Ability_Command',
+	array(
+		'before_invoke' => function () {
+			if ( Utils\wp_version_compare( '6.9', '<' ) ) {
+				WP_CLI::error( 'Requires WordPress 6.9 or greater.' );
+			}
+		},
+	)
+);
+WP_CLI::add_command(
+	'ability category',
+	'Ability_Category_Command',
+	array(
+		'before_invoke' => function () {
+			if ( Utils\wp_version_compare( '6.9', '<' ) ) {
+				WP_CLI::error( 'Requires WordPress 6.9 or greater.' );
+			}
+		},
+	)
+);
