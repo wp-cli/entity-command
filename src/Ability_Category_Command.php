@@ -13,14 +13,14 @@ use WP_CLI\Formatter;
  *     # List all registered ability categories
  *     $ wp ability category list --format=table
  *     +----------+-------------+
- *     | name     | description |
+ *     | slug     | description |
  *     +----------+-------------+
  *     | content  | Content operations |
  *     +----------+-------------+
  *
  *     # Get details about a specific category
  *     $ wp ability category get content --format=json
- *     {"name":"content","description":"Content operations"}
+ *     {"slug":"content","description":"Content operations"}
  *
  *     # Check if a category exists
  *     $ wp ability category exists content
@@ -32,7 +32,8 @@ use WP_CLI\Formatter;
 class Ability_Category_Command extends WP_CLI_Command {
 
 	private $fields = array(
-		'name',
+		'slug',
+		'label',
 		'description',
 	);
 
@@ -82,14 +83,7 @@ class Ability_Category_Command extends WP_CLI_Command {
 		$formatter = $this->get_formatter( $assoc_args );
 
 		// Get all registered ability categories
-		if ( function_exists( 'wp_get_ability_categories' ) ) {
-			$categories = wp_get_ability_categories();
-		} elseif ( function_exists( 'wp_ability_categories' ) ) {
-			$registry   = wp_ability_categories();
-			$categories = $registry->get_all();
-		} else {
-			$categories = array();
-		}
+		$categories = wp_get_ability_categories();
 
 		if ( empty( $categories ) ) {
 			$categories = array();
@@ -222,8 +216,9 @@ class Ability_Category_Command extends WP_CLI_Command {
 	 */
 	private function format_category_for_output( $category ) {
 		$data = array(
-			'name'        => $category->name,
-			'description' => $category->description,
+			'slug'        => $category->get_slug(),
+			'label'       => $category->get_label(),
+			'description' => $category->get_description(),
 		);
 
 		return $data;

@@ -171,9 +171,9 @@ class Ability_Command extends WP_CLI_Command {
 	 * These fields will be displayed by default for the specified ability:
 	 *
 	 * * name
-	 * * category
+	 * * label
 	 * * description
-	 * * callback
+	 * * category
 	 * * input_schema
 	 * * output_schema
 	 *
@@ -298,17 +298,9 @@ class Ability_Command extends WP_CLI_Command {
 			}
 		}
 
-		// Execute the ability
-		// First try wp_execute_ability if it exists, otherwise call the callback directly
-		if ( function_exists( 'wp_execute_ability' ) ) {
-			$result = wp_execute_ability( $ability_name, $input );
-		} else {
-			$ability = wp_get_ability( $ability_name );
-			if ( ! $ability || ! is_callable( $ability->callback ) ) {
-				WP_CLI::error( "Cannot execute ability {$ability_name}." );
-			}
-			$result = call_user_func( $ability->callback, $input );
-		}
+		$ability = wp_get_ability( $ability_name );
+
+		$result = $ability->execute( $input );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( $result->get_error_message() );
@@ -329,8 +321,6 @@ class Ability_Command extends WP_CLI_Command {
 				}
 			}
 		}
-
-		WP_CLI::success( 'Ability executed successfully.' );
 	}
 
 	/**
@@ -341,37 +331,15 @@ class Ability_Command extends WP_CLI_Command {
 	 */
 	private function format_ability_for_output( $ability ) {
 		$data = array(
-			'name'          => $ability->name,
-			'category'      => $ability->category,
-			'description'   => $ability->description,
-			'callback'      => $this->format_callback( $ability->callback ),
-			'input_schema'  => wp_json_encode( $ability->input_schema ),
-			'output_schema' => wp_json_encode( $ability->output_schema ),
+			'name'          => $ability->get_name(),
+			'label'         => $ability->get_label(),
+			'description'   => $ability->get_description(),
+			'category'      => $ability->get_category(),
+			'input_schema'  => wp_json_encode( $ability->get_input_schema() ),
+			'output_schema' => wp_json_encode( $ability->get_output_schema() ),
 		);
 
 		return $data;
-	}
-
-	/**
-	 * Formats a callback for display.
-	 *
-	 * @param callable $callback The callback to format.
-	 * @return string Formatted callback string.
-	 */
-	private function format_callback( $callback ) {
-		if ( is_string( $callback ) ) {
-			return $callback;
-		} elseif ( is_array( $callback ) && count( $callback ) === 2 ) {
-			if ( is_object( $callback[0] ) ) {
-				return get_class( $callback[0] ) . '::' . $callback[1];
-			} else {
-				return $callback[0] . '::' . $callback[1];
-			}
-		} elseif ( $callback instanceof Closure ) {
-			return '{closure}';
-		} else {
-			return '{callable}';
-		}
 	}
 
 	private function get_formatter( &$assoc_args ) {

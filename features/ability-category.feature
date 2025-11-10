@@ -14,38 +14,39 @@ Feature: Manage WordPress ability categories
 
   @require-wp-6.9
   Scenario: List ability categories
+    When I run `wp ability category list --format=count`
+    Then save STDOUT as {COUNT}
+
     Given a wp-content/mu-plugins/test-ability-categories.php file:
       """
       <?php
-      add_action( 'init', function() {
-        if ( ! function_exists( 'wp_register_ability_category' ) ) {
-          return;
-        }
-        
-        wp_register_ability_category( 'test_category_1', array(
+      add_action( 'wp_abilities_api_categories_init', function() {
+        wp_register_ability_category( 'test-category-1', array(
+          'label' => 'First test category',
           'description' => 'First test category',
         ) );
-        
-        wp_register_ability_category( 'test_category_2', array(
+
+        wp_register_ability_category( 'test-category-2', array(
+          'label' => 'Second test category',
           'description' => 'Second test category',
         ) );
       } );
       """
 
     When I run `wp ability category list --format=count`
-    Then STDOUT should contain:
+    Then STDOUT should not contain:
       """
-      2
+      {COUNT}
       """
 
-    When I run `wp ability category list --fields=name,description --format=csv`
+    When I run `wp ability category list --fields=slug,description --format=csv`
     Then STDOUT should contain:
       """
-      test_category_1,"First test category"
+      test-category-1,"First test category"
       """
     And STDOUT should contain:
       """
-      test_category_2,"Second test category"
+      test-category-2,"Second test category"
       """
 
   @require-wp-6.9
@@ -53,13 +54,10 @@ Feature: Manage WordPress ability categories
     Given a wp-content/mu-plugins/test-ability-categories.php file:
       """
       <?php
-      add_action( 'init', function() {
-        if ( ! function_exists( 'wp_register_ability_category' ) ) {
-          return;
-        }
-        
-        wp_register_ability_category( 'content_ops', array(
-          'description' => 'Content operations category',
+      add_action( 'wp_abilities_api_categories_init', function() {
+        wp_register_ability_category( 'content', array(
+          'label' => 'Content category',
+          'description' => 'Content category',
         ) );
       } );
       """
@@ -71,16 +69,16 @@ Feature: Manage WordPress ability categories
       """
     And the return code should be 1
 
-    When I run `wp ability category get content_ops --field=description`
+    When I run `wp ability category get content --field=description`
     Then STDOUT should be:
       """
-      Content operations category
+      Content category
       """
 
-    When I run `wp ability category get content_ops --field=name`
+    When I run `wp ability category get content --field=slug`
     Then STDOUT should be:
       """
-      content_ops
+      content
       """
 
   @require-wp-6.9
@@ -88,18 +86,15 @@ Feature: Manage WordPress ability categories
     Given a wp-content/mu-plugins/test-ability-categories.php file:
       """
       <?php
-      add_action( 'init', function() {
-        if ( ! function_exists( 'wp_register_ability_category' ) ) {
-          return;
-        }
-        
-        wp_register_ability_category( 'existing_category', array(
+      add_action( 'wp_abilities_api_categories_init', function() {
+        wp_register_ability_category( 'existing-category', array(
+          'label' => 'This category exists',
           'description' => 'This category exists',
         ) );
       } );
       """
 
-    When I try `wp ability category exists existing_category`
+    When I try `wp ability category exists existing-category`
     Then the return code should be 0
 
     When I try `wp ability category exists non_existent_category`

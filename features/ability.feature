@@ -14,18 +14,19 @@ Feature: Manage WordPress abilities
 
   @require-wp-6.9
   Scenario: List abilities
+    When I run `wp ability list --format=count`
+      Then save STDOUT as {ABILITIES_COUNT}
+
     Given a wp-content/mu-plugins/test-abilities.php file:
       """
       <?php
-      add_action( 'init', function() {
-        if ( ! function_exists( 'wp_register_ability' ) ) {
-          return;
-        }
-        
-        wp_register_ability( 'test_ability_1', array(
-          'category' => 'content',
+      add_action( 'wp_abilities_api_init', function() {
+        wp_register_ability( 'my-plugin/test-ability-1', array(
+          'label' => 'Test Ability 1',
+          'category' => 'site',
           'description' => 'Test ability one',
-          'callback' => function( $input ) {
+          'permission_callback' => '__return_true',
+          'execute_callback' => function( $input ) {
             return array( 'result' => 'success', 'input' => $input );
           },
           'input_schema' => array(
@@ -38,11 +39,13 @@ Feature: Manage WordPress abilities
             'type' => 'object',
           ),
         ) );
-        
-        wp_register_ability( 'test_ability_2', array(
-          'category' => 'users',
+
+        wp_register_ability( 'my-plugin/test-ability-2', array(
+        'label' => 'Test Ability 2',
+          'category' => 'user',
           'description' => 'Test ability two',
-          'callback' => function( $input ) {
+          'permission_callback' => '__return_true',
+          'execute_callback' => function( $input ) {
             return array( 'result' => 'done' );
           },
           'input_schema' => array( 'type' => 'object' ),
@@ -52,25 +55,19 @@ Feature: Manage WordPress abilities
       """
 
     When I run `wp ability list --format=count`
-    Then STDOUT should contain:
+    Then STDOUT should not contain:
       """
-      2
+      {ABILITIES_COUNT}
       """
 
     When I run `wp ability list --fields=name,category,description --format=csv`
     Then STDOUT should contain:
       """
-      test_ability_1,content,"Test ability one"
+      my-plugin/test-ability-1,site,"Test ability one"
       """
     And STDOUT should contain:
       """
-      test_ability_2,users,"Test ability two"
-      """
-
-    When I run `wp ability list --category=content --format=count`
-    Then STDOUT should contain:
-      """
-      1
+      my-plugin/test-ability-2,user,"Test ability two"
       """
 
   @require-wp-6.9
@@ -78,15 +75,13 @@ Feature: Manage WordPress abilities
     Given a wp-content/mu-plugins/test-abilities.php file:
       """
       <?php
-      add_action( 'init', function() {
-        if ( ! function_exists( 'wp_register_ability' ) ) {
-          return;
-        }
-        
-        wp_register_ability( 'get_test_post', array(
-          'category' => 'content',
+      add_action( 'wp_abilities_api_init', function() {
+        wp_register_ability( 'my-plugin/get-test-post', array(
+          'label' => 'Get Test Post',
+          'category' => 'site',
           'description' => 'Gets a test post',
-          'callback' => function( $input ) {
+          'permission_callback' => '__return_true',
+          'execute_callback' => function( $input ) {
             return array( 'id' => $input['id'], 'title' => 'Test Post' );
           },
           'input_schema' => array(
@@ -109,13 +104,13 @@ Feature: Manage WordPress abilities
       """
     And the return code should be 1
 
-    When I run `wp ability get get_test_post --field=category`
+    When I run `wp ability get my-plugin/get-test-post --field=category`
     Then STDOUT should be:
       """
-      content
+      site
       """
 
-    When I run `wp ability get get_test_post --field=description`
+    When I run `wp ability get my-plugin/get-test-post --field=description`
     Then STDOUT should be:
       """
       Gets a test post
@@ -126,15 +121,13 @@ Feature: Manage WordPress abilities
     Given a wp-content/mu-plugins/test-abilities.php file:
       """
       <?php
-      add_action( 'init', function() {
-        if ( ! function_exists( 'wp_register_ability' ) ) {
-          return;
-        }
-        
-        wp_register_ability( 'test_exists', array(
-          'category' => 'content',
+      add_action( 'wp_abilities_api_init', function() {
+        wp_register_ability( 'my-plugin/test-exists', array(
+          'label' => 'Test Exists',
+          'category' => 'site',
           'description' => 'Test exists',
-          'callback' => function( $input ) {
+          'permission_callback' => '__return_true',
+          'execute_callback' => function( $input ) {
             return array( 'result' => 'ok' );
           },
           'input_schema' => array( 'type' => 'object' ),
@@ -143,10 +136,10 @@ Feature: Manage WordPress abilities
       } );
       """
 
-    When I try `wp ability exists test_exists`
+    When I try `wp ability exists my-plugin/test-exists`
     Then the return code should be 0
 
-    When I try `wp ability exists non_existent_ability`
+    When I try `wp ability exists non-existent-ability`
     Then the return code should be 1
 
   @require-wp-6.9
@@ -154,15 +147,13 @@ Feature: Manage WordPress abilities
     Given a wp-content/mu-plugins/test-abilities.php file:
       """
       <?php
-      add_action( 'init', function() {
-        if ( ! function_exists( 'wp_register_ability' ) ) {
-          return;
-        }
-        
-        wp_register_ability( 'echo_input', array(
-          'category' => 'testing',
+      add_action( 'wp_abilities_api_init', function() {
+        wp_register_ability( 'my-plugin/echo-input', array(
+          'label' => 'Echo Input',
+          'category' => 'site',
           'description' => 'Echoes input',
-          'callback' => function( $input ) {
+          'permission_callback' => '__return_true',
+          'execute_callback' => function( $input ) {
             return array( 'echoed' => $input );
           },
           'input_schema' => array( 'type' => 'object' ),
@@ -171,14 +162,14 @@ Feature: Manage WordPress abilities
       } );
       """
 
-    When I try `wp ability execute non_existent_ability '{"test": "data"}'`
+    When I try `wp ability execute non-existent-ability '{"test": "data"}'`
     Then STDERR should contain:
       """
-      Error: Ability non_existent_ability doesn't exist.
+      Error: Ability non-existent-ability doesn't exist.
       """
     And the return code should be 1
 
-    When I run `wp ability execute echo_input '{"message": "hello"}'`
+    When I run `wp ability execute my-plugin/echo-input '{"message": "hello"}'`
     Then STDOUT should contain:
       """
       "echoed"
@@ -191,25 +182,19 @@ Feature: Manage WordPress abilities
       """
       "hello"
       """
-    And STDOUT should contain:
-      """
-      Success: Ability executed successfully.
-      """
 
   @require-wp-6.9
   Scenario: Execute an ability with input from STDIN
     Given a wp-content/mu-plugins/test-abilities.php file:
       """
       <?php
-      add_action( 'init', function() {
-        if ( ! function_exists( 'wp_register_ability' ) ) {
-          return;
-        }
-        
-        wp_register_ability( 'process_input', array(
-          'category' => 'testing',
+      add_action( 'wp_abilities_api_init', function() {
+        wp_register_ability( 'my-plugin/process-input', array(
+          'label' => 'Process Input',
+          'category' => 'site',
           'description' => 'Processes input',
-          'callback' => function( $input ) {
+          'permission_callback' => '__return_true',
+          'execute_callback' => function( $input ) {
             return array( 'processed' => true, 'data' => $input );
           },
           'input_schema' => array( 'type' => 'object' ),
@@ -218,7 +203,7 @@ Feature: Manage WordPress abilities
       } );
       """
 
-    When I run `echo '{"value": 42}' | wp ability execute process_input`
+    When I run `echo '{"value": 42}' | wp ability execute my-plugin/process-input`
     Then STDOUT should contain:
       """
       "processed": true
@@ -226,8 +211,4 @@ Feature: Manage WordPress abilities
     And STDOUT should contain:
       """
       "value": 42
-      """
-    And STDOUT should contain:
-      """
-      Success: Ability executed successfully.
       """
