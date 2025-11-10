@@ -101,7 +101,15 @@ class Ability_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		$abilities = wp_get_abilities();
+		// Get all registered abilities
+		if ( function_exists( 'wp_get_abilities' ) ) {
+			$abilities = wp_get_abilities();
+		} elseif ( function_exists( 'wp_abilities' ) ) {
+			$registry = wp_abilities();
+			$abilities = $registry->get_all();
+		} else {
+			$abilities = array();
+		}
 
 		if ( empty( $abilities ) ) {
 			$abilities = array();
@@ -291,7 +299,16 @@ class Ability_Command extends WP_CLI_Command {
 		}
 
 		// Execute the ability
-		$result = wp_execute_ability( $ability_name, $input );
+		// First try wp_execute_ability if it exists, otherwise call the callback directly
+		if ( function_exists( 'wp_execute_ability' ) ) {
+			$result = wp_execute_ability( $ability_name, $input );
+		} else {
+			$ability = wp_get_ability( $ability_name );
+			if ( ! $ability || ! is_callable( $ability->callback ) ) {
+				WP_CLI::error( "Cannot execute ability {$ability_name}." );
+			}
+			$result = call_user_func( $ability->callback, $input );
+		}
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( $result->get_error_message() );

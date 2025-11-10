@@ -81,7 +81,15 @@ class Ability_Category_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		$categories = wp_get_ability_categories();
+		// Get all registered ability categories
+		if ( function_exists( 'wp_get_ability_categories' ) ) {
+			$categories = wp_get_ability_categories();
+		} elseif ( function_exists( 'wp_ability_categories' ) ) {
+			$registry = wp_ability_categories();
+			$categories = $registry->get_all();
+		} else {
+			$categories = array();
+		}
 
 		if ( empty( $categories ) ) {
 			$categories = array();

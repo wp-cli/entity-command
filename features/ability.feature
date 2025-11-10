@@ -3,15 +3,8 @@ Feature: Manage WordPress abilities
   Background:
     Given a WP install
 
-  @require-wp-6.9
+  @less-than-wp-6.9
   Scenario: Ability commands require WordPress 6.9+
-    When I try `wp core download --version=6.8 --force`
-    And I run `wp core version`
-    Then STDOUT should contain:
-      """
-      6.8
-      """
-
     When I try `wp ability list`
     Then STDERR should contain:
       """
