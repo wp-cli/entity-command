@@ -26,12 +26,12 @@ use WP_CLI\Formatter;
  */
 class Block_Command extends WP_CLI_Command {
 
-	private $fields = array(
+	private $fields = [
 		'name',
 		'title',
 		'description',
 		'category',
-	);
+	];
 
 	/**
 	 * Lists registered block types.
@@ -102,7 +102,7 @@ class Block_Command extends WP_CLI_Command {
 		$registry = WP_Block_Type_Registry::get_instance();
 		$blocks   = $registry->get_all_registered();
 
-		$items = array();
+		$items = [];
 		foreach ( $blocks as $block ) {
 			$items[] = $this->prepare_block_for_output( $block );
 		}
@@ -187,24 +187,24 @@ class Block_Command extends WP_CLI_Command {
 	 * @return array Prepared block data.
 	 */
 	private function prepare_block_for_output( $block ) {
-		return array(
+		return [
 			'name'          => $block->name,
-			'title'         => $block->title ?? '',
-			'description'   => $block->description ?? '',
+			'title'         => $block->title ?? '', // @phpstan-ignore-line (added in WP 5.5)
+			'description'   => $block->description ?? '', // @phpstan-ignore-line (added in WP 5.5)
 			'category'      => $block->category ?? '',
 			'parent'        => $block->parent ?? null,
 			'icon'          => $block->icon ?? '',
-			'keywords'      => $block->keywords ?? array(),
+			'keywords'      => $block->keywords ?? [], // @phpstan-ignore-line (added in WP 5.5)
 			'textdomain'    => $block->textdomain ?? '',
-			'supports'      => $block->supports ?? array(),
-			'styles'        => $block->styles ?? array(),
-			'variations'    => $block->variations ?? array(),
-			'api_version'   => $block->api_version ?? 1,
+			'supports'      => $block->supports ?? [],
+			'styles'        => $block->styles ?? [], // @phpstan-ignore-line (added in WP 5.5)
+			'variations'    => $block->variations ?? [], // added in WP 5.8 and replaced with magic getter in 6.1
+			'api_version'   => $block->api_version ?? 1, // @phpstan-ignore-line (added in WP 5.6)
 			'editor_script' => $block->editor_script ?? '',
 			'editor_style'  => $block->editor_style ?? '',
 			'script'        => $block->script ?? '',
 			'style'         => $block->style ?? '',
-		);
+		];
 	}
 
 	/**
