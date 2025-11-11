@@ -434,6 +434,11 @@ class Post_Command extends CommandWithDBObject {
 			$post_arr['url'] = get_permalink( $post->ID );
 		}
 
+		// Add block_version field if the function exists (WordPress 5.0+).
+		if ( function_exists( 'block_version' ) ) {
+			$post_arr['block_version'] = block_version( $post->post_content );
+		}
+
 		if ( empty( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = array_keys( $post_arr );
 		}
@@ -1057,6 +1062,126 @@ class Post_Command extends CommandWithDBObject {
 		} else {
 			WP_CLI::halt( 1 );
 		}
+	}
+
+	/**
+	 * Checks whether a post has blocks.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check if post has blocks
+	 *     $ wp post has-blocks 123
+	 *     Success: Post 123 has blocks.
+	 *
+	 * @subcommand has-blocks
+	 */
+	public function has_blocks( $args, $assoc_args ) {
+		$post = $this->fetcher->get_check( $args[0] );
+
+		if ( has_blocks( $post->post_content ) ) {
+			WP_CLI::success( "Post {$post->ID} has blocks." );
+		} else {
+			WP_CLI::error( "Post {$post->ID} does not have blocks." );
+		}
+	}
+
+	/**
+	 * Checks whether a post contains a specific block type.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * <block>
+	 * : Block type name (e.g., core/paragraph).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check if post contains core/paragraph block
+	 *     $ wp post has-block 123 core/paragraph
+	 *     Success: Post 123 contains the block 'core/paragraph'.
+	 *
+	 * @subcommand has-block
+	 */
+	public function has_block( $args, $assoc_args ) {
+		$post       = $this->fetcher->get_check( $args[0] );
+		$block_name = $args[1];
+
+		if ( has_block( $block_name, $post->post_content ) ) {
+			WP_CLI::success( "Post {$post->ID} contains the block '{$block_name}'." );
+		} else {
+			WP_CLI::error( "Post {$post->ID} does not contain the block '{$block_name}'." );
+		}
+	}
+
+	/**
+	 * Parses blocks from a post and returns the block structure.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to parse blocks from.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: json
+	 * options:
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Parse blocks from post and output as JSON
+	 *     $ wp post parse-blocks 123
+	 *     [{"blockName":"core/paragraph","attrs":{},"innerBlocks":[],"innerHTML":"<p>Hello World</p>","innerContent":["<p>Hello World</p>"]}]
+	 *
+	 *     # Parse blocks and output as YAML
+	 *     $ wp post parse-blocks 123 --format=yaml
+	 *
+	 * @subcommand parse-blocks
+	 */
+	public function parse_blocks( $args, $assoc_args ) {
+		$post   = $this->fetcher->get_check( $args[0] );
+		$blocks = parse_blocks( $post->post_content );
+
+		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'json';
+
+		if ( 'json' === $format ) {
+			WP_CLI::line( json_encode( $blocks, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
+		} elseif ( 'yaml' === $format ) {
+			WP_CLI::line( WP_CLI\Utils\mustache_render( 'yaml_dump.mustache', array( 'output' => $blocks ) ) );
+		}
+	}
+
+	/**
+	 * Renders blocks from a post and returns the final HTML.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to render blocks from.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Render blocks from post
+	 *     $ wp post render-blocks 123
+	 *     <p>Hello World</p>
+	 *
+	 * @subcommand render-blocks
+	 */
+	public function render_blocks( $args, $assoc_args ) {
+		$post = $this->fetcher->get_check( $args[0] );
+		$html = do_blocks( $post->post_content );
+
+		WP_CLI::line( $html );
 	}
 
 	/**
