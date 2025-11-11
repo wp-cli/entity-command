@@ -314,6 +314,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 
 		$object_id = $this->check_object_id( $object_id );
 
+		/**
+		 * @var array|string $meta_value
+		 */
 		$meta_value = sanitize_meta( $meta_key, $meta_value, $this->meta_type );
 		$old_value  = sanitize_meta( $meta_key, $this->get_metadata( $object_id, $meta_key, true ), $this->meta_type );
 
@@ -454,6 +457,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 			WP_CLI::error( $exception->getMessage() );
 		}
 
+		/**
+		 * @var array|string $patched_meta_value
+		 */
 		$patched_meta_value = sanitize_meta( $meta_key, $traverser->value(), $this->meta_type );
 
 		if ( $patched_meta_value === $old_meta_value ) {

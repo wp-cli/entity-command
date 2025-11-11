@@ -554,7 +554,7 @@ class User_Command extends CommandWithDBObject {
 	 *     $ wp user update 123 --display_name=Mary --user_pass=marypass
 	 *     Success: Updated user 123.
 	 */
-	public function update( $args, $assoc_args ) {
+	public function update( $args, array $assoc_args ) {
 		if ( isset( $assoc_args['user_login'] ) ) {
 			WP_CLI::warning( "User logins can't be changed." );
 			unset( $assoc_args['user_login'] );
