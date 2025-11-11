@@ -11,11 +11,11 @@ use WP_CLI\Formatter;
  *
  *     # List all registered block patterns
  *     $ wp pattern list
- *     +------------------+-------------------+
- *     | name             | title             |
- *     +------------------+-------------------+
- *     | core/text-three-columns | Three Columns of Text |
- *     +------------------+-------------------+
+ *     +---------------------------+---------------------------+
+ *     | name                      | title                     |
+ *     +---------------------------+---------------------------+
+ *     | core/text-three-columns   | Three Columns of Text     |
+ *     +---------------------------+---------------------------+
  *
  *     # Get details about a specific block pattern
  *     $ wp pattern get core/text-three-columns
@@ -53,6 +53,7 @@ class Pattern_Command extends WP_CLI_Command {
 	 *   - json
 	 *   - count
 	 *   - yaml
+	 *   - ids
 	 * ---
 	 *
 	 * ## AVAILABLE FIELDS

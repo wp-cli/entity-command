@@ -102,9 +102,6 @@ WP_CLI::add_command(
 			if ( Utils\wp_version_compare( '5.0', '<' ) ) {
 				WP_CLI::error( 'The block commands require WordPress 5.0 or greater.' );
 			}
-			if ( ! class_exists( 'WP_Block_Type_Registry' ) ) {
-				WP_CLI::error( 'WP_Block_Type_Registry class not found.' );
-			}
 		},
 	)
 );
@@ -116,9 +113,6 @@ WP_CLI::add_command(
 		'before_invoke' => function () {
 			if ( Utils\wp_version_compare( '5.5', '<' ) ) {
 				WP_CLI::error( 'The pattern commands require WordPress 5.5 or greater.' );
-			}
-			if ( ! class_exists( 'WP_Block_Patterns_Registry' ) ) {
-				WP_CLI::error( 'WP_Block_Patterns_Registry class not found.' );
 			}
 		},
 	)

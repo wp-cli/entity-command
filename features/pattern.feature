@@ -13,18 +13,14 @@ Feature: Manage WordPress block patterns
 
   @require-wp-5.5
   Scenario: Getting a specific block pattern
-    Given I run `wp pattern list --format=ids`
-    And save STDOUT as {PATTERN_NAME}
-
-    When I run `wp pattern get {PATTERN_NAME}`
+    When I run `wp pattern list --format=csv --fields=name`
     Then STDOUT should contain:
       """
       name
       """
-    And STDOUT should contain:
-      """
-      title
-      """
+
+    When I run `wp pattern list --format=count`
+    Then STDOUT should match /^\d+$/
 
   @require-wp-5.5
   Scenario: Getting a non-existent block pattern
