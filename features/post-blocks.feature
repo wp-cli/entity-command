@@ -101,6 +101,6 @@ Feature: Manage WordPress post blocks
     When I try `wp post has-blocks 1`
     Then STDERR should contain:
       """
-      Error: Requires WordPress 5.0 or greater.
+      Error: This command requires WordPress 5.0 or greater.
       """
     And the return code should be 1
