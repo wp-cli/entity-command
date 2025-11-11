@@ -402,7 +402,7 @@ Feature: Manage WordPress posts
     And save STDOUT as {CAT_2}
     And I run `wp term create post_tag "Term One" --porcelain`
     And I run `wp term create post_tag "Term Two" --porcelain`
-    When I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"category":[{CAT_1},{CAT_2}],"post_tag":["term-one", "term-two"]}' --porcelain`
+    And I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"category":[{CAT_1},{CAT_2}],"post_tag":["term-one", "term-two"]}' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
