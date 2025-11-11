@@ -497,6 +497,7 @@ class Post_Command extends CommandWithDBObject {
 		$post_type = get_post_type( $post_id );
 
 		if ( ! $assoc_args['force']
+			&& 'trash' !== $status
 			&& ( 'post' !== $post_type && 'page' !== $post_type ) ) {
 			return [
 				'error',
