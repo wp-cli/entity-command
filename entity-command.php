@@ -92,3 +92,28 @@ WP_CLI::add_command(
 		},
 	)
 );
+
+// Block and pattern commands require WordPress 5.0+.
+WP_CLI::add_command(
+	'block',
+	'Block_Command',
+	array(
+		'before_invoke' => function () {
+			if ( Utils\wp_version_compare( '5.0', '<' ) ) {
+				WP_CLI::error( 'Requires WordPress 5.0 or greater.' );
+			}
+		},
+	)
+);
+
+WP_CLI::add_command(
+	'pattern',
+	'Pattern_Command',
+	array(
+		'before_invoke' => function () {
+			if ( Utils\wp_version_compare( '5.5', '<' ) ) {
+				WP_CLI::error( 'Requires WordPress 5.5 or greater.' );
+			}
+		},
+	)
+);
