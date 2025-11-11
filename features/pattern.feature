@@ -18,6 +18,11 @@ Feature: Manage WordPress block patterns
     """
 
   @require-wp-5.5
+  Scenario: Filtering block patterns by category
+    When I run `wp pattern list --category=buttons --format=count`
+    Then STDOUT should match /^\d+$/
+
+  @require-wp-5.5
   Scenario: Getting a specific block pattern
     When I run `wp pattern list --format=csv --fields=name`
     Then STDOUT should contain:
