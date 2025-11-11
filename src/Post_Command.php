@@ -1090,7 +1090,7 @@ class Post_Command extends CommandWithDBObject {
 		if ( has_blocks( $post->post_content ) ) {
 			WP_CLI::success( "Post {$post->ID} has blocks." );
 		} else {
-			WP_CLI::error( "Post {$post->ID} does not have blocks." );
+			WP_CLI::halt( 1 );
 		}
 	}
 
@@ -1124,7 +1124,7 @@ class Post_Command extends CommandWithDBObject {
 		if ( has_block( $block_name, $post->post_content ) ) {
 			WP_CLI::success( "Post {$post->ID} contains the block '{$block_name}'." );
 		} else {
-			WP_CLI::error( "Post {$post->ID} does not contain the block '{$block_name}'." );
+			WP_CLI::halt( 1 );
 		}
 	}
 
@@ -1164,15 +1164,16 @@ class Post_Command extends CommandWithDBObject {
 		$post   = $this->fetcher->get_check( $args[0] );
 		$blocks = parse_blocks( $post->post_content );
 
-		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'json';
+		$fields = [
+			'blockName',
+			'attrs',
+			'innerBlocks',
+			'innerHTML',
+			'innerContent',
+		];
 
-		if ( 'json' === $format ) {
-			WP_CLI::line( json_encode( $blocks, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
-		} elseif ( 'yaml' === $format ) {
-			foreach ( $blocks as $block ) {
-				WP_CLI::line( \Spyc::YAMLDump( $block ) );
-			}
-		}
+		$formatter = new \WP_CLI\Formatter( $assoc_args, $fields );
+		$formatter->display_items( $blocks );
 	}
 
 	/**

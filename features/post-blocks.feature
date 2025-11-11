@@ -23,10 +23,7 @@ Feature: Manage WordPress post blocks
     And save STDOUT as {POST_ID}
 
     When I try `wp post has-blocks {POST_ID}`
-    Then STDERR should contain:
-      """
-      Error: Post {POST_ID} does not have blocks.
-      """
+    Then STDERR should be empty
     And the return code should be 1
 
   @require-wp-5.0
@@ -42,17 +39,8 @@ Feature: Manage WordPress post blocks
       """
     And the return code should be 0
 
-  @require-wp-5.0
-  Scenario: Check if a post does not contain a specific block type
-    When I run `wp post create --post_title='Block post' --post_content='<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph -->' --porcelain`
-    Then STDOUT should be a number
-    And save STDOUT as {POST_ID}
-
     When I try `wp post has-block {POST_ID} core/image`
-    Then STDERR should contain:
-      """
-      Error: Post {POST_ID} does not contain the block 'core/image'.
-      """
+    Then STDERR should be empty
     And the return code should be 1
 
   @require-wp-5.0
@@ -62,17 +50,20 @@ Feature: Manage WordPress post blocks
     And save STDOUT as {POST_ID}
 
     When I run `wp post parse-blocks {POST_ID}`
-    Then STDOUT should be valid JSON
-    And STDOUT should contain:
+    Then STDOUT should be JSON containing:
       """
-      "blockName": "core/paragraph"
+      [
+          {
+              "blockName": "core/paragraph",
+              "attrs": [],
+              "innerBlocks": [],
+              "innerHTML": "<p>Hello World</p>",
+              "innerContent": [
+                  "<p>Hello World</p>"
+              ]
+          }
+      ]
       """
-
-  @require-wp-5.0
-  Scenario: Parse blocks and output as YAML
-    When I run `wp post create --post_title='Block post' --post_content='<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph -->' --porcelain`
-    Then STDOUT should be a number
-    And save STDOUT as {POST_ID}
 
     When I run `wp post parse-blocks {POST_ID} --format=yaml`
     Then STDOUT should contain:
@@ -105,11 +96,11 @@ Feature: Manage WordPress post blocks
     When I run `wp post get {POST_ID} --field=block_version`
     Then STDOUT should match /^\d+$/
 
-  @require-wp-4.9
+  @less-than-wp-5.0
   Scenario: Post block commands require WordPress 5.0+
     When I try `wp post has-blocks 1`
     Then STDERR should contain:
       """
-      Error: This command requires WordPress 5.0 or greater.
+      Error: Requires WordPress 5.0 or greater.
       """
     And the return code should be 1

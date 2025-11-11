@@ -100,7 +100,7 @@ WP_CLI::add_command(
 	array(
 		'before_invoke' => function () {
 			if ( Utils\wp_version_compare( '5.0', '<' ) ) {
-				WP_CLI::error( 'The block commands require WordPress 5.0 or greater.' );
+				WP_CLI::error( 'Requires WordPress 5.0 or greater.' );
 			}
 		},
 	)
@@ -112,7 +112,7 @@ WP_CLI::add_command(
 	array(
 		'before_invoke' => function () {
 			if ( Utils\wp_version_compare( '5.5', '<' ) ) {
-				WP_CLI::error( 'The pattern commands require WordPress 5.5 or greater.' );
+				WP_CLI::error( 'Requires WordPress 5.5 or greater.' );
 			}
 		},
 	)
