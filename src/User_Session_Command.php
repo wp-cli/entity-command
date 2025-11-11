@@ -71,8 +71,8 @@ class User_Session_Command extends WP_CLI_Command {
 	 */
 	public function destroy( $args, $assoc_args ) {
 		$user    = $this->fetcher->get_check( $args[0] );
-		$token   = Utils\get_flag_value( $args, 1, null );
-		$all     = Utils\get_flag_value( $assoc_args, 'all', false );
+		$token   = $args[1] ?? null;
+		$all     = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
 		$manager = WP_Session_Tokens::get_instance( $user->ID );
 
 		if ( $token && $all ) {
@@ -173,7 +173,13 @@ class User_Session_Command extends WP_CLI_Command {
 	protected function get_all_sessions( WP_Session_Tokens $manager ) {
 		// Make the private session data accessible to WP-CLI
 		$get_sessions = new ReflectionMethod( $manager, 'get_sessions' );
-		$get_sessions->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$get_sessions->setAccessible( true );
+		}
+
+		/**
+		 * @var array<array{token: string|int, login_time: string, login: int, expiration_time: string, expiration: int}> $sessions
+		 */
 		$sessions = $get_sessions->invoke( $manager );
 
 		array_walk(
@@ -190,7 +196,9 @@ class User_Session_Command extends WP_CLI_Command {
 
 	protected function destroy_session( WP_Session_Tokens $manager, $token ) {
 		$update_session = new ReflectionMethod( $manager, 'update_session' );
-		$update_session->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$update_session->setAccessible( true );
+		}
 		return $update_session->invoke( $manager, $token, null );
 	}
 

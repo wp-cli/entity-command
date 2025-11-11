@@ -163,8 +163,8 @@ final class User_Application_Password_Command {
 			static function ( $a, $b ) use ( $orderby, $order ) {
 				// Sort array.
 				return 'asc' === $order
-					? $a[ $orderby ] > $b[ $orderby ]
-					: $a[ $orderby ] < $b[ $orderby ];
+					? $a[ $orderby ] <=> $b[ $orderby ]
+					: $b[ $orderby ] <=> $a[ $orderby ];
 			}
 		);
 
@@ -315,8 +315,15 @@ final class User_Application_Password_Command {
 	public function create( $args, $assoc_args ) {
 		$args = $this->replace_login_with_user_id( $args );
 
+		/**
+		 * @var string $user_id
+		 * @var string $app_name
+		 */
 		list( $user_id, $app_name ) = $args;
 
+		/**
+		 * @var string $app_id
+		 */
 		$app_id = Utils\get_flag_value( $assoc_args, 'app-id', '' );
 
 		$arguments = [
@@ -324,7 +331,7 @@ final class User_Application_Password_Command {
 			'app_id' => $app_id,
 		];
 
-		$result = WP_Application_Passwords::create_new_application_password( $user_id, $arguments );
+		$result = WP_Application_Passwords::create_new_application_password( (int) $user_id, $arguments );
 
 		if ( $result instanceof WP_Error ) {
 			WP_CLI::error( $result );

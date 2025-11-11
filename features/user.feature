@@ -432,6 +432,39 @@ Feature: Manage WordPress users
       publish_posts
       """
 
+  Scenario: Show error when trying to remove capability same as role
+    Given a WP install
+
+    When I run `wp user create testuser2 testuser2@example.com --first_name=test --last_name=user --role=contributor --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user list-caps {USER_ID}`
+    Then STDOUT should contain:
+      """
+      contributor
+      """
+
+    When I run `wp user get {USER_ID} --field=roles`
+    Then STDOUT should contain:
+      """
+      contributor
+      """
+
+    When I try `wp user remove-cap {USER_ID} contributor`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Aborting because a role has the same name as 'contributor'. Use `wp user remove-cap {USER_ID} contributor --force` to proceed with the removal.
+      """
+    And STDOUT should be empty
+
+    When I run `wp user remove-cap {USER_ID} contributor --force`
+    Then STDOUT should be:
+      """
+      Success: Removed 'contributor' cap for testuser2 ({USER_ID}).
+      """
+
   Scenario: Show password when creating a user
     Given a WP install
 

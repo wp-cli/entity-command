@@ -33,9 +33,9 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 	 * Create a given database object.
 	 * Exits with status.
 	 *
-	 * @param array $args Arguments passed to command. Generally unused.
-	 * @param array $assoc_args Parameters passed to command to be passed to callback.
-	 * @param string $callback Function used to create object.
+	 * @param array    $args       Arguments passed to command. Generally unused.
+	 * @param array    $assoc_args Parameters passed to command to be passed to callback.
+	 * @param callable $callback   Function used to create object.
 	 */
 	protected function _create( $args, $assoc_args, $callback ) {
 		unset( $assoc_args[ $this->obj_id_key ] );
@@ -57,9 +57,9 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 	 * Update a given database object.
 	 * Exits with status.
 	 *
-	 * @param array $args Collection of one or more object ids to update.
-	 * @param array $assoc_args Fields => values to update on each object.
-	 * @param string $callback Function used to update object.
+	 * @param array    $args       Collection of one or more object ids to update.
+	 * @param array    $assoc_args Fields => values to update on each object.
+	 * @param callable $callback   Function used to update object.
 	 */
 	protected function _update( $args, $assoc_args, $callback ) {
 		$status = 0;
@@ -183,18 +183,5 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 			$fields = $this->obj_fields;
 		}
 		return new Formatter( $assoc_args, $fields, $this->obj_type );
-	}
-
-	/**
-	 * Given a callback, display the URL for one or more objects.
-	 *
-	 * @param array $args One or more object references.
-	 * @param string $callback Function to get URL for the object.
-	 */
-	protected function _url( $args, $callback ) {
-		foreach ( $args as $obj_id ) {
-			$object = $this->fetcher->get_check( $obj_id );
-			WP_CLI::line( $callback( $object->{$this->obj_id_key} ) );
-		}
 	}
 }
