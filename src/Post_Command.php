@@ -1081,6 +1081,10 @@ class Post_Command extends CommandWithDBObject {
 	 * @subcommand has-blocks
 	 */
 	public function has_blocks( $args, $assoc_args ) {
+		if ( ! function_exists( 'has_blocks' ) ) {
+			WP_CLI::error( 'The has_blocks() function requires WordPress 5.0 or greater.' );
+		}
+
 		$post = $this->fetcher->get_check( $args[0] );
 
 		if ( has_blocks( $post->post_content ) ) {
@@ -1110,6 +1114,10 @@ class Post_Command extends CommandWithDBObject {
 	 * @subcommand has-block
 	 */
 	public function has_block( $args, $assoc_args ) {
+		if ( ! function_exists( 'has_block' ) ) {
+			WP_CLI::error( 'The has_block() function requires WordPress 5.0 or greater.' );
+		}
+
 		$post       = $this->fetcher->get_check( $args[0] );
 		$block_name = $args[1];
 
@@ -1149,6 +1157,10 @@ class Post_Command extends CommandWithDBObject {
 	 * @subcommand parse-blocks
 	 */
 	public function parse_blocks( $args, $assoc_args ) {
+		if ( ! function_exists( 'parse_blocks' ) ) {
+			WP_CLI::error( 'The parse_blocks() function requires WordPress 5.0 or greater.' );
+		}
+
 		$post   = $this->fetcher->get_check( $args[0] );
 		$blocks = parse_blocks( $post->post_content );
 
@@ -1157,7 +1169,9 @@ class Post_Command extends CommandWithDBObject {
 		if ( 'json' === $format ) {
 			WP_CLI::line( json_encode( $blocks, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
 		} elseif ( 'yaml' === $format ) {
-			WP_CLI::line( WP_CLI\Utils\mustache_render( 'yaml_dump.mustache', array( 'output' => $blocks ) ) );
+			foreach ( $blocks as $block ) {
+				WP_CLI::line( \WP_CLI\Utils\yaml_dump( $block ) );
+			}
 		}
 	}
 
@@ -1178,6 +1192,10 @@ class Post_Command extends CommandWithDBObject {
 	 * @subcommand render-blocks
 	 */
 	public function render_blocks( $args, $assoc_args ) {
+		if ( ! function_exists( 'do_blocks' ) ) {
+			WP_CLI::error( 'The do_blocks() function requires WordPress 5.0 or greater.' );
+		}
+
 		$post = $this->fetcher->get_check( $args[0] );
 		$html = do_blocks( $post->post_content );
 

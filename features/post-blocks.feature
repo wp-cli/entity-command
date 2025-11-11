@@ -108,4 +108,8 @@ Feature: Manage WordPress post blocks
   @require-wp-4.9
   Scenario: Post block commands require WordPress 5.0+
     When I try `wp post has-blocks 1`
-    Then the return code should be 1
+    Then STDERR should contain:
+      """
+      Error: The has_blocks() function requires WordPress 5.0 or greater.
+      """
+    And the return code should be 1
