@@ -57,6 +57,23 @@ Feature: Manage WordPress posts
     When I try the previous command again
     Then the return code should be 1
 
+  Scenario: Deleting already trashed custom post type posts
+    When I run `wp post create --post_title='Test CPT post' --post_type='book' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BOOK_POST_ID}
+
+    When I run `wp post update {BOOK_POST_ID} --post_status='trash'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {BOOK_POST_ID}.
+      """
+
+    When I run `wp post delete {BOOK_POST_ID}`
+    Then STDOUT should be:
+      """
+      Success: Deleted post {BOOK_POST_ID}.
+      """
+
   Scenario: Updating an invalid post should exit with an error
     Given a WP install
 
