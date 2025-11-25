@@ -63,8 +63,11 @@ class Comment_Command extends CommandWithDBObject {
 	 *     # Create comment.
 	 *     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
 	 *     Success: Created comment 932.
+	 *
+	 * @param string[] $args Positional arguments. Unused.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
-	public function create( $args, array $assoc_args ) {
+	public function create( $args, $assoc_args ) {
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create(
 			$args,
@@ -110,8 +113,11 @@ class Comment_Command extends CommandWithDBObject {
 	 *     # Update comment.
 	 *     $ wp comment update 123 --comment_author='That Guy'
 	 *     Success: Updated comment 123.
+	 *
+	 * @param string[] $args Positional arguments. Comment IDs to update.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
-	public function update( $args, array $assoc_args ) {
+	public function update( $args, $assoc_args ) {
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update(
 			$args,
