@@ -298,6 +298,11 @@ class Ability_Command extends WP_CLI_Command {
 			}
 		}
 
+		/**
+		 * Existence is checked above with wp_has_ability().
+		 *
+		 * @var \WP_Ability $ability
+		 */
 		$ability = wp_get_ability( $ability_name );
 
 		$result = $ability->execute( $input );
@@ -310,10 +315,10 @@ class Ability_Command extends WP_CLI_Command {
 		$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'json';
 
 		if ( 'json' === $format ) {
-			WP_CLI::line( wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
+			WP_CLI::line( (string) wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
 		} elseif ( 'yaml' === $format ) {
 			// Convert to YAML-like output
-			foreach ( $result as $key => $value ) {
+			foreach ( (array) $result as $key => $value ) {
 				if ( is_array( $value ) || is_object( $value ) ) {
 					WP_CLI::line( $key . ': ' . wp_json_encode( $value ) );
 				} else {
