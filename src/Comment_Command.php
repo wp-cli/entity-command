@@ -94,7 +94,7 @@ class Comment_Command extends CommandWithDBObject {
 	 *
 	 *     # Create a note (WordPress 6.9+).
 	 *     $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
-	 *     Success: Created comment 933. 	 *
+	 *     Success: Created comment 933.     *
 	 * @param string[] $args Positional arguments. Unused.
 	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
