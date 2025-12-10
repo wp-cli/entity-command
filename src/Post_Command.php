@@ -1060,6 +1060,88 @@ class Post_Command extends CommandWithDBObject {
 	}
 
 	/**
+	 * Checks if a post contains any blocks.
+	 *
+	 * Exits with return code 0 if the post contains blocks,
+	 * or return code 1 if it does not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check if post contains blocks.
+	 *     $ wp post has-blocks 123
+	 *     Success: Post 123 contains blocks.
+	 *
+	 *     # Check a classic (non-block) post.
+	 *     $ wp post has-blocks 456
+	 *     Error: Post 456 does not contain blocks.
+	 *
+	 *     # Use in a shell conditional.
+	 *     $ if wp post has-blocks 123 2>/dev/null; then
+	 *     >   echo "Post uses blocks"
+	 *     > fi
+	 *
+	 * @subcommand has-blocks
+	 */
+	public function has_blocks( $args, $assoc_args ) {
+		$post = $this->fetcher->get_check( $args[0] );
+
+		if ( has_blocks( $post ) ) {
+			WP_CLI::success( "Post {$post->ID} contains blocks." );
+		} else {
+			WP_CLI::error( "Post {$post->ID} does not contain blocks." );
+		}
+	}
+
+	/**
+	 * Checks if a post contains a specific block type.
+	 *
+	 * Exits with return code 0 if the post contains the specified block,
+	 * or return code 1 if it does not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * <block-name>
+	 * : The block type name to check for (e.g., 'core/paragraph').
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check if post contains a paragraph block.
+	 *     $ wp post has-block 123 core/paragraph
+	 *     Success: Post 123 contains block 'core/paragraph'.
+	 *
+	 *     # Check for a heading block.
+	 *     $ wp post has-block 123 core/heading
+	 *     Success: Post 123 contains block 'core/heading'.
+	 *
+	 *     # Check for a block that doesn't exist.
+	 *     $ wp post has-block 123 core/gallery
+	 *     Error: Post 123 does not contain block 'core/gallery'.
+	 *
+	 *     # Check for a custom block from a plugin.
+	 *     $ wp post has-block 123 my-plugin/custom-block
+	 *
+	 * @subcommand has-block
+	 */
+	public function has_block( $args, $assoc_args ) {
+		$post       = $this->fetcher->get_check( $args[0] );
+		$block_name = $args[1];
+
+		if ( has_block( $block_name, $post ) ) {
+			WP_CLI::success( "Post {$post->ID} contains block '{$block_name}'." );
+		} else {
+			WP_CLI::error( "Post {$post->ID} does not contain block '{$block_name}'." );
+		}
+	}
+
+	/**
 	 * Convert a date-time string with a hyphen separator to a space separator.
 	 *
 	 * @param string $date_string The date-time string to convert.

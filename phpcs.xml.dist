@@ -64,7 +64,7 @@
 		<exclude-pattern>*/src/Network_Meta_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Network_Namespace\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Option_Command\.php$</exclude-pattern>
-		<exclude-pattern>*/src/Post(_Meta|_Term|_Type)?_Command\.php$</exclude-pattern>
+		<exclude-pattern>*/src/Post(_Block|_Meta|_Term|_Type)?_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Signup_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Site(_Meta|_Option)?_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Term(_Meta)?_Command\.php$</exclude-pattern>
