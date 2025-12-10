@@ -1496,7 +1496,7 @@ class Post_Block_Command extends WP_CLI_Command {
 			rsort( $original_indices );
 
 			foreach ( $original_indices as $original_idx ) {
-				array_splice( $blocks, $original_idx, 1 );
+				array_splice( $blocks, (int) $original_idx, 1 );
 				++$removed_count;
 			}
 		} elseif ( $remove_all && null !== $block_name ) {
