@@ -1462,18 +1462,42 @@ class Post_Block_Command extends WP_CLI_Command {
 			WP_CLI::error( 'You must specify either a block name or --index.' );
 		}
 
-		$blocks        = parse_blocks( $post->post_content );
+		$blocks = parse_blocks( $post->post_content );
+
+		// Filter out empty blocks but keep track of original indices.
+		$filtered_blocks = [];
+		$index_map       = [];
+		foreach ( $blocks as $original_idx => $block ) {
+			if ( ! empty( $block['blockName'] ) ) {
+				$index_map[ count( $filtered_blocks ) ] = $original_idx;
+				$filtered_blocks[]                      = $block;
+			}
+		}
+
 		$removed_count = 0;
 
 		if ( null !== $indices ) {
 			$index_array = array_map( 'intval', explode( ',', $indices ) );
-			rsort( $index_array );
 
+			// Validate all indices first.
 			foreach ( $index_array as $idx ) {
-				if ( isset( $blocks[ $idx ] ) ) {
-					array_splice( $blocks, $idx, 1 );
-					++$removed_count;
+				if ( $idx < 0 || $idx >= count( $filtered_blocks ) ) {
+					WP_CLI::error( "Invalid index: {$idx}. Post has " . count( $filtered_blocks ) . ' block(s) (0-indexed).' );
 				}
+			}
+
+			// Map to original indices and sort in reverse order to remove from end first.
+			$original_indices = array_map(
+				function ( $idx ) use ( $index_map ) {
+					return $index_map[ $idx ];
+				},
+				$index_array
+			);
+			rsort( $original_indices );
+
+			foreach ( $original_indices as $original_idx ) {
+				array_splice( $blocks, $original_idx, 1 );
+				++$removed_count;
 			}
 		} elseif ( $remove_all && null !== $block_name ) {
 			$new_blocks = [];

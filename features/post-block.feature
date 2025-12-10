@@ -1312,6 +1312,76 @@ Feature: Manage blocks in post content
       """
 
   @require-wp-5.0
+  Scenario: Remove by index with whitespace between blocks
+    Given a WP install
+    And a spaced-blocks.txt file:
+      """
+      <!-- wp:paragraph --><p>First</p><!-- /wp:paragraph -->
+
+      <!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->
+
+      <!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->
+      """
+    When I run `wp post create --post_title='Spaced' --porcelain < spaced-blocks.txt`
+    Then save STDOUT as {POST_ID}
+
+    # Index 1 should be "Second", not the whitespace between blocks
+    When I run `wp post block remove {POST_ID} --index=1`
+    Then STDOUT should contain:
+      """
+      Success: Removed 1 block from post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_content`
+    Then STDOUT should contain:
+      """
+      First
+      """
+    And STDOUT should contain:
+      """
+      Third
+      """
+    And STDOUT should not contain:
+      """
+      Second
+      """
+
+  @require-wp-5.0
+  Scenario: Remove multiple indices with whitespace between blocks
+    Given a WP install
+    And a spaced-blocks.txt file:
+      """
+      <!-- wp:paragraph --><p>First</p><!-- /wp:paragraph -->
+
+      <!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->
+
+      <!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->
+      """
+    When I run `wp post create --post_title='Spaced' --porcelain < spaced-blocks.txt`
+    Then save STDOUT as {POST_ID}
+
+    # Indices 0 and 2 should be "First" and "Third"
+    When I run `wp post block remove {POST_ID} --index=0,2`
+    Then STDOUT should contain:
+      """
+      Success: Removed 2 blocks from post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_content`
+    Then STDOUT should contain:
+      """
+      Second
+      """
+    And STDOUT should not contain:
+      """
+      First
+      """
+    And STDOUT should not contain:
+      """
+      Third
+      """
+
+  @require-wp-5.0
   Scenario: Replace block preserves content
     Given a WP install
     When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Keep this text</p><!-- /wp:paragraph -->' --porcelain`
