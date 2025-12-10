@@ -623,7 +623,7 @@ class Post_Block_Command extends WP_CLI_Command {
 		// Handle export format (with metadata wrapper) or plain blocks array.
 		$import_blocks = isset( $data['blocks'] ) ? $data['blocks'] : $data;
 
-		if ( ! is_array( $import_blocks ) || empty( $import_blocks ) ) {
+		if ( ! is_array( $import_blocks ) ) {
 			WP_CLI::error( 'No blocks found in import data.' );
 		}
 
