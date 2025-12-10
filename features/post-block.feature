@@ -1157,11 +1157,15 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Post with mixed block and freeform content
     Given a WP install
-    When I run `wp post create --post_title='Mixed' --post_content='<!-- wp:paragraph --><p>Block</p><!-- /wp:paragraph -->
+    And a mixed-content.txt file:
+      """
+      <!-- wp:paragraph --><p>Block</p><!-- /wp:paragraph -->
 
-Some freeform text
+      Some freeform text
 
-<!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+      <!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->
+      """
+    When I run `wp post create --post_title='Mixed' --porcelain < mixed-content.txt`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post has-blocks {POST_ID}`
