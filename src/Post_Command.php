@@ -423,6 +423,11 @@ class Post_Command extends CommandWithDBObject {
 	 *
 	 *     # Save the post content to a file
 	 *     $ wp post get 123 --field=content > file.txt
+	 *
+	 *     # Get the block version of a post (1 = has blocks, 0 = no blocks)
+	 *     # Requires WordPress 5.0+.
+	 *     $ wp post get 123 --field=block_version
+	 *     1
 	 */
 	public function get( $args, $assoc_args ) {
 		$post = $this->fetcher->get_check( $args[0] );
@@ -432,6 +437,10 @@ class Post_Command extends CommandWithDBObject {
 
 		if ( ! isset( $post_arr['url'] ) ) {
 			$post_arr['url'] = get_permalink( $post->ID );
+		}
+
+		if ( function_exists( 'block_version' ) ) {
+			$post_arr['block_version'] = block_version( $post->post_content );
 		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
