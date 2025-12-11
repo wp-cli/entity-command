@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\CommandWithDBObject;
+use WP_CLI\Entity\Block_Processor_Helper;
 use WP_CLI\Fetchers\Post as PostFetcher;
 use WP_CLI\Fetchers\User as UserFetcher;
 use WP_CLI\Utils;
@@ -1099,7 +1100,7 @@ class Post_Command extends CommandWithDBObject {
 	public function has_blocks( $args, $assoc_args ) {
 		$post = $this->fetcher->get_check( $args[0] );
 
-		if ( has_blocks( $post ) ) {
+		if ( Block_Processor_Helper::has_blocks( $post->post_content ) ) {
 			WP_CLI::success( "Post {$post->ID} contains blocks." );
 		} else {
 			WP_CLI::error( "Post {$post->ID} does not contain blocks." );

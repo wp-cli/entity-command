@@ -11,6 +11,11 @@ if ( file_exists( $wpcli_entity_autoloader ) ) {
 	require_once $wpcli_entity_autoloader;
 }
 
+// Load the BlockProcessorLoader class (but don't call load() yet).
+// The polyfills will be loaded on-demand by Block_Processor_Helper
+// when needed, ensuring WordPress classes take precedence if available.
+require_once __DIR__ . '/src/Compat/BlockProcessorLoader.php';
+
 WP_CLI::add_command( 'comment', 'Comment_Command' );
 WP_CLI::add_command( 'comment meta', 'Comment_Meta_Command' );
 WP_CLI::add_command( 'menu', 'Menu_Command' );

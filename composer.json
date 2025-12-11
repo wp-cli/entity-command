@@ -237,6 +237,11 @@
         "classmap": [
             "src/"
         ],
+        "exclude-from-classmap": [
+            "src/Compat/WP_HTML_Span.php",
+            "src/Compat/WP_Block_Processor.php",
+            "src/Compat/polyfills.php"
+        ],
         "files": [
             "entity-command.php"
         ]

@@ -1,6 +1,7 @@
 <?php
 
 use Mustangostang\Spyc;
+use WP_CLI\Entity\Block_Processor_Helper;
 use WP_CLI\Formatter;
 use WP_CLI\Fetchers\Post as PostFetcher;
 use WP_CLI\Utils;
@@ -118,29 +119,21 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * @subcommand get
 	 */
 	public function get( $args, $assoc_args ) {
-		$post   = $this->fetcher->get_check( $args[0] );
-		$index  = (int) $args[1];
-		$blocks = parse_blocks( $post->post_content );
+		$post  = $this->fetcher->get_check( $args[0] );
+		$index = (int) $args[1];
 
-		// Filter out empty blocks (whitespace between blocks).
-		$blocks = array_values(
-			array_filter(
-				$blocks,
-				function ( $block ) {
-					return ! empty( $block['blockName'] );
-				}
-			)
-		);
+		// Use streaming helper to get block at index.
+		$block = Block_Processor_Helper::get_at_index( $post->post_content, $index );
 
-		if ( $index < 0 || $index >= count( $blocks ) ) {
-			WP_CLI::error( "Invalid index: {$index}. Post has " . count( $blocks ) . ' block(s) (0-indexed).' );
+		if ( null === $block ) {
+			$block_count = Block_Processor_Helper::get_block_count( $post->post_content );
+			WP_CLI::error( "Invalid index: {$index}. Post has {$block_count} block(s) (0-indexed)." );
 		}
 
-		$block       = $blocks[ $index ];
 		$include_raw = Utils\get_flag_value( $assoc_args, 'raw', false );
 
 		if ( ! $include_raw ) {
-			$block = $this->strip_inner_html( [ $block ] )[0];
+			$block = Block_Processor_Helper::strip_inner_html( [ $block ] )[0];
 		}
 
 		$format = Utils\get_flag_value( $assoc_args, 'format', 'json' );
@@ -543,12 +536,9 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * : Input file path. If not specified, reads from STDIN.
 	 *
 	 * [--position=<position>]
-	 * : Where to insert imported blocks.
+	 * : Where to insert imported blocks. Accepts 'start', 'end', or a numeric index.
 	 * ---
 	 * default: end
-	 * options:
-	 *   - start
-	 *   - end
 	 * ---
 	 *
 	 * [--replace]
@@ -653,6 +643,14 @@ class Post_Block_Command extends WP_CLI_Command {
 
 			if ( 'start' === $position ) {
 				$blocks = array_merge( $import_blocks, $blocks );
+			} elseif ( 'end' === $position ) {
+				$blocks = array_merge( $blocks, $import_blocks );
+			} elseif ( is_numeric( $position ) ) {
+				$pos = (int) $position;
+				if ( $pos < 0 || $pos > count( $blocks ) ) {
+					WP_CLI::error( "Invalid position: {$pos}. Post has " . count( $blocks ) . ' block(s) (0-indexed).' );
+				}
+				array_splice( $blocks, $pos, 0, $import_blocks );
 			} else {
 				$blocks = array_merge( $blocks, $import_blocks );
 			}
@@ -844,14 +842,9 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * : Index of the block to clone (0-indexed).
 	 *
 	 * [--position=<position>]
-	 * : Where to insert the cloned block.
+	 * : Where to insert the cloned block. Accepts 'after', 'before', 'start', 'end', or a numeric index.
 	 * ---
 	 * default: after
-	 * options:
-	 *   - after
-	 *   - before
-	 *   - start
-	 *   - end
 	 * ---
 	 *
 	 * [--porcelain]
@@ -911,31 +904,45 @@ class Post_Block_Command extends WP_CLI_Command {
 		$cloned_block = $this->deep_copy_block( $blocks[ $original_idx ] );
 
 		// Calculate insertion position.
-		switch ( $position ) {
-			case 'before':
-				$insert_pos = $original_idx;
-				$new_index  = $source_index;
-				break;
-			case 'after':
-				$insert_pos = $original_idx + 1;
-				$new_index  = $source_index + 1;
-				break;
-			case 'start':
-				$insert_pos = 0;
-				$new_index  = 0;
-				break;
-			case 'end':
-			default:
+		if ( is_numeric( $position ) ) {
+			$new_index = (int) $position;
+			if ( $new_index < 0 || $new_index > $block_count ) {
+				WP_CLI::error( "Invalid position: {$new_index}. Must be between 0 and {$block_count}." );
+			}
+			// Map the filtered index to original index for insertion.
+			if ( $new_index >= $block_count ) {
 				$insert_pos = count( $blocks );
-				$new_index  = $block_count;
-				break;
+			} else {
+				$insert_pos = $index_map[ $new_index ];
+			}
+		} else {
+			switch ( $position ) {
+				case 'before':
+					$insert_pos = $original_idx;
+					$new_index  = $source_index;
+					break;
+				case 'after':
+					$insert_pos = $original_idx + 1;
+					$new_index  = $source_index + 1;
+					break;
+				case 'start':
+					$insert_pos = 0;
+					$new_index  = 0;
+					break;
+				case 'end':
+				default:
+					$insert_pos = count( $blocks );
+					$new_index  = $block_count;
+					break;
+			}
 		}
 
-		array_splice( $blocks, $insert_pos, 0, [ $cloned_block ] );
+		array_splice( $blocks, (int) $insert_pos, 0, [ $cloned_block ] );
 
 		// @phpstan-ignore argument.type
 		$new_content = serialize_blocks( $blocks );
-		$result      = wp_update_post(
+
+		$result = wp_update_post(
 			[
 				'ID'           => $post->ID,
 				'post_content' => $new_content,
@@ -1279,13 +1286,10 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
-		$post   = $this->fetcher->get_check( $args[0] );
-		$blocks = parse_blocks( $post->post_content );
-
+		$post           = $this->fetcher->get_check( $args[0] );
 		$include_nested = Utils\get_flag_value( $assoc_args, 'nested', false );
 
-		$block_counts = [];
-		$this->count_blocks( $blocks, $block_counts, $include_nested );
+		$block_counts = Block_Processor_Helper::count_by_type( $post->post_content, $include_nested );
 
 		$items = [];
 		foreach ( $block_counts as $block_name => $count ) {
@@ -1462,15 +1466,19 @@ class Post_Block_Command extends WP_CLI_Command {
 			WP_CLI::error( 'You must specify either a block name or --index.' );
 		}
 
+		// Use Block_Processor_Helper for consistent parsing across WP versions.
+		$filtered_blocks = Block_Processor_Helper::parse_all( $post->post_content );
+
+		// For serialization, we need the full parse_blocks output including whitespace blocks.
 		$blocks = parse_blocks( $post->post_content );
 
-		// Filter out empty blocks but keep track of original indices.
-		$filtered_blocks = [];
-		$index_map       = [];
+		// Build index map from filtered to original indices.
+		$index_map    = [];
+		$filtered_idx = 0;
 		foreach ( $blocks as $original_idx => $block ) {
 			if ( ! empty( $block['blockName'] ) ) {
-				$index_map[ count( $filtered_blocks ) ] = $original_idx;
-				$filtered_blocks[]                      = $block;
+				$index_map[ $filtered_idx ] = $original_idx;
+				++$filtered_idx;
 			}
 		}
 
@@ -1656,30 +1664,6 @@ class Post_Block_Command extends WP_CLI_Command {
 		} else {
 			$block_word = 1 === $replaced_count ? 'block' : 'blocks';
 			WP_CLI::success( "Replaced {$replaced_count} {$block_word} in post {$post->ID}." );
-		}
-	}
-
-	/**
-	 * Recursively counts blocks.
-	 *
-	 * @param array $blocks         Array of blocks to count.
-	 * @param array $counts         Reference to counts array.
-	 * @param bool  $include_nested Whether to include nested blocks.
-	 */
-	private function count_blocks( $blocks, &$counts, $include_nested = false ) {
-		foreach ( $blocks as $block ) {
-			if ( empty( $block['blockName'] ) ) {
-				continue;
-			}
-
-			if ( ! isset( $counts[ $block['blockName'] ] ) ) {
-				$counts[ $block['blockName'] ] = 0;
-			}
-			++$counts[ $block['blockName'] ];
-
-			if ( $include_nested && ! empty( $block['innerBlocks'] ) ) {
-				$this->count_blocks( $block['innerBlocks'], $counts, true );
-			}
 		}
 	}
 

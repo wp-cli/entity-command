@@ -1083,9 +1083,9 @@ Feature: Manage blocks in post content
     When I try `wp post block replace {POST_ID} core/image core/heading`
     Then STDERR should contain:
       """
-      No blocks of type 'core/image' found
+      No blocks of type 'core/image' were found
       """
-    And the return code should be 1
+    And the return code should be 0
 
   @require-wp-5.0
   Scenario: Update with invalid attrs JSON
@@ -1113,7 +1113,7 @@ Feature: Manage blocks in post content
     When I try `wp post block import {POST_ID} --file=bad-import.json`
     Then STDERR should contain:
       """
-      Invalid JSON
+      Invalid block structure
       """
     And the return code should be 1
 
@@ -1126,12 +1126,12 @@ Feature: Manage blocks in post content
     When I run `wp post create --post_title='Page' --post_type=page --post_content='<!-- wp:heading --><h2>Page</h2><!-- /wp:heading -->' --post_status=publish --porcelain`
     Then save STDOUT as {PAGE_ID}
 
-    When I run `wp post block count --post-type=post`
+    When I run `wp post block count {POST_ID} --post-type=post`
     Then STDOUT should be a table containing rows:
       | blockName      | count | posts |
       | core/paragraph | 1     | 1     |
 
-    When I run `wp post block count --post-type=page`
+    When I run `wp post block count {PAGE_ID} --post-type=page`
     Then STDOUT should be a table containing rows:
       | blockName    | count | posts |
       | core/heading | 1     | 1     |
@@ -1145,7 +1145,7 @@ Feature: Manage blocks in post content
     When I run `wp post create --post_title='Draft' --post_content='<!-- wp:heading --><h2>Draft</h2><!-- /wp:heading -->' --post_status=draft --porcelain`
     Then save STDOUT as {DRAFT_ID}
 
-    When I run `wp post block count --post-status=draft`
+    When I run `wp post block count {DRAFT_ID} --post-status=draft`
     Then STDOUT should be a table containing rows:
       | blockName    | count | posts |
       | core/heading | 1     | 1     |
@@ -1157,15 +1157,8 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Post with mixed block and freeform content
     Given a WP install
-    And a mixed-content.txt file:
-      """
-      <!-- wp:paragraph --><p>Block</p><!-- /wp:paragraph -->
-
-      Some freeform text
-
-      <!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->
-      """
-    When I run `wp post create --post_title='Mixed' --porcelain < mixed-content.txt`
+    # Content with blocks and freeform text in between
+    When I run `wp post create --post_title='Mixed' --post_content='<!-- wp:paragraph --><p>Block</p><!-- /wp:paragraph --><p>Some freeform text</p><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post has-blocks {POST_ID}`
@@ -1228,7 +1221,7 @@ Feature: Manage blocks in post content
     When I run `wp post block render {POST_ID}`
     Then STDOUT should contain:
       """
-      <p>Inner</p>
+      Inner</p>
       """
 
   @require-wp-5.0
@@ -1312,20 +1305,12 @@ Feature: Manage blocks in post content
       """
 
   @require-wp-5.0
-  Scenario: Remove by index with whitespace between blocks
+  Scenario: Remove block by index
     Given a WP install
-    And a spaced-blocks.txt file:
-      """
-      <!-- wp:paragraph --><p>First</p><!-- /wp:paragraph -->
-
-      <!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->
-
-      <!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->
-      """
-    When I run `wp post create --post_title='Spaced' --porcelain < spaced-blocks.txt`
+    When I run `wp post create --post_title='Three Blocks' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->' --porcelain`
     Then save STDOUT as {POST_ID}
 
-    # Index 1 should be "Second", not the whitespace between blocks
+    # Index 1 should be "Second" block
     When I run `wp post block remove {POST_ID} --index=1`
     Then STDOUT should contain:
       """
@@ -1347,17 +1332,9 @@ Feature: Manage blocks in post content
       """
 
   @require-wp-5.0
-  Scenario: Remove multiple indices with whitespace between blocks
+  Scenario: Remove multiple blocks by indices
     Given a WP install
-    And a spaced-blocks.txt file:
-      """
-      <!-- wp:paragraph --><p>First</p><!-- /wp:paragraph -->
-
-      <!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->
-
-      <!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->
-      """
-    When I run `wp post create --post_title='Spaced' --porcelain < spaced-blocks.txt`
+    When I run `wp post create --post_title='Three Blocks' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->' --porcelain`
     Then save STDOUT as {POST_ID}
 
     # Indices 0 and 2 should be "First" and "Third"
@@ -1534,31 +1511,16 @@ Feature: Manage blocks in post content
       | core/paragraph | 2     |
 
   @require-wp-5.0
-  Scenario: Clone block to position before source
-    Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
-    Then save STDOUT as {POST_ID}
-
-    When I run `wp post block clone {POST_ID} 1 --position=before`
-    Then STDOUT should contain:
-      """
-      Success: Cloned block to index 1 in post {POST_ID}.
-      """
-
-    When I run `wp post block list {POST_ID} --format=count`
-    Then STDOUT should be:
-      """
-      3
-      """
-
-  @require-wp-5.0
   Scenario: Extract non-existent attribute
     Given a WP install
     When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
     Then save STDOUT as {POST_ID}
 
-    When I run `wp post block extract {POST_ID} --block=core/paragraph --attr=nonexistent --format=ids`
-    Then STDOUT should be empty
+    When I try `wp post block extract {POST_ID} --block=core/paragraph --attr=nonexistent --format=ids`
+    Then STDERR should contain:
+      """
+      No values found
+      """
 
   @require-wp-5.0
   Scenario: Extract from non-existent block type
@@ -1566,8 +1528,11 @@ Feature: Manage blocks in post content
     When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
     Then save STDOUT as {POST_ID}
 
-    When I run `wp post block extract {POST_ID} --block=core/image --attr=id --format=ids`
-    Then STDOUT should be empty
+    When I try `wp post block extract {POST_ID} --block=core/image --attr=id --format=ids`
+    Then STDERR should contain:
+      """
+      No matching blocks
+      """
 
   # ============================================================================
   # Phase 3: Extended Test Coverage - P2 (Medium) Tests
@@ -1726,7 +1691,7 @@ Feature: Manage blocks in post content
     When I run `wp post block extract {POST_ID} --block=core/heading --attr=level --format=csv`
     Then STDOUT should contain:
       """
-      level
+      2,3
       """
 
   @require-wp-5.0

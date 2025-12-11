@@ -76,4 +76,47 @@
 		<exclude-pattern>*/src/WP_CLI/CommandWithDBObject\.php$</exclude-pattern>
 	</rule>
 
+	<!--
+	#############################################################################
+	POLYFILL FILES EXCLUSIONS
+	These files are copies/adaptations of WordPress core code and must maintain
+	compatibility with the original implementation.
+	#############################################################################
+	-->
+
+	<!-- Exclude polyfill files from prefix rules - they must match WordPress core class names -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound">
+		<exclude-pattern>*/src/Compat/WP_Block_Processor\.php$</exclude-pattern>
+		<exclude-pattern>*/src/Compat/WP_HTML_Span\.php$</exclude-pattern>
+	</rule>
+
+	<!-- Exclude polyfill files from PHP compatibility checks - polyfills handle older PHP -->
+	<rule ref="PHPCompatibility.FunctionUse.NewFunctions.str_ends_withFound">
+		<exclude-pattern>*/src/Compat/*</exclude-pattern>
+		<exclude-pattern>*/tests/Compat/PolyfillsTest\.php$</exclude-pattern>
+	</rule>
+	<rule ref="PHPCompatibility.FunctionUse.NewFunctions.str_starts_withFound">
+		<exclude-pattern>*/src/Compat/*</exclude-pattern>
+		<exclude-pattern>*/tests/Compat/PolyfillsTest\.php$</exclude-pattern>
+	</rule>
+	<rule ref="PHPCompatibility.FunctionUse.NewFunctions.str_containsFound">
+		<exclude-pattern>*/src/Compat/*</exclude-pattern>
+		<exclude-pattern>*/tests/Compat/PolyfillsTest\.php$</exclude-pattern>
+	</rule>
+
+	<!-- Exclude GOTO usage in polyfill - copied from WordPress core -->
+	<rule ref="Generic.PHP.DiscourageGoto.Found">
+		<exclude-pattern>*/src/Compat/WP_Block_Processor\.php$</exclude-pattern>
+	</rule>
+
+	<!-- Exclude unreachable code warnings in polyfill - due to GOTO control flow -->
+	<rule ref="Squiz.PHP.NonExecutableCode.Unreachable">
+		<exclude-pattern>*/src/Compat/WP_Block_Processor\.php$</exclude-pattern>
+	</rule>
+
+	<!-- Exclude bootstrap files from global variable prefix rules -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound">
+		<exclude-pattern>*/tests/bootstrap\.php$</exclude-pattern>
+	</rule>
+
 </ruleset>
