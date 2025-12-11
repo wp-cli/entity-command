@@ -47,6 +47,7 @@
 			<property name="prefixes" type="array">
 				<element value="WP_CLI\Entity"/><!-- Namespaces. -->
 				<element value="wpcli_entity"/><!-- Global variables and such. -->
+				<element value="wp_cli_"/><!-- Public WP-CLI hooks. -->
 			</property>
 		</properties>
 	</rule>

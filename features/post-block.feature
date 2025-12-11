@@ -493,6 +493,96 @@ Feature: Manage blocks in post content
       """
 
   @require-wp-5.0
+  Scenario: Update heading level syncs HTML tag
+    Given a WP install
+    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:heading {"level":2} --><h2>Original Title</h2><!-- /wp:heading -->' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp post block update {POST_ID} 0 --attrs='{"level":4}'`
+    Then STDOUT should contain:
+      """
+      Success: Updated block at index 0 in post {POST_ID}.
+      """
+
+    # Verify the attribute was updated
+    When I run `wp post block parse {POST_ID}`
+    Then STDOUT should contain:
+      """
+      "level": 4
+      """
+
+    # Verify the HTML tag was updated to match
+    When I run `wp post get {POST_ID} --field=post_content`
+    Then STDOUT should contain:
+      """
+      <h4>Original Title</h4>
+      """
+    And STDOUT should not contain:
+      """
+      <h2>
+      """
+
+  @require-wp-5.0
+  Scenario: Update list ordered attribute syncs HTML tag
+    Given a WP install
+    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:list --><ul><li>Item 1</li><li>Item 2</li></ul><!-- /wp:list -->' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp post block update {POST_ID} 0 --attrs='{"ordered":true}'`
+    Then STDOUT should contain:
+      """
+      Success: Updated block at index 0 in post {POST_ID}.
+      """
+
+    # Verify the HTML tag was updated from ul to ol
+    When I run `wp post get {POST_ID} --field=post_content`
+    Then STDOUT should contain:
+      """
+      <ol>
+      """
+    And STDOUT should contain:
+      """
+      </ol>
+      """
+    And STDOUT should not contain:
+      """
+      <ul>
+      """
+
+  @require-wp-5.0
+  Scenario: Update block with custom HTML sync filter via --require
+    Given a WP install
+    And a custom-sync-filter.php file:
+      """
+      <?php
+      WP_CLI::add_wp_hook( 'wp_cli_post_block_update_html', function( $block, $new_attrs, $block_name ) {
+          if ( 'core/paragraph' === $block_name && isset( $new_attrs['customClass'] ) ) {
+              $block['innerHTML'] = preg_replace(
+                  '/<p([^>]*)>/',
+                  '<p class="' . esc_attr( $new_attrs['customClass'] ) . '"$1>',
+                  $block['innerHTML']
+              );
+              $block['innerContent'] = [ $block['innerHTML'] ];
+          }
+          return $block;
+      }, 10, 3 );
+      """
+    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph -->' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp post block update {POST_ID} 0 --attrs='{"customClass":"my-custom-class"}' --require=custom-sync-filter.php`
+    Then STDOUT should contain:
+      """
+      Success: Updated block at index 0 in post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_content`
+    Then STDOUT should contain:
+      """
+      <p class="my-custom-class">Hello World</p>
+      """
+
+  @require-wp-5.0
   Scenario: Update block content
     Given a WP install
     When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Old text</p><!-- /wp:paragraph -->' --porcelain`

@@ -1,6 +1,7 @@
 <?php
 
 use Mustangostang\Spyc;
+use WP_CLI\Entity\Block_HTML_Sync_Filters;
 use WP_CLI\Entity\Block_Processor_Helper;
 use WP_CLI\Formatter;
 use WP_CLI\Fetchers\Post as PostFetcher;
@@ -39,6 +40,13 @@ class Post_Block_Command extends WP_CLI_Command {
 	private $fetcher;
 
 	/**
+	 * Whether filters have been registered.
+	 *
+	 * @var bool
+	 */
+	private static $filters_registered = false;
+
+	/**
 	 * Default fields to display for block list.
 	 *
 	 * @var string[]
@@ -51,6 +59,12 @@ class Post_Block_Command extends WP_CLI_Command {
 
 	public function __construct() {
 		$this->fetcher = new PostFetcher();
+
+		// Register default HTML sync filters once.
+		if ( ! self::$filters_registered ) {
+			Block_HTML_Sync_Filters::register();
+			self::$filters_registered = true;
+		}
 	}
 
 	/**
@@ -149,7 +163,9 @@ class Post_Block_Command extends WP_CLI_Command {
 	/**
 	 * Updates a block's attributes or content by index.
 	 *
-	 * Modifies a specific block without changing its type.
+	 * Modifies a specific block without changing its type. For blocks where
+	 * attributes are reflected in HTML (like heading levels), the HTML is
+	 * automatically updated to match the new attributes.
 	 *
 	 * ## OPTIONS
 	 *
@@ -197,6 +213,11 @@ class Post_Block_Command extends WP_CLI_Command {
 	 *     $ wp post block update 123 0 --attrs='{"level":2}' --porcelain
 	 *     123
 	 *
+	 *     # Use custom HTML sync logic via the wp_cli_post_block_update_html filter.
+	 *     # Use WP_CLI::add_wp_hook() in a file loaded with --require.
+	 *     $ wp post block update 123 0 --attrs='{"url":"https://example.com"}' --require=my-sync-filters.php
+	 *     Success: Updated block at index 0 in post 123.
+	 *
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
@@ -231,8 +252,8 @@ class Post_Block_Command extends WP_CLI_Command {
 
 		if ( null !== $attrs_json ) {
 			$new_attrs = json_decode( $attrs_json, true );
-			if ( null === $new_attrs ) {
-				WP_CLI::error( 'Invalid JSON provided for --attrs.' );
+			if ( ! is_array( $new_attrs ) ) {
+				WP_CLI::error( 'Invalid JSON provided for --attrs. Must be a JSON object.' );
 			}
 
 			if ( $replace_attrs ) {
@@ -240,9 +261,12 @@ class Post_Block_Command extends WP_CLI_Command {
 			} else {
 				$block['attrs'] = array_merge(
 					is_array( $block['attrs'] ) ? $block['attrs'] : [],
-					is_array( $new_attrs ) ? $new_attrs : []
+					$new_attrs
 				);
 			}
+
+			// Update HTML to reflect attribute changes for known block types.
+			$block = $this->sync_html_with_attrs( $block, $new_attrs );
 		}
 
 		if ( null !== $content ) {
@@ -1764,5 +1788,46 @@ class Post_Block_Command extends WP_CLI_Command {
 		}
 
 		return $copy;
+	}
+
+	/**
+	 * Synchronizes block HTML with updated attributes.
+	 *
+	 * Applies the 'wp_cli_post_block_update_html' filter to allow handlers
+	 * to update block HTML when attributes change.
+	 *
+	 * Custom handlers can be added via --require (using WP_CLI::add_wp_hook())
+	 * or in plugins/themes (using add_filter()):
+	 *
+	 *     WP_CLI::add_wp_hook( 'wp_cli_post_block_update_html', function( $block, $new_attrs, $block_name ) {
+	 *         if ( 'core/button' === $block_name && isset( $new_attrs['url'] ) ) {
+	 *             // Update href in the HTML...
+	 *         }
+	 *         return $block;
+	 *     }, 10, 3 );
+	 *
+	 * @see \WP_CLI\Entity\Block_HTML_Sync_Filters Default filter implementations.
+	 *
+	 * @param array $block     The block structure.
+	 * @param array $new_attrs The newly applied attributes.
+	 * @return array The block with synchronized HTML.
+	 */
+	private function sync_html_with_attrs( $block, $new_attrs ) {
+		$block_name = $block['blockName'] ?? '';
+
+		/**
+		 * Filters a block after attribute updates to sync HTML with attributes.
+		 *
+		 * Allows handlers to update block HTML when attributes change.
+		 *
+		 * @since 3.0.0
+		 *
+		 * @see \WP_CLI\Entity\Block_HTML_Sync_Filters Default filter implementations.
+		 *
+		 * @param array  $block      The block structure with updated attrs.
+		 * @param array  $new_attrs  The newly applied attributes.
+		 * @param string $block_name The block type name (e.g., 'core/heading').
+		 */
+		return apply_filters( 'wp_cli_post_block_update_html', $block, $new_attrs, $block_name );
 	}
 }
