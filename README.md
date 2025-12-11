@@ -3,7 +3,7 @@ wp-cli/entity-command
 
 Manage WordPress comments, menus, options, posts, sites, terms, and users.
 
-[![Testing](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml)
+[![Testing](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml) [![Code Coverage](https://codecov.io/gh/wp-cli/entity-command/branch/master/graph/badge.svg)](https://codecov.io/gh/wp-cli/entity-command/tree/master)
 
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 
@@ -458,7 +458,7 @@ wp comment meta delete <id> [<key>] [<value>] [--all]
 Get meta field value.
 
 ~~~
-wp comment meta get <id> <key> [--format=<format>]
+wp comment meta get <id> <key> [--single] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -468,6 +468,9 @@ wp comment meta get <id> <key> [--format=<format>]
 
 	<key>
 		The name of the meta field to get.
+
+	[--single]
+		Whether to return a single value.
 
 	[--format=<format>]
 		Get value in a particular format.
@@ -1444,7 +1447,7 @@ wp network meta delete <id> [<key>] [<value>] [--all]
 Get meta field value.
 
 ~~~
-wp network meta get <id> <key> [--format=<format>]
+wp network meta get <id> <key> [--single] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -1454,6 +1457,9 @@ wp network meta get <id> <key> [--format=<format>]
 
 	<key>
 		The name of the meta field to get.
+
+	[--single]
+		Whether to return a single value.
 
 	[--format=<format>]
 		Get value in a particular format.
@@ -2459,6 +2465,11 @@ wp post get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
     # Save the post content to a file
     $ wp post get 123 --field=content > file.txt
 
+    # Get the block version of a post (1 = has blocks, 0 = no blocks)
+    # Requires WordPress 5.0+.
+    $ wp post get 123 --field=block_version
+    1
+
 
 
 ### wp post list
@@ -2686,7 +2697,7 @@ wp post meta delete <id> [<key>] [<value>] [--all]
 Get meta field value.
 
 ~~~
-wp post meta get <id> <key> [--format=<format>]
+wp post meta get <id> <key> [--single] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -2696,6 +2707,9 @@ wp post meta get <id> <key> [--format=<format>]
 
 	<key>
 		The name of the meta field to get.
+
+	[--single]
+		Whether to return a single value.
 
 	[--format=<format>]
 		Get value in a particular format.
@@ -3192,6 +3206,936 @@ wp post url-to-id <url>
     # Get post ID by URL
     $ wp post url-to-id https://example.com/?p=1
     1
+
+
+
+### wp post has-blocks
+
+Checks if a post contains any blocks.
+
+~~~
+wp post has-blocks <id>
+~~~
+
+Exits with return code 0 if the post contains blocks,
+or return code 1 if it does not.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to check.
+
+**EXAMPLES**
+
+    # Check if post contains blocks.
+    $ wp post has-blocks 123
+    Success: Post 123 contains blocks.
+
+    # Check a classic (non-block) post.
+    $ wp post has-blocks 456
+    Error: Post 456 does not contain blocks.
+
+    # Use in a shell conditional.
+    $ if wp post has-blocks 123 2>/dev/null; then
+    >   echo "Post uses blocks"
+    > fi
+
+
+
+### wp post has-block
+
+Checks if a post contains a specific block type.
+
+~~~
+wp post has-block <id> <block-name>
+~~~
+
+Exits with return code 0 if the post contains the specified block,
+or return code 1 if it does not.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to check.
+
+	<block-name>
+		The block type name to check for (e.g., 'core/paragraph').
+
+**EXAMPLES**
+
+    # Check if post contains a paragraph block.
+    $ wp post has-block 123 core/paragraph
+    Success: Post 123 contains block 'core/paragraph'.
+
+    # Check for a heading block.
+    $ wp post has-block 123 core/heading
+    Success: Post 123 contains block 'core/heading'.
+
+    # Check for a block that doesn't exist.
+    $ wp post has-block 123 core/gallery
+    Error: Post 123 does not contain block 'core/gallery'.
+
+    # Check for a custom block from a plugin.
+    $ wp post has-block 123 my-plugin/custom-block
+
+
+
+### wp post block
+
+Manages blocks within post content.
+
+~~~
+wp post block
+~~~
+
+Provides commands for inspecting, manipulating, and managing
+Gutenberg blocks in post content.
+
+**EXAMPLES**
+
+    # List all blocks in a post.
+    $ wp post block list 123
+    +------------------+-------+
+    | blockName        | count |
+    +------------------+-------+
+    | core/paragraph   | 2     |
+    | core/heading     | 1     |
+    +------------------+-------+
+
+    # Parse blocks in a post to JSON.
+    $ wp post block parse 123 --format=json
+
+    # Insert a paragraph block.
+    $ wp post block insert 123 core/paragraph --content="Hello World"
+
+
+
+
+
+### wp post block clone
+
+Clones a block within a post.
+
+~~~
+wp post block clone <id> <source-index> [--position=<position>] [--porcelain]
+~~~
+
+Duplicates an existing block and inserts it at a specified position.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post.
+
+	<source-index>
+		Index of the block to clone (0-indexed).
+
+	[--position=<position>]
+		Where to insert the cloned block. Accepts 'after', 'before', 'start', 'end', or a numeric index.
+		---
+		default: after
+		---
+
+	[--porcelain]
+		Output just the new block index.
+
+**EXAMPLES**
+
+    # Clone a block and insert immediately after it (default).
+    $ wp post block clone 123 2
+    Success: Cloned block to index 3 in post 123.
+
+    # Clone the first block and insert immediately before it.
+    $ wp post block clone 123 0 --position=before
+    Success: Cloned block to index 0 in post 123.
+
+    # Clone a block and insert at the end of the post.
+    $ wp post block clone 123 0 --position=end
+    Success: Cloned block to index 5 in post 123.
+
+    # Clone a block and insert at the start of the post.
+    $ wp post block clone 123 3 --position=start
+    Success: Cloned block to index 0 in post 123.
+
+    # Clone and get just the new block index for scripting.
+    $ wp post block clone 123 1 --porcelain
+    2
+
+    # Duplicate the hero section (first block) at the end for a footer.
+    $ wp post block clone 123 0 --position=end
+    Success: Cloned block to index 10 in post 123.
+
+
+
+### wp post block count
+
+Counts blocks across multiple posts.
+
+~~~
+wp post block count [<id>...] [--block=<block-name>] [--post-type=<type>] [--post-status=<status>] [--format=<format>]
+~~~
+
+Analyzes block usage across posts for site-wide reporting.
+
+**OPTIONS**
+
+	[<id>...]
+		Optional post IDs. If not specified, queries all posts.
+
+	[--block=<block-name>]
+		Only count specific block type.
+
+	[--post-type=<type>]
+		Limit to specific post type(s). Comma-separated.
+		---
+		default: post,page
+		---
+
+	[--post-status=<status>]
+		Post status to include.
+		---
+		default: publish
+		---
+
+	[--format=<format>]
+		Output format.
+		---
+		default: table
+		options:
+		  - table
+		  - json
+		  - csv
+		  - yaml
+		  - count
+		---
+
+**EXAMPLES**
+
+    # Count all blocks across published posts and pages.
+    $ wp post block count
+    +------------------+-------+-------+
+    | blockName        | count | posts |
+    +------------------+-------+-------+
+    | core/paragraph   | 1542  | 234   |
+    | core/heading     | 523   | 198   |
+    | core/image       | 312   | 156   |
+    +------------------+-------+-------+
+
+    # Count blocks in specific posts only.
+    $ wp post block count 123 456 789
+    +------------------+-------+-------+
+    | blockName        | count | posts |
+    +------------------+-------+-------+
+    | core/paragraph   | 8     | 3     |
+    | core/heading     | 3     | 2     |
+    +------------------+-------+-------+
+
+    # Count only paragraph blocks across the site.
+    $ wp post block count --block=core/paragraph --format=count
+    1542
+
+    # Count blocks in a custom post type.
+    $ wp post block count --post-type=product
+
+    # Count blocks in multiple post types.
+    $ wp post block count --post-type=post,page,product
+
+    # Count blocks including drafts.
+    $ wp post block count --post-status=draft
+
+    # Get count as JSON for further processing.
+    $ wp post block count --format=json
+    [{"blockName":"core/paragraph","count":1542,"posts":234}]
+
+    # Get total number of unique block types used.
+    $ wp post block count --format=count
+    15
+
+
+
+### wp post block export
+
+Exports block content to a file.
+
+~~~
+wp post block export <id> [--file=<file>] [--format=<format>] [--raw]
+~~~
+
+Exports blocks from a post to a file for backup or migration.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to export blocks from.
+
+	[--file=<file>]
+		Output file path. If not specified, outputs to STDOUT.
+
+	[--format=<format>]
+		Export format.
+		---
+		default: json
+		options:
+		  - json
+		  - yaml
+		  - html
+		---
+
+	[--raw]
+		Include innerHTML in JSON/YAML output.
+
+**EXAMPLES**
+
+    # Export blocks to a JSON file for backup.
+    $ wp post block export 123 --file=blocks.json
+    Success: Exported 5 blocks to blocks.json
+
+    # Export blocks to STDOUT as JSON.
+    $ wp post block export 123
+    {
+        "version": "1.0",
+        "generator": "wp-cli/entity-command",
+        "post_id": 123,
+        "exported_at": "2024-12-10T12:00:00+00:00",
+        "blocks": [...]
+    }
+
+    # Export as YAML format.
+    $ wp post block export 123 --format=yaml
+    version: "1.0"
+    generator: wp-cli/entity-command
+    blocks:
+      - blockName: core/paragraph
+        attrs: []
+
+    # Export rendered HTML (final output, not block structure).
+    $ wp post block export 123 --format=html --file=content.html
+    Success: Exported 5 blocks to content.html
+
+    # Export with raw innerHTML included for complete backup.
+    $ wp post block export 123 --raw --file=blocks-full.json
+    Success: Exported 5 blocks to blocks-full.json
+
+    # Pipe export to another command.
+    $ wp post block export 123 | jq '.blocks[].blockName'
+
+
+
+### wp post block extract
+
+Extracts data from blocks.
+
+~~~
+wp post block extract <id> [--block=<block-name>] [--index=<index>] [--attr=<attr>] [--content] [--format=<format>]
+~~~
+
+Extracts specific attribute values or content from blocks for scripting.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post.
+
+	[--block=<block-name>]
+		Filter by block type.
+
+	[--index=<index>]
+		Get from specific block index.
+
+	[--attr=<attr>]
+		Extract specific attribute value.
+
+	[--content]
+		Extract innerHTML content.
+
+	[--format=<format>]
+		Output format.
+		---
+		default: json
+		options:
+		  - json
+		  - yaml
+		  - csv
+		  - ids
+		---
+
+**EXAMPLES**
+
+    # Extract all image IDs from the post (one per line).
+    $ wp post block extract 123 --block=core/image --attr=id --format=ids
+    456
+    789
+    1024
+
+    # Extract all image URLs as JSON array.
+    $ wp post block extract 123 --block=core/image --attr=url --format=json
+    ["https://example.com/img1.jpg","https://example.com/img2.jpg"]
+
+    # Extract text content from all headings.
+    $ wp post block extract 123 --block=core/heading --content --format=ids
+    Introduction
+    Getting Started
+    Conclusion
+
+    # Get the heading level from the first block.
+    $ wp post block extract 123 --index=0 --attr=level --format=ids
+    2
+
+    # Extract all heading levels as CSV.
+    $ wp post block extract 123 --block=core/heading --attr=level --format=csv
+    2,3,3,2
+
+    # Extract paragraph content as YAML.
+    $ wp post block extract 123 --block=core/paragraph --content --format=yaml
+    - "First paragraph text"
+    - "Second paragraph text"
+
+    # Get all button URLs for link checking.
+    $ wp post block extract 123 --block=core/button --attr=url --format=ids
+    https://example.com/signup
+    https://example.com/learn-more
+
+    # Extract cover block image IDs for media audit.
+    $ wp post block extract 123 --block=core/cover --attr=id --format=json
+
+
+
+### wp post block get
+
+Gets a single block by index.
+
+~~~
+wp post block get <id> <index> [--raw] [--format=<format>]
+~~~
+
+Retrieves the full structure of a block at the specified position.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post.
+
+	<index>
+		The block index (0-indexed).
+
+	[--raw]
+		Include innerHTML in output.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: json
+		options:
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Get the first block in a post.
+    $ wp post block get 123 0
+    {
+        "blockName": "core/paragraph",
+        "attrs": {},
+        "innerBlocks": []
+    }
+
+    # Get the third block (index 2) with attributes.
+    $ wp post block get 123 2
+    {
+        "blockName": "core/heading",
+        "attrs": {
+            "level": 2
+        },
+        "innerBlocks": []
+    }
+
+    # Get block as YAML format.
+    $ wp post block get 123 1 --format=yaml
+    blockName: core/image
+    attrs:
+      id: 456
+      sizeSlug: large
+    innerBlocks: []
+
+    # Get block with raw HTML content included.
+    $ wp post block get 123 0 --raw
+    {
+        "blockName": "core/paragraph",
+        "attrs": {},
+        "innerBlocks": [],
+        "innerHTML": "<p>Hello World</p>",
+        "innerContent": ["<p>Hello World</p>"]
+    }
+
+
+
+### wp post block import
+
+Imports blocks from a file into a post.
+
+~~~
+wp post block import <id> [--file=<file>] [--position=<position>] [--replace] [--porcelain]
+~~~
+
+Imports blocks from a JSON or YAML file into a post's content.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to import blocks into.
+
+	[--file=<file>]
+		Input file path. If not specified, reads from STDIN.
+
+	[--position=<position>]
+		Where to insert imported blocks. Accepts 'start', 'end', or a numeric index.
+		---
+		default: end
+		---
+
+	[--replace]
+		Replace all existing blocks instead of appending.
+
+	[--porcelain]
+		Output just the number of blocks imported.
+
+**EXAMPLES**
+
+    # Import blocks from a JSON file, append to end of post.
+    $ wp post block import 123 --file=blocks.json
+    Success: Imported 5 blocks into post 123.
+
+    # Import blocks at the beginning of the post.
+    $ wp post block import 123 --file=blocks.json --position=start
+    Success: Imported 5 blocks into post 123.
+
+    # Replace all existing content with imported blocks.
+    $ wp post block import 123 --file=blocks.json --replace
+    Success: Imported 5 blocks into post 123.
+
+    # Import from STDIN (piped from another command).
+    $ cat blocks.json | wp post block import 123
+    Success: Imported 5 blocks into post 123.
+
+    # Copy blocks from one post to another.
+    $ wp post block export 123 | wp post block import 456
+    Success: Imported 5 blocks into post 456.
+
+    # Import YAML format.
+    $ wp post block import 123 --file=blocks.yaml
+    Success: Imported 3 blocks into post 123.
+
+    # Get just the count of imported blocks for scripting.
+    $ wp post block import 123 --file=blocks.json --porcelain
+    5
+
+
+
+### wp post block insert
+
+Inserts a block into a post at a specified position.
+
+~~~
+wp post block insert <id> <block-name> [--content=<content>] [--attrs=<attrs>] [--position=<position>] [--porcelain]
+~~~
+
+Adds a new block to the post content. By default, the block is
+appended to the end of the post.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to modify.
+
+	<block-name>
+		The block type name (e.g., 'core/paragraph').
+
+	[--content=<content>]
+		The inner content/HTML for the block.
+
+	[--attrs=<attrs>]
+		Block attributes as JSON.
+
+	[--position=<position>]
+		Position to insert the block (0-indexed). Use 'start' or 'end'.
+		---
+		default: end
+		---
+
+	[--porcelain]
+		Output just the post ID.
+
+**EXAMPLES**
+
+    # Insert a paragraph block at the end of the post.
+    $ wp post block insert 123 core/paragraph --content="Hello World"
+    Success: Inserted block into post 123.
+
+    # Insert a level-2 heading at the start.
+    $ wp post block insert 123 core/heading --content="My Title" --attrs='{"level":2}' --position=start
+    Success: Inserted block into post 123.
+
+    # Insert an image block at position 2.
+    $ wp post block insert 123 core/image --attrs='{"id":456,"url":"https://example.com/image.jpg"}' --position=2
+
+    # Insert a separator block.
+    $ wp post block insert 123 core/separator
+
+
+
+### wp post block list
+
+Lists blocks in a post with counts.
+
+~~~
+wp post block list <id> [--nested] [--format=<format>]
+~~~
+
+Displays a summary of block types used in the post and how many
+times each block type appears.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to analyze.
+
+	[--nested]
+		Include nested/inner blocks in the list.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
+
+**EXAMPLES**
+
+    # List blocks with counts.
+    $ wp post block list 123
+    +------------------+-------+
+    | blockName        | count |
+    +------------------+-------+
+    | core/paragraph   | 5     |
+    | core/heading     | 2     |
+    | core/image       | 1     |
+    +------------------+-------+
+
+    # List blocks as JSON.
+    $ wp post block list 123 --format=json
+    [{"blockName":"core/paragraph","count":5}]
+
+    # Include nested blocks (e.g., blocks inside columns or groups).
+    $ wp post block list 123 --nested
+
+    # Get the number of unique block types.
+    $ wp post block list 123 --format=count
+    3
+
+
+
+### wp post block move
+
+Moves a block from one position to another.
+
+~~~
+wp post block move <id> <from-index> <to-index> [--porcelain]
+~~~
+
+Reorders blocks within the post by moving a block from one index to another.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post.
+
+	<from-index>
+		Current block index (0-indexed).
+
+	<to-index>
+		Target position index (0-indexed).
+
+	[--porcelain]
+		Output just the post ID.
+
+**EXAMPLES**
+
+    # Move the first block to the third position.
+    $ wp post block move 123 0 2
+    Success: Moved block from index 0 to index 2 in post 123.
+
+    # Move the last block (index 4) to the beginning.
+    $ wp post block move 123 4 0
+    Success: Moved block from index 4 to index 0 in post 123.
+
+    # Move a heading block from position 3 to position 1.
+    $ wp post block move 123 3 1
+    Success: Moved block from index 3 to index 1 in post 123.
+
+    # Move block and get post ID for scripting.
+    $ wp post block move 123 2 0 --porcelain
+    123
+
+
+
+### wp post block parse
+
+Parses and displays the block structure of a post.
+
+~~~
+wp post block parse <id> [--raw] [--format=<format>]
+~~~
+
+Outputs the parsed block structure as JSON or YAML. By default,
+innerHTML is stripped from the output for readability.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to parse.
+
+	[--raw]
+		Include raw innerHTML in output.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: json
+		options:
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Parse blocks to JSON.
+    $ wp post block parse 123
+    [
+        {
+            "blockName": "core/paragraph",
+            "attrs": {}
+        }
+    ]
+
+    # Parse blocks to YAML format.
+    $ wp post block parse 123 --format=yaml
+    -
+      blockName: core/paragraph
+      attrs: {  }
+
+    # Parse blocks including raw HTML content.
+    $ wp post block parse 123 --raw
+
+
+
+### wp post block remove
+
+Removes blocks from a post by name or index.
+
+~~~
+wp post block remove <id> [<block-name>] [--index=<index>] [--all] [--porcelain]
+~~~
+
+Removes one or more blocks from the post content. Blocks can be
+removed by their type name or by their position index.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to modify.
+
+	[<block-name>]
+		The block type name to remove (e.g., 'core/paragraph').
+
+	[--index=<index>]
+		Remove block at specific index (0-indexed). Can be comma-separated for multiple indices.
+
+	[--all]
+		Remove all blocks of the specified type.
+
+	[--porcelain]
+		Output just the number of blocks removed.
+
+**EXAMPLES**
+
+    # Remove the first block (index 0).
+    $ wp post block remove 123 --index=0
+    Success: Removed 1 block from post 123.
+
+    # Remove the first paragraph block found.
+    $ wp post block remove 123 core/paragraph
+    Success: Removed 1 block from post 123.
+
+    # Remove all paragraph blocks.
+    $ wp post block remove 123 core/paragraph --all
+    Success: Removed 5 blocks from post 123.
+
+    # Remove blocks at multiple indices.
+    $ wp post block remove 123 --index=0,2,4
+    Success: Removed 3 blocks from post 123.
+
+    # Remove all image blocks and get count.
+    $ wp post block remove 123 core/image --all --porcelain
+    2
+
+
+
+### wp post block replace
+
+Replaces blocks in a post.
+
+~~~
+wp post block replace <id> <old-block-name> <new-block-name> [--attrs=<attrs>] [--content=<content>] [--all] [--porcelain]
+~~~
+
+Replaces blocks of one type with blocks of another type. Can also
+be used to update block attributes without changing the block type.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to modify.
+
+	<old-block-name>
+		The block type name to replace.
+
+	<new-block-name>
+		The new block type name.
+
+	[--attrs=<attrs>]
+		New block attributes as JSON.
+
+	[--content=<content>]
+		New block content. Use '{content}' to preserve original content.
+
+	[--all]
+		Replace all matching blocks. By default, only the first match is replaced.
+
+	[--porcelain]
+		Output just the number of blocks replaced.
+
+**EXAMPLES**
+
+    # Replace the first paragraph block with a heading.
+    $ wp post block replace 123 core/paragraph core/heading
+    Success: Replaced 1 block in post 123.
+
+    # Replace all paragraphs with preformatted blocks, keeping content.
+    $ wp post block replace 123 core/paragraph core/preformatted --content='{content}' --all
+    Success: Replaced 3 blocks in post 123.
+
+    # Change all h2 headings to h3.
+    $ wp post block replace 123 core/heading core/heading --attrs='{"level":3}' --all
+
+    # Replace and get count for scripting.
+    $ wp post block replace 123 core/quote core/pullquote --all --porcelain
+    2
+
+
+
+### wp post block render
+
+Renders blocks from a post to HTML.
+
+~~~
+wp post block render <id> [--block=<block-name>]
+~~~
+
+Outputs the rendered HTML of blocks in a post. This uses WordPress's
+block rendering system to produce the final HTML output.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to render.
+
+	[--block=<block-name>]
+		Only render blocks of this type.
+
+**EXAMPLES**
+
+    # Render all blocks to HTML.
+    $ wp post block render 123
+    <p>Hello World</p>
+    <h2>My Heading</h2>
+
+    # Render only paragraph blocks.
+    $ wp post block render 123 --block=core/paragraph
+    <p>Hello World</p>
+
+    # Render only heading blocks.
+    $ wp post block render 123 --block=core/heading
+
+
+
+### wp post block update
+
+Updates a block's attributes or content by index.
+
+~~~
+wp post block update <id> <index> [--attrs=<attrs>] [--content=<content>] [--replace-attrs] [--porcelain]
+~~~
+
+Modifies a specific block without changing its type. For blocks where
+attributes are reflected in HTML (like heading levels), the HTML is
+automatically updated to match the new attributes.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post.
+
+	<index>
+		The block index to update (0-indexed).
+
+	[--attrs=<attrs>]
+		Block attributes as JSON. Merges with existing attributes by default.
+
+	[--content=<content>]
+		New innerHTML content for the block.
+
+	[--replace-attrs]
+		Replace all attributes instead of merging.
+
+	[--porcelain]
+		Output just the post ID.
+
+**EXAMPLES**
+
+    # Change a heading from h2 to h3.
+    $ wp post block update 123 0 --attrs='{"level":3}'
+    Success: Updated block at index 0 in post 123.
+
+    # Add alignment to an existing paragraph (merges with existing attrs).
+    $ wp post block update 123 1 --attrs='{"align":"center"}'
+    Success: Updated block at index 1 in post 123.
+
+    # Update the text content of a paragraph block.
+    $ wp post block update 123 2 --content="<p>Updated paragraph text</p>"
+    Success: Updated block at index 2 in post 123.
+
+    # Update both attributes and content at once.
+    $ wp post block update 123 0 --attrs='{"level":2}' --content="<h2>New Heading</h2>"
+    Success: Updated block at index 0 in post 123.
+
+    # Replace all attributes instead of merging (removes existing attrs).
+    $ wp post block update 123 0 --attrs='{"level":4}' --replace-attrs
+    Success: Updated block at index 0 in post 123.
+
+    # Get just the post ID for scripting.
+    $ wp post block update 123 0 --attrs='{"level":2}' --porcelain
+    123
+
+    # Use custom HTML sync logic via the wp_cli_post_block_update_html filter.
+    # Use WP_CLI::add_wp_hook() in a file loaded with --require.
+    $ wp post block update 123 0 --attrs='{"url":"https://example.com"}' --require=my-sync-filters.php
+    Success: Updated block at index 0 in post 123.
 
 
 
@@ -3796,7 +4740,7 @@ wp site meta delete <id> [<key>] [<value>] [--all]
 Get meta field value.
 
 ~~~
-wp site meta get <id> <key> [--format=<format>]
+wp site meta get <id> <key> [--single] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -3806,6 +4750,9 @@ wp site meta get <id> <key> [--format=<format>]
 
 	<key>
 		The name of the meta field to get.
+
+	[--single]
+		Whether to return a single value.
 
 	[--format=<format>]
 		Get value in a particular format.
@@ -4710,7 +5657,7 @@ wp term meta delete <id> [<key>] [<value>] [--all]
 Get meta field value.
 
 ~~~
-wp term meta get <id> <key> [--format=<format>]
+wp term meta get <id> <key> [--single] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -4720,6 +5667,9 @@ wp term meta get <id> <key> [--format=<format>]
 
 	<key>
 		The name of the meta field to get.
+
+	[--single]
+		Whether to return a single value.
 
 	[--format=<format>]
 		Get value in a particular format.
@@ -6100,7 +7050,7 @@ wp user meta update <user> <key> <value> [--format=<format>]
 Removes a user's capability.
 
 ~~~
-wp user remove-cap <user> <cap>
+wp user remove-cap <user> <cap> [--force]
 ~~~
 
 **OPTIONS**
@@ -6110,6 +7060,9 @@ wp user remove-cap <user> <cap>
 
 	<cap>
 		The capability to be removed.
+
+	[--force]
+		Forcefully remove a capability.
 
 **EXAMPLES**
 
@@ -6121,6 +7074,9 @@ wp user remove-cap <user> <cap>
 
     $ wp user remove-cap 11 nonexistent_cap
     Error: No such 'nonexistent_cap' cap for supervisor (11).
+
+    $ wp user remove-cap 11 publish_newsletters --force
+    Success: Removed 'publish_newsletters' cap for supervisor (11).
 
 
 
@@ -6476,6 +7432,8 @@ Lists signups.
 ~~~
 wp user signup list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--per_page=<per_page>]
 ~~~
+
+**OPTIONS**
 
 	[--<field>=<value>]
 		Filter the list by a specific field.
