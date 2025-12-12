@@ -3,6 +3,12 @@ parameters:
   paths:
     - src
     - entity-command.php
+  excludePaths:
+    # Polyfill files are copies of WordPress core code with GOTO control flow
+    # that PHPStan cannot analyze correctly
+    - src/Compat/WP_Block_Processor.php
+    - src/Compat/WP_HTML_Span.php
+    - src/Compat/polyfills.php
   scanDirectories:
     - vendor/wp-cli/wp-cli/php
   scanFiles:

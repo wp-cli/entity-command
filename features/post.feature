@@ -509,3 +509,39 @@ Feature: Manage WordPress posts
       """
       2005-01-24T09:52:00.000Z
       """
+
+  @require-wp-5.0
+  Scenario: Get block_version field for post with blocks
+    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello block world</p><!-- /wp:paragraph -->' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=block_version`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+  @require-wp-5.0
+  Scenario: Get block_version field for post without blocks
+    When I run `wp post create --post_title='Classic Post' --post_content='<p>Just plain HTML</p>' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=block_version`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+  @require-wp-5.0
+  Scenario: Get block_version field included in default output
+    When I run `wp post create --post_title='Test Post' --post_content='<!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {"block_version":1}
+      """
