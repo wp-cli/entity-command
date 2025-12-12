@@ -3,7 +3,7 @@ wp-cli/entity-command
 
 Manage WordPress comments, menus, options, posts, sites, terms, and users.
 
-[![Testing](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml) [![Code Coverage](https://codecov.io/gh/wp-cli/entity-command/branch/master/graph/badge.svg)](https://codecov.io/gh/wp-cli/entity-command/tree/master)
+[![Testing](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml) [![Code Coverage](https://codecov.io/gh/wp-cli/entity-command/branch/main/graph/badge.svg)](https://codecov.io/gh/wp-cli/entity-command/tree/main)
 
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 
