@@ -38,6 +38,34 @@ wp comment
     Success: Trashed comment 264.
     Success: Trashed comment 262.
 
+    # Create a note for a block (WordPress 6.9+).
+    $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
+    Success: Created comment 945.
+
+    # List notes for a specific post (WordPress 6.9+).
+    $ wp comment list --type=note --post_id=15
+    +------------+---------------------+----------------------------------+
+    | comment_ID | comment_date        | comment_content                  |
+    +------------+---------------------+----------------------------------+
+    | 945        | 2024-11-10 14:30:00 | This block needs revision        |
+    +------------+---------------------+----------------------------------+
+
+    # Reply to a note (WordPress 6.9+).
+    $ wp comment create --comment_post_ID=15 --comment_content="Updated per feedback" --comment_author="editor" --comment_type="note" --comment_parent=945
+    Success: Created comment 946.
+
+    # Resolve a note by adding a comment with status meta (WordPress 6.9+).
+    $ wp comment create --comment_post_ID=15 --comment_content="Resolving" --comment_author="editor" --comment_type="note" --comment_parent=945 --porcelain
+    947
+    $ wp comment meta add 947 _wp_note_status resolved
+    Success: Added custom field.
+
+    # Reopen a resolved note (WordPress 6.9+).
+    $ wp comment create --comment_post_ID=15 --comment_content="Reopening for further review" --comment_author="editor" --comment_type="note" --comment_parent=945 --porcelain
+    948
+    $ wp comment meta add 948 _wp_note_status reopen
+    Success: Added custom field.
+
 
 
 ### wp comment approve
@@ -119,6 +147,10 @@ wp comment create [--<field>=<value>] [--porcelain]
     # Create comment.
     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
     Success: Created comment 932.
+
+    # Create a note (WordPress 6.9+).
+    $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
+    Success: Created comment 933.     *
 
 
 
@@ -366,6 +398,15 @@ These fields are optionally available:
     +------------+---------------------+----------------+
     | 3          | 2023-11-10 11:22:31 | John Doe       |
     +------------+---------------------+----------------+
+
+    # List notes for a specific post (WordPress 6.9+).
+    $ wp comment list --type=note --post_id=15 --fields=ID,comment_date,comment_content
+    +------------+---------------------+----------------------------------+
+    | comment_ID | comment_date        | comment_content                  |
+    +------------+---------------------+----------------------------------+
+    | 10         | 2024-11-10 14:30:00 | This block needs revision        |
+    | 11         | 2024-11-10 15:45:00 | Updated per feedback             |
+    +------------+---------------------+----------------------------------+
 
 
 
@@ -5275,7 +5316,7 @@ Manages taxonomy terms and term meta, with create, delete, and list commands.
 wp term
 ~~~
 
-See reference for [taxonomies and their terms](https://codex.wordpress.org/Taxonomies).
+See reference for [taxonomies and their terms](https://wordpress.org/documentation/article/taxonomies).
 
 **EXAMPLES**
 
@@ -5934,7 +5975,8 @@ Manages users, along with their roles, capabilities, and meta.
 wp user
 ~~~
 
-See references for [Roles and Capabilities](https://codex.wordpress.org/Roles_and_Capabilities) and [WP User class](https://codex.wordpress.org/Class_Reference/WP_User).
+See references for [Roles and Capabilities](https://wordpress.org/documentation/article/roles-and-capabilities)
+and [WP User class](https://developer.wordpress.org/reference/classes/wp_user).
 
 **EXAMPLES**
 
