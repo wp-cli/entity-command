@@ -28,6 +28,254 @@ class Post_Meta_Command extends CommandWithMeta {
 	protected $meta_type = 'post';
 
 	/**
+	 * List all metadata associated with a post.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : ID for the post.
+	 *
+	 * [--keys=<keys>]
+	 * : Limit output to metadata of specific keys.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific row fields. Defaults to id,meta_key,meta_value.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 *   - count
+	 * ---
+	 *
+	 * [--orderby=<fields>]
+	 * : Set orderby which field.
+	 * ---
+	 * default: id
+	 * options:
+	 *  - id
+	 *  - meta_key
+	 *  - meta_value
+	 * ---
+	 *
+	 * [--order=<order>]
+	 * : Set ascending or descending order.
+	 * ---
+	 * default: asc
+	 * options:
+	 *  - asc
+	 *  - desc
+	 * ---
+	 *
+	 * [--unserialize]
+	 * : Unserialize meta_value output.
+	 *
+	 * @subcommand list
+	 *
+	 * @param array{0: string} $args Positional arguments..
+	 * @param array{keys?: string, fields?: string, format: 'table'|'csv'|'json'|'yaml'|'count', orderby: 'id'|'meta_key'|'meta_value', order: 'asc'|'desc', unserialize?: bool} $assoc_args Associative arguments.
+	 */
+	// phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found -- Override to provide specific documentation.
+	public function list_( $args, $assoc_args ) {
+		parent::list_( $args, $assoc_args );
+	}
+
+	/**
+	 * Get meta field value.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post.
+	 *
+	 * <key>
+	 * : The name of the meta field to get.
+	 *
+	 * [--single]
+	 * : Whether to return a single value.
+	 *
+	 * [--format=<format>]
+	 * : Get value in a particular format.
+	 * ---
+	 * default: var_export
+	 * options:
+	 *   - var_export
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * @param array{0: string, 1: string} $args Positional arguments.
+	 * @param array{single?: bool, format: 'table'|'csv'|'json'|'yaml'} $assoc_args Associative arguments.
+	 */
+	// phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found -- Override to provide specific documentation.
+	public function get( $args, $assoc_args ) {
+		parent::get( $args, $assoc_args );
+	}
+
+	/**
+	 * Delete a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post.
+	 *
+	 * [<key>]
+	 * : The name of the meta field to delete.
+	 *
+	 * [<value>]
+	 * : The value to delete. If omitted, all rows with key will deleted.
+	 *
+	 * [--all]
+	 * : Delete all meta for the post.
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{all?: bool} $assoc_args Associative arguments.
+	 */
+	// phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found -- Override to provide specific documentation.
+	public function delete( $args, $assoc_args ) {
+		parent::delete( $args, $assoc_args );
+	}
+
+	/**
+	 * Add a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post.
+	 *
+	 * <key>
+	 * : The name of the meta field to create.
+	 *
+	 * [<value>]
+	 * : The value of the meta field. If omitted, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{format: 'plaintext'|'json'} $assoc_args Associative arguments.
+	 */
+	// phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found -- Override to provide specific documentation.
+	public function add( $args, $assoc_args ) {
+		parent::add( $args, $assoc_args );
+	}
+
+	/**
+	 * Update a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post.
+	 *
+	 * <key>
+	 * : The name of the meta field to update.
+	 *
+	 * [<value>]
+	 * : The new value. If omitted, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
+	 *
+	 * @alias set
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{format: 'plaintext'|'json'} $assoc_args Associative arguments.
+	 */
+	// phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found -- Override to provide specific documentation.
+	public function update( $args, $assoc_args ) {
+		parent::update( $args, $assoc_args );
+	}
+
+	/**
+	 * Get a nested value from a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post.
+	 *
+	 * <key>
+	 * : The name of the meta field to get.
+	 *
+	 * <key-path>...
+	 * : The name(s) of the keys within the value to locate the value to pluck.
+	 *
+	 * [--format=<format>]
+	 * : The output format of the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 *   - yaml
+	 * ---
+	 */
+	// phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found -- Override to provide specific documentation.
+	public function pluck( $args, $assoc_args ) {
+		parent::pluck( $args, $assoc_args );
+	}
+
+	/**
+	 * Update a nested value for a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <action>
+	 * : Patch action to perform.
+	 * ---
+	 * options:
+	 *   - insert
+	 *   - update
+	 *   - delete
+	 * ---
+	 *
+	 * <id>
+	 * : The ID of the post.
+	 *
+	 * <key>
+	 * : The name of the meta field to update.
+	 *
+	 * <key-path>...
+	 * : The name(s) of the keys within the value to locate the value to patch.
+	 *
+	 * [<value>]
+	 * : The new value. If omitted, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
+	 */
+	// phpcs:ignore Generic.CodeAnalysis.UselessOverridingMethod.Found -- Override to provide specific documentation.
+	public function patch( $args, $assoc_args ) {
+		parent::patch( $args, $assoc_args );
+	}
+
+	/**
 	 * Check that the post ID exists
 	 *
 	 * @param string|int $object_id

@@ -253,6 +253,77 @@ class User_Meta_Command extends CommandWithMeta {
 	}
 
 	/**
+	 * Get a nested value from a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <user>
+	 * : The user login, user email, or user ID of the user to get metadata for.
+	 *
+	 * <key>
+	 * : The name of the meta field to get.
+	 *
+	 * <key-path>...
+	 * : The name(s) of the keys within the value to locate the value to pluck.
+	 *
+	 * [--format=<format>]
+	 * : The output format of the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 *   - yaml
+	 * ---
+	 */
+	public function pluck( $args, $assoc_args ) {
+		// @phpstan-ignore argument.templateType
+		$args = $this->replace_login_with_user_id( $args );
+		parent::pluck( $args, $assoc_args );
+	}
+
+	/**
+	 * Update a nested value for a meta field.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <action>
+	 * : Patch action to perform.
+	 * ---
+	 * options:
+	 *   - insert
+	 *   - update
+	 *   - delete
+	 * ---
+	 *
+	 * <user>
+	 * : The user login, user email, or user ID of the user to update metadata for.
+	 *
+	 * <key>
+	 * : The name of the meta field to update.
+	 *
+	 * <key-path>...
+	 * : The name(s) of the keys within the value to locate the value to patch.
+	 *
+	 * [<value>]
+	 * : The new value. If omitted, the value is read from STDIN.
+	 *
+	 * [--format=<format>]
+	 * : The serialization format for the value.
+	 * ---
+	 * default: plaintext
+	 * options:
+	 *   - plaintext
+	 *   - json
+	 * ---
+	 */
+	public function patch( $args, $assoc_args ) {
+		// @phpstan-ignore argument.templateType
+		$args = $this->replace_login_with_user_id( $args );
+		parent::patch( $args, $assoc_args );
+	}
+
+	/**
 	 * Wrapper method for add_metadata that can be overridden in sub classes.
 	 *
 	 * @param int    $object_id  ID of the object the metadata is for.
