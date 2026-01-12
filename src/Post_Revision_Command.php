@@ -1,6 +1,5 @@
 <?php
 
-use WP_CLI\Fetchers\Post as PostFetcher;
 use WP_CLI\Utils;
 
 /**
@@ -19,11 +18,28 @@ use WP_CLI\Utils;
  */
 class Post_Revision_Command {
 
-	private $fetcher;
-
-	public function __construct() {
-		$this->fetcher = new PostFetcher();
-	}
+	/**
+	 * Valid post fields that can be compared.
+	 *
+	 * @var array<string>
+	 */
+	private $valid_fields = [
+		'post_title',
+		'post_content',
+		'post_excerpt',
+		'post_name',
+		'post_status',
+		'post_type',
+		'post_author',
+		'post_date',
+		'post_date_gmt',
+		'post_modified',
+		'post_modified_gmt',
+		'post_parent',
+		'menu_order',
+		'comment_status',
+		'ping_status',
+	];
 
 	/**
 	 * Restores a post revision.
@@ -122,11 +138,18 @@ class Post_Revision_Command {
 		}
 
 		// Validate field
-		if ( ! property_exists( $from_revision, $field ) || ! property_exists( $to_revision, $field ) ) {
-			WP_CLI::error( "Invalid field '{$field}'." );
+		if ( ! in_array( $field, $this->valid_fields, true ) ) {
+			WP_CLI::error( "Invalid field '{$field}'. Valid fields: " . implode( ', ', $this->valid_fields ) );
 		}
 
-		// Get the field values
+		// Get the field values - use isset to check if field exists on the object
+		if ( ! isset( $from_revision->{$field} ) ) {
+			WP_CLI::error( "Field '{$field}' not found on revision {$from_id}." );
+		}
+		if ( ! isset( $to_revision->{$field} ) ) {
+			WP_CLI::error( "Field '{$field}' not found on revision/post {$to_id}." );
+		}
+
 		$left_string  = $from_revision->{$field};
 		$right_string = $to_revision->{$field};
 
