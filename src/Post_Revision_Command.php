@@ -70,7 +70,8 @@ class Post_Revision_Command {
 		// Restore the revision
 		$restored_post_id = wp_restore_post_revision( $revision_id );
 
-		if ( false === $restored_post_id ) {
+		// wp_restore_post_revision() returns post ID on success, false on failure, or null if revision is same as current
+		if ( ! $restored_post_id ) {
 			WP_CLI::error( "Failed to restore revision {$revision_id}." );
 		}
 
@@ -146,6 +147,8 @@ class Post_Revision_Command {
 		if ( ! isset( $from_revision->{$field} ) ) {
 			WP_CLI::error( "Field '{$field}' not found on revision {$from_id}." );
 		}
+
+		// $to_revision is guaranteed to be non-null at this point due to earlier validation
 		if ( ! isset( $to_revision->{$field} ) ) {
 			$to_error_id = $to_id ?? $to_revision->ID;
 			WP_CLI::error( "Field '{$field}' not found on revision/post {$to_error_id}." );
