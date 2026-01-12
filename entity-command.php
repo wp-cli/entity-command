@@ -46,6 +46,7 @@ WP_CLI::add_command(
 	)
 );
 WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
+WP_CLI::add_command( 'post revision', 'Post_Revision_Command' );
 WP_CLI::add_command( 'post term', 'Post_Term_Command' );
 WP_CLI::add_command( 'post-type', 'Post_Type_Command' );
 WP_CLI::add_command( 'site', 'Site_Command' );
