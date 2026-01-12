@@ -660,6 +660,8 @@ Update a meta field.
 wp comment meta update <id> <key> [<value>] [--format=<format>]
 ~~~
 
+**Alias:** `set`
+
 **OPTIONS**
 
 	<id>
@@ -1411,6 +1413,24 @@ wp menu location remove <menu> <location>
 
 
 
+### wp network
+
+Perform network-wide operations.
+
+~~~
+wp network
+~~~
+
+**EXAMPLES**
+
+    # Get a list of super-admins
+    $ wp network meta get 1 site_admins
+    array (
+      0 => 'supervisor',
+    )
+
+
+
 ### wp network meta
 
 Gets, adds, updates, deletes, and lists network custom fields.
@@ -1648,6 +1668,8 @@ Update a meta field.
 ~~~
 wp network meta update <id> <key> [<value>] [--format=<format>]
 ~~~
+
+**Alias:** `set`
 
 **OPTIONS**
 
@@ -2026,6 +2048,8 @@ Updates an option value.
 ~~~
 wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
 ~~~
+
+**Alias:** `set`
 
 **OPTIONS**
 
@@ -2898,6 +2922,8 @@ Update a meta field.
 ~~~
 wp post meta update <id> <key> [<value>] [--format=<format>]
 ~~~
+
+**Alias:** `set`
 
 **OPTIONS**
 
@@ -4942,6 +4968,8 @@ Update a meta field.
 wp site meta update <id> <key> [<value>] [--format=<format>]
 ~~~
 
+**Alias:** `set`
+
 **OPTIONS**
 
 	<id>
@@ -5858,6 +5886,8 @@ Update a meta field.
 ~~~
 wp term meta update <id> <key> [<value>] [--format=<format>]
 ~~~
+
+**Alias:** `set`
 
 **OPTIONS**
 
@@ -7058,6 +7088,8 @@ Updates a meta field.
 ~~~
 wp user meta update <user> <key> <value> [--format=<format>]
 ~~~
+
+**Alias:** `set`
 
 **OPTIONS**
 

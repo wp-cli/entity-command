@@ -78,6 +78,7 @@
             "menu location assign",
             "menu location list",
             "menu location remove",
+            "network",
             "network meta",
             "network meta add",
             "network meta delete",
