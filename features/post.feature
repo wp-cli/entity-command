@@ -545,3 +545,26 @@ Feature: Manage WordPress posts
       """
       {"block_version":1}
       """
+
+  Scenario: Creating a post should create an initial revision
+    When I run `wp post create --post_title='Original Title' --post_content='Original content' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post update {POST_ID} --post_title='Updated Title'`
+    Then STDOUT should contain:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """

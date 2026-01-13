@@ -208,13 +208,26 @@ class Post_Command extends CommandWithDBObject {
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
-		parent::_create(
-			$args,
-			$assoc_args,
-			function ( $params ) {
-				return wp_insert_post( $params, true );
-			}
-		);
+
+		// Remove ID key if present to ensure we're creating, not updating.
+		unset( $assoc_args[ $this->obj_id_key ] );
+
+		// Create the post.
+		$post_id = wp_insert_post( $assoc_args, true );
+
+		if ( is_wp_error( $post_id ) ) {
+			WP_CLI::error( $post_id );
+		}
+
+		// Create initial revision to match WordPress admin behavior.
+		// This ensures the original content can be restored if the post is later edited.
+		wp_save_post_revision( $post_id );
+
+		if ( Utils\get_flag_value( $assoc_args, 'porcelain' ) ) {
+			WP_CLI::line( (string) $post_id );
+		} else {
+			WP_CLI::success( "Created {$this->obj_type} {$post_id}." );
+		}
 	}
 
 	/**
