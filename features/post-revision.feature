@@ -49,11 +49,24 @@ Feature: Manage WordPress post revisions
       Success: Updated post {POST_ID}.
       """
 
-    When I run `wp post list --post_type=revision --post_parent={POST_ID} --fields=ID --format=csv --orderby=ID --order=ASC`
-    Then STDOUT should not be empty
+    When I run `wp post update {POST_ID} --post_content='Third version'`
+    Then STDOUT should contain:
+      """
+      Success: Updated post {POST_ID}.
+      """
 
-    When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=ids --orderby=ID --order=ASC`
+    When I run `wp post list --post_type=revision --post_parent={POST_ID} --fields=ID --format=ids --orderby=ID --order=ASC`
     Then STDOUT should not be empty
+    And save STDOUT as {REVISION_IDS}
+
+    When I run `echo "{REVISION_IDS}" | awk '{print $1}'`
+    Then save STDOUT as {REVISION_ID_1}
+
+    When I run `echo "{REVISION_IDS}" | awk '{print $2}'`
+    Then save STDOUT as {REVISION_ID_2}
+
+    When I run `wp post revision diff {REVISION_ID_1} {REVISION_ID_2}`
+    Then the return code should be 0
 
   Scenario: Show diff between revision and current post
     When I run `wp post create --post_title='Diff Test' --post_content='Original text' --porcelain`
