@@ -71,7 +71,7 @@ class Post_Revision_Command {
 		$restored_post_id = wp_restore_post_revision( $revision_id );
 
 		// wp_restore_post_revision() returns post ID on success, false on failure, or null if revision is same as current
-		if ( ! $restored_post_id ) {
+		if ( false === $restored_post_id ) {
 			WP_CLI::error( "Failed to restore revision {$revision_id}." );
 		}
 
