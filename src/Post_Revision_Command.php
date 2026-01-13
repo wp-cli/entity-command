@@ -145,7 +145,7 @@ class Post_Revision_Command {
 
 		// Get the field values - use isset to check if field exists on the object
 		if ( ! isset( $from_revision->{$field} ) ) {
-			WP_CLI::error( "Field '{$field}' not found on revision {$from_id}." );
+			WP_CLI::error( "Field '{$field}' not found on post/revision {$from_id}." );
 		}
 
 		// $to_revision is guaranteed to be non-null at this point due to earlier validation
