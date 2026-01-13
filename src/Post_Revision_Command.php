@@ -87,7 +87,7 @@ class Post_Revision_Command {
 	 * : The 'from' revision ID or post ID.
 	 *
 	 * [<to>]
-	 * : The 'to' revision ID. If not provided, compares with the current post.
+	 * : The 'to' revision ID or post ID. If not provided, compares with the current post.
 	 *
 	 * [--field=<field>]
 	 * : Compare specific field(s). Default: post_content
