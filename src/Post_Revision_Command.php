@@ -157,30 +157,87 @@ class Post_Revision_Command {
 		$left_string  = $from_revision->{$field};
 		$right_string = $to_revision->{$field};
 
-		// Generate the diff
-		$diff_args = [
-			'title_left'  => sprintf(
-				'%s (%s) - ID %d',
-				$from_revision->post_title,
-				$from_revision->post_modified,
-				$from_revision->ID
-			),
-			'title_right' => sprintf(
-				'%s (%s) - ID %d',
-				$to_revision->post_title,
-				$to_revision->post_modified,
-				$to_revision->ID
-			),
-		];
+		// Split content into lines for diff
+		$left_lines  = explode( "\n", $left_string );
+		$right_lines = explode( "\n", $right_string );
 
-		$diff = wp_text_diff( $left_string, $right_string, $diff_args );
+		// Create Text_Diff object
+		$text_diff = new \Text_Diff( 'auto', [ $left_lines, $right_lines ] );
 
-		if ( ! $diff ) {
+		// Check if there are any changes
+		if ( 0 === $text_diff->countAddedLines() && 0 === $text_diff->countDeletedLines() ) {
 			WP_CLI::success( 'No difference found.' );
 			return;
 		}
 
-		// Output the diff
-		WP_CLI::line( $diff );
+		// Display header
+		WP_CLI::line(
+			WP_CLI::colorize(
+				sprintf(
+					'%%y--- %s (%s) - ID %d%%n',
+					$from_revision->post_title,
+					$from_revision->post_modified,
+					$from_revision->ID
+				)
+			)
+		);
+		WP_CLI::line(
+			WP_CLI::colorize(
+				sprintf(
+					'%%y+++ %s (%s) - ID %d%%n',
+					$to_revision->post_title,
+					$to_revision->post_modified,
+					$to_revision->ID
+				)
+			)
+		);
+		WP_CLI::line( '' );
+
+		// Render the diff using CLI-friendly format
+		$this->render_cli_diff( $text_diff );
+	}
+
+	/**
+	 * Renders a diff in CLI-friendly format with colors.
+	 *
+	 * @param \Text_Diff $diff The diff object to render.
+	 */
+	private function render_cli_diff( $diff ) {
+		$edits = $diff->getDiff();
+
+		foreach ( $edits as $edit ) {
+			switch ( get_class( $edit ) ) {
+				case 'Text_Diff_Op_copy':
+					// Unchanged lines - show in default color
+					foreach ( $edit->orig as $line ) {
+						WP_CLI::line( '  ' . $line );
+					}
+					break;
+
+				case 'Text_Diff_Op_add':
+					// Added lines - show in green
+					foreach ( $edit->final as $line ) {
+						WP_CLI::line( WP_CLI::colorize( '%g+ ' . $line . '%n' ) );
+					}
+					break;
+
+				case 'Text_Diff_Op_delete':
+					// Deleted lines - show in red
+					foreach ( $edit->orig as $line ) {
+						WP_CLI::line( WP_CLI::colorize( '%r- ' . $line . '%n' ) );
+					}
+					break;
+
+				case 'Text_Diff_Op_change':
+					// Changed lines - show deletions in red, additions in green
+					foreach ( $edit->orig as $line ) {
+						WP_CLI::line( WP_CLI::colorize( '%r- ' . $line . '%n' ) );
+					}
+					foreach ( $edit->final as $line ) {
+						WP_CLI::line( WP_CLI::colorize( '%g+ ' . $line . '%n' ) );
+					}
+					break;
+			}
+		}
 	}
 }
