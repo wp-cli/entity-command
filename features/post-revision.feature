@@ -3,6 +3,9 @@ Feature: Manage WordPress post revisions
   Background:
     Given a WP install
 
+  # Creating a published post doesn't create an initial revision,
+  # so we update it twice here and restore the middle version.
+  # See https://github.com/wp-cli/entity-command/issues/564.
   Scenario: Restore a post revision
     When I run `wp post create --post_title='Original Post' --post_content='Original content' --porcelain`
     Then STDOUT should be a number
@@ -14,9 +17,21 @@ Feature: Manage WordPress post revisions
       Success: Updated post {POST_ID}.
       """
 
-    When I run `wp post list --post_type=revision --post_parent={POST_ID} --fields=ID,post_title --format=ids`
+    When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=ids`
     Then STDOUT should not be empty
     And save STDOUT as {REVISION_ID}
+
+    When I run `wp post update {POST_ID} --post_content='Another one'`
+    Then STDOUT should contain:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_content`
+    Then STDOUT should contain:
+      """
+      Another one
+      """
 
     When I run `wp post revision restore {REVISION_ID}`
     Then STDOUT should contain:
@@ -27,7 +42,7 @@ Feature: Manage WordPress post revisions
     When I run `wp post get {POST_ID} --field=post_content`
     Then STDOUT should contain:
       """
-      Original content
+      Updated content
       """
 
   Scenario: Restore invalid revision should fail
