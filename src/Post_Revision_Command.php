@@ -161,6 +161,11 @@ class Post_Revision_Command {
 		$left_lines  = explode( "\n", $left_string );
 		$right_lines = explode( "\n", $right_string );
 
+		if ( ! class_exists( 'Text_Diff', false ) ) {
+			// @phpstan-ignore constant.notFound
+			require ABSPATH . WPINC . '/wp-diff.php';
+		}
+
 		// Create Text_Diff object
 		$text_diff = new \Text_Diff( 'auto', [ $left_lines, $right_lines ] );
 

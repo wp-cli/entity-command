@@ -64,7 +64,7 @@ Feature: Manage WordPress post revisions
       Success: Updated post {POST_ID}.
       """
 
-    When I run `wp post update {POST_ID} --post_content='Third version'`
+    When I run `wp post update {POST_ID} --post_title='New Title' --post_content='Third version'`
     Then STDOUT should contain:
       """
       Success: Updated post {POST_ID}.
@@ -81,7 +81,19 @@ Feature: Manage WordPress post revisions
     Then save STDOUT as {REVISION_ID_2}
 
     When I run `wp post revision diff {REVISION_ID_1} {REVISION_ID_2}`
-    Then the return code should be 0
+    Then STDOUT should contain:
+      """
+      - Second version
+      + Third version
+      """
+    And STDOUT should contain:
+      """
+      --- Test Post
+      """
+    And STDOUT should contain:
+      """
+      +++ New Title
+      """
 
   Scenario: Show diff between revision and current post
     When I run `wp post create --post_title='Diff Test' --post_content='Original text' --porcelain`
@@ -99,7 +111,10 @@ Feature: Manage WordPress post revisions
     And save STDOUT as {REVISION_ID}
 
     When I run `wp post revision diff {REVISION_ID}`
-    Then the return code should be 0
+    Then STDOUT should contain:
+      """
+      Success: No difference found.
+      """
 
   Scenario: Diff with invalid revision should fail
     When I try `wp post revision diff 99999`
