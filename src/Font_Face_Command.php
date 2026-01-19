@@ -13,20 +13,20 @@ use WP_CLI\Utils;
  *
  *     # List all font faces
  *     $ wp font face list
- *     +----+-------------+-------------+
- *     | ID | post_title  | post_parent |
- *     +----+-------------+-------------+
- *     | 15 | Regular     | 10          |
- *     +----+-------------+-------------+
+ *     +----+---------+--------+
+ *     | ID | parent  | name   |
+ *     +----+---------+--------+
+ *     | 15 | 10      | Regular|
+ *     +----+---------+--------+
  *
  *     # Get details about a font face
  *     $ wp font face get 15
- *     +------------+-------------+
- *     | Field      | Value       |
- *     +------------+-------------+
- *     | ID         | 15          |
- *     | post_title | Regular     |
- *     +------------+-------------+
+ *     +--------+---------+
+ *     | Field  | Value   |
+ *     +--------+---------+
+ *     | ID     | 15      |
+ *     | name   | Regular |
+ *     +--------+---------+
  *
  *     # Create a new font face
  *     $ wp font face create --post_parent=10 --post_title="Bold" --post_name="bold"
@@ -82,30 +82,31 @@ class Font_Face_Command extends WP_CLI_Command {
 	 * These fields will be displayed by default for each font face:
 	 *
 	 * * ID
-	 * * post_title
-	 * * post_name
-	 * * post_parent
-	 * * post_status
-	 * * post_date
+	 * * parent
+	 * * name
+	 * * fontFamily
+	 * * fontStyle
+	 * * fontWeight
+	 * * fontDisplay
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     # List all font faces
 	 *     $ wp font face list
-	 *     +----+-------------+-------------+
-	 *     | ID | post_title  | post_parent |
-	 *     +----+-------------+-------------+
-	 *     | 15 | Regular     | 10          |
-	 *     +----+-------------+-------------+
+	 *     +----+--------+----------+------------+
+	 *     | ID | parent | name     | fontWeight |
+	 *     +----+--------+----------+------------+
+	 *     | 15 | 10     | Regular  | 400        |
+	 *     +----+--------+----------+------------+
 	 *
 	 *     # List font faces for a specific family
 	 *     $ wp font face list --post_parent=10
-	 *     +----+-------------+-------------+
-	 *     | ID | post_title  | post_parent |
-	 *     +----+-------------+-------------+
-	 *     | 15 | Regular     | 10          |
-	 *     | 16 | Bold        | 10          |
-	 *     +----+-------------+-------------+
+	 *     +----+--------+----------+------------+
+	 *     | ID | parent | name     | fontWeight |
+	 *     +----+--------+----------+------------+
+	 *     | 15 | 10     | Regular  | 400        |
+	 *     | 16 | 10     | Bold     | 700        |
+	 *     +----+--------+----------+------------+
 	 *
 	 * @subcommand list
 	 */
@@ -188,12 +189,12 @@ class Font_Face_Command extends WP_CLI_Command {
 	 *
 	 *     # Get font face with ID 15
 	 *     $ wp font face get 15
-	 *     +------------+-------------+
-	 *     | Field      | Value       |
-	 *     +------------+-------------+
-	 *     | ID         | 15          |
-	 *     | post_title | Regular     |
-	 *     +------------+-------------+
+	 *     +--------+---------+
+	 *     | Field  | Value   |
+	 *     +--------+---------+
+	 *     | ID     | 15      |
+	 *     | name   | Regular |
+	 *     +--------+---------+
 	 */
 	public function get( $args, $assoc_args ) {
 		$font_face_id = $args[0];

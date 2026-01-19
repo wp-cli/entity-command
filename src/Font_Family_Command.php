@@ -13,20 +13,20 @@ use WP_CLI\Utils;
  *
  *     # List all font families
  *     $ wp font family list
- *     +----+-------------+------------------+
- *     | ID | post_title  | post_name        |
- *     +----+-------------+------------------+
- *     | 10 | Roboto      | roboto           |
- *     +----+-------------+------------------+
+ *     +----+--------+--------+
+ *     | ID | name   | slug   |
+ *     +----+--------+--------+
+ *     | 10 | Roboto | roboto |
+ *     +----+--------+--------+
  *
  *     # Get details about a font family
  *     $ wp font family get 10
- *     +------------+-------------+
- *     | Field      | Value       |
- *     +------------+-------------+
- *     | ID         | 10          |
- *     | post_title | Roboto      |
- *     +------------+-------------+
+ *     +-------+--------+
+ *     | Field | Value  |
+ *     +-------+--------+
+ *     | ID    | 10     |
+ *     | name  | Roboto |
+ *     +-------+--------+
  *
  *     # Create a new font family
  *     $ wp font family create --post_title="Open Sans" --post_name="open-sans"
@@ -89,15 +89,15 @@ class Font_Family_Command extends WP_CLI_Command {
 	 *
 	 *     # List font families
 	 *     $ wp font family list
-	 *     +----+-------------+------------------+
-	 *     | ID | post_title  | post_name        |
-	 *     +----+-------------+------------------+
-	 *     | 10 | Roboto      | roboto           |
-	 *     +----+-------------+------------------+
+	 *     +----+--------+--------+------------+---------+
+	 *     | ID | name   | slug   | fontFamily | preview |
+	 *     +----+--------+--------+------------+---------+
+	 *     | 10 | Roboto | roboto | Roboto     |         |
+	 *     +----+--------+--------+------------+---------+
 	 *
 	 *     # List font families in JSON format
 	 *     $ wp font family list --format=json
-	 *     [{"ID":10,"post_title":"Roboto","post_name":"roboto"}]
+	 *     [{"ID":10,"name":"Roboto","slug":"roboto","fontFamily":"Roboto","preview":""}]
 	 *
 	 * @subcommand list
 	 */
@@ -178,12 +178,12 @@ class Font_Family_Command extends WP_CLI_Command {
 	 *
 	 *     # Get font family with ID 10
 	 *     $ wp font family get 10
-	 *     +------------+-------------+
-	 *     | Field      | Value       |
-	 *     +------------+-------------+
-	 *     | ID         | 10          |
-	 *     | post_title | Roboto      |
-	 *     +------------+-------------+
+	 *     +-------+--------+
+	 *     | Field | Value  |
+	 *     +-------+--------+
+	 *     | ID    | 10     |
+	 *     | name  | Roboto |
+	 *     +-------+--------+
 	 */
 	public function get( $args, $assoc_args ) {
 		$font_family_id = $args[0];

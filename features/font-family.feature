@@ -9,7 +9,7 @@ Feature: Manage WordPress font families
     Then STDOUT should be a number
     And save STDOUT as {FONT_FAMILY_ID}
 
-    When I run `wp font family get {FONT_FAMILY_ID} --field=post_title`
+    When I run `wp font family get {FONT_FAMILY_ID} --field=name`
     Then STDOUT should be:
       """
       Test Font
@@ -22,7 +22,7 @@ Feature: Manage WordPress font families
     And I run `wp font family create --post_title="Font Two" --porcelain`
     And save STDOUT as {FONT2}
 
-    When I run `wp font family list --format=csv --fields=ID,post_title`
+    When I run `wp font family list --format=csv --fields=ID,name`
     Then STDOUT should contain:
       """
       Font One
@@ -55,7 +55,7 @@ Feature: Manage WordPress font families
       Success: Updated font family
       """
 
-    When I run `wp font family get {FONT_FAMILY_ID} --field=post_title`
+    When I run `wp font family get {FONT_FAMILY_ID} --field=name`
     Then STDOUT should be:
       """
       New Name

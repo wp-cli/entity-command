@@ -12,7 +12,7 @@ Feature: Manage WordPress font faces
     Then STDOUT should be a number
     And save STDOUT as {FONT_FACE_ID}
 
-    When I run `wp font face get {FONT_FACE_ID} --field=post_title`
+    When I run `wp font face get {FONT_FACE_ID} --field=name`
     Then STDOUT should be:
       """
       Regular
@@ -27,7 +27,7 @@ Feature: Manage WordPress font faces
     And I run `wp font face create --post_parent={FONT_FAMILY_ID} --post_title="Bold" --porcelain`
     And save STDOUT as {FACE2}
 
-    When I run `wp font face list --format=csv --fields=ID,post_title,post_parent`
+    When I run `wp font face list --format=csv --fields=ID,name,parent`
     Then STDOUT should contain:
       """
       Regular
@@ -46,7 +46,7 @@ Feature: Manage WordPress font faces
     And I run `wp font face create --post_parent={FAMILY1} --post_title="F1 Regular" --porcelain`
     And I run `wp font face create --post_parent={FAMILY2} --post_title="F2 Regular" --porcelain`
 
-    When I run `wp font face list --post_parent={FAMILY1} --format=csv --fields=post_title`
+    When I run `wp font face list --post_parent={FAMILY1} --format=csv --fields=name`
     Then STDOUT should contain:
       """
       F1 Regular
@@ -83,7 +83,7 @@ Feature: Manage WordPress font faces
       Success: Updated font face
       """
 
-    When I run `wp font face get {FONT_FACE_ID} --field=post_title`
+    When I run `wp font face get {FONT_FACE_ID} --field=name`
     Then STDOUT should be:
       """
       New Name
@@ -136,7 +136,7 @@ Feature: Manage WordPress font faces
     Then STDOUT should be a number
     And save STDOUT as {FONT_FACE_ID}
 
-    When I run `wp font face get {FONT_FACE_ID} --field=post_parent`
+    When I run `wp font face get {FONT_FACE_ID} --field=parent`
     Then STDOUT should be:
       """
       {FONT_FAMILY_ID}
@@ -151,7 +151,7 @@ Feature: Manage WordPress font faces
     Then STDOUT should be a number
     And save STDOUT as {FONT_FACE_ID}
 
-    When I run `wp font face get {FONT_FACE_ID} --field=post_title`
+    When I run `wp font face get {FONT_FACE_ID} --field=name`
     Then STDOUT should contain:
       """
       700

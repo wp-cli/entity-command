@@ -205,7 +205,7 @@ class Font_Collection_Command extends WP_CLI_Command {
 		$data = [
 			'slug'        => $collection->slug,
 			'name'        => $collection_data['name'] ?? '',
-			'description' => $collection_data['name'] ?? '',
+			'description' => $collection_data['description'] ?? '',
 			'categories'  => $categories,
 		];
 
@@ -315,11 +315,12 @@ class Font_Collection_Command extends WP_CLI_Command {
 
 		$items = [];
 		foreach ( $font_families as $family ) {
-			if ( $category && ! in_array( $category, $family['categories'], true ) ) {
+			$family_categories = $family['categories'] ?? [];
+			if ( $category && ! in_array( $category, $family_categories, true ) ) {
 				continue;
 			}
 
-			$settings = $family['font_family_settings'];
+			$settings = $family['font_family_settings'] ?? [];
 
 			$items[] = [
 				'slug'       => $settings['slug'] ?? '',
@@ -394,7 +395,7 @@ class Font_Collection_Command extends WP_CLI_Command {
 			WP_CLI::error( $collection_data );
 		}
 
-		$categories = $collection_data['categories'];
+		$categories = $collection_data['categories'] ?? null;
 
 		if ( empty( $categories ) || ! is_array( $categories ) ) {
 			WP_CLI::error( 'No categories found in this collection.' );
