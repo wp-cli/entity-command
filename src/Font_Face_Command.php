@@ -40,14 +40,15 @@ use WP_CLI\Utils;
  */
 class Font_Face_Command extends WP_CLI_Command {
 
-	private $fields = array(
+	private $fields = [
 		'ID',
-		'post_title',
-		'post_name',
-		'post_parent',
-		'post_status',
-		'post_date',
-	);
+		'parent',
+		'name',
+		'fontFamily',
+		'fontStyle',
+		'fontWeight',
+		'fontDisplay',
+	];
 
 	/**
 	 * Lists font faces.
@@ -111,22 +112,45 @@ class Font_Face_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		$query_args = array(
+		$query_args = [
 			'post_type'      => 'wp_font_face',
 			'posts_per_page' => -1,
 			'orderby'        => 'ID',
 			'order'          => 'ASC',
-		);
+		];
 
 		// Allow filtering by any WP_Query args.
 		foreach ( $assoc_args as $key => $value ) {
-			if ( ! in_array( $key, array( 'format', 'fields', 'field' ), true ) ) {
+			if ( ! in_array( $key, [ 'format', 'fields', 'field' ], true ) ) {
 				$query_args[ $key ] = $value;
 			}
 		}
 
 		$query = new WP_Query( $query_args );
-		$items = $query->posts;
+
+		$items = array_map(
+			static function ( $post ) {
+				/**
+				 * @var \WP_Post $post
+				 */
+
+				/**
+				 * @var array{fontFamily?: string, fontStyle?: string, fontWeight?: number, fontDisplay?: string} $settings_json
+				 */
+				$settings_json = json_decode( $post->post_content, true );
+
+				return [
+					'ID'          => $post->ID,
+					'parent'      => $post->post_parent,
+					'name'        => $post->post_title ?: '',
+					'fontFamily'  => $settings_json['fontFamily'] ?? '',
+					'fontStyle'   => $settings_json['fontStyle'] ?? '',
+					'fontWeight'  => $settings_json['fontWeight'] ?? '',
+					'fontDisplay' => $settings_json['fontDisplay'] ?? 'fallback',
+				];
+			},
+			$query->posts
+		);
 
 		if ( 'ids' === $formatter->format ) {
 			$items = wp_list_pluck( $items, 'ID' );
@@ -179,8 +203,23 @@ class Font_Face_Command extends WP_CLI_Command {
 			WP_CLI::error( "Font face {$font_face_id} doesn't exist." );
 		}
 
+		/**
+		 * @var array{fontFamily?: string, fontStyle?: string, fontWeight?: number, fontDisplay?: string} $settings_json
+		 */
+		$settings_json = json_decode( $post->post_content, true );
+
+		$item = [
+			'ID'          => $post->ID,
+			'parent'      => $post->post_parent,
+			'name'        => $post->post_title ?: '',
+			'fontFamily'  => $settings_json['fontFamily'] ?? '',
+			'fontStyle'   => $settings_json['fontStyle'] ?? '',
+			'fontWeight'  => $settings_json['fontWeight'] ?? '',
+			'fontDisplay' => $settings_json['fontDisplay'] ?? 'fallback',
+		];
+
 		$formatter = $this->get_formatter( $assoc_args );
-		$formatter->display_item( $post );
+		$formatter->display_item( $item );
 	}
 
 	/**
@@ -237,12 +276,12 @@ class Font_Face_Command extends WP_CLI_Command {
 			WP_CLI::error( "Font family {$assoc_args['post_parent']} doesn't exist." );
 		}
 
-		$post_data = array(
+		$post_data = [
 			'post_type'   => 'wp_font_face',
 			'post_parent' => $assoc_args['post_parent'],
 			'post_title'  => $assoc_args['post_title'],
 			'post_status' => isset( $assoc_args['post_status'] ) ? $assoc_args['post_status'] : 'publish',
-		);
+		];
 
 		if ( isset( $assoc_args['post_name'] ) ) {
 			$post_data['post_name'] = $assoc_args['post_name'];
@@ -302,9 +341,9 @@ class Font_Face_Command extends WP_CLI_Command {
 			WP_CLI::error( "Font face {$font_face_id} doesn't exist." );
 		}
 
-		$post_data = array(
+		$post_data = [
 			'ID' => $font_face_id,
-		);
+		];
 
 		// Verify parent font family if provided.
 		if ( isset( $assoc_args['post_parent'] ) ) {
@@ -314,7 +353,7 @@ class Font_Face_Command extends WP_CLI_Command {
 			}
 		}
 
-		$allowed_fields = array( 'post_parent', 'post_title', 'post_name', 'post_status', 'post_content' );
+		$allowed_fields = [ 'post_parent', 'post_title', 'post_name', 'post_status', 'post_content' ];
 		foreach ( $allowed_fields as $field ) {
 			if ( isset( $assoc_args[ $field ] ) ) {
 				$post_data[ $field ] = $assoc_args[ $field ];
@@ -439,9 +478,9 @@ class Font_Face_Command extends WP_CLI_Command {
 		}
 
 		// Prepare font face settings.
-		$face_settings = array(
+		$face_settings = [
 			'src' => $assoc_args['src'],
-		);
+		];
 
 		if ( isset( $assoc_args['font-family'] ) ) {
 			$face_settings['fontFamily'] = $assoc_args['font-family'];
@@ -458,16 +497,16 @@ class Font_Face_Command extends WP_CLI_Command {
 		}
 
 		// Generate title.
-		$title_parts = array( $font_weight, $font_style );
+		$title_parts = [ $font_weight, $font_style ];
 		$title       = implode( ' ', $title_parts );
 
-		$post_data = array(
+		$post_data = [
 			'post_type'    => 'wp_font_face',
 			'post_parent'  => $family_id,
 			'post_title'   => $title,
 			'post_status'  => 'publish',
 			'post_content' => wp_json_encode( $face_settings ) ?: '{}',
-		);
+		];
 
 		$font_face_id = wp_insert_post( $post_data, true );
 

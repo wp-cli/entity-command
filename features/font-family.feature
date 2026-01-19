@@ -90,14 +90,14 @@ Feature: Manage WordPress font families
 
   @require-wp-6.5
   Scenario: Installing a font family from a collection
-    When I run `wp font family install google-fonts "dm sans" --porcelain`
+    When I run `wp font family install google-fonts "roboto" --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {FONT_FAMILY_ID}
 
     When I run `wp font family get {FONT_FAMILY_ID} --field=post_title`
     Then STDOUT should contain:
       """
-      DM Sans
+      Roboto
       """
 
     When I run `wp font face list --post_parent={FONT_FAMILY_ID} --format=count`
