@@ -61,6 +61,8 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound">
 		<exclude-pattern>*/src/Taxonomy_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Comment(_Meta)?_Command\.php$</exclude-pattern>
+		<exclude-pattern>*/src/Font(_Collection|_Face|_Family)?_Command\.php$</exclude-pattern>
+		<exclude-pattern>*/src/Font_Namespace\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Menu(_Item|_Location)?_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Network_Meta_Command\.php$</exclude-pattern>
 		<exclude-pattern>*/src/Network_Namespace\.php$</exclude-pattern>
