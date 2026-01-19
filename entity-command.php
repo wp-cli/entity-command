@@ -113,36 +113,14 @@ if ( class_exists( 'WP_CLI\Dispatcher\CommandNamespace' ) ) {
 	WP_CLI::add_command( 'font', 'Font_Namespace' );
 }
 
-WP_CLI::add_command(
-	'font collection',
-	'Font_Collection_Command',
-	array(
-		'before_invoke' => function () {
-			if ( Utils\wp_version_compare( '6.5', '<' ) ) {
-				WP_CLI::error( 'Requires WordPress 6.5 or greater.' );
-			}
-		},
-	)
+$wpcli_entity_font_version_check = array(
+	'before_invoke' => function () {
+		if ( Utils\wp_version_compare( '6.5', '<' ) ) {
+			WP_CLI::error( 'Requires WordPress 6.5 or greater.' );
+		}
+	},
 );
-WP_CLI::add_command(
-	'font family',
-	'Font_Family_Command',
-	array(
-		'before_invoke' => function () {
-			if ( Utils\wp_version_compare( '6.5', '<' ) ) {
-				WP_CLI::error( 'Requires WordPress 6.5 or greater.' );
-			}
-		},
-	)
-);
-WP_CLI::add_command(
-	'font face',
-	'Font_Face_Command',
-	array(
-		'before_invoke' => function () {
-			if ( Utils\wp_version_compare( '6.5', '<' ) ) {
-				WP_CLI::error( 'Requires WordPress 6.5 or greater.' );
-			}
-		},
-	)
-);
+
+WP_CLI::add_command( 'font collection', 'Font_Collection_Command', $wpcli_entity_font_version_check );
+WP_CLI::add_command( 'font family', 'Font_Family_Command', $wpcli_entity_font_version_check );
+WP_CLI::add_command( 'font face', 'Font_Face_Command', $wpcli_entity_font_version_check );

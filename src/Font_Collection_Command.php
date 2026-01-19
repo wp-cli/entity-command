@@ -39,6 +39,17 @@ class Font_Collection_Command extends WP_CLI_Command {
 	);
 
 	/**
+	 * Gets a safe value from collection data array.
+	 *
+	 * @param mixed  $data Collection data.
+	 * @param string $key  Key to retrieve.
+	 * @return string Value from data or empty string.
+	 */
+	private function get_safe_value( $data, $key ) {
+		return is_array( $data ) && isset( $data[ $key ] ) ? $data[ $key ] : '';
+	}
+
+	/**
 	 * Lists registered font collections.
 	 *
 	 * ## OPTIONS
@@ -94,8 +105,8 @@ class Font_Collection_Command extends WP_CLI_Command {
 			$data    = $collection->get_data();
 			$items[] = array(
 				'slug'        => $collection->slug,
-				'name'        => is_array( $data ) && isset( $data['name'] ) ? $data['name'] : '',
-				'description' => is_array( $data ) && isset( $data['description'] ) ? $data['description'] : '',
+				'name'        => $this->get_safe_value( $data, 'name' ),
+				'description' => $this->get_safe_value( $data, 'description' ),
 			);
 		}
 
@@ -164,8 +175,8 @@ class Font_Collection_Command extends WP_CLI_Command {
 
 		$data = array(
 			'slug'        => $collection->slug,
-			'name'        => is_array( $collection_data ) && isset( $collection_data['name'] ) ? $collection_data['name'] : '',
-			'description' => is_array( $collection_data ) && isset( $collection_data['description'] ) ? $collection_data['description'] : '',
+			'name'        => $this->get_safe_value( $collection_data, 'name' ),
+			'description' => $this->get_safe_value( $collection_data, 'description' ),
 		);
 
 		$formatter = $this->get_formatter( $assoc_args );
