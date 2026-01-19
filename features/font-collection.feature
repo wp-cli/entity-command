@@ -9,10 +9,10 @@ Feature: Manage WordPress font collections
     Then the return code should be 0
 
   @require-wp-6.5
-  Scenario: Getting a font collection
-    When I try `wp font collection get google-fonts`
-    Then the return code should be 0
-    Or STDERR should contain:
+  Scenario: Getting a non-existent font collection
+    When I try `wp font collection get nonexistent-collection`
+    Then the return code should be 1
+    And STDERR should contain:
       """
       doesn't exist
       """
