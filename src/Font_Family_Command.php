@@ -102,10 +102,6 @@ class Font_Family_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
-		if ( ! post_type_exists( 'wp_font_family' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$query_args = array(
@@ -169,10 +165,6 @@ class Font_Family_Command extends WP_CLI_Command {
 	 *     +------------+-------------+
 	 */
 	public function get( $args, $assoc_args ) {
-		if ( ! post_type_exists( 'wp_font_family' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		$font_family_id = $args[0];
 		$post           = get_post( $font_family_id );
 
@@ -221,10 +213,6 @@ class Font_Family_Command extends WP_CLI_Command {
 	 *     12
 	 */
 	public function create( $args, $assoc_args ) {
-		if ( ! post_type_exists( 'wp_font_family' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		if ( ! isset( $assoc_args['post_title'] ) ) {
 			WP_CLI::error( 'The --post_title parameter is required.' );
 		}
@@ -283,10 +271,6 @@ class Font_Family_Command extends WP_CLI_Command {
 	 *     Success: Updated font family 10.
 	 */
 	public function update( $args, $assoc_args ) {
-		if ( ! post_type_exists( 'wp_font_family' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		$font_family_id = $args[0];
 		$post           = get_post( $font_family_id );
 
@@ -338,10 +322,6 @@ class Font_Family_Command extends WP_CLI_Command {
 	 *     Success: Deleted font family 12.
 	 */
 	public function delete( $args, $assoc_args ) {
-		if ( ! post_type_exists( 'wp_font_family' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		$force = Utils\get_flag_value( $assoc_args, 'force' );
 
 		$count  = 0;

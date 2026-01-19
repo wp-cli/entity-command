@@ -109,10 +109,6 @@ class Font_Face_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
-		if ( ! post_type_exists( 'wp_font_face' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		$formatter = $this->get_formatter( $assoc_args );
 
 		$query_args = array(
@@ -176,10 +172,6 @@ class Font_Face_Command extends WP_CLI_Command {
 	 *     +------------+-------------+
 	 */
 	public function get( $args, $assoc_args ) {
-		if ( ! post_type_exists( 'wp_font_face' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		$font_face_id = $args[0];
 		$post         = get_post( $font_face_id );
 
@@ -231,10 +223,6 @@ class Font_Face_Command extends WP_CLI_Command {
 	 *     17
 	 */
 	public function create( $args, $assoc_args ) {
-		if ( ! post_type_exists( 'wp_font_face' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		if ( ! isset( $assoc_args['post_parent'] ) ) {
 			WP_CLI::error( 'The --post_parent parameter is required.' );
 		}
@@ -307,10 +295,6 @@ class Font_Face_Command extends WP_CLI_Command {
 	 *     Success: Updated font face 15.
 	 */
 	public function update( $args, $assoc_args ) {
-		if ( ! post_type_exists( 'wp_font_face' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		$font_face_id = $args[0];
 		$post         = get_post( $font_face_id );
 
@@ -370,10 +354,6 @@ class Font_Face_Command extends WP_CLI_Command {
 	 *     Success: Deleted font face 17.
 	 */
 	public function delete( $args, $assoc_args ) {
-		if ( ! post_type_exists( 'wp_font_face' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		$force = Utils\get_flag_value( $assoc_args, 'force' );
 
 		$count  = 0;

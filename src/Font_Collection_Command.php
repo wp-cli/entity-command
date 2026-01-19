@@ -86,10 +86,6 @@ class Font_Collection_Command extends WP_CLI_Command {
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
-		if ( ! class_exists( 'WP_Font_Library' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		$font_library = WP_Font_Library::get_instance();
 		$collections  = $font_library->get_font_collections();
 
@@ -156,10 +152,6 @@ class Font_Collection_Command extends WP_CLI_Command {
 	 *     Google Fonts
 	 */
 	public function get( $args, $assoc_args ) {
-		if ( ! class_exists( 'WP_Font_Library' ) ) {
-			WP_CLI::error( 'Font Library is not available. Requires WordPress 6.5 or greater.' );
-		}
-
 		$slug         = $args[0];
 		$font_library = WP_Font_Library::get_instance();
 		$collection   = $font_library->get_font_collection( $slug );
