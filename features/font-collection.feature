@@ -27,6 +27,50 @@ Feature: Manage WordPress font collections
     When I run `wp font collection is-registered google-fonts`
     Then the return code should be 0
 
+  @require-wp-6.5
+  Scenario: Listing font families in a collection
+    When I run `wp font collection list-families google-fonts --format=count`
+    Then STDOUT should be a number
+
+  @require-wp-6.5
+  Scenario: Listing font families in a collection with fields
+    When I run `wp font collection list-families google-fonts --fields=slug,name --format=csv`
+    Then STDOUT should contain:
+      """
+      slug,name
+      """
+
+  @require-wp-6.5
+  Scenario: Filtering font families by category
+    When I run `wp font collection list-families google-fonts --category=sans-serif --format=count`
+    Then STDOUT should be a number
+
+  @require-wp-6.5
+  Scenario: Listing categories in a collection
+    When I run `wp font collection list-categories google-fonts --format=csv`
+    Then STDOUT should contain:
+      """
+      slug,name
+      """
+
+  @require-wp-6.5
+  Scenario: Getting a non-existent collection for list-families
+    When I try `wp font collection list-families nonexistent-collection`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      doesn't exist
+      """
+
+  @require-wp-6.5
+  Scenario: Getting a non-existent collection for list-categories
+    When I try `wp font collection list-categories nonexistent-collection`
+    Then the return code should be 1
+    And STDERR should contain:
+      """
+      doesn't exist
+      """
+
   @less-than-wp-6.5
   Scenario: Font collection commands fail on WordPress < 6.5
     Given a WP install
