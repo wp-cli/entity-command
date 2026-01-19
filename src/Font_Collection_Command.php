@@ -183,6 +183,36 @@ class Font_Collection_Command extends WP_CLI_Command {
 		$formatter->display_item( $data );
 	}
 
+	/**
+	 * Checks if a font collection is registered.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Bash script for checking if a font collection is registered, with fallback.
+	 *
+	 *     if wp font collection is-registered google-fonts 2>/dev/null; then
+	 *         # Font collection is registered. Do something.
+	 *     else
+	 *         # Fallback if collection is not registered.
+	 *     fi
+	 *
+	 * @subcommand is-registered
+	 *
+	 * @param string[] $args Positional arguments. Unused.
+	 * @param array{network?: bool} $assoc_args Associative arguments.
+	 */
+	public function is_registered( $args, $assoc_args ) {
+		$slug         = $args[0];
+		$font_library = WP_Font_Library::get_instance();
+		$collection   = $font_library->get_font_collection( $slug );
+
+		if ( ! $collection ) {
+			WP_CLI::halt( 1 );
+		}
+
+		WP_CLI::halt( 0 );
+	}
+
 	private function get_formatter( &$assoc_args ) {
 		return new Formatter( $assoc_args, $this->fields, 'font-collection' );
 	}
