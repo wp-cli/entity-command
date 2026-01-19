@@ -168,7 +168,7 @@ class Font_Collection_Command extends WP_CLI_Command {
 		$collection   = $font_library->get_font_collection( $slug );
 
 		if ( ! $collection ) {
-			WP_CLI::error( "Font collection '{$slug}' doesn't exist." );
+			WP_CLI::error( "Font collection {$slug} doesn't exist." );
 		}
 
 		$collection_data = $collection->get_data();
