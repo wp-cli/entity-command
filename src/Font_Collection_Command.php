@@ -284,17 +284,24 @@ class Font_Collection_Command extends WP_CLI_Command {
 		// Filter by category if specified.
 		$category = \WP_CLI\Utils\get_flag_value( $assoc_args, 'category' );
 		if ( $category ) {
-			$font_families = array_filter(
-				$font_families,
-				function ( $family ) use ( $category ) {
-					$categories = isset( $family['category'] ) ? (array) $family['category'] : array();
-					return in_array( $category, $categories, true );
+			$filtered = array();
+			foreach ( $font_families as $family ) {
+				if ( ! is_array( $family ) ) {
+					continue;
 				}
-			);
+				$categories = isset( $family['category'] ) ? (array) $family['category'] : array();
+				if ( in_array( $category, $categories, true ) ) {
+					$filtered[] = $family;
+				}
+			}
+			$font_families = $filtered;
 		}
 
 		$items = array();
 		foreach ( $font_families as $family ) {
+			if ( ! is_array( $family ) ) {
+				continue;
+			}
 			$category_list = isset( $family['category'] ) ? (array) $family['category'] : array();
 			$items[]       = array(
 				'slug'       => isset( $family['slug'] ) ? $family['slug'] : '',

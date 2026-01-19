@@ -466,7 +466,7 @@ class Font_Face_Command extends WP_CLI_Command {
 			'post_parent'  => $family_id,
 			'post_title'   => $title,
 			'post_status'  => 'publish',
-			'post_content' => wp_json_encode( $face_settings ),
+			'post_content' => wp_json_encode( $face_settings ) ?: '{}',
 		);
 
 		$font_face_id = wp_insert_post( $post_data, true );
