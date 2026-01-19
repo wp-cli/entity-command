@@ -213,6 +213,181 @@ class Font_Collection_Command extends WP_CLI_Command {
 		WP_CLI::halt( 0 );
 	}
 
+	/**
+	 * Lists font families in a collection.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <slug>
+	 * : Font collection slug.
+	 *
+	 * [--category=<slug>]
+	 * : Filter by category slug.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each family.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific family fields.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * * slug
+	 * * name
+	 * * fontFamily
+	 * * category
+	 * * preview
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # List all font families in a collection
+	 *     $ wp font collection list-families google-fonts
+	 *
+	 *     # List font families in a specific category
+	 *     $ wp font collection list-families google-fonts --category=sans-serif
+	 *
+	 * @subcommand list-families
+	 */
+	public function list_families( $args, $assoc_args ) {
+		$slug         = $args[0];
+		$font_library = WP_Font_Library::get_instance();
+		$collection   = $font_library->get_font_collection( $slug );
+
+		if ( ! $collection ) {
+			WP_CLI::error( "Font collection {$slug} doesn't exist." );
+		}
+
+		$collection_data = $collection->get_data();
+
+		if ( is_wp_error( $collection_data ) ) {
+			WP_CLI::error( $collection_data );
+		}
+
+		$font_families = $this->get_safe_value( $collection_data, 'font_families' );
+
+		if ( empty( $font_families ) || ! is_array( $font_families ) ) {
+			WP_CLI::error( 'No font families found in this collection.' );
+		}
+
+		// Filter by category if specified.
+		$category = \WP_CLI\Utils\get_flag_value( $assoc_args, 'category' );
+		if ( $category ) {
+			$font_families = array_filter(
+				$font_families,
+				function ( $family ) use ( $category ) {
+					$categories = isset( $family['category'] ) ? (array) $family['category'] : array();
+					return in_array( $category, $categories, true );
+				}
+			);
+		}
+
+		$items = array();
+		foreach ( $font_families as $family ) {
+			$category_list = isset( $family['category'] ) ? (array) $family['category'] : array();
+			$items[]       = array(
+				'slug'       => isset( $family['slug'] ) ? $family['slug'] : '',
+				'name'       => isset( $family['name'] ) ? $family['name'] : '',
+				'fontFamily' => isset( $family['fontFamily'] ) ? $family['fontFamily'] : '',
+				'category'   => implode( ', ', $category_list ),
+				'preview'    => isset( $family['preview'] ) ? $family['preview'] : '',
+			);
+		}
+
+		$fields    = array( 'slug', 'name', 'fontFamily', 'category', 'preview' );
+		$formatter = new Formatter( $assoc_args, $fields, 'font-family' );
+		$formatter->display_items( $items );
+	}
+
+	/**
+	 * Lists categories in a collection.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <slug>
+	 * : Font collection slug.
+	 *
+	 * [--field=<field>]
+	 * : Prints the value of a single field for each category.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific category fields.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - count
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * * slug
+	 * * name
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # List all categories in a collection
+	 *     $ wp font collection list-categories google-fonts
+	 *     +-------------+--------------+
+	 *     | slug        | name         |
+	 *     +-------------+--------------+
+	 *     | sans-serif  | Sans Serif   |
+	 *     | display     | Display      |
+	 *     +-------------+--------------+
+	 *
+	 * @subcommand list-categories
+	 */
+	public function list_categories( $args, $assoc_args ) {
+		$slug         = $args[0];
+		$font_library = WP_Font_Library::get_instance();
+		$collection   = $font_library->get_font_collection( $slug );
+
+		if ( ! $collection ) {
+			WP_CLI::error( "Font collection {$slug} doesn't exist." );
+		}
+
+		$collection_data = $collection->get_data();
+
+		if ( is_wp_error( $collection_data ) ) {
+			WP_CLI::error( $collection_data );
+		}
+
+		$categories = $this->get_safe_value( $collection_data, 'categories' );
+
+		if ( empty( $categories ) || ! is_array( $categories ) ) {
+			WP_CLI::error( 'No categories found in this collection.' );
+		}
+
+		$items = array();
+		foreach ( $categories as $category ) {
+			$items[] = array(
+				'slug' => isset( $category['slug'] ) ? $category['slug'] : '',
+				'name' => isset( $category['name'] ) ? $category['name'] : '',
+			);
+		}
+
+		$fields    = array( 'slug', 'name' );
+		$formatter = new Formatter( $assoc_args, $fields, 'category' );
+		$formatter->display_items( $items );
+	}
+
 	private function get_formatter( &$assoc_args ) {
 		return new Formatter( $assoc_args, $this->fields, 'font-collection' );
 	}
