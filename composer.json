@@ -78,6 +78,7 @@
             "menu location assign",
             "menu location list",
             "menu location remove",
+            "network",
             "network meta",
             "network meta add",
             "network meta delete",
@@ -120,6 +121,23 @@
             "post term set",
             "post update",
             "post url-to-id",
+            "post has-blocks",
+            "post has-block",
+            "post block",
+            "post block clone",
+            "post block count",
+            "post block export",
+            "post block extract",
+            "post block get",
+            "post block import",
+            "post block insert",
+            "post block list",
+            "post block move",
+            "post block parse",
+            "post block remove",
+            "post block replace",
+            "post block render",
+            "post block update",
             "post-type",
             "post-type get",
             "post-type list",
@@ -220,6 +238,11 @@
         "classmap": [
             "src/"
         ],
+        "exclude-from-classmap": [
+            "src/Compat/WP_HTML_Span.php",
+            "src/Compat/WP_Block_Processor.php",
+            "src/Compat/polyfills.php"
+        ],
         "files": [
             "entity-command.php"
         ]
@@ -234,7 +257,6 @@
         "phpstan": "run-phpstan-tests",
         "phpunit": "run-php-unit-tests",
         "phpcbf": "run-phpcbf-cleanup",
-        "phpstan": "run-phpstan-tests",
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",

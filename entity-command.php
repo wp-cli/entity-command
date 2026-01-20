@@ -11,6 +11,11 @@ if ( file_exists( $wpcli_entity_autoloader ) ) {
 	require_once $wpcli_entity_autoloader;
 }
 
+// Load the BlockProcessorLoader class (but don't call load() yet).
+// The polyfills will be loaded on-demand by Block_Processor_Helper
+// when needed, ensuring WordPress classes take precedence if available.
+require_once __DIR__ . '/src/Compat/BlockProcessorLoader.php';
+
 WP_CLI::add_command( 'comment', 'Comment_Command' );
 WP_CLI::add_command( 'comment meta', 'Comment_Meta_Command' );
 WP_CLI::add_command( 'menu', 'Menu_Command' );
@@ -29,6 +34,17 @@ WP_CLI::add_command(
 );
 WP_CLI::add_command( 'option', 'Option_Command' );
 WP_CLI::add_command( 'post', 'Post_Command' );
+WP_CLI::add_command(
+	'post block',
+	'Post_Block_Command',
+	array(
+		'before_invoke' => function () {
+			if ( Utils\wp_version_compare( '5.0', '<' ) ) {
+				WP_CLI::error( 'Requires WordPress 5.0 or greater.' );
+			}
+		},
+	)
+);
 WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
 WP_CLI::add_command( 'post term', 'Post_Term_Command' );
 WP_CLI::add_command( 'post-type', 'Post_Type_Command' );
