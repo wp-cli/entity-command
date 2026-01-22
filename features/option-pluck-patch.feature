@@ -301,7 +301,7 @@ Feature: Option commands have pluck and patch.
       """
 
   @patch
-  Scenario: When we don't pass all necessary argumants.
+  Scenario: When we don't pass all necessary arguments
     Given a WP install
     And an input.json file:
       """
