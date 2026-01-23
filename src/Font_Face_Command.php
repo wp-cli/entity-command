@@ -263,14 +263,6 @@ class Font_Face_Command extends WP_CLI_Command {
 	 *     17
 	 */
 	public function create( $args, $assoc_args ) {
-		if ( ! isset( $assoc_args['post_parent'] ) ) {
-			WP_CLI::error( 'The --post_parent parameter is required.' );
-		}
-
-		if ( ! isset( $assoc_args['post_title'] ) ) {
-			WP_CLI::error( 'The --post_title parameter is required.' );
-		}
-
 		// Verify parent font family exists.
 		$parent_post = get_post( $assoc_args['post_parent'] );
 		if ( ! $parent_post || 'wp_font_family' !== $parent_post->post_type ) {

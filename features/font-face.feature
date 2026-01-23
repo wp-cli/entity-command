@@ -115,7 +115,7 @@ Feature: Manage WordPress font faces
     Then the return code should be 1
     And STDERR should contain:
       """
-      --post_parent parameter is required
+      missing --post_parent parameter
       """
 
   @require-wp-6.5
@@ -179,7 +179,7 @@ Feature: Manage WordPress font faces
     Then the return code should be 1
     And STDERR should contain:
       """
-      --src parameter is required
+      missing --src parameter
       """
 
   @less-than-wp-6.5

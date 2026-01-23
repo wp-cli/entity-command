@@ -94,7 +94,7 @@ Feature: Manage WordPress font families
     Then STDOUT should be a number
     And save STDOUT as {FONT_FAMILY_ID}
 
-    When I run `wp font family get {FONT_FAMILY_ID} --field=post_title`
+    When I run `wp font family get {FONT_FAMILY_ID} --field=name`
     Then STDOUT should contain:
       """
       Roboto
