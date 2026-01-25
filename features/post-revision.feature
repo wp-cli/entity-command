@@ -156,11 +156,11 @@ Feature: Manage WordPress post revisions
     And save STDOUT as {POST_ID}
 
     When I run `wp post update {POST_ID} --post_content='Version 2'`
-    When I run `wp post update {POST_ID} --post_content='Version 3'`
-    When I run `wp post update {POST_ID} --post_content='Version 4'`
-    When I run `wp post update {POST_ID} --post_content='Version 5'`
+    And I run `wp post update {POST_ID} --post_content='Version 3'`
+    And I run `wp post update {POST_ID} --post_content='Version 4'`
+    And I run `wp post update {POST_ID} --post_content='Version 5'`
 
-    When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
+    And I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
     Then STDOUT should be:
       """
       5
@@ -184,10 +184,10 @@ Feature: Manage WordPress post revisions
     And save STDOUT as {POST_ID}
 
     When I run `wp post update {POST_ID} --post_content='Version 2'`
-    When I run `wp post update {POST_ID} --post_content='Version 3'`
-    When I run `wp post update {POST_ID} --post_content='Version 4'`
+    And I run `wp post update {POST_ID} --post_content='Version 3'`
+    And I run `wp post update {POST_ID} --post_content='Version 4'`
 
-    When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
+    And I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
     Then STDOUT should be:
       """
       4
@@ -210,16 +210,16 @@ Feature: Manage WordPress post revisions
     Then save STDOUT as {POST_ID_1}
 
     When I run `wp post update {POST_ID_1} --post_content='Update 1'`
-    When I run `wp post update {POST_ID_1} --post_content='Update 2'`
-    When I run `wp post update {POST_ID_1} --post_content='Update 3'`
+    And I run `wp post update {POST_ID_1} --post_content='Update 2'`
+    And I run `wp post update {POST_ID_1} --post_content='Update 3'`
 
-    When I run `wp post create --post_title='Post 2' --post_content='Content 2' --porcelain`
+    And I run `wp post create --post_title='Post 2' --post_content='Content 2' --porcelain`
     Then save STDOUT as {POST_ID_2}
 
     When I run `wp post update {POST_ID_2} --post_content='Update 1'`
-    When I run `wp post update {POST_ID_2} --post_content='Update 2'`
+    And I run `wp post update {POST_ID_2} --post_content='Update 2'`
 
-    When I run `wp post revision prune --latest=1 --yes`
+    And I run `wp post revision prune --latest=1 --yes`
     Then STDOUT should contain:
       """
       Success: Deleted
