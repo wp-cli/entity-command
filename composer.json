@@ -116,6 +116,7 @@
             "post meta update",
             "post revision",
             "post revision diff",
+            "post revision prune",
             "post revision restore",
             "post term",
             "post term add",

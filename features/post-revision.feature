@@ -149,3 +149,104 @@ Feature: Manage WordPress post revisions
 
     When I run `wp post revision diff {REVISION_ID} --field=post_title`
     Then the return code should be 0
+
+  Scenario: Prune revisions keeping latest N
+    When I run `wp post create --post_title='Prune Test' --post_content='Version 1' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_content='Version 2'`
+    When I run `wp post update {POST_ID} --post_content='Version 3'`
+    When I run `wp post update {POST_ID} --post_content='Version 4'`
+    When I run `wp post update {POST_ID} --post_content='Version 5'`
+
+    When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
+    Then STDOUT should be:
+      """
+      5
+      """
+
+    When I run `wp post revision prune {POST_ID} --latest=2 --yes`
+    Then STDOUT should contain:
+      """
+      Success: Deleted 3 revisions for post {POST_ID}.
+      """
+
+    When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+  Scenario: Prune revisions keeping earliest N
+    When I run `wp post create --post_title='Prune Earliest Test' --post_content='Version 1' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_content='Version 2'`
+    When I run `wp post update {POST_ID} --post_content='Version 3'`
+    When I run `wp post update {POST_ID} --post_content='Version 4'`
+
+    When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
+    Then STDOUT should be:
+      """
+      4
+      """
+
+    When I run `wp post revision prune {POST_ID} --earliest=2 --yes`
+    Then STDOUT should contain:
+      """
+      Success: Deleted 2 revisions for post {POST_ID}.
+      """
+
+    When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+  Scenario: Prune revisions for all posts
+    When I run `wp post create --post_title='Post 1' --post_content='Content 1' --porcelain`
+    Then save STDOUT as {POST_ID_1}
+
+    When I run `wp post update {POST_ID_1} --post_content='Update 1'`
+    When I run `wp post update {POST_ID_1} --post_content='Update 2'`
+    When I run `wp post update {POST_ID_1} --post_content='Update 3'`
+
+    When I run `wp post create --post_title='Post 2' --post_content='Content 2' --porcelain`
+    Then save STDOUT as {POST_ID_2}
+
+    When I run `wp post update {POST_ID_2} --post_content='Update 1'`
+    When I run `wp post update {POST_ID_2} --post_content='Update 2'`
+
+    When I run `wp post revision prune --latest=1 --yes`
+    Then STDOUT should contain:
+      """
+      Success: Deleted
+      """
+    And STDOUT should contain:
+      """
+      revisions across
+      """
+
+  Scenario: Prune with no flags should fail
+    When I run `wp post create --post_title='Test' --post_content='Content' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I try `wp post revision prune {POST_ID}`
+    Then STDERR should contain:
+      """
+      Error: Please specify either --latest or --earliest flag.
+      """
+    And the return code should be 1
+
+  Scenario: Prune with both flags should fail
+    When I run `wp post create --post_title='Test' --post_content='Content' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I try `wp post revision prune {POST_ID} --latest=5 --earliest=5`
+    Then STDERR should contain:
+      """
+      Error: Cannot specify both --latest and --earliest flags.
+      """
+    And the return code should be 1

@@ -245,4 +245,176 @@ class Post_Revision_Command {
 			}
 		}
 	}
+
+	/**
+	 * Deletes old post revisions.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [<post-id>...]
+	 * : One or more post IDs to prune revisions for. If not provided, prunes revisions for all posts.
+	 *
+	 * [--latest=<limit>]
+	 * : Keep only the latest N revisions per post. Older revisions will be deleted.
+	 *
+	 * [--earliest=<limit>]
+	 * : Keep only the earliest N revisions per post. Newer revisions will be deleted.
+	 *
+	 * [--yes]
+	 * : Skip confirmation prompt.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Delete all but the latest 5 revisions for post 123
+	 *     $ wp post revision prune 123 --latest=5
+	 *     Success: Deleted 3 revisions for post 123.
+	 *
+	 *     # Delete all but the latest 5 revisions for all posts
+	 *     $ wp post revision prune --latest=5
+	 *     Success: Deleted 150 revisions across 30 posts.
+	 *
+	 *     # Delete all but the earliest 2 revisions for posts 123 and 456
+	 *     $ wp post revision prune 123 456 --earliest=2
+	 *     Success: Deleted 5 revisions for post 123.
+	 *     Success: Deleted 3 revisions for post 456.
+	 *
+	 * @subcommand prune
+	 */
+	public function prune( $args, $assoc_args ) {
+		$latest   = Utils\get_flag_value( $assoc_args, 'latest', null );
+		$earliest = Utils\get_flag_value( $assoc_args, 'earliest', null );
+
+		// Validate flags
+		if ( null === $latest && null === $earliest ) {
+			WP_CLI::error( 'Please specify either --latest or --earliest flag.' );
+		}
+
+		if ( null !== $latest && null !== $earliest ) {
+			WP_CLI::error( 'Cannot specify both --latest and --earliest flags.' );
+		}
+
+		$limit       = $latest ?? $earliest;
+		$keep_latest = null !== $latest;
+
+		if ( ! is_numeric( $limit ) || (int) $limit < 1 ) {
+			WP_CLI::error( 'Limit must be a positive integer.' );
+		}
+
+		$limit = (int) $limit;
+
+		// Get posts to process
+		if ( ! empty( $args ) ) {
+			$post_ids = array_map( 'intval', $args );
+		} else {
+			// Get all posts that have revisions
+			global $wpdb;
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$post_ids = $wpdb->get_col(
+				"SELECT DISTINCT post_parent FROM {$wpdb->posts} WHERE post_type = 'revision' AND post_parent > 0"
+			);
+			$post_ids = array_map( 'intval', $post_ids );
+		}
+
+		if ( empty( $post_ids ) ) {
+			WP_CLI::warning( 'No posts found with revisions.' );
+			return;
+		}
+
+		// Confirm deletion if processing multiple posts without --yes flag
+		if ( count( $post_ids ) > 1 && ! Utils\get_flag_value( $assoc_args, 'yes', false ) ) {
+			WP_CLI::confirm(
+				sprintf(
+					'Are you sure you want to prune revisions for %d posts?',
+					count( $post_ids )
+				),
+				$assoc_args
+			);
+		}
+
+		$total_deleted   = 0;
+		$posts_processed = 0;
+
+		foreach ( $post_ids as $post_id ) {
+			$deleted = $this->prune_post_revisions( $post_id, $limit, $keep_latest );
+
+			if ( false === $deleted ) {
+				WP_CLI::warning( "Post {$post_id} does not exist or has no revisions." );
+				continue;
+			}
+
+			if ( $deleted > 0 ) {
+				++$posts_processed;
+				$total_deleted += $deleted;
+				WP_CLI::success( "Deleted {$deleted} revision" . ( $deleted > 1 ? 's' : '' ) . " for post {$post_id}." );
+			} elseif ( count( $post_ids ) === 1 ) {
+				WP_CLI::success( "No revisions to delete for post {$post_id}." );
+			}
+		}
+
+		if ( count( $post_ids ) > 1 ) {
+			if ( $total_deleted > 0 ) {
+				WP_CLI::success(
+					sprintf(
+						'Deleted %d revision%s across %d post%s.',
+						$total_deleted,
+						$total_deleted > 1 ? 's' : '',
+						$posts_processed,
+						$posts_processed > 1 ? 's' : ''
+					)
+				);
+			} else {
+				WP_CLI::success( 'No revisions to delete.' );
+			}
+		}
+	}
+
+	/**
+	 * Prunes revisions for a single post.
+	 *
+	 * @param int  $post_id     The post ID.
+	 * @param int  $limit       Number of revisions to keep.
+	 * @param bool $keep_latest Whether to keep the latest revisions (true) or earliest (false).
+	 * @return int|false Number of revisions deleted, or false if post not found.
+	 */
+	private function prune_post_revisions( $post_id, $limit, $keep_latest ) {
+		$post = get_post( $post_id );
+
+		if ( ! $post ) {
+			return false;
+		}
+
+		// Get all revisions for this post
+		$revisions = wp_get_post_revisions( $post_id, [ 'order' => 'ASC' ] );
+
+		if ( empty( $revisions ) ) {
+			return false;
+		}
+
+		$revision_count = count( $revisions );
+
+		// If we have fewer or equal revisions than the limit, nothing to delete
+		if ( $revision_count <= $limit ) {
+			return 0;
+		}
+
+		// Determine which revisions to delete
+		$revisions_array = array_values( $revisions );
+
+		if ( $keep_latest ) {
+			// Keep the latest N, delete the rest (from beginning)
+			$to_delete = array_slice( $revisions_array, 0, $revision_count - $limit );
+		} else {
+			// Keep the earliest N, delete the rest (from end)
+			$to_delete = array_slice( $revisions_array, $limit );
+		}
+
+		$deleted = 0;
+		foreach ( $to_delete as $revision ) {
+			if ( $revision instanceof \WP_Post && wp_delete_post_revision( $revision->ID ) ) {
+				++$deleted;
+			}
+		}
+
+		return $deleted;
+	}
 }
