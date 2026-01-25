@@ -160,16 +160,18 @@ Feature: Manage WordPress post revisions
     And I run `wp post update {POST_ID} --post_content='Version 4'`
     And I run `wp post update {POST_ID} --post_content='Version 5'`
 
+    # The initial post does not create a revision.
+    # See https://core.trac.wordpress.org/ticket/30854
     And I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
     Then STDOUT should be:
       """
-      5
+      4
       """
 
     When I run `wp post revision prune {POST_ID} --latest=2 --yes`
     Then STDOUT should contain:
       """
-      Success: Deleted 3 revisions for post {POST_ID}.
+      Success: Deleted 2 revisions for post {POST_ID}.
       """
 
     When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
@@ -187,16 +189,18 @@ Feature: Manage WordPress post revisions
     And I run `wp post update {POST_ID} --post_content='Version 3'`
     And I run `wp post update {POST_ID} --post_content='Version 4'`
 
+    # The initial post does not create a revision.
+    # See https://core.trac.wordpress.org/ticket/30854
     And I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
     Then STDOUT should be:
       """
-      4
+      3
       """
 
     When I run `wp post revision prune {POST_ID} --earliest=2 --yes`
     Then STDOUT should contain:
       """
-      Success: Deleted 2 revisions for post {POST_ID}.
+      Success: Deleted 1 revision for post {POST_ID}.
       """
 
     When I run `wp post list --post_type=revision --post_parent={POST_ID} --format=count`
