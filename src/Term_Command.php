@@ -47,6 +47,7 @@ class Term_Command extends WP_CLI_Command {
 		'description',
 		'parent',
 		'count',
+		'term_group',
 	];
 
 	/**
@@ -90,6 +91,7 @@ class Term_Command extends WP_CLI_Command {
 	 * * description
 	 * * parent
 	 * * count
+	 * * term_group
 	 *
 	 * These fields are optionally available:
 	 *
@@ -99,11 +101,11 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 *     # List post categories
 	 *     $ wp term list category --format=csv
-	 *     term_id,term_taxonomy_id,name,slug,description,parent,count
-	 *     2,2,aciform,aciform,,0,1
-	 *     3,3,antiquarianism,antiquarianism,,0,1
-	 *     4,4,arrangement,arrangement,,0,1
-	 *     5,5,asmodeus,asmodeus,,0,1
+	 *     term_id,term_taxonomy_id,name,slug,description,parent,count,term_group
+	 *     2,2,aciform,aciform,,0,1,0
+	 *     3,3,antiquarianism,antiquarianism,,0,1,0
+	 *     4,4,arrangement,arrangement,,0,1,0
+	 *     5,5,asmodeus,asmodeus,,0,1,0
 	 *
 	 *     # List post tags
 	 *     $ wp term list post_tag --fields=name,slug
