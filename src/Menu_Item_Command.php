@@ -121,6 +121,97 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Gets details about a menu item.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <db-id>
+	 * : Database ID for the menu item.
+	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole menu item, returns the value of a single field.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields are available:
+	 *
+	 * * db_id
+	 * * type
+	 * * title
+	 * * link
+	 * * position
+	 * * menu_item_parent
+	 * * object_id
+	 * * object
+	 * * type_label
+	 * * target
+	 * * attr_title
+	 * * description
+	 * * classes
+	 * * xfn
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get details about a menu item with ID 45
+	 *     $ wp menu item get 45
+	 *     +-------------+----------------------------------+
+	 *     | Field       | Value                            |
+	 *     +-------------+----------------------------------+
+	 *     | db_id       | 45                               |
+	 *     | type        | custom                           |
+	 *     | title       | WordPress                        |
+	 *     | link        | https://wordpress.org            |
+	 *     | position    | 1                                |
+	 *     +-------------+----------------------------------+
+	 *
+	 *     # Get a specific field from a menu item
+	 *     $ wp menu item get 45 --field=title
+	 *     WordPress
+	 *
+	 *     # Get menu item data in JSON format
+	 *     $ wp menu item get 45 --format=json
+	 *     {"db_id":45,"type":"custom","title":"WordPress","link":"https://wordpress.org","position":1}
+	 */
+	public function get( $args, $assoc_args ) {
+
+		$db_id = $args[0];
+
+		$menu_item = get_post( $db_id );
+
+		if ( ! $menu_item || 'nav_menu_item' !== $menu_item->post_type ) {
+			WP_CLI::error( 'Invalid menu item.' );
+		}
+
+		/**
+		 * @var object{title: string, url: string, description: string, object: string, object_id: int, menu_item_parent: int, attr_title: string, target: string, classes: string[], xfn: string, type: string, type_label: string, menu_order: int, db_id: int, post_type: string} $menu_item
+		 */
+		$menu_item = wp_setup_nav_menu_item( $menu_item );
+
+		// Correct position inconsistency and protected `url` param in WP-CLI
+		// @phpstan-ignore property.notFound
+		$menu_item->position = ( 0 === $menu_item->menu_order ) ? 1 : $menu_item->menu_order;
+		// @phpstan-ignore property.notFound
+		$menu_item->link     = $menu_item->url;
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $menu_item );
+	}
+
+	/**
 	 * Adds a post as a menu item.
 	 *
 	 * ## OPTIONS

@@ -71,6 +71,7 @@
             "menu item add-post",
             "menu item add-term",
             "menu item delete",
+            "menu item get",
             "menu item list",
             "menu item update",
             "menu list",
