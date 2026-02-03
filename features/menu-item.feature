@@ -194,3 +194,61 @@ Feature: Manage WordPress menu items
       | type   | title  | position | link               |
       | custom | First  | 1        | https://first.com  |
       | custom | Third  | 2        | https://third.com  |
+
+  Scenario: Get menu item details
+    When I run `wp menu create "Sidebar Menu"`
+    Then STDOUT should not be empty
+
+    When I run `wp menu item add-custom sidebar-menu Apple https://apple.com --porcelain`
+    Then save STDOUT as {ITEM_ID}
+
+    When I run `wp menu item get {ITEM_ID}`
+    Then STDOUT should be a table containing rows:
+      | Field    | Value           |
+      | db_id    | {ITEM_ID}       |
+      | type     | custom          |
+      | title    | Apple           |
+      | link     | https://apple.com |
+      | position | 1               |
+
+    When I run `wp menu item get {ITEM_ID} --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "db_id": {ITEM_ID},
+        "type": "custom",
+        "title": "Apple",
+        "link": "https://apple.com"
+      }
+      """
+
+    When I run `wp menu item get {ITEM_ID} --field=title`
+    Then STDOUT should be:
+      """
+      Apple
+      """
+
+    When I run `wp menu item get {ITEM_ID} --fields=db_id,title,type --format=csv`
+    Then STDOUT should be CSV containing:
+      | Field  | Value      |
+      | db_id  | {ITEM_ID}  |
+      | title  | Apple      |
+      | type   | custom     |
+
+    When I try `wp menu item get 99999999`
+    Then STDERR should be:
+      """
+      Error: Invalid menu item.
+      """
+    And the return code should be 1
+
+    When I run `wp post create --post_title='Test Post' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I try `wp menu item get {POST_ID}`
+    Then STDERR should be:
+      """
+      Error: Invalid menu item.
+      """
+    And the return code should be 1
+
