@@ -207,6 +207,27 @@ class Menu_Item_Command extends WP_CLI_Command {
 		// @phpstan-ignore property.notFound
 		$menu_item->link     = $menu_item->url;
 
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = [
+				'db_id',
+				'menu_item_parent',
+				'object_id',
+				'object',
+				'type',
+				'type_label',
+				'title',
+				'url',
+				'link',
+				'description',
+				'attr_title',
+				'target',
+				'classes',
+				'xfn',
+				'menu_order',
+				'position',
+				'post_type',
+			];
+		}
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $menu_item );
 	}
