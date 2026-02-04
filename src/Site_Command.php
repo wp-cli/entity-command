@@ -447,6 +447,10 @@ class Site_Command extends CommandWithDBObject {
 	 *     # Get site ID by URL
 	 *     $ wp site get http://example.com/subdir/ --field=blog_id
 	 *     2
+	 *
+	 *     # Delete a site by URL
+	 *     $ wp site delete $(wp site get http://example.com/subdir/ --field=blog_id) --yes
+	 *     Success: The site at 'http://example.com/subdir/' was deleted.
 	 */
 	public function get( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
