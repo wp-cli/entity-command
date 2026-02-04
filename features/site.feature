@@ -763,3 +763,76 @@ Feature: Manage sites in a multisite installation
     Then STDOUT should be a table containing rows:
       | blog_id | public |
       | 2       | 1      |
+
+  Scenario: Get site by ID
+    Given a WP multisite install
+
+    When I run `wp site create --slug=testsite --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get {SITE_ID} --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+    When I run `wp site get {SITE_ID}`
+    Then STDOUT should be a table containing rows:
+      | blog_id   |
+      | {SITE_ID} |
+
+  Scenario: Get site by URL
+    Given a WP multisite install
+
+    When I run `wp site create --slug=testsite --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+    And I run `wp site list --blog_id={SITE_ID} --field=url`
+    And save STDOUT as {SITE_URL}
+
+    When I run `wp site get {SITE_URL} --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+  Scenario: Get site by URL with subdirectory
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --slug=mysubdir --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get http://example.com/mysubdir/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+  Scenario: Use site get with site delete
+    Given a WP multisite install
+
+    When I run `wp site create --slug=deleteme --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site delete $(wp site get http://example.com/deleteme/ --field=blog_id) --yes`
+    Then STDOUT should contain:
+      """
+      Success: The site at
+      """
+    And STDOUT should contain:
+      """
+      was deleted.
+      """
+
+  Scenario: Get site with invalid URL should fail
+    Given a WP multisite install
+
+    When I try `wp site get http://example.com/nonexistent/ --field=blog_id`
+    Then STDERR should contain:
+      """
+      Error: Could not find site with URL: http://example.com/nonexistent/
+      """
+    And the return code should be 1

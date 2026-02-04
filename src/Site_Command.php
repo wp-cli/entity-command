@@ -385,6 +385,134 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	/**
+	 * Gets details about a site in a multisite installation.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <site>
+	 * : Site ID or URL of the site to get. For subdirectory sites, use the full URL (e.g., http://example.com/subdir/).
+	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole site, returns the value of a single field.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for the site:
+	 *
+	 * * blog_id
+	 * * url
+	 * * last_updated
+	 * * registered
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * site_id
+	 * * domain
+	 * * path
+	 * * public
+	 * * archived
+	 * * mature
+	 * * spam
+	 * * deleted
+	 * * lang_id
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get site by ID
+	 *     $ wp site get 1
+	 *     +---------+-------------------------+---------------------+---------------------+
+	 *     | blog_id | url                     | last_updated        | registered          |
+	 *     +---------+-------------------------+---------------------+---------------------+
+	 *     | 1       | http://example.com/     | 2025-01-01 12:00:00 | 2025-01-01 12:00:00 |
+	 *     +---------+-------------------------+---------------------+---------------------+
+	 *
+	 *     # Get site URL by site ID
+	 *     $ wp site get 1 --field=url
+	 *     http://example.com/
+	 *
+	 *     # Get site ID by URL
+	 *     $ wp site get http://example.com/subdir/ --field=blog_id
+	 *     2
+	 */
+	public function get( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite installation.' );
+		}
+
+		$site_arg = $args[0];
+		$site     = null;
+
+		// Check if the argument is a URL (contains :// or starts with www.)
+		if ( false !== strpos( $site_arg, '://' ) || 0 === strpos( $site_arg, 'www.' ) ) {
+			// Parse the URL to get domain and path
+			$url_parts = wp_parse_url( $site_arg );
+
+			if ( ! isset( $url_parts['host'] ) ) {
+				WP_CLI::error( "Invalid URL: {$site_arg}" );
+			}
+
+			$domain = $url_parts['host'];
+			$path   = isset( $url_parts['path'] ) ? $url_parts['path'] : '/';
+
+			// Ensure path ends with /
+			if ( '/' !== substr( $path, -1 ) ) {
+				$path .= '/';
+			}
+
+			// Query the database for the site
+			global $wpdb;
+			$site = $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->blogs} WHERE domain = %s AND path = %s",
+					$domain,
+					$path
+				)
+			);
+
+			if ( ! $site ) {
+				WP_CLI::error( "Could not find site with URL: {$site_arg}" );
+			}
+		} else {
+			// Treat as site ID
+			$site = $this->fetcher->get_check( $site_arg );
+		}
+
+		// Get the site details and add URL
+		$site_data        = get_object_vars( $site );
+		$site_data['url'] = trailingslashit( get_home_url( $site->blog_id ) );
+
+		// Cast numeric fields to int for consistent output
+		if ( isset( $site_data['blog_id'] ) && is_scalar( $site_data['blog_id'] ) ) {
+			$site_data['blog_id'] = (int) $site_data['blog_id'];
+		}
+		if ( isset( $site_data['site_id'] ) && is_scalar( $site_data['site_id'] ) ) {
+			$site_data['site_id'] = (int) $site_data['site_id'];
+		}
+
+		// Set default fields if not specified
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = [ 'blog_id', 'url', 'last_updated', 'registered' ];
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $site_data );
+	}
+
+	/**
 	 * Creates a site in a multisite installation.
 	 *
 	 * ## OPTIONS
