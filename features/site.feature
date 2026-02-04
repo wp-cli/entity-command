@@ -817,7 +817,14 @@ Feature: Manage sites in a multisite installation
     Then STDOUT should be a number
     And save STDOUT as {SITE_ID}
 
-    When I run `wp site delete $(wp site get http://example.com/deleteme/ --field=blog_id) --yes`
+    When I run `wp site get http://example.com/deleteme/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+    And save STDOUT as {BLOG_ID}
+
+    When I run `wp site delete {BLOG_ID} --yes`
     Then STDOUT should contain:
       """
       Success: The site at

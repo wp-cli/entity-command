@@ -500,11 +500,11 @@ class Site_Command extends CommandWithDBObject {
 		$site_data['url'] = trailingslashit( get_home_url( $site->blog_id ) );
 
 		// Cast numeric fields to int for consistent output
-		if ( isset( $site_data['blog_id'] ) && is_scalar( $site_data['blog_id'] ) ) {
-			$site_data['blog_id'] = (int) $site_data['blog_id'];
-		}
-		if ( isset( $site_data['site_id'] ) && is_scalar( $site_data['site_id'] ) ) {
-			$site_data['site_id'] = (int) $site_data['site_id'];
+		$numeric_fields = [ 'blog_id', 'site_id', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' ];
+		foreach ( $numeric_fields as $field ) {
+			if ( isset( $site_data[ $field ] ) && is_scalar( $site_data[ $field ] ) ) {
+				$site_data[ $field ] = (int) $site_data[ $field ];
+			}
 		}
 
 		// Set default fields if not specified
