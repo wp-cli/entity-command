@@ -462,8 +462,14 @@ class Site_Command extends CommandWithDBObject {
 
 		// Check if the argument is a URL (contains :// or starts with www.)
 		if ( false !== strpos( $site_arg, '://' ) || 0 === strpos( $site_arg, 'www.' ) ) {
+			// Normalize scheme-less URLs starting with www. for proper parsing.
+			$url_to_parse = $site_arg;
+			if ( 0 === strpos( $site_arg, 'www.' ) && false === strpos( $site_arg, '://' ) ) {
+				$url_to_parse = 'http://' . $site_arg;
+			}
+
 			// Parse the URL to get domain and path
-			$url_parts = wp_parse_url( $site_arg );
+			$url_parts = wp_parse_url( $url_to_parse );
 
 			if ( ! isset( $url_parts['host'] ) ) {
 				WP_CLI::error( "Invalid URL: {$site_arg}" );
