@@ -281,7 +281,7 @@ Feature: Manage WordPress terms
       Success: Term updated.
       """
 
-  Scenario: Term list includes term_group field
+  Scenario: Term list includes term_group as optional field
     When I run `wp term create category 'Group Test' --slug=group-test --description='Test term_group field'`
     Then STDOUT should not be empty
 
@@ -291,7 +291,7 @@ Feature: Manage WordPress terms
       term_group
       """
 
-    When I run `wp term list category --format=json`
+    When I run `wp term list category --format=json --fields=term_id,name,term_group`
     Then STDOUT should be JSON containing:
       """
       [{
