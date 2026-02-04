@@ -779,8 +779,8 @@ Feature: Manage sites in a multisite installation
 
     When I run `wp site get {SITE_ID}`
     Then STDOUT should be a table containing rows:
-      | blog_id   |
-      | {SITE_ID} |
+      | Field     | Value     |
+      | blog_id   | {SITE_ID} |
 
   Scenario: Get site by URL
     Given a WP multisite install
