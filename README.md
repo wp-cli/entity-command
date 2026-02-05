@@ -5612,6 +5612,7 @@ These fields will be displayed by default for each term:
 
 These fields are optionally available:
 
+* term_group
 * url
 
 **EXAMPLES**
