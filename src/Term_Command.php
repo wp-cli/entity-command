@@ -93,6 +93,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * These fields are optionally available:
 	 *
+	 * * term_group
 	 * * url
 	 *
 	 * ## EXAMPLES
