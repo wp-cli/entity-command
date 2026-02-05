@@ -483,19 +483,14 @@ class Site_Command extends CommandWithDBObject {
 				$path .= '/';
 			}
 
-			// Query the database for the site
-			global $wpdb;
-			$site = $wpdb->get_row(
-				$wpdb->prepare(
-					"SELECT * FROM {$wpdb->blogs} WHERE domain = %s AND path = %s",
-					$domain,
-					$path
-				)
-			);
+			// Use WordPress's cached function to get the blog ID
+			$blog_id = get_blog_id_from_url( $domain, $path );
 
-			if ( ! $site ) {
+			if ( ! $blog_id ) {
 				WP_CLI::error( "Could not find site with URL: {$site_arg}" );
 			}
+
+			$site = $this->fetcher->get_check( $blog_id );
 		} else {
 			// Treat as site ID
 			$site = $this->fetcher->get_check( $site_arg );
