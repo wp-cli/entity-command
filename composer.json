@@ -149,6 +149,7 @@
             "site deactivate",
             "site delete",
             "site empty",
+            "site get",
             "site list",
             "site mature",
             "site meta",
