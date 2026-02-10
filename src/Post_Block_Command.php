@@ -31,6 +31,9 @@ use WP_CLI\Utils;
  *     $ wp post block insert 123 core/paragraph --content="Hello World"
  *
  * @package wp-cli
+ *
+ * @phpstan-type ParsedBlock array{blockName?: string, attrs: array<string, mixed>, innerBlocks: array<array<mixed>>, innerHTML: string, innerContent: list<mixed>}
+ * @phpstan-type ParsedBlockWithBlockName array{blockName: string, attrs: array<string, mixed>, innerBlocks: array<array<mixed>>, innerHTML: string, innerContent: list<mixed>}
  */
 class Post_Block_Command extends WP_CLI_Command {
 
@@ -641,12 +644,20 @@ class Post_Block_Command extends WP_CLI_Command {
 			WP_CLI::error( 'No blocks found in import data.' );
 		}
 
+		/**
+		 * @phpstan-var array<int|string, ParsedBlock> $import_blocks
+		 */
+
 		// Validate block structure.
 		foreach ( $import_blocks as $idx => $block ) {
 			if ( ! isset( $block['blockName'] ) ) {
 				WP_CLI::error( "Invalid block structure at index {$idx}: missing blockName." );
 			}
 		}
+
+		/**
+		 * @phpstan-var array<int|string, ParsedBlockWithBlockName> $import_blocks
+		 */
 
 		$imported_count = count( $import_blocks );
 

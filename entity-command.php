@@ -54,11 +54,15 @@ WP_CLI::add_command(
 	'Site_Meta_Command',
 	array(
 		'before_invoke' => function () {
+			/**
+			 * @var \wpdb $wpdb
+			 */
+			global $wpdb;
 			if ( ! is_multisite() ) {
 				WP_CLI::error( 'This is not a multisite installation.' );
 			}
 			if ( ! function_exists( 'is_site_meta_supported' ) || ! is_site_meta_supported() ) {
-				WP_CLI::error( sprintf( 'The %s table is not installed. Please run the network database upgrade.', $GLOBALS['wpdb']->blogmeta ) );
+				WP_CLI::error( sprintf( 'The %s table is not installed. Please run the network database upgrade.', $wpdb->blogmeta ) );
 			}
 		},
 	)

@@ -1244,7 +1244,6 @@ class Site_Command extends CommandWithDBObject {
 	 * @param  array  $assoc_args  Passed-in parameters.
 	 *
 	 * @return bool
-	 * @throws ExitException If neither site ids nor site slug using --slug were provided.
 	 */
 	private function check_site_ids_and_slug( $args, $assoc_args ) {
 		if ( ( empty( $args ) && empty( $assoc_args['slug'] ) )
