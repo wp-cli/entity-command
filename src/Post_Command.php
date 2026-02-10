@@ -779,7 +779,6 @@ class Post_Command extends CommandWithDBObject {
 
 		// Add time if the string is a valid date without time.
 		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
-		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
 		if ( $date && $date->format( 'Y-m-d' ) === $post_data['post_date'] ) {
 			$post_data['post_date'] .= ' 00:00:00';
 		}
