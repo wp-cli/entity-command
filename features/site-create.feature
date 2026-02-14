@@ -163,6 +163,29 @@ Feature: Create a new site on a WP multisite
       """
     And the return code should be 1
 
+  Scenario: Error when numeric-only domain is provided without slug
+    Given a WP multisite subdomain install
+
+    When I try `wp site create --site-url=http://123.example.com`
+    Then STDERR should be:
+      """
+      Error: Could not derive a valid slug from the domain. Please provide --slug explicitly.
+      """
+    And the return code should be 1
+
+  Scenario: Create site with different domain in subdirectory multisite
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --site-url=http://custom.example.com/mypath/`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created:
+      """
+    And STDOUT should contain:
+      """
+      ://custom.example.com/mypath/
+      """
+
   Scenario: Preserve existing slug behavior
     Given a WP multisite subdomain install
 

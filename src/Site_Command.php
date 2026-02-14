@@ -468,15 +468,22 @@ class Site_Command extends CommandWithDBObject {
 					// For subdomain installs, use the first part of the domain as the base
 					$domain_parts = explode( '.', $custom_domain );
 					$base         = $domain_parts[0];
+
+					// Validate that the derived base is suitable for use as a slug
+					if ( empty( $base ) || is_numeric( $base ) ) {
+						WP_CLI::error( 'Could not derive a valid slug from the domain. Please provide --slug explicitly.' );
+					}
 				} else {
 					// For subdirectory installs, use the path as the base
 					$base = trim( $custom_path, '/' );
 					// Use the last part of the path if there are multiple segments
-					$path_parts = explode( '/', $base );
-					$base       = end( $path_parts );
-					// If base is empty (root path), generate a random one
+					if ( ! empty( $base ) ) {
+						$path_parts = explode( '/', $base );
+						$base       = $path_parts[ count( $path_parts ) - 1 ];
+					}
+					// If base is empty (root path), generate an auto slug
 					if ( empty( $base ) ) {
-						$base = 'site-' . wp_generate_password( 8, false );
+						$base = 'auto-' . time();
 					}
 				}
 			} else {
