@@ -391,9 +391,9 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * [--slug=<slug>]
 	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
-	 * Required if --url is not provided.
+	 * Required if --site-url is not provided.
 	 *
-	 * [--url=<url>]
+	 * [--site-url=<url>]
 	 * : Full URL for the new site. Use this to specify a custom domain instead of the auto-generated one.
 	 * For subdomain installs, this allows you to use a different base domain (e.g., 'http://site.example.com' instead of 'http://site.main.example.com').
 	 * For subdirectory installs, this allows you to use a different path.
@@ -421,11 +421,11 @@ class Site_Command extends CommandWithDBObject {
 	 *     Success: Site 3 created: http://www.example.com/example/
 	 *
 	 *     # Create a site with a custom domain (subdomain multisite)
-	 *     $ wp site create --url=http://site.example.com
+	 *     $ wp site create --site-url=http://site.example.com
 	 *     Success: Site 4 created: http://site.example.com/
 	 *
 	 *     # Create a site with a custom subdirectory (subdirectory multisite)
-	 *     $ wp site create --url=http://example.com/custom/path/
+	 *     $ wp site create --site-url=http://example.com/custom/path/
 	 *     Success: Site 5 created: http://example.com/custom/path/
 	 */
 	public function create( $args, $assoc_args ) {
@@ -435,21 +435,21 @@ class Site_Command extends CommandWithDBObject {
 
 		global $wpdb, $current_site;
 
-		// Check if either slug or url is provided
-		$has_slug = isset( $assoc_args['slug'] );
-		$has_url  = isset( $assoc_args['url'] );
+		// Check if either slug or site-url is provided
+		$has_slug     = isset( $assoc_args['slug'] );
+		$has_site_url = isset( $assoc_args['site-url'] );
 
-		if ( ! $has_slug && ! $has_url ) {
-			WP_CLI::error( 'Either --slug or --url must be provided.' );
+		if ( ! $has_slug && ! $has_site_url ) {
+			WP_CLI::error( 'Either --slug or --site-url must be provided.' );
 		}
 
-		// If URL is provided, parse it to get domain and path
+		// If site URL is provided, parse it to get domain and path
 		$custom_domain = null;
 		$custom_path   = null;
 		$base          = null;
 
-		if ( $has_url ) {
-			$parsed_url = parse_url( $assoc_args['url'] );
+		if ( $has_site_url ) {
+			$parsed_url = parse_url( $assoc_args['site-url'] );
 			if ( ! isset( $parsed_url['host'] ) ) {
 				WP_CLI::error( 'Invalid URL format. Please provide a valid URL (e.g., http://site.example.com).' );
 			}
@@ -537,7 +537,7 @@ class Site_Command extends CommandWithDBObject {
 
 		if ( is_subdomain_install() ) {
 			if ( null !== $custom_domain ) {
-				// Use custom domain if provided via --url
+				// Use custom domain if provided via --site-url
 				$newdomain = $custom_domain;
 				$path      = $custom_path;
 			} else {
@@ -547,7 +547,7 @@ class Site_Command extends CommandWithDBObject {
 			}
 		} else {
 			if ( null !== $custom_domain ) {
-				// Use custom domain and path if provided via --url
+				// Use custom domain and path if provided via --site-url
 				$newdomain = $custom_domain;
 				$path      = $custom_path;
 			} else {

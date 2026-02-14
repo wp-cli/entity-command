@@ -97,7 +97,7 @@ Feature: Create a new site on a WP multisite
   Scenario: Create site with custom URL in subdomain multisite
     Given a WP multisite subdomain install
 
-    When I run `wp site create --url=http://custom.example.com`
+    When I run `wp site create --site-url=http://custom.example.com`
     Then STDOUT should contain:
       """
       Success: Site 2 created: http://custom.example.com/
@@ -118,7 +118,7 @@ Feature: Create a new site on a WP multisite
   Scenario: Create site with custom URL in subdirectory multisite
     Given a WP multisite subdirectory install
 
-    When I run `wp site create --url=http://example.com/custom/path/`
+    When I run `wp site create --site-url=http://example.com/custom/path/`
     Then STDOUT should contain:
       """
       Success: Site 2 created: http://example.com/custom/path/
@@ -139,26 +139,26 @@ Feature: Create a new site on a WP multisite
   Scenario: Create site with custom URL and explicit slug
     Given a WP multisite subdomain install
 
-    When I run `wp site create --url=http://custom.example.com --slug=myslug`
+    When I run `wp site create --site-url=http://custom.example.com --slug=myslug`
     Then STDOUT should contain:
       """
       Success: Site 2 created: http://custom.example.com/
       """
 
-  Scenario: Error when neither slug nor url is provided
+  Scenario: Error when neither slug nor site-url is provided
     Given a WP multisite install
 
     When I try `wp site create --title="Test Site"`
     Then STDERR should be:
       """
-      Error: Either --slug or --url must be provided.
+      Error: Either --slug or --site-url must be provided.
       """
     And the return code should be 1
 
   Scenario: Error when invalid URL format is provided
     Given a WP multisite install
 
-    When I try `wp site create --url=not-a-valid-url`
+    When I try `wp site create --site-url=not-a-valid-url`
     Then STDERR should contain:
       """
       Error: Invalid URL format
