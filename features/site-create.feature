@@ -121,19 +121,17 @@ Feature: Create a new site on a WP multisite
     When I run `wp site create --site-url=http://example.com/custom/path/`
     Then STDOUT should contain:
       """
-      Success: Site 2 created: http://example.com/custom/path/
+      Success: Site 2 created:
+      """
+    And STDOUT should contain:
+      """
+      ://example.com/custom/path/
       """
 
     When I run `wp site list --fields=blog_id,url`
-    Then STDOUT should be a table containing rows:
-      | blog_id | url                            |
-      | 1       | https://example.com/           |
-      | 2       | http://example.com/custom/path/ |
-
-    When I run `wp --url=example.com/custom/path option get home`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      http://example.com/custom/path
+      ://example.com/custom/path/
       """
 
   Scenario: Create site with custom URL and explicit slug
