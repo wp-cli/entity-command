@@ -449,7 +449,7 @@ class Site_Command extends CommandWithDBObject {
 		$base          = null;
 
 		if ( $has_site_url ) {
-			$parsed_url = parse_url( $assoc_args['site-url'] );
+			$parsed_url = wp_parse_url( $assoc_args['site-url'] );
 			if ( ! isset( $parsed_url['host'] ) ) {
 				WP_CLI::error( 'Invalid URL format. Please provide a valid URL (e.g., http://site.example.com).' );
 			}
@@ -545,16 +545,14 @@ class Site_Command extends CommandWithDBObject {
 				$newdomain = $base . '.' . preg_replace( '|^www\.|', '', $current_site->domain );
 				$path      = $current_site->path;
 			}
+		} elseif ( null !== $custom_domain ) {
+			// Use custom domain and path if provided via --site-url
+			$newdomain = $custom_domain;
+			$path      = $custom_path;
 		} else {
-			if ( null !== $custom_domain ) {
-				// Use custom domain and path if provided via --site-url
-				$newdomain = $custom_domain;
-				$path      = $custom_path;
-			} else {
-				// Use default behavior
-				$newdomain = $current_site->domain;
-				$path      = $current_site->path . $base . '/';
-			}
+			// Use default behavior
+			$newdomain = $current_site->domain;
+			$path      = $current_site->path . $base . '/';
 		}
 
 		$user_id = email_exists( $email );
