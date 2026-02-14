@@ -169,7 +169,7 @@ Feature: Create a new site on a WP multisite
     When I try `wp site create --site-url=http://123.example.com`
     Then STDERR should be:
       """
-      Error: Could not derive a valid slug from the domain. Please provide --slug explicitly.
+      Error: Could not derive a valid slug from the domain (numeric-only or empty slugs are not allowed). Please provide --slug explicitly.
       """
     And the return code should be 1
 

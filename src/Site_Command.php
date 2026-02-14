@@ -471,7 +471,7 @@ class Site_Command extends CommandWithDBObject {
 
 					// Validate that the derived base is suitable for use as a slug
 					if ( empty( $base ) || is_numeric( $base ) ) {
-						WP_CLI::error( 'Could not derive a valid slug from the domain. Please provide --slug explicitly.' );
+						WP_CLI::error( 'Could not derive a valid slug from the domain (numeric-only or empty slugs are not allowed). Please provide --slug explicitly.' );
 					}
 				} else {
 					// For subdirectory installs, use the path as the base
@@ -483,7 +483,7 @@ class Site_Command extends CommandWithDBObject {
 					}
 					// If base is empty (root path), generate an auto slug
 					if ( empty( $base ) ) {
-						$base = 'auto-' . time();
+						$base = 'site-' . time();
 					}
 				}
 			} else {
