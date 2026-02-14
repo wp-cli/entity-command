@@ -93,3 +93,89 @@ Feature: Create a new site on a WP multisite
       | blog_id | url                           |
       | 1       | http://localhost/         |
       | 2       | http://localhost/newsite/ |
+
+  Scenario: Create site with custom URL in subdomain multisite
+    Given a WP multisite subdomain install
+
+    When I run `wp site create --url=http://custom.example.com`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created: http://custom.example.com/
+      """
+
+    When I run `wp site list --fields=blog_id,url`
+    Then STDOUT should be a table containing rows:
+      | blog_id | url                        |
+      | 1       | https://example.com/       |
+      | 2       | http://custom.example.com/ |
+
+    When I run `wp --url=custom.example.com option get home`
+    Then STDOUT should be:
+      """
+      http://custom.example.com
+      """
+
+  Scenario: Create site with custom URL in subdirectory multisite
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --url=http://example.com/custom/path/`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created: http://example.com/custom/path/
+      """
+
+    When I run `wp site list --fields=blog_id,url`
+    Then STDOUT should be a table containing rows:
+      | blog_id | url                            |
+      | 1       | https://example.com/           |
+      | 2       | http://example.com/custom/path/ |
+
+    When I run `wp --url=example.com/custom/path option get home`
+    Then STDOUT should be:
+      """
+      http://example.com/custom/path
+      """
+
+  Scenario: Create site with custom URL and explicit slug
+    Given a WP multisite subdomain install
+
+    When I run `wp site create --url=http://custom.example.com --slug=myslug`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created: http://custom.example.com/
+      """
+
+  Scenario: Error when neither slug nor url is provided
+    Given a WP multisite install
+
+    When I try `wp site create --title="Test Site"`
+    Then STDERR should be:
+      """
+      Error: Either --slug or --url must be provided.
+      """
+    And the return code should be 1
+
+  Scenario: Error when invalid URL format is provided
+    Given a WP multisite install
+
+    When I try `wp site create --url=not-a-valid-url`
+    Then STDERR should contain:
+      """
+      Error: Invalid URL format
+      """
+    And the return code should be 1
+
+  Scenario: Preserve existing slug behavior
+    Given a WP multisite subdomain install
+
+    When I run `wp site create --slug=testsite`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created: http://testsite.example.com/
+      """
+
+    When I run `wp site list --fields=blog_id,url`
+    Then STDOUT should be a table containing rows:
+      | blog_id | url                          |
+      | 1       | https://example.com/         |
+      | 2       | http://testsite.example.com/ |
