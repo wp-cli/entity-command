@@ -341,6 +341,9 @@ class User_Meta_Command extends CommandWithMeta {
 	private function replace_login_with_user_id( $args ) {
 		$user    = $this->fetcher->get_check( $args[0] );
 		$args[0] = $user->ID;
+		// TODO: Improve method type eventually.
+		// Related: https://github.com/phpstan/phpstan/issues/8438.
+		// @phpstan-ignore return.type
 		return $args;
 	}
 }

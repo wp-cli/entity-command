@@ -150,7 +150,7 @@ wp comment create [--<field>=<value>] [--porcelain]
 
     # Create a note (WordPress 6.9+).
     $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
-    Success: Created comment 933.     *
+    Success: Created comment 933.
 
 
 
@@ -5612,6 +5612,7 @@ These fields will be displayed by default for each term:
 
 These fields are optionally available:
 
+* term_group
 * url
 
 **EXAMPLES**
