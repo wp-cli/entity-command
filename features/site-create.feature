@@ -163,6 +163,39 @@ Feature: Create a new site on a WP multisite
       """
     And the return code should be 1
 
+  Scenario: Error when invalid scheme is provided
+    Given a WP multisite install
+
+    When I try `wp site create --site-url=ftp://example.com/site`
+    Then STDERR should be:
+      """
+      Error: Invalid URL scheme. Only http and https schemes are supported.
+      """
+    And the return code should be 1
+
+  Scenario: Error when root path provided without explicit slug
+    Given a WP multisite subdirectory install
+
+    When I try `wp site create --site-url=http://example.com/`
+    Then STDERR should be:
+      """
+      Error: Could not derive a valid slug from the URL path. Please provide --slug explicitly.
+      """
+    And the return code should be 1
+
+  Scenario: Create site with URL without trailing slash
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --site-url=http://example.com/notrailing`
+    Then STDOUT should contain:
+      """
+      Success: Site 2 created:
+      """
+    And STDOUT should contain:
+      """
+      ://example.com/notrailing/
+      """
+
   Scenario: Error when numeric-only domain is provided without slug
     Given a WP multisite subdomain install
 
@@ -173,17 +206,34 @@ Feature: Create a new site on a WP multisite
       """
     And the return code should be 1
 
-  Scenario: Create site with different domain in subdirectory multisite
+  Scenario: Create site with different domain in subdirectory multisite shows warning
     Given a WP multisite subdirectory install
 
     When I run `wp site create --site-url=http://custom.example.com/mypath/`
-    Then STDOUT should contain:
+    Then STDERR should contain:
+      """
+      Warning: Using a different domain for a subdirectory multisite install may require additional configuration
+      """
+    And STDOUT should contain:
       """
       Success: Site 2 created:
       """
     And STDOUT should contain:
       """
       ://custom.example.com/mypath/
+      """
+
+  Scenario: Create site with both site-url and slug uses slug for internal operations
+    Given a WP multisite subdomain install
+
+    When I run `wp site create --site-url=http://custom.example.com --slug=myslug --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site list --site__in={SITE_ID} --field=url`
+    Then STDOUT should contain:
+      """
+      custom.example.com
       """
 
   Scenario: Preserve existing slug behavior

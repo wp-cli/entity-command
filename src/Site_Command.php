@@ -397,7 +397,7 @@ class Site_Command extends CommandWithDBObject {
 	 * : Full URL for the new site. Use this to specify a custom domain instead of the auto-generated one.
 	 * For subdomain installs, this allows you to use a different base domain (e.g., 'http://site.example.com' instead of 'http://site.main.example.com').
 	 * For subdirectory installs, this allows you to use a different path.
-	 * If provided, --slug is optional and will be derived from the URL.
+	 * If provided, --slug is optional and will be derived from the URL. If both --slug and --site-url are provided, --slug will be used as the base for internal operations (like user creation), while the domain/path from --site-url will be used for the actual site URL.
 	 *
 	 * [--title=<title>]
 	 * : Title of the new site. Default: prettified slug.
@@ -454,8 +454,14 @@ class Site_Command extends CommandWithDBObject {
 				WP_CLI::error( 'Invalid URL format. Please provide a valid URL (e.g., http://site.example.com).' );
 			}
 
-			$custom_domain = $parsed_url['host'];
-			$custom_path   = isset( $parsed_url['path'] ) ? '/' . ltrim( $parsed_url['path'], '/' ) : '/';
+			// Validate the scheme if present
+			if ( isset( $parsed_url['scheme'] ) && ! in_array( $parsed_url['scheme'], [ 'http', 'https' ], true ) ) {
+				WP_CLI::error( 'Invalid URL scheme. Only http and https schemes are supported.' );
+			}
+
+			// Sanitize domain and path
+			$custom_domain = sanitize_text_field( $parsed_url['host'] );
+			$custom_path   = isset( $parsed_url['path'] ) ? sanitize_text_field( '/' . ltrim( $parsed_url['path'], '/' ) ) : '/';
 
 			// Ensure path ends with /
 			if ( '/' !== substr( $custom_path, -1 ) ) {
@@ -473,6 +479,9 @@ class Site_Command extends CommandWithDBObject {
 					if ( empty( $base ) || is_numeric( $base ) ) {
 						WP_CLI::error( 'Could not derive a valid slug from the domain (numeric-only or empty slugs are not allowed). Please provide --slug explicitly.' );
 					}
+
+					// Sanitize and lowercase the derived base
+					$base = strtolower( $base );
 				} else {
 					// For subdirectory installs, use the path as the base
 					$base = trim( $custom_path, '/' );
@@ -484,10 +493,13 @@ class Site_Command extends CommandWithDBObject {
 							$base = $last_part;
 						}
 					}
-					// If base is empty (root path), generate an auto slug
+					// If base is empty (root path), require explicit slug
 					if ( empty( $base ) ) {
-						$base = 'site-' . time();
+						WP_CLI::error( 'Could not derive a valid slug from the URL path. Please provide --slug explicitly.' );
 					}
+
+					// Sanitize and lowercase the derived base
+					$base = strtolower( $base );
 				}
 			} else {
 				$base = $assoc_args['slug'];
@@ -559,6 +571,13 @@ class Site_Command extends CommandWithDBObject {
 			// Use custom domain and path if provided via --site-url
 			$newdomain = $custom_domain;
 			$path      = $custom_path;
+
+			// Warn if using a different domain in subdirectory install
+			$network_domain           = preg_replace( '|^www\.|', '', $current_site->domain );
+			$custom_domain_normalized = preg_replace( '|^www\.|', '', $custom_domain );
+			if ( $custom_domain_normalized !== $network_domain ) {
+				WP_CLI::warning( 'Using a different domain for a subdirectory multisite install may require additional configuration (such as domain mapping) to work properly.' );
+			}
 		} else {
 			// Use default behavior
 			$newdomain = $current_site->domain;
