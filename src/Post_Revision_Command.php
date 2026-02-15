@@ -56,12 +56,19 @@ class Post_Revision_Command {
 	 *     Success: Restored revision 123.
 	 *
 	 * @subcommand restore
+	 *
+	 * @param array{0: string} $args Positional arguments.
 	 */
 	public function restore( $args ) {
 		$revision_id = (int) $args[0];
 
 		// Get the revision post
 		$revision = wp_get_post_revision( $revision_id );
+
+		/**
+		 * Work around https://core.trac.wordpress.org/ticket/64643.
+		 * @var int $revision_id
+		 */
 
 		if ( ! $revision ) {
 			WP_CLI::error( "Invalid revision ID {$revision_id}." );
@@ -101,6 +108,9 @@ class Post_Revision_Command {
 	 *     $ wp post revision diff 123
 	 *
 	 * @subcommand diff
+	 *
+	 * @param array{0: string, 1?: string} $args Positional arguments.
+	 * @param array{field?: string} $assoc_args Associative arguments.
 	 */
 	public function diff( $args, $assoc_args ) {
 		$from_id = (int) $args[0];
@@ -109,6 +119,12 @@ class Post_Revision_Command {
 
 		// Get the 'from' revision or post
 		$from_revision = wp_get_post_revision( $from_id );
+
+		/**
+		 * Work around https://core.trac.wordpress.org/ticket/64643.
+		 * @var int $from_id
+		 */
+
 		if ( ! $from_revision instanceof \WP_Post ) {
 			// Try as a regular post
 			$from_revision = get_post( $from_id );
@@ -121,6 +137,12 @@ class Post_Revision_Command {
 		$to_revision = null;
 		if ( $to_id ) {
 			$to_revision = wp_get_post_revision( $to_id );
+
+			/**
+			 * Work around https://core.trac.wordpress.org/ticket/64643.
+			 * @var int $to_id
+			 */
+
 			if ( ! $to_revision instanceof \WP_Post ) {
 				// Try as a regular post
 				$to_revision = get_post( $to_id );
