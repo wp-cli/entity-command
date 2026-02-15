@@ -183,7 +183,7 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		$array_arguments = [ 'meta_input' ];
+		$array_arguments = [ 'meta_input', 'tax_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		if ( isset( $assoc_args['from-post'] ) ) {
