@@ -93,6 +93,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * These fields are optionally available:
 	 *
+	 * * term_group
 	 * * url
 	 *
 	 * ## EXAMPLES
@@ -139,9 +140,6 @@ class Term_Command extends WP_CLI_Command {
 			$term  = get_term_by( 'id', $assoc_args['term_id'], $args[0] );
 			$terms = [ $term ];
 		} else {
-			/**
-			 * @var \WP_Term[] $terms
-			 */
 			$terms = get_terms(
 				array_merge(
 					$assoc_args,
@@ -150,6 +148,15 @@ class Term_Command extends WP_CLI_Command {
 					]
 				)
 			);
+
+			// This should never happen because of the taxonomy_exists check above.
+			if ( is_wp_error( $terms ) ) {
+				WP_CLI::error( $terms );
+			}
+
+			/**
+			 * @var \WP_Term[] $terms
+			 */
 		}
 
 		$terms = array_map(
@@ -294,6 +301,7 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "Term doesn't exist." );
 		}
 
+		// @phpstan-ignore property.notFound
 		if ( ! isset( $term->url ) ) {
 			// @phpstan-ignore property.notFound
 			$term->url = get_term_link( $term );
@@ -648,17 +656,22 @@ class Term_Command extends WP_CLI_Command {
 			if ( ! taxonomy_exists( $taxonomy ) ) {
 				WP_CLI::warning( "Taxonomy {$taxonomy} does not exist." );
 			} else {
-
-				/**
-				 * @var \WP_Term[] $terms
-				 */
-
 				$terms = get_terms(
 					[
 						'taxonomy'   => $taxonomy,
 						'hide_empty' => false,
 					]
 				);
+
+				// This should never happen because of the taxonomy_exists check above.
+				if ( is_wp_error( $terms ) ) {
+					WP_CLI::warning( "Taxonomy {$taxonomy} does not exist." );
+					continue;
+				}
+
+				/**
+				 * @var \WP_Term[] $terms
+				 */
 
 				$term_taxonomy_ids = wp_list_pluck( $terms, 'term_taxonomy_id' );
 
