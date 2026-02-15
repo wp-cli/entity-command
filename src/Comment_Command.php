@@ -468,8 +468,11 @@ class Comment_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <id>...
+	 * [<id>...]
 	 * : One or more IDs of comments to delete.
+	 *
+	 * [--all]
+	 * : If set, all comments will be deleted. This command might be slow on a site with lots of comments.
 	 *
 	 * [--force]
 	 * : Skip the trash bin.
@@ -484,25 +487,65 @@ class Comment_Command extends CommandWithDBObject {
 	 *     $ wp comment delete 1337 2341 --force
 	 *     Success: Deleted comment 1337.
 	 *     Success: Deleted comment 2341.
+	 *
+	 *     # Delete all comments.
+	 *     $ wp comment delete --all --force
+	 *     Success: Deleted comment 1337.
+	 *     Success: Deleted comment 2341.
+	 *     Success: Deleted 2 of 2 comments.
 	 */
 	public function delete( $args, $assoc_args ) {
-		parent::_delete(
-			$args,
-			$assoc_args,
-			function ( $comment_id, $assoc_args ) {
-				$force = (bool) Utils\get_flag_value( $assoc_args, 'force' );
+		$all = Utils\get_flag_value( $assoc_args, 'all', false );
 
-				$status = wp_get_comment_status( $comment_id );
-				$result = wp_delete_comment( $comment_id, $force );
+		// Check if comment IDs or --all is passed.
+		$args = $this->check_optional_args_and_all( $args, $all, 'delete' );
+		if ( ! $args ) {
+			return;
+		}
 
-				if ( ! $result ) {
-					return [ 'error', "Failed deleting comment {$comment_id}." ];
-				}
+		$status = 0;
 
-				$verb = ( $force || 'trash' === $status ) ? 'Deleted' : 'Trashed';
-				return [ 'success', "{$verb} comment {$comment_id}." ];
+		$defer_term_counting = wp_defer_comment_counting();
+		if ( $all ) {
+			wp_defer_term_counting( true );
+		}
+
+		$total                = count( $args );
+		$successfully_deleted = 0;
+
+		$force = (bool) Utils\get_flag_value( $assoc_args, 'force' );
+
+		foreach ( $args as $comment_id ) {
+
+			$comment_status = wp_get_comment_status( $comment_id );
+			$result         = wp_delete_comment( $comment_id, $force );
+
+			if ( ! $result ) {
+				$response = [ 'error', "Failed deleting comment {$comment_id}." ];
+				$status   = $this->success_or_failure( $response );
+				// Keep status as 1 (error) if any deletion fails
+			} else {
+				$verb     = ( $force || 'trash' === $comment_status ) ? 'Deleted' : 'Trashed';
+				$response = [ 'success', "{$verb} comment {$comment_id}." ];
+				$this->success_or_failure( $response );
+				++$successfully_deleted;
 			}
-		);
+		}
+
+		if ( $all ) {
+			wp_defer_term_counting( $defer_term_counting );
+		}
+
+		if ( 0 === $status ) {
+			if ( $total > 1 ) {
+				WP_CLI::success( "Deleted {$successfully_deleted} comments." );
+			}
+		} else {
+			$error_count = $total - $successfully_deleted;
+			WP_CLI::error( "Failed deleting {$error_count} comments." );
+		}
+
+		exit( $status );
 	}
 
 	private function call( $args, $status, $success, $failure ) {
@@ -785,5 +828,47 @@ class Comment_Command extends CommandWithDBObject {
 		if ( $this->fetcher->get( $args[0] ) ) {
 			WP_CLI::success( "Comment with ID {$args[0]} exists." );
 		}
+	}
+
+	/**
+	 * If have optional args ([<id>...]) and an all option, then check have something to do.
+	 *
+	 * @param array  $args Passed-in arguments.
+	 * @param bool   $all All flag.
+	 * @param string $verb Optional. Verb to use. Defaults to 'delete'.
+	 * @return array Same as $args if not all, otherwise all comment IDs.
+	 */
+	private function check_optional_args_and_all( $args, $all, $verb = 'delete' ) {
+		if ( $all ) {
+			$args = $this->get_all_comment_ids();
+		}
+
+		if ( empty( $args ) ) {
+			if ( ! $all ) {
+				WP_CLI::error( 'Please specify one or more comment IDs, or use --all.' );
+			}
+
+			$past_tense_verb = Utils\past_tense_verb( $verb );
+			WP_CLI::success( "No comments {$past_tense_verb}." );
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Gets all available comment IDs.
+	 */
+	private function get_all_comment_ids(): array {
+		$query = new WP_Comment_Query();
+
+		/** @var array $comments */
+		$comments = $query->query(
+			array(
+				'fields' => 'ids',
+				'number' => 0, // Get all comments
+			)
+		);
+
+		return $comments;
 	}
 }
