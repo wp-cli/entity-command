@@ -80,9 +80,37 @@ class Post_Revision_Command {
 		// wp_restore_post_revision() returns post ID on success, false on failure, or null if revision is same as current
 		if ( false === $restored_post_id ) {
 			WP_CLI::error( "Failed to restore revision {$revision_id}." );
+		} elseif ( null === $restored_post_id ) {
+			WP_CLI::warning( "Revision {$revision_id} is the same as the current post. No action taken." );
+		} else {
+			WP_CLI::success( "Restored revision {$revision_id}." );
+		}
+	}
+
+	/**
+	 * Gets a post or revision object by ID.
+	 *
+	 * @param int    $id   The post or revision ID.
+	 * @param string $name The name to use in error messages ('from' or 'to').
+	 * @return \WP_Post The post or revision object.
+	 */
+	private function get_post_or_revision( $id, $name ) {
+		$post = wp_get_post_revision( $id );
+
+		/**
+		 * Work around https://core.trac.wordpress.org/ticket/64643.
+		 * @var int $id
+		 */
+
+		if ( ! $post instanceof \WP_Post ) {
+			// Try as a regular post
+			$post = get_post( $id );
+			if ( ! $post instanceof \WP_Post ) {
+				WP_CLI::error( "Invalid '{$name}' ID {$id}." );
+			}
 		}
 
-		WP_CLI::success( "Restored revision {$revision_id}." );
+		return $post;
 	}
 
 	/**
@@ -118,38 +146,12 @@ class Post_Revision_Command {
 		$field   = Utils\get_flag_value( $assoc_args, 'field', 'post_content' );
 
 		// Get the 'from' revision or post
-		$from_revision = wp_get_post_revision( $from_id );
-
-		/**
-		 * Work around https://core.trac.wordpress.org/ticket/64643.
-		 * @var int $from_id
-		 */
-
-		if ( ! $from_revision instanceof \WP_Post ) {
-			// Try as a regular post
-			$from_revision = get_post( $from_id );
-			if ( ! $from_revision instanceof \WP_Post ) {
-				WP_CLI::error( "Invalid 'from' ID {$from_id}." );
-			}
-		}
+		$from_revision = $this->get_post_or_revision( $from_id, 'from' );
 
 		// Get the 'to' revision or post
 		$to_revision = null;
 		if ( $to_id ) {
-			$to_revision = wp_get_post_revision( $to_id );
-
-			/**
-			 * Work around https://core.trac.wordpress.org/ticket/64643.
-			 * @var int $to_id
-			 */
-
-			if ( ! $to_revision instanceof \WP_Post ) {
-				// Try as a regular post
-				$to_revision = get_post( $to_id );
-				if ( ! $to_revision instanceof \WP_Post ) {
-					WP_CLI::error( "Invalid 'to' ID {$to_id}." );
-				}
-			}
+			$to_revision = $this->get_post_or_revision( $to_id, 'to' );
 		} elseif ( 'revision' === $from_revision->post_type ) {
 			// If no 'to' ID provided, use the parent post of the revision
 			$to_revision = get_post( $from_revision->post_parent );
@@ -233,37 +235,29 @@ class Post_Revision_Command {
 		$edits = $diff->getDiff();
 
 		foreach ( $edits as $edit ) {
-			switch ( get_class( $edit ) ) {
-				case 'Text_Diff_Op_copy':
-					// Unchanged lines - show in default color
-					foreach ( $edit->orig as $line ) {
-						WP_CLI::line( '  ' . $line );
-					}
-					break;
-
-				case 'Text_Diff_Op_add':
-					// Added lines - show in green
-					foreach ( $edit->final as $line ) {
-						WP_CLI::line( WP_CLI::colorize( '%g+ ' . $line . '%n' ) );
-					}
-					break;
-
-				case 'Text_Diff_Op_delete':
-					// Deleted lines - show in red
-					foreach ( $edit->orig as $line ) {
-						WP_CLI::line( WP_CLI::colorize( '%r- ' . $line . '%n' ) );
-					}
-					break;
-
-				case 'Text_Diff_Op_change':
-					// Changed lines - show deletions in red, additions in green
-					foreach ( $edit->orig as $line ) {
-						WP_CLI::line( WP_CLI::colorize( '%r- ' . $line . '%n' ) );
-					}
-					foreach ( $edit->final as $line ) {
-						WP_CLI::line( WP_CLI::colorize( '%g+ ' . $line . '%n' ) );
-					}
-					break;
+			if ( $edit instanceof \Text_Diff_Op_copy ) {
+				// Unchanged lines - show in default color
+				foreach ( $edit->orig as $line ) {
+					WP_CLI::line( '  ' . $line );
+				}
+			} elseif ( $edit instanceof \Text_Diff_Op_add ) {
+				// Added lines - show in green
+				foreach ( $edit->final as $line ) {
+					WP_CLI::line( WP_CLI::colorize( '%g+ ' . $line . '%n' ) );
+				}
+			} elseif ( $edit instanceof \Text_Diff_Op_delete ) {
+				// Deleted lines - show in red
+				foreach ( $edit->orig as $line ) {
+					WP_CLI::line( WP_CLI::colorize( '%r- ' . $line . '%n' ) );
+				}
+			} elseif ( $edit instanceof \Text_Diff_Op_change ) {
+				// Changed lines - show deletions in red, additions in green
+				foreach ( $edit->orig as $line ) {
+					WP_CLI::line( WP_CLI::colorize( '%r- ' . $line . '%n' ) );
+				}
+				foreach ( $edit->final as $line ) {
+					WP_CLI::line( WP_CLI::colorize( '%g+ ' . $line . '%n' ) );
+				}
 			}
 		}
 	}
