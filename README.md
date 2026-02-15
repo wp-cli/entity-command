@@ -2947,6 +2947,116 @@ wp post meta update <id> <key> [<value>] [--format=<format>]
 
 
 
+### wp post revision
+
+Manages post revisions.
+
+~~~
+wp post revision
+~~~
+
+**EXAMPLES**
+
+    # Restore a post revision
+    $ wp post revision restore 123
+    Success: Restored revision 123.
+
+    # Show diff between two revisions
+    $ wp post revision diff 123 456
+
+
+
+
+
+### wp post revision diff
+
+Shows the difference between two revisions.
+
+~~~
+wp post revision diff <from> [<to>] [--field=<field>]
+~~~
+
+**OPTIONS**
+
+	<from>
+		The 'from' revision ID or post ID.
+
+	[<to>]
+		The 'to' revision ID or post ID. If not provided, compares with the current post.
+
+	[--field=<field>]
+		Compare specific field(s). Default: post_content
+
+**EXAMPLES**
+
+    # Show diff between two revisions
+    $ wp post revision diff 123 456
+
+    # Show diff between a revision and the current post
+    $ wp post revision diff 123
+
+
+
+### wp post revision prune
+
+Deletes old post revisions.
+
+~~~
+wp post revision prune [<post-id>...] [--latest=<limit>] [--earliest=<limit>] [--yes]
+~~~
+
+**OPTIONS**
+
+	[<post-id>...]
+		One or more post IDs to prune revisions for. If not provided, prunes revisions for all posts.
+
+	[--latest=<limit>]
+		Keep only the latest N revisions per post. Older revisions will be deleted.
+
+	[--earliest=<limit>]
+		Keep only the earliest N revisions per post. Newer revisions will be deleted.
+
+	[--yes]
+		Skip confirmation prompt.
+
+**EXAMPLES**
+
+    # Delete all but the latest 5 revisions for post 123
+    $ wp post revision prune 123 --latest=5
+    Success: Deleted 3 revisions for post 123.
+
+    # Delete all but the latest 5 revisions for all posts
+    $ wp post revision prune --latest=5
+    Success: Deleted 150 revisions across 30 posts.
+
+    # Delete all but the earliest 2 revisions for posts 123 and 456
+    $ wp post revision prune 123 456 --earliest=2
+    Success: Deleted 5 revisions for post 123.
+    Success: Deleted 3 revisions for post 456.
+
+
+
+### wp post revision restore
+
+Restores a post revision.
+
+~~~
+wp post revision restore <revision_id>
+~~~
+
+**OPTIONS**
+
+	<revision_id>
+		The revision ID to restore.
+
+**EXAMPLES**
+
+    # Restore a post revision
+    $ wp post revision restore 123
+    Success: Restored revision 123.
+
+
+
 ### wp post term
 
 Adds, updates, removes, and lists post terms.
