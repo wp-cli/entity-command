@@ -479,7 +479,10 @@ class Site_Command extends CommandWithDBObject {
 					// Use the last part of the path if there are multiple segments
 					if ( ! empty( $base ) ) {
 						$path_parts = explode( '/', $base );
-						$base       = $path_parts[ count( $path_parts ) - 1 ];
+						$last_part  = array_pop( $path_parts );
+						if ( null !== $last_part && '' !== $last_part ) {
+							$base = $last_part;
+						}
 					}
 					// If base is empty (root path), generate an auto slug
 					if ( empty( $base ) ) {
