@@ -455,7 +455,7 @@ class Site_Command extends CommandWithDBObject {
 			}
 
 			$custom_domain = $parsed_url['host'];
-			$custom_path   = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '/';
+			$custom_path   = isset( $parsed_url['path'] ) ? '/' . ltrim( $parsed_url['path'], '/' ) : '/';
 
 			// Ensure path ends with /
 			if ( '/' !== substr( $custom_path, -1 ) ) {
