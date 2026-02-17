@@ -127,9 +127,15 @@ Feature: Manage blocks in post content
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block render {POST_ID}`
+    # In WordPress 7.0+ paragraph blocks are rendered with a class name.
+    # See https://github.com/WordPress/gutenberg/pull/71207.
     Then STDOUT should contain:
       """
-      <p>Hello World</p>
+      <p
+      """
+    And STDOUT should contain:
+      """
+      >Hello World</p>
       """
     And STDOUT should contain:
       """
@@ -143,7 +149,11 @@ Feature: Manage blocks in post content
     When I run `wp post block render {POST_ID} --block=core/paragraph`
     Then STDOUT should contain:
       """
-      <p>Hello World</p>
+      <p
+      """
+    And STDOUT should contain:
+      """
+      >Hello World</p>
       """
     And STDOUT should not contain:
       """
@@ -773,9 +783,15 @@ Feature: Manage blocks in post content
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block export {POST_ID} --format=html`
+    # In WordPress 7.0+ paragraph blocks are rendered with a class name.
+    # See https://github.com/WordPress/gutenberg/pull/71207.
     Then STDOUT should contain:
       """
-      <p>Hello World</p>
+      <p
+      """
+    And STDOUT should contain:
+      """
+      >Hello World</p>
       """
 
   @require-wp-5.0
