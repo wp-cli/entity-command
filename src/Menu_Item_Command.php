@@ -203,9 +203,9 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		// Correct position inconsistency and protected `url` param in WP-CLI
 		// @phpstan-ignore property.notFound
-		$menu_item->position = $menu_item->menu_order;
+		$menu_item->position = ( 0 === $menu_item->menu_order ) ? 1 : $menu_item->menu_order;
 		// @phpstan-ignore property.notFound
-		$menu_item->link     = $menu_item->url;
+		$menu_item->link = $menu_item->url;
 
 		if ( empty( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = [
