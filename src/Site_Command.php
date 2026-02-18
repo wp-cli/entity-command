@@ -460,12 +460,12 @@ class Site_Command extends CommandWithDBObject {
 		$site_arg = $args[0];
 		$site     = null;
 
-		// Check if the argument is a URL (contains :// or starts with www.)
-		if ( false !== strpos( $site_arg, '://' ) || 0 === strpos( $site_arg, 'www.' ) ) {
-			// Normalize scheme-less URLs starting with www. for proper parsing.
+		// Check if the argument is a URL or a domain (non-numeric)
+		if ( ! is_numeric( $site_arg ) ) {
+			// Normalize URLs without a scheme for proper parsing.
 			$url_to_parse = $site_arg;
-			if ( 0 === strpos( $site_arg, 'www.' ) && false === strpos( $site_arg, '://' ) ) {
-				$url_to_parse = 'http://' . $site_arg;
+			if ( false === strpos( $url_to_parse, '://' ) ) {
+				$url_to_parse = 'http://' . $url_to_parse;
 			}
 
 			// Parse the URL to get domain and path

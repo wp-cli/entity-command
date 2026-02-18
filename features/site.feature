@@ -843,3 +843,51 @@ Feature: Manage sites in a multisite installation
       Error: Could not find site with URL: http://example.com/nonexistent/
       """
     And the return code should be 1
+
+  Scenario: Get site by domain without scheme
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --slug=noscheme --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get example.com/noscheme/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+  Scenario: Get site by simple domain path
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --slug=simplepath --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get example.com/simplepath --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+  Scenario: Get site by subdomain without scheme
+    Given a WP multisite subdomain install
+
+    When I run `wp site create --slug=subdomain --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get subdomain.example.com --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+  Scenario: Get main site by domain
+    Given a WP multisite install
+
+    When I run `wp site get example.com --field=blog_id`
+    Then STDOUT should be:
+      """
+      1
+      """
