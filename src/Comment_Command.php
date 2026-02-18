@@ -94,7 +94,8 @@ class Comment_Command extends CommandWithDBObject {
 	 *
 	 *     # Create a note (WordPress 6.9+).
 	 *     $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
-	 *     Success: Created comment 933.     *
+	 *     Success: Created comment 933.
+	 *
 	 * @param string[] $args Positional arguments. Unused.
 	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
@@ -279,6 +280,7 @@ class Comment_Command extends CommandWithDBObject {
 			WP_CLI::error( 'Invalid comment ID.' );
 		}
 
+		// @phpstan-ignore property.notFound
 		if ( ! isset( $comment->url ) ) {
 			// @phpstan-ignore property.notFound
 			$comment->url = get_comment_link( $comment );
@@ -447,8 +449,12 @@ class Comment_Command extends CommandWithDBObject {
 			} elseif ( is_array( $comments ) ) {
 				$comments = array_map(
 					function ( $comment ) {
-							$comment->url = get_comment_link( $comment->comment_ID );
-							return $comment;
+						/**
+						 * @var \WP_Comment $comment
+						 */
+						// @phpstan-ignore property.notFound
+						$comment->url = get_comment_link( (int) $comment->comment_ID );
+						return $comment;
 					},
 					$comments
 				);
