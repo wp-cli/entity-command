@@ -1130,6 +1130,79 @@ wp menu item delete <db-id>...
 
 
 
+### wp menu item get
+
+Gets details about a menu item.
+
+~~~
+wp menu item get <db-id> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<db-id>
+		Database ID for the menu item.
+
+	[--field=<field>]
+		Instead of returning the whole menu item, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to db_id, type, title, link, position.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields are available:
+
+* db_id
+* type
+* title
+* link
+* position
+* menu_item_parent
+* object_id
+* object
+* type_label
+* target
+* attr_title
+* description
+* classes
+* xfn
+
+**EXAMPLES**
+
+    # Get details about a menu item with ID 45
+    $ wp menu item get 45
+    +-------------+----------------------------------+
+    | Field       | Value                            |
+    +-------------+----------------------------------+
+    | db_id       | 45                               |
+    | type        | custom                           |
+    | title       | WordPress                        |
+    | link        | https://wordpress.org            |
+    | position    | 1                                |
+    +-------------+----------------------------------+
+
+    # Get a specific field from a menu item
+    $ wp menu item get 45 --field=title
+    WordPress
+
+    # Get menu item data in JSON format
+    $ wp menu item get 45 --format=json
+    {"db_id":45,"type":"custom","title":"WordPress","link":"https://wordpress.org","position":1}
+
+
+
 ### wp menu item list
 
 Gets a list of items associated with a menu.
