@@ -197,15 +197,13 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 
 		/**
-		 * @var object{title: string, url: string, description: string, object: string, object_id: int, menu_item_parent: int, attr_title: string, target: string, classes: string[], xfn: string, type: string, type_label: string, menu_order: int, db_id: int, post_type: string} $menu_item
+		 * @var object{title: string, url: string, description: string, object: string, object_id: int, menu_item_parent: int, attr_title: string, target: string, classes: string[], xfn: string, type: string, type_label: string, menu_order: int, db_id: int, post_type: string}&\stdClass $menu_item
 		 */
 		$menu_item = wp_setup_nav_menu_item( $menu_item );
 
 		// Correct position inconsistency and protected `url` param in WP-CLI
-		// @phpstan-ignore property.notFound
 		$menu_item->position = ( 0 === $menu_item->menu_order ) ? 1 : $menu_item->menu_order;
-		// @phpstan-ignore property.notFound
-		$menu_item->link = $menu_item->url;
+		$menu_item->link     = $menu_item->url;
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_item( $menu_item );
