@@ -4803,6 +4803,81 @@ WP_CLI::add_hook( 'after_invoke:site empty', function(){
 
 
 
+### wp site get
+
+Gets details about a site in a multisite installation.
+
+~~~
+wp site get <site> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<site>
+		Site ID or URL of the site to get. For subdirectory sites, use the full URL (e.g., http://example.com/subdir/).
+
+	[--field=<field>]
+		Instead of returning the whole site, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for the site:
+
+* blog_id
+* url
+* last_updated
+* registered
+
+These fields are optionally available:
+
+* site_id
+* domain
+* path
+* public
+* archived
+* mature
+* spam
+* deleted
+* lang_id
+
+**EXAMPLES**
+
+    # Get site by ID
+    $ wp site get 1
+    +---------+-------------------------+---------------------+---------------------+
+    | blog_id | url                     | last_updated        | registered          |
+    +---------+-------------------------+---------------------+---------------------+
+    | 1       | http://example.com/     | 2025-01-01 12:00:00 | 2025-01-01 12:00:00 |
+    +---------+-------------------------+---------------------+---------------------+
+
+    # Get site URL by site ID
+    $ wp site get 1 --field=url
+    http://example.com/
+
+    # Get site ID by URL
+    $ wp site get http://example.com/subdir/ --field=blog_id
+    2
+
+    # Delete a site by URL
+    $ wp site delete $(wp site get http://example.com/subdir/ --field=blog_id) --yes
+    Success: The site at 'http://example.com/subdir/' was deleted.
+
+
+
 ### wp site list
 
 Lists all sites in a multisite installation.
