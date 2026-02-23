@@ -1130,6 +1130,79 @@ wp menu item delete <db-id>...
 
 
 
+### wp menu item get
+
+Gets details about a menu item.
+
+~~~
+wp menu item get <db-id> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<db-id>
+		Database ID for the menu item.
+
+	[--field=<field>]
+		Instead of returning the whole menu item, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to db_id, type, title, link, position.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields are available:
+
+* db_id
+* type
+* title
+* link
+* position
+* menu_item_parent
+* object_id
+* object
+* type_label
+* target
+* attr_title
+* description
+* classes
+* xfn
+
+**EXAMPLES**
+
+    # Get details about a menu item with ID 45
+    $ wp menu item get 45
+    +-------------+----------------------------------+
+    | Field       | Value                            |
+    +-------------+----------------------------------+
+    | db_id       | 45                               |
+    | type        | custom                           |
+    | title       | WordPress                        |
+    | link        | https://wordpress.org            |
+    | position    | 1                                |
+    +-------------+----------------------------------+
+
+    # Get a specific field from a menu item
+    $ wp menu item get 45 --field=title
+    WordPress
+
+    # Get menu item data in JSON format
+    $ wp menu item get 45 --format=json
+    {"db_id":45,"type":"custom","title":"WordPress","link":"https://wordpress.org","position":1}
+
+
+
 ### wp menu item list
 
 Gets a list of items associated with a menu.
@@ -2947,6 +3020,116 @@ wp post meta update <id> <key> [<value>] [--format=<format>]
 
 
 
+### wp post revision
+
+Manages post revisions.
+
+~~~
+wp post revision
+~~~
+
+**EXAMPLES**
+
+    # Restore a post revision
+    $ wp post revision restore 123
+    Success: Restored revision 123.
+
+    # Show diff between two revisions
+    $ wp post revision diff 123 456
+
+
+
+
+
+### wp post revision diff
+
+Shows the difference between two revisions.
+
+~~~
+wp post revision diff <from> [<to>] [--field=<field>]
+~~~
+
+**OPTIONS**
+
+	<from>
+		The 'from' revision ID or post ID.
+
+	[<to>]
+		The 'to' revision ID or post ID. If not provided, compares with the current post.
+
+	[--field=<field>]
+		Compare specific field(s). Default: post_content
+
+**EXAMPLES**
+
+    # Show diff between two revisions
+    $ wp post revision diff 123 456
+
+    # Show diff between a revision and the current post
+    $ wp post revision diff 123
+
+
+
+### wp post revision prune
+
+Deletes old post revisions.
+
+~~~
+wp post revision prune [<post-id>...] [--latest=<limit>] [--earliest=<limit>] [--yes]
+~~~
+
+**OPTIONS**
+
+	[<post-id>...]
+		One or more post IDs to prune revisions for. If not provided, prunes revisions for all posts.
+
+	[--latest=<limit>]
+		Keep only the latest N revisions per post. Older revisions will be deleted.
+
+	[--earliest=<limit>]
+		Keep only the earliest N revisions per post. Newer revisions will be deleted.
+
+	[--yes]
+		Skip confirmation prompt.
+
+**EXAMPLES**
+
+    # Delete all but the latest 5 revisions for post 123
+    $ wp post revision prune 123 --latest=5
+    Success: Deleted 3 revisions for post 123.
+
+    # Delete all but the latest 5 revisions for all posts
+    $ wp post revision prune --latest=5
+    Success: Deleted 150 revisions across 30 posts.
+
+    # Delete all but the earliest 2 revisions for posts 123 and 456
+    $ wp post revision prune 123 456 --earliest=2
+    Success: Deleted 5 revisions for post 123.
+    Success: Deleted 3 revisions for post 456.
+
+
+
+### wp post revision restore
+
+Restores a post revision.
+
+~~~
+wp post revision restore <revision_id>
+~~~
+
+**OPTIONS**
+
+	<revision_id>
+		The revision ID to restore.
+
+**EXAMPLES**
+
+    # Restore a post revision
+    $ wp post revision restore 123
+    Success: Restored revision 123.
+
+
+
 ### wp post term
 
 Adds, updates, removes, and lists post terms.
@@ -4617,6 +4800,81 @@ WP_CLI::add_hook( 'after_invoke:site empty', function(){
     $ wp site empty
     Are you sure you want to empty the site at http://www.example.com of all posts, links, comments, and terms? [y/n] y
     Success: The site at 'http://www.example.com' was emptied.
+
+
+
+### wp site get
+
+Gets details about a site in a multisite installation.
+
+~~~
+wp site get <site> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<site>
+		Site ID or URL of the site to get. For subdirectory sites, use the full URL (e.g., http://example.com/subdir/).
+
+	[--field=<field>]
+		Instead of returning the whole site, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for the site:
+
+* blog_id
+* url
+* last_updated
+* registered
+
+These fields are optionally available:
+
+* site_id
+* domain
+* path
+* public
+* archived
+* mature
+* spam
+* deleted
+* lang_id
+
+**EXAMPLES**
+
+    # Get site by ID
+    $ wp site get 1
+    +---------+-------------------------+---------------------+---------------------+
+    | blog_id | url                     | last_updated        | registered          |
+    +---------+-------------------------+---------------------+---------------------+
+    | 1       | http://example.com/     | 2025-01-01 12:00:00 | 2025-01-01 12:00:00 |
+    +---------+-------------------------+---------------------+---------------------+
+
+    # Get site URL by site ID
+    $ wp site get 1 --field=url
+    http://example.com/
+
+    # Get site ID by URL
+    $ wp site get http://example.com/subdir/ --field=blog_id
+    2
+
+    # Delete a site by URL
+    $ wp site delete $(wp site get http://example.com/subdir/ --field=blog_id) --yes
+    Success: The site at 'http://example.com/subdir/' was deleted.
 
 
 
