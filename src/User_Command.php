@@ -819,7 +819,7 @@ class User_Command extends CommandWithDBObject {
 	 *     Success: Removed 'author', 'editor' roles for johndoe (12).
 	 *
 	 *     $ wp user remove-role 12
-	 *     Success: Removed all roles from johndoe (12).
+	 *     Success: Removed all roles from johndoe (12) on http://example.com.
 	 *
 	 * @subcommand remove-role
 	 */
@@ -848,7 +848,7 @@ class User_Command extends CommandWithDBObject {
 				$user->remove_all_caps();
 			}
 
-			WP_CLI::success( "Removed all roles from {$user->user_login} ({$user->ID})." );
+			WP_CLI::success( "Removed all roles from {$user->user_login} ({$user->ID}) on " . site_url() . '.' );
 		}
 	}
 
