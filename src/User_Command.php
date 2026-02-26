@@ -807,7 +807,8 @@ class User_Command extends CommandWithDBObject {
 	 * : User ID, user email, or user login.
 	 *
 	 * [<role>...]
-	 * : Remove the specified role(s) from the user.
+	 * : Remove the specified role(s) from the user. If not passed, all roles are
+	 * removed from the user.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -816,6 +817,9 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 *     $ wp user remove-role 12 author editor
 	 *     Success: Removed 'author', 'editor' roles for johndoe (12).
+	 *
+	 *     $ wp user remove-role 12
+	 *     Success: Removed all roles from johndoe (12).
 	 *
 	 * @subcommand remove-role
 	 */
@@ -844,7 +848,7 @@ class User_Command extends CommandWithDBObject {
 				$user->remove_all_caps();
 			}
 
-			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() . '.' );
+			WP_CLI::success( "Removed all roles from {$user->user_login} ({$user->ID})." );
 		}
 	}
 

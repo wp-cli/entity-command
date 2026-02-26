@@ -352,7 +352,10 @@ Feature: Manage WordPress users
       | roles | author |
 
     When I run `wp user remove-role 1`
-    Then STDOUT should not be empty
+    Then STDOUT should be:
+      """
+      Success: Removed all roles from admin (1).
+      """
 
     When I run `wp user get 1`
     Then STDOUT should be a table containing rows:
