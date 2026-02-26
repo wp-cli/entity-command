@@ -22,7 +22,7 @@ use WP_CLI\Utils;
  * * `home` - Home URL, e.g. http://example.com
  * * `blog_public` - Discourage search engines when set to 0
  *
- * For the full list of available options, see the [Option Reference](https://developer.wordpress.org/reference/functions/get_option/) on developer.wordpress.org.
+ * For the full list of available options, see the [Option Reference](https://developer.wordpress.org/apis/options/).
  *
  * ## EXAMPLES
  *
