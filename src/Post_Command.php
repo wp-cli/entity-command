@@ -506,7 +506,9 @@ class Post_Command extends CommandWithDBObject {
 		$status    = get_post_status( $post_id );
 		$post_type = get_post_type( $post_id );
 
-		if ( $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type ) {
+		$force_delete = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type;
+
+		if ( $force_delete || ! EMPTY_TRASH_DAYS ) {
 			if ( ! wp_delete_post( $post_id, true ) ) {
 				return [ 'error', "Failed deleting post {$post_id}." ];
 			}
@@ -517,17 +519,8 @@ class Post_Command extends CommandWithDBObject {
 		// Use wp_trash_post() directly because wp_delete_post() only auto-trashes
 		// 'post' and 'page' types, permanently deleting all other post types even
 		// when $force_delete is false. wp_trash_post() works for all post types.
-		if ( EMPTY_TRASH_DAYS && wp_trash_post( $post_id ) ) {
+		if ( wp_trash_post( $post_id ) ) {
 			return [ 'success', "Trashed post {$post_id}." ];
-		}
-
-		// Trash is disabled via EMPTY_TRASH_DAYS, or wp_trash_post() failed.
-		if ( ! EMPTY_TRASH_DAYS ) {
-			if ( ! wp_delete_post( $post_id, true ) ) {
-				return [ 'error', "Failed deleting post {$post_id}." ];
-			}
-
-			return [ 'success', "Deleted post {$post_id}." ];
 		}
 
 		return [ 'error', "Failed trashing post {$post_id}." ];
