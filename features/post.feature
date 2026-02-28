@@ -41,17 +41,27 @@ Feature: Manage WordPress posts
       Success: Deleted post {POST_ID}.
       """
 
-    When I try `wp post delete {CUSTOM_POST_ID}`
-    Then STDERR should be:
+    When I run `wp post delete {CUSTOM_POST_ID}`
+    Then STDOUT should be:
       """
-      Warning: Posts of type 'test' do not support being sent to trash.
-      Please use the --force flag to skip trash and delete them permanently.
+      Success: Trashed post {CUSTOM_POST_ID}.
       """
 
-    When I run `wp post delete {CUSTOM_POST_ID} --force`
+    When I run the previous command again
     Then STDOUT should be:
       """
       Success: Deleted post {CUSTOM_POST_ID}.
+      """
+
+  Scenario: Force-deleting a custom post type post skips trash
+    When I run `wp post create --post_title='Test CPT post' --post_type='book' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BOOK_POST_ID}
+
+    When I run `wp post delete {BOOK_POST_ID} --force`
+    Then STDOUT should be:
+      """
+      Success: Deleted post {BOOK_POST_ID}.
       """
 
     When I try the previous command again
