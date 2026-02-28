@@ -808,8 +808,8 @@ class User_Command extends CommandWithDBObject {
 	 *
 	 * [<role>...]
 	 * : Remove the specified role(s) from the user. If not passed, all roles are
-	 * removed from the user.
-	 *
+	 * removed from the user; on multisite, this removes the user from the current
+	 * site/blog.
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user remove-role 12 author
