@@ -810,16 +810,22 @@ class User_Command extends CommandWithDBObject {
 	 * : Remove the specified role(s) from the user. If not passed, all roles are
 	 * removed from the user; on multisite, this removes the user from the current
 	 * site/blog.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user remove-role 12 author
-	 *     Success: Removed 'author' role for johndoe (12).
+	 *     Success: Removed 'author' role from johndoe (12).
 	 *
 	 *     $ wp user remove-role 12 author editor
-	 *     Success: Removed 'author', 'editor' roles for johndoe (12).
+	 *     Success: Removed 'author', 'editor' roles from johndoe (12).
 	 *
+	 *     # On single-site: removes all roles from the user
 	 *     $ wp user remove-role 12
 	 *     Success: Removed all roles from johndoe (12) on http://example.com.
+	 *
+	 *     # On multisite: removes the user from the current site/blog
+	 *     $ wp user remove-role 12
+	 *     Success: Removed johndoe (12) from http://example.com.
 	 *
 	 * @subcommand remove-role
 	 */
@@ -841,14 +847,14 @@ class User_Command extends CommandWithDBObject {
 			$label   = count( $roles ) > 1 ? 'roles' : 'role';
 			WP_CLI::success( "Removed '{$message}' {$label} from {$user->user_login} ({$user->ID})." );
 		} else {
-			// Multisite
+			$site_url = site_url();
 			if ( function_exists( 'remove_user_from_blog' ) ) {
 				remove_user_from_blog( $user->ID, get_current_blog_id() );
+				WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from {$site_url}." );
 			} else {
 				$user->remove_all_caps();
+				WP_CLI::success( "Removed all roles from {$user->user_login} ({$user->ID}) on {$site_url}." );
 			}
-
-			WP_CLI::success( "Removed all roles from {$user->user_login} ({$user->ID}) on " . site_url() . '.' );
 		}
 	}
 
