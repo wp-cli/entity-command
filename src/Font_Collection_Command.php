@@ -29,6 +29,9 @@ use WP_CLI\Formatter;
  *     +-------+------------------+
  *
  * @package wp-cli
+ *
+ * @phpstan-type FontFamily array{font_family_settings: array{name: string, slug: string, fontFamily: string, preview: string}}
+ * @phpstan-type FontCollectionData array{name: string, font_families: FontFamily[], description: string, categories: string[]}
  */
 class Font_Collection_Command extends WP_CLI_Command {
 
@@ -304,6 +307,10 @@ class Font_Collection_Command extends WP_CLI_Command {
 		if ( is_wp_error( $collection_data ) ) {
 			WP_CLI::error( $collection_data );
 		}
+
+		/**
+		 * @var FontCollectionData $collection_data
+		 */
 
 		$font_families = $collection_data['font_families'] ?? [];
 
