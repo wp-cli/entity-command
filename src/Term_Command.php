@@ -748,16 +748,17 @@ class Term_Command extends WP_CLI_Command {
 			 * @var \WP_Term[] $terms
 			 */
 
-			$total     = 0;
-			$successes = 0;
-			$errors    = 0;
+			$total      = count( $terms );
+			$prunable   = 0;
+			$successes  = 0;
+			$errors     = 0;
 
 			foreach ( $terms as $term ) {
 				if ( $term->count > 1 ) {
 					continue;
 				}
 
-				++$total;
+				++$prunable;
 
 				if ( $dry_run ) {
 					WP_CLI::log( "Would delete {$taxonomy} {$term->term_id}." );
