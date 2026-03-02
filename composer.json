@@ -202,6 +202,7 @@
             "user application-password list",
             "user application-password record-usage",
             "user application-password update",
+            "user check-password",
             "user create",
             "user delete",
             "user exists",
