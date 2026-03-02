@@ -190,6 +190,7 @@
             "term meta pluck",
             "term meta update",
             "term recount",
+            "term prune",
             "term update",
             "user",
             "user add-cap",
