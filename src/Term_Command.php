@@ -722,15 +722,13 @@ class Term_Command extends WP_CLI_Command {
 	 *     Success: Pruned 1 of 5 terms.
 	 */
 	public function prune( $args, $assoc_args ) {
+		$dry_run = (bool) Utils\get_flag_value( $assoc_args, 'dry-run', false );
+
 		foreach ( $args as $taxonomy ) {
 			if ( ! taxonomy_exists( $taxonomy ) ) {
 				WP_CLI::error( "Taxonomy {$taxonomy} doesn't exist." );
 			}
-		}
 
-		$dry_run = (bool) Utils\get_flag_value( $assoc_args, 'dry-run', false );
-
-		foreach ( $args as $taxonomy ) {
 			$terms = get_terms(
 				[
 					'taxonomy'   => $taxonomy,
@@ -748,17 +746,14 @@ class Term_Command extends WP_CLI_Command {
 			 * @var \WP_Term[] $terms
 			 */
 
-			$total      = count( $terms );
-			$prunable   = 0;
-			$successes  = 0;
-			$errors     = 0;
+			$total     = count( $terms );
+			$successes = 0;
+			$errors    = 0;
 
 			foreach ( $terms as $term ) {
 				if ( $term->count > 1 ) {
 					continue;
 				}
-
-				++$prunable;
 
 				if ( $dry_run ) {
 					WP_CLI::log( "Would delete {$taxonomy} {$term->term_id}." );
