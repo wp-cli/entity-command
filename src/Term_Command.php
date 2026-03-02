@@ -773,6 +773,9 @@ class Term_Command extends WP_CLI_Command {
 				} elseif ( $result ) {
 					WP_CLI::log( "Deleted {$taxonomy} {$term->term_id}." );
 					++$successes;
+				} else {
+					WP_CLI::warning( "Failed to delete {$taxonomy} {$term->term_id}." );
+					++$errors;
 				}
 			}
 
