@@ -506,23 +506,24 @@ class Post_Command extends CommandWithDBObject {
 		$status    = get_post_status( $post_id );
 		$post_type = get_post_type( $post_id );
 
-		if ( ! $assoc_args['force']
-			&& 'trash' !== $status
-			&& ( 'post' !== $post_type && 'page' !== $post_type ) ) {
-			return [
-				'error',
-				"Posts of type '{$post_type}' do not support being sent to trash.\n"
-				. 'Please use the --force flag to skip trash and delete them permanently.',
-			];
+		$force_delete = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type;
+
+		if ( $force_delete || ! EMPTY_TRASH_DAYS ) {
+			if ( ! wp_delete_post( $post_id, true ) ) {
+				return [ 'error', "Failed deleting post {$post_id}." ];
+			}
+
+			return [ 'success', "Deleted post {$post_id}." ];
 		}
 
-		if ( ! wp_delete_post( $post_id, $assoc_args['force'] ) ) {
-			return [ 'error', "Failed deleting post {$post_id}." ];
+		// Use wp_trash_post() directly because wp_delete_post() only auto-trashes
+		// 'post' and 'page' types, permanently deleting all other post types even
+		// when $force_delete is false. wp_trash_post() works for all post types.
+		if ( wp_trash_post( $post_id ) ) {
+			return [ 'success', "Trashed post {$post_id}." ];
 		}
 
-		$action = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type ? 'Deleted' : 'Trashed';
-
-		return [ 'success', "{$action} post {$post_id}." ];
+		return [ 'error', "Failed trashing post {$post_id}." ];
 	}
 
 	/**
