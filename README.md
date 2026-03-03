@@ -5295,6 +5295,251 @@ wp site option
 
 
 
+### wp site option add
+
+Adds a site option.
+
+~~~
+wp site option add <key> [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<key>
+		The name of the site option to add.
+
+	[<value>]
+		The value of the site option to add. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+**EXAMPLES**
+
+    # Create a site option by reading a JSON file
+    $ wp site option add my_option --format=json < config.json
+    Success: Added 'my_option' site option.
+
+
+
+### wp site option delete
+
+Deletes a site option.
+
+~~~
+wp site option delete <key>
+~~~
+
+**OPTIONS**
+
+	<key>
+		Key for the site option.
+
+**EXAMPLES**
+
+    $ wp site option delete my_option
+    Success: Deleted 'my_option' site option.
+
+
+
+### wp site option get
+
+Gets a site option.
+
+~~~
+wp site option get <key> [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<key>
+		Key for the site option.
+
+	[--format=<format>]
+		Get value in a particular format.
+		---
+		default: var_export
+		options:
+		  - var_export
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Get site upload filetypes
+    $ wp site option get upload_filetypes
+    jpg jpeg png gif mov avi mpg
+
+
+
+### wp site option list
+
+Lists site options.
+
+~~~
+wp site option list [--search=<pattern>] [--site_id=<id>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--search=<pattern>]
+		Use wildcards ( * and ? ) to match option name.
+
+	[--site_id=<id>]
+		Limit options to those of a particular site id.
+
+	[--field=<field>]
+		Prints the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields.
+
+	[--format=<format>]
+		The serialization format for the value. total_bytes displays the total size of matching options in bytes.
+		---
+		default: table
+		options:
+		  - table
+		  - json
+		  - csv
+		  - count
+		  - yaml
+		  - total_bytes
+		---
+
+**AVAILABLE FIELDS**
+
+This field will be displayed by default for each matching option:
+
+* meta_key
+* meta_value
+
+These fields are optionally available:
+
+* meta_id
+* site_id
+* size_bytes
+
+**EXAMPLES**
+
+    # List all site options beginning with "i2f_"
+    $ wp site option list --search="i2f_*"
+    +-------------+--------------+
+    | meta_key    | meta_value   |
+    +-------------+--------------+
+    | i2f_version | 0.1.0        |
+    +-------------+--------------+
+
+
+
+### wp site option patch
+
+Updates a nested value in an option.
+
+~~~
+wp site option patch <action> <key> <key-path>... [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<action>
+		Patch action to perform.
+		---
+		options:
+		  - insert
+		  - update
+		  - delete
+		---
+
+	<key>
+		The option name.
+
+	<key-path>...
+		The name(s) of the keys within the value to locate the value to patch.
+
+	[<value>]
+		The new value. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+
+
+### wp site option pluck
+
+Gets a nested value from an option.
+
+~~~
+wp site option pluck <key> <key-path>... [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<key>
+		The option name.
+
+	<key-path>...
+		The name(s) of the keys within the value to locate the value to pluck.
+
+	[--format=<format>]
+		The output format of the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		  - yaml
+
+
+
+### wp site option update
+
+Updates a site option.
+
+~~~
+wp site option update <key> [<value>] [--format=<format>]
+~~~
+
+**Alias:** `set`
+
+**OPTIONS**
+
+	<key>
+		The name of the site option to update.
+
+	[<value>]
+		The new value. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+**EXAMPLES**
+
+    # Update a site option by reading from a file
+    $ wp site option update my_option < value.txt
+    Success: Updated 'my_option' site option.
+
+
+
 ### wp site private
 
 Sets one or more sites as private.
@@ -6182,6 +6427,45 @@ wp term meta update <id> <key> [<value>] [--format=<format>]
 		  - plaintext
 		  - json
 		---
+
+
+
+### wp term migrate
+
+Migrate a term of a taxonomy to another taxonomy.
+
+~~~
+wp term migrate <term> [--by=<field>] [--from=<taxonomy>] [--to=<taxonomy>]
+~~~
+
+**OPTIONS**
+
+	<term>
+		Slug or ID of the term to migrate.
+
+	[--by=<field>]
+		Explicitly handle the term value as a slug or id.
+		---
+		default: id
+		options:
+		  - slug
+		  - id
+		---
+
+	[--from=<taxonomy>]
+		Taxonomy slug of the term to migrate.
+
+	[--to=<taxonomy>]
+		Taxonomy slug to migrate to.
+
+**EXAMPLES**
+
+    # Migrate a category's term (video) to tag taxonomy.
+    $ wp term migrate 9190 --from=category --to=post_tag
+    Term 'video' assigned to post 1155.
+    Term 'video' migrated.
+    Old instance of term 'video' removed from its original taxonomy.
+    Success: Migrated the term 'video' from taxonomy 'category' to taxonomy 'post_tag' for 1 post.
 
 
 
