@@ -198,6 +198,7 @@
             "term meta update",
             "term migrate",
             "term recount",
+            "term prune",
             "term update",
             "user",
             "user add-cap",
