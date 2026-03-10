@@ -7,8 +7,8 @@ Feature: Manage WordPress font collections
   Scenario: Listing font collections
     When I try `wp font collection list`
     Then STDOUT should be a table containing rows:
-      | slug         | name         | description                                                                |
-      | google-fonts | Google Fonts | Install from Google Fonts. Fonts are copied to and served from your site.  |
+      | slug         | name         | description                                                                | categories                                                                                                         |
+      | google-fonts | Google Fonts | Install from Google Fonts. Fonts are copied to and served from your site.  | Sans Serif (sans-serif), Display (display), Serif (serif), Handwriting (handwriting), Monospace (monospace)        |
 
   @require-wp-6.5
   Scenario: Getting a non-existent font collection
