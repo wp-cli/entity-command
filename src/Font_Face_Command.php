@@ -75,7 +75,7 @@ class Font_Face_Command extends WP_CLI_Command {
 		}
 
 		if ( ! isset( $assoc_args['src'] ) ) {
-			WP_CLI::error( 'The --src parameter is required.' );
+			WP_CLI::error( 'missing --src parameter' );
 		}
 
 		// Prepare font face settings.

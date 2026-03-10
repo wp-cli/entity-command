@@ -30,8 +30,9 @@ use WP_CLI\Formatter;
  *
  * @package wp-cli
  *
- * @phpstan-type FontFamily array{font_family_settings: array{name: string, slug: string, fontFamily: string, preview: string}}
- * @phpstan-type FontCollectionData array{name: string, font_families: FontFamily[], description: string, categories: string[]}
+ * @phpstan-type FontCategory array{name: string, slug: string}
+ * @phpstan-type FontFamily array{font_family_settings: array{name: string, slug: string, fontFamily: string, preview: string}, categories: string[]}
+ * @phpstan-type FontCollectionData array{name: string, font_families: FontFamily[], description: string, categories: FontCategory[]}
  */
 class Font_Collection_Command extends WP_CLI_Command {
 
@@ -39,6 +40,7 @@ class Font_Collection_Command extends WP_CLI_Command {
 		'slug',
 		'name',
 		'description',
+		'categories',
 	];
 
 	/**
@@ -162,7 +164,6 @@ class Font_Collection_Command extends WP_CLI_Command {
 	 * * name
 	 * * description
 	 * * categories
-	 * * font_families
 	 *
 	 * ## EXAMPLES
 	 *
@@ -219,6 +220,11 @@ class Font_Collection_Command extends WP_CLI_Command {
 	/**
 	 * Checks if a font collection is registered.
 	 *
+	 * ## OPTIONS
+	 *
+	 * <slug>
+	 * : Font collection slug.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Bash script for checking if a font collection is registered, with fallback.
@@ -231,8 +237,8 @@ class Font_Collection_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand is-registered
 	 *
-	 * @param string[] $args Positional arguments. Unused.
-	 * @param array{network?: bool} $assoc_args Associative arguments.
+	 * @param string[] $args Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function is_registered( $args, $assoc_args ) {
 		$slug         = $args[0];
@@ -280,7 +286,7 @@ class Font_Collection_Command extends WP_CLI_Command {
 	 * * slug
 	 * * name
 	 * * fontFamily
-	 * * category
+	 * * categories
 	 * * preview
 	 *
 	 * ## EXAMPLES
@@ -333,7 +339,7 @@ class Font_Collection_Command extends WP_CLI_Command {
 				'slug'       => $settings['slug'] ?? '',
 				'name'       => $settings['name'] ?? '',
 				'fontFamily' => $settings['fontFamily'] ?? '',
-				'categories' => implode( ', ', $settings['categories'] ?? [] ),
+				'categories' => implode( ', ', $family_categories ),
 				'preview'    => $settings['preview'] ?? '',
 			];
 		}
