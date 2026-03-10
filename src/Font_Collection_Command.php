@@ -108,22 +108,11 @@ class Font_Collection_Command extends WP_CLI_Command {
 				continue;
 			}
 
-			$categories = $data['categories'] ?? [];
-			$categories = implode(
-				', ',
-				array_map(
-					static function ( $category ) {
-						return "{$category['name']} ({$category['slug']})";
-					},
-					$categories
-				)
-			);
-
 			$items[] = [
 				'slug'        => $collection->slug,
 				'name'        => $data['name'] ?? '',
 				'description' => $data['description'] ?? '',
-				'categories'  => $categories,
+				'categories'  => $this->format_categories( $data['categories'] ?? [] ),
 			];
 		}
 
@@ -195,22 +184,11 @@ class Font_Collection_Command extends WP_CLI_Command {
 			WP_CLI::error( $collection_data );
 		}
 
-		$categories = $collection_data['categories'] ?? [];
-		$categories = implode(
-			', ',
-			array_map(
-				static function ( $category ) {
-					return "{$category['name']} ({$category['slug']})";
-				},
-				$categories
-			)
-		);
-
 		$data = [
 			'slug'        => $collection->slug,
 			'name'        => $collection_data['name'] ?? '',
 			'description' => $collection_data['description'] ?? '',
-			'categories'  => $categories,
+			'categories'  => $this->format_categories( $collection_data['categories'] ?? [] ),
 		];
 
 		$formatter = $this->get_formatter( $assoc_args );
@@ -417,6 +395,18 @@ class Font_Collection_Command extends WP_CLI_Command {
 		$fields    = [ 'slug', 'name' ];
 		$formatter = new Formatter( $assoc_args, $fields, 'category' );
 		$formatter->display_items( $categories );
+	}
+
+	private function format_categories( array $categories ): string {
+		return implode(
+			', ',
+			array_map(
+				static function ( $category ) {
+					return "{$category['name']} ({$category['slug']})";
+				},
+				$categories
+			)
+		);
 	}
 
 	private function get_formatter( &$assoc_args ) {
