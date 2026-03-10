@@ -6312,6 +6312,11 @@ See reference for [taxonomies and their terms](https://wordpress.org/documentati
     Success: Updated category term count
     Success: Updated post_tag term count
 
+    # Prune terms with 0 or 1 published posts
+    $ wp term prune post_tag
+    Deleted post_tag 15.
+    Success: Pruned 1 of 5 terms.
+
 
 
 ### wp term create
@@ -6924,6 +6929,47 @@ to bring the count back to the correct value.
     Success: Updated nav_menu term count.
     Success: Updated link_category term count.
     Success: Updated post_format term count.
+
+
+
+### wp term prune
+
+Removes terms with 0 or 1 published posts from one or more taxonomies.
+
+~~~
+wp term prune <taxonomy>... [--dry-run]
+~~~
+
+Useful for cleaning up large sites with many unused or barely-used terms.
+The term count is based on the number of published posts assigned to each
+term.
+
+**OPTIONS**
+
+	<taxonomy>...
+		One or more taxonomies to prune.
+
+	[--dry-run]
+		Preview the terms to be pruned, without actually deleting them.
+
+**EXAMPLES**
+
+    # Prune post tags with 0 or 1 published posts.
+    $ wp term prune post_tag
+    Deleted post_tag 15.
+    Success: Pruned 1 of 5 terms.
+
+    # Dry run to preview which terms would be pruned.
+    $ wp term prune post_tag --dry-run
+    Would delete post_tag 15.
+    Success: 1 post_tag term would be pruned.
+
+    # Prune multiple taxonomies at once.
+    $ wp term prune category post_tag
+    Deleted category 8.
+    Success: Pruned 1 of 3 terms.
+    Deleted post_tag 15.
+    Success: Pruned 1 of 5 terms.
 
 
 
