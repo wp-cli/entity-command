@@ -722,6 +722,8 @@ class Term_Command extends WP_CLI_Command {
 	 *     Success: Pruned 1 of 5 terms.
 	 */
 	public function prune( $args, $assoc_args ) {
+		global $wpdb;
+
 		$dry_run = (bool) Utils\get_flag_value( $assoc_args, 'dry-run', false );
 
 		foreach ( $args as $taxonomy ) {
@@ -729,48 +731,34 @@ class Term_Command extends WP_CLI_Command {
 				WP_CLI::error( "Taxonomy {$taxonomy} doesn't exist." );
 			}
 
-			$terms = get_terms(
-				[
-					'taxonomy'   => $taxonomy,
-					'hide_empty' => false,
-				]
+			$term_ids_to_prune = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT term_id FROM {$wpdb->term_taxonomy} WHERE taxonomy = %s AND count <= 1",
+					$taxonomy
+				)
 			);
 
-			// This should never happen because of the taxonomy_exists check above.
-			if ( is_wp_error( $terms ) ) {
-				WP_CLI::warning( "Could not retrieve terms for taxonomy {$taxonomy}." );
-				continue;
-			}
-
-			/**
-			 * @var \WP_Term[] $terms
-			 */
-
-			$total     = count( $terms );
+			$total     = count( $term_ids_to_prune );
 			$successes = 0;
 			$errors    = 0;
 
-			foreach ( $terms as $term ) {
-				if ( $term->count > 1 ) {
-					continue;
-				}
-
+			foreach ( $term_ids_to_prune as $term_id ) {
 				if ( $dry_run ) {
-					WP_CLI::log( "Would delete {$taxonomy} {$term->term_id}." );
+					WP_CLI::log( "Would delete {$taxonomy} {$term_id}." );
 					++$successes;
 					continue;
 				}
 
-				$result = wp_delete_term( $term->term_id, $taxonomy );
+				$result = wp_delete_term( $term_id, $taxonomy );
 
 				if ( is_wp_error( $result ) ) {
 					WP_CLI::warning( $result );
 					++$errors;
 				} elseif ( $result ) {
-					WP_CLI::log( "Deleted {$taxonomy} {$term->term_id}." );
+					WP_CLI::log( "Deleted {$taxonomy} {$term_id}." );
 					++$successes;
 				} else {
-					WP_CLI::warning( "Failed to delete {$taxonomy} {$term->term_id}." );
+					WP_CLI::warning( "Term {$term_id} in taxonomy {$taxonomy} doesn't exist." );
 					++$errors;
 				}
 			}
