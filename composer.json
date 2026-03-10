@@ -12,7 +12,7 @@
         }
     ],
     "require": {
-       "wp-cli/wp-cli": "^2.13"
+        "wp-cli/wp-cli": "^2.13"
     },
     "require-dev": {
         "wp-cli/cache-command": "^1 || ^2",
@@ -177,6 +177,13 @@
             "site meta pluck",
             "site meta update",
             "site option",
+            "site option add",
+            "site option delete",
+            "site option get",
+            "site option list",
+            "site option patch",
+            "site option pluck",
+            "site option update",
             "site private",
             "site public",
             "site spam",
@@ -200,6 +207,7 @@
             "term meta patch",
             "term meta pluck",
             "term meta update",
+            "term migrate",
             "term recount",
             "term update",
             "user",
@@ -213,6 +221,7 @@
             "user application-password list",
             "user application-password record-usage",
             "user application-password update",
+            "user check-password",
             "user create",
             "user delete",
             "user exists",
@@ -253,7 +262,7 @@
     },
     "autoload": {
         "classmap": [
-           "src/"
+            "src/"
         ],
         "exclude-from-classmap": [
             "src/Compat/WP_HTML_Span.php",
@@ -261,27 +270,27 @@
             "src/Compat/polyfills.php"
         ],
         "files": [
-           "entity-command.php"
+            "entity-command.php"
         ]
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-      "behat": "run-behat-tests",
-      "behat-rerun": "rerun-behat-tests",
-      "lint": "run-linter-tests",
-      "phpcs": "run-phpcs-tests",
-      "phpstan": "run-phpstan-tests",
-      "phpunit": "run-php-unit-tests",
-      "phpcbf": "run-phpcbf-cleanup",
-      "prepare-tests": "install-package-tests",
-      "test": [
-          "@lint",
-          "@phpcs",
-          "@phpstan",
-          "@phpunit",
-          "@behat"
-      ]
+        "behat": "run-behat-tests",
+        "behat-rerun": "rerun-behat-tests",
+        "lint": "run-linter-tests",
+        "phpcs": "run-phpcs-tests",
+        "phpstan": "run-phpstan-tests",
+        "phpunit": "run-php-unit-tests",
+        "phpcbf": "run-phpcbf-cleanup",
+        "prepare-tests": "install-package-tests",
+        "test": [
+            "@lint",
+            "@phpcs",
+            "@phpstan",
+            "@phpunit",
+            "@behat"
+        ]
     },
     "support": {
         "issues": "https://github.com/wp-cli/entity-command/issues"
