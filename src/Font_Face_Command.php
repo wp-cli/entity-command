@@ -87,10 +87,10 @@ class Font_Face_Command extends WP_CLI_Command {
 			$face_settings['fontFamily'] = $assoc_args['font-family'];
 		}
 
-		$font_style                 = isset( $assoc_args['font-style'] ) ? $assoc_args['font-style'] : 'normal';
+		$font_style                 = Utils\get_flag_value( $assoc_args, 'font-style', 'normal' );
 		$face_settings['fontStyle'] = $font_style;
 
-		$font_weight                 = isset( $assoc_args['font-weight'] ) ? $assoc_args['font-weight'] : '400';
+		$font_weight                 = Utils\get_flag_value( $assoc_args, 'font-weight', '400' );
 		$face_settings['fontWeight'] = $font_weight;
 
 		if ( isset( $assoc_args['font-display'] ) ) {
