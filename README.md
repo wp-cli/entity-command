@@ -855,6 +855,427 @@ wp comment update <id>... --<field>=<value>
 
 
 
+### wp font
+
+Manages WordPress fonts.
+
+~~~
+wp font
+~~~
+
+**EXAMPLES**
+
+    # List all font collections
+    $ wp font collection list
+
+    # Install a font family from a collection
+    $ wp font family install google-fonts inter
+
+    # List installed font families
+    $ wp post list --post_type=wp_font_family
+
+    # List installed font faces
+    $ wp post list --post_type=wp_font_face
+
+
+
+### wp font collection
+
+Manages font collections.
+
+~~~
+wp font collection
+~~~
+
+Font collections are predefined sets of fonts that can be used in WordPress.
+Collections are registered by WordPress core or themes and cannot be created
+or deleted via the command line.
+
+**EXAMPLES**
+
+    # List all font collections
+    $ wp font collection list
+    +------------------+-------------------+---------+
+    | slug             | name              | count   |
+    +------------------+-------------------+---------+
+    | google-fonts     | Google Fonts      | 1500    |
+    +------------------+-------------------+---------+
+
+    # Get details about a specific font collection
+    $ wp font collection get google-fonts
+    +-------+------------------+
+    | Field | Value            |
+    +-------+------------------+
+    | slug  | google-fonts     |
+    | name  | Google Fonts     |
+    +-------+------------------+
+
+
+
+### wp font collection get
+
+Gets details about a registered font collection.
+
+~~~
+wp font collection get <slug> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+	[--field=<field>]
+		Instead of returning the whole collection, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for the specified collection:
+
+* slug
+* name
+* description
+* categories
+
+**EXAMPLES**
+
+    # Get details of a specific collection
+    $ wp font collection get google-fonts
+    +-------+------------------+
+    | Field | Value            |
+    +-------+------------------+
+    | slug  | google-fonts     |
+    | name  | Google Fonts     |
+    +-------+------------------+
+
+    # Get the name field only
+    $ wp font collection get google-fonts --field=name
+    Google Fonts
+
+
+
+### wp font collection is-registered
+
+Checks if a font collection is registered.
+
+~~~
+wp font collection is-registered <slug>
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+**EXAMPLES**
+
+    # Bash script for checking if a font collection is registered, with fallback.
+
+    if wp font collection is-registered google-fonts 2>/dev/null; then
+        # Font collection is registered. Do something.
+    else
+        # Fallback if collection is not registered.
+    fi
+
+
+
+### wp font collection list
+
+Lists registered font collections.
+
+~~~
+wp font collection list [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--field=<field>]
+		Prints the value of a single field for each collection.
+
+	[--fields=<fields>]
+		Limit the output to specific collection fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each collection:
+
+* slug
+* name
+* description
+* categories
+
+**EXAMPLES**
+
+    # List all font collections
+    $ wp font collection list
+    +------------------+-------------------+
+    | slug             | name              |
+    +------------------+-------------------+
+    | google-fonts     | Google Fonts      |
+    +------------------+-------------------+
+
+    # List collections in JSON format
+    $ wp font collection list --format=json
+    [{"slug":"google-fonts","name":"Google Fonts"}]
+
+
+
+### wp font collection list-categories
+
+Lists categories in a collection.
+
+~~~
+wp font collection list-categories <slug> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+	[--field=<field>]
+		Prints the value of a single field for each category.
+
+	[--fields=<fields>]
+		Limit the output to specific category fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+* slug
+* name
+
+**EXAMPLES**
+
+    # List all categories in a collection
+    $ wp font collection list-categories google-fonts
+    +-------------+--------------+
+    | slug        | name         |
+    +-------------+--------------+
+    | sans-serif  | Sans Serif   |
+    | display     | Display      |
+    +-------------+--------------+
+
+
+
+### wp font collection list-families
+
+Lists font families in a collection.
+
+~~~
+wp font collection list-families <slug> [--category=<slug>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+	[--category=<slug>]
+		Filter by category slug.
+
+	[--field=<field>]
+		Prints the value of a single field for each family.
+
+	[--fields=<fields>]
+		Limit the output to specific family fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+* slug
+* name
+* fontFamily
+* categories
+* preview
+
+**EXAMPLES**
+
+    # List all font families in a collection
+    $ wp font collection list-families google-fonts
+
+    # List font families in a specific category
+    $ wp font collection list-families google-fonts --category=sans-serif
+
+
+
+### wp font face
+
+Manages font faces.
+
+~~~
+wp font face
+~~~
+
+To list, get, create, update or delete font faces, use `wp post` with
+`--post_type=wp_font_face`.
+
+**EXAMPLES**
+
+    # Install a font face for an existing family
+    $ wp font face install 42 --src="https://example.com/font.woff2" --font-weight=700
+    Success: Created font face 43.
+
+    # List installed font faces
+    $ wp post list --post_type=wp_font_face
+
+
+
+### wp font face install
+
+Installs a font face.
+
+~~~
+wp font face install <family-id> --src=<src> [--font-family=<family>] [--font-style=<style>] [--font-weight=<weight>] [--font-display=<display>] [--porcelain]
+~~~
+
+Creates a new font face post with the specified settings.
+
+**OPTIONS**
+
+	<family-id>
+		Font family ID.
+
+	--src=<src>
+		Font face source URL or file path.
+
+	[--font-family=<family>]
+		CSS font-family value.
+
+	[--font-style=<style>]
+		CSS font-style value (e.g., normal, italic).
+		---
+		default: normal
+		---
+
+	[--font-weight=<weight>]
+		CSS font-weight value (e.g., 400, 700).
+		---
+		default: 400
+		---
+
+	[--font-display=<display>]
+		CSS font-display value.
+
+	[--porcelain]
+		Output just the new font face ID.
+
+**EXAMPLES**
+
+    # Install a font face
+    $ wp font face install 42 --src="https://example.com/font.woff2" --font-weight=700 --font-style=normal
+    Success: Created font face 43.
+
+    # Install a font face with porcelain output
+    $ wp font face install 42 --src="font.woff2" --porcelain
+    44
+
+
+
+### wp font family
+
+Manages font families.
+
+~~~
+wp font family
+~~~
+
+To list, get, create, update or delete font families, use `wp post` with
+`--post_type=wp_font_family`.
+
+**EXAMPLES**
+
+    # Install a font family from a collection
+    $ wp font family install google-fonts inter
+    Success: Installed font family "Inter" (ID: 42) with 9 font faces.
+
+    # List installed font families
+    $ wp post list --post_type=wp_font_family
+
+
+
+### wp font family install
+
+Installs a font family from a collection.
+
+~~~
+wp font family install <collection> <family> [--porcelain]
+~~~
+
+Retrieves a font family from a collection and creates the wp_font_family post
+along with all associated font faces.
+
+**OPTIONS**
+
+	<collection>
+		Font collection slug.
+
+	<family>
+		Font family slug from the collection.
+
+	[--porcelain]
+		Output just the new font family ID.
+
+**EXAMPLES**
+
+    # Install a font family from a collection
+    $ wp font family install google-fonts inter
+    Success: Installed font family "Inter" (ID: 42) with 9 font faces.
+
+    # Install and get the family ID
+    $ wp font family install google-fonts roboto --porcelain
+    43
+
+
+
 ### wp menu
 
 Lists, creates, assigns, and deletes the active theme's navigation menus.
