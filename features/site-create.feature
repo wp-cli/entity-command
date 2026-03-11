@@ -209,7 +209,7 @@ Feature: Create a new site on a WP multisite
   Scenario: Create site with different domain in subdirectory multisite shows warning
     Given a WP multisite subdirectory install
 
-    When I run `wp site create --site-url=http://custom.example.com/mypath/`
+    When I try `wp site create --site-url=http://custom.example.com/mypath/`
     Then STDERR should contain:
       """
       Warning: Using a different domain for a subdirectory multisite install may require additional configuration
