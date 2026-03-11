@@ -46,6 +46,7 @@ WP_CLI::add_command(
 	)
 );
 WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
+WP_CLI::add_command( 'post revision', 'Post_Revision_Command' );
 WP_CLI::add_command( 'post term', 'Post_Term_Command' );
 WP_CLI::add_command( 'post-type', 'Post_Type_Command' );
 WP_CLI::add_command( 'site', 'Site_Command' );
@@ -112,3 +113,19 @@ WP_CLI::add_command(
 		},
 	)
 );
+
+if ( class_exists( 'WP_CLI\Dispatcher\CommandNamespace' ) ) {
+	WP_CLI::add_command( 'font', 'Font_Namespace' );
+}
+
+$wpcli_entity_font_version_check = array(
+	'before_invoke' => function () {
+		if ( Utils\wp_version_compare( '6.5', '<' ) ) {
+			WP_CLI::error( 'Requires WordPress 6.5 or greater.' );
+		}
+	},
+);
+
+WP_CLI::add_command( 'font collection', 'Font_Collection_Command', $wpcli_entity_font_version_check );
+WP_CLI::add_command( 'font family', 'Font_Family_Command', $wpcli_entity_font_version_check );
+WP_CLI::add_command( 'font face', 'Font_Face_Command', $wpcli_entity_font_version_check );

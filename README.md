@@ -855,6 +855,427 @@ wp comment update <id>... --<field>=<value>
 
 
 
+### wp font
+
+Manages WordPress fonts.
+
+~~~
+wp font
+~~~
+
+**EXAMPLES**
+
+    # List all font collections
+    $ wp font collection list
+
+    # Install a font family from a collection
+    $ wp font family install google-fonts inter
+
+    # List installed font families
+    $ wp post list --post_type=wp_font_family
+
+    # List installed font faces
+    $ wp post list --post_type=wp_font_face
+
+
+
+### wp font collection
+
+Manages font collections.
+
+~~~
+wp font collection
+~~~
+
+Font collections are predefined sets of fonts that can be used in WordPress.
+Collections are registered by WordPress core or themes and cannot be created
+or deleted via the command line.
+
+**EXAMPLES**
+
+    # List all font collections
+    $ wp font collection list
+    +------------------+-------------------+---------+
+    | slug             | name              | count   |
+    +------------------+-------------------+---------+
+    | google-fonts     | Google Fonts      | 1500    |
+    +------------------+-------------------+---------+
+
+    # Get details about a specific font collection
+    $ wp font collection get google-fonts
+    +-------+------------------+
+    | Field | Value            |
+    +-------+------------------+
+    | slug  | google-fonts     |
+    | name  | Google Fonts     |
+    +-------+------------------+
+
+
+
+### wp font collection get
+
+Gets details about a registered font collection.
+
+~~~
+wp font collection get <slug> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+	[--field=<field>]
+		Instead of returning the whole collection, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for the specified collection:
+
+* slug
+* name
+* description
+* categories
+
+**EXAMPLES**
+
+    # Get details of a specific collection
+    $ wp font collection get google-fonts
+    +-------+------------------+
+    | Field | Value            |
+    +-------+------------------+
+    | slug  | google-fonts     |
+    | name  | Google Fonts     |
+    +-------+------------------+
+
+    # Get the name field only
+    $ wp font collection get google-fonts --field=name
+    Google Fonts
+
+
+
+### wp font collection is-registered
+
+Checks if a font collection is registered.
+
+~~~
+wp font collection is-registered <slug>
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+**EXAMPLES**
+
+    # Bash script for checking if a font collection is registered, with fallback.
+
+    if wp font collection is-registered google-fonts 2>/dev/null; then
+        # Font collection is registered. Do something.
+    else
+        # Fallback if collection is not registered.
+    fi
+
+
+
+### wp font collection list
+
+Lists registered font collections.
+
+~~~
+wp font collection list [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--field=<field>]
+		Prints the value of a single field for each collection.
+
+	[--fields=<fields>]
+		Limit the output to specific collection fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each collection:
+
+* slug
+* name
+* description
+* categories
+
+**EXAMPLES**
+
+    # List all font collections
+    $ wp font collection list
+    +------------------+-------------------+
+    | slug             | name              |
+    +------------------+-------------------+
+    | google-fonts     | Google Fonts      |
+    +------------------+-------------------+
+
+    # List collections in JSON format
+    $ wp font collection list --format=json
+    [{"slug":"google-fonts","name":"Google Fonts"}]
+
+
+
+### wp font collection list-categories
+
+Lists categories in a collection.
+
+~~~
+wp font collection list-categories <slug> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+	[--field=<field>]
+		Prints the value of a single field for each category.
+
+	[--fields=<fields>]
+		Limit the output to specific category fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+* slug
+* name
+
+**EXAMPLES**
+
+    # List all categories in a collection
+    $ wp font collection list-categories google-fonts
+    +-------------+--------------+
+    | slug        | name         |
+    +-------------+--------------+
+    | sans-serif  | Sans Serif   |
+    | display     | Display      |
+    +-------------+--------------+
+
+
+
+### wp font collection list-families
+
+Lists font families in a collection.
+
+~~~
+wp font collection list-families <slug> [--category=<slug>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+	[--category=<slug>]
+		Filter by category slug.
+
+	[--field=<field>]
+		Prints the value of a single field for each family.
+
+	[--fields=<fields>]
+		Limit the output to specific family fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+* slug
+* name
+* fontFamily
+* categories
+* preview
+
+**EXAMPLES**
+
+    # List all font families in a collection
+    $ wp font collection list-families google-fonts
+
+    # List font families in a specific category
+    $ wp font collection list-families google-fonts --category=sans-serif
+
+
+
+### wp font face
+
+Manages font faces.
+
+~~~
+wp font face
+~~~
+
+To list, get, create, update or delete font faces, use `wp post` with
+`--post_type=wp_font_face`.
+
+**EXAMPLES**
+
+    # Install a font face for an existing family
+    $ wp font face install 42 --src="https://example.com/font.woff2" --font-weight=700
+    Success: Created font face 43.
+
+    # List installed font faces
+    $ wp post list --post_type=wp_font_face
+
+
+
+### wp font face install
+
+Installs a font face.
+
+~~~
+wp font face install <family-id> --src=<src> [--font-family=<family>] [--font-style=<style>] [--font-weight=<weight>] [--font-display=<display>] [--porcelain]
+~~~
+
+Creates a new font face post with the specified settings.
+
+**OPTIONS**
+
+	<family-id>
+		Font family ID.
+
+	--src=<src>
+		Font face source URL or file path.
+
+	[--font-family=<family>]
+		CSS font-family value.
+
+	[--font-style=<style>]
+		CSS font-style value (e.g., normal, italic).
+		---
+		default: normal
+		---
+
+	[--font-weight=<weight>]
+		CSS font-weight value (e.g., 400, 700).
+		---
+		default: 400
+		---
+
+	[--font-display=<display>]
+		CSS font-display value.
+
+	[--porcelain]
+		Output just the new font face ID.
+
+**EXAMPLES**
+
+    # Install a font face
+    $ wp font face install 42 --src="https://example.com/font.woff2" --font-weight=700 --font-style=normal
+    Success: Created font face 43.
+
+    # Install a font face with porcelain output
+    $ wp font face install 42 --src="font.woff2" --porcelain
+    44
+
+
+
+### wp font family
+
+Manages font families.
+
+~~~
+wp font family
+~~~
+
+To list, get, create, update or delete font families, use `wp post` with
+`--post_type=wp_font_family`.
+
+**EXAMPLES**
+
+    # Install a font family from a collection
+    $ wp font family install google-fonts inter
+    Success: Installed font family "Inter" (ID: 42) with 9 font faces.
+
+    # List installed font families
+    $ wp post list --post_type=wp_font_family
+
+
+
+### wp font family install
+
+Installs a font family from a collection.
+
+~~~
+wp font family install <collection> <family> [--porcelain]
+~~~
+
+Retrieves a font family from a collection and creates the wp_font_family post
+along with all associated font faces.
+
+**OPTIONS**
+
+	<collection>
+		Font collection slug.
+
+	<family>
+		Font family slug from the collection.
+
+	[--porcelain]
+		Output just the new font family ID.
+
+**EXAMPLES**
+
+    # Install a font family from a collection
+    $ wp font family install google-fonts inter
+    Success: Installed font family "Inter" (ID: 42) with 9 font faces.
+
+    # Install and get the family ID
+    $ wp font family install google-fonts roboto --porcelain
+    43
+
+
+
 ### wp menu
 
 Lists, creates, assigns, and deletes the active theme's navigation menus.
@@ -1127,6 +1548,79 @@ wp menu item delete <db-id>...
 
     $ wp menu item delete 45
     Success: Deleted 1 of 1 menu items.
+
+
+
+### wp menu item get
+
+Gets details about a menu item.
+
+~~~
+wp menu item get <db-id> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<db-id>
+		Database ID for the menu item.
+
+	[--field=<field>]
+		Instead of returning the whole menu item, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to db_id, type, title, link, position.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields are available:
+
+* db_id
+* type
+* title
+* link
+* position
+* menu_item_parent
+* object_id
+* object
+* type_label
+* target
+* attr_title
+* description
+* classes
+* xfn
+
+**EXAMPLES**
+
+    # Get details about a menu item with ID 45
+    $ wp menu item get 45
+    +-------------+----------------------------------+
+    | Field       | Value                            |
+    +-------------+----------------------------------+
+    | db_id       | 45                               |
+    | type        | custom                           |
+    | title       | WordPress                        |
+    | link        | https://wordpress.org            |
+    | position    | 1                                |
+    +-------------+----------------------------------+
+
+    # Get a specific field from a menu item
+    $ wp menu item get 45 --field=title
+    WordPress
+
+    # Get menu item data in JSON format
+    $ wp menu item get 45 --format=json
+    {"db_id":45,"type":"custom","title":"WordPress","link":"https://wordpress.org","position":1}
 
 
 
@@ -1702,6 +2196,21 @@ wp option
 ~~~
 
 See the [Plugin Settings API](https://developer.wordpress.org/plugins/settings/settings-api/) and the [Theme Options](https://developer.wordpress.org/themes/customize-api/) for more information on adding customized options.
+
+**COMMON OPTIONS**
+
+These are some of the most commonly used WordPress options:
+
+* `siteurl` - Site URL, e.g. http://example.com
+* `blogname` - Site title
+* `blogdescription` - Site tagline
+* `admin_email` - Administration email address
+* `default_role` - Default role for new users
+* `timezone_string` - Local timezone, e.g. "America/New_York"
+* `home` - Home URL, e.g. http://example.com
+* `blog_public` - Discourage search engines when set to 0
+
+For the full list of available options, see the [Option Reference](https://developer.wordpress.org/apis/options/).
 
 **EXAMPLES**
 
@@ -2944,6 +3453,116 @@ wp post meta update <id> <key> [<value>] [--format=<format>]
 		  - plaintext
 		  - json
 		---
+
+
+
+### wp post revision
+
+Manages post revisions.
+
+~~~
+wp post revision
+~~~
+
+**EXAMPLES**
+
+    # Restore a post revision
+    $ wp post revision restore 123
+    Success: Restored revision 123.
+
+    # Show diff between two revisions
+    $ wp post revision diff 123 456
+
+
+
+
+
+### wp post revision diff
+
+Shows the difference between two revisions.
+
+~~~
+wp post revision diff <from> [<to>] [--field=<field>]
+~~~
+
+**OPTIONS**
+
+	<from>
+		The 'from' revision ID or post ID.
+
+	[<to>]
+		The 'to' revision ID or post ID. If not provided, compares with the current post.
+
+	[--field=<field>]
+		Compare specific field(s). Default: post_content
+
+**EXAMPLES**
+
+    # Show diff between two revisions
+    $ wp post revision diff 123 456
+
+    # Show diff between a revision and the current post
+    $ wp post revision diff 123
+
+
+
+### wp post revision prune
+
+Deletes old post revisions.
+
+~~~
+wp post revision prune [<post-id>...] [--latest=<limit>] [--earliest=<limit>] [--yes]
+~~~
+
+**OPTIONS**
+
+	[<post-id>...]
+		One or more post IDs to prune revisions for. If not provided, prunes revisions for all posts.
+
+	[--latest=<limit>]
+		Keep only the latest N revisions per post. Older revisions will be deleted.
+
+	[--earliest=<limit>]
+		Keep only the earliest N revisions per post. Newer revisions will be deleted.
+
+	[--yes]
+		Skip confirmation prompt.
+
+**EXAMPLES**
+
+    # Delete all but the latest 5 revisions for post 123
+    $ wp post revision prune 123 --latest=5
+    Success: Deleted 3 revisions for post 123.
+
+    # Delete all but the latest 5 revisions for all posts
+    $ wp post revision prune --latest=5
+    Success: Deleted 150 revisions across 30 posts.
+
+    # Delete all but the earliest 2 revisions for posts 123 and 456
+    $ wp post revision prune 123 456 --earliest=2
+    Success: Deleted 5 revisions for post 123.
+    Success: Deleted 3 revisions for post 456.
+
+
+
+### wp post revision restore
+
+Restores a post revision.
+
+~~~
+wp post revision restore <revision_id>
+~~~
+
+**OPTIONS**
+
+	<revision_id>
+		The revision ID to restore.
+
+**EXAMPLES**
+
+    # Restore a post revision
+    $ wp post revision restore 123
+    Success: Restored revision 123.
 
 
 
@@ -4620,6 +5239,81 @@ WP_CLI::add_hook( 'after_invoke:site empty', function(){
 
 
 
+### wp site get
+
+Gets details about a site in a multisite installation.
+
+~~~
+wp site get <site> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<site>
+		Site ID or URL of the site to get. For subdirectory sites, use the full URL (e.g., http://example.com/subdir/).
+
+	[--field=<field>]
+		Instead of returning the whole site, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for the site:
+
+* blog_id
+* url
+* last_updated
+* registered
+
+These fields are optionally available:
+
+* site_id
+* domain
+* path
+* public
+* archived
+* mature
+* spam
+* deleted
+* lang_id
+
+**EXAMPLES**
+
+    # Get site by ID
+    $ wp site get 1
+    +---------+-------------------------+---------------------+---------------------+
+    | blog_id | url                     | last_updated        | registered          |
+    +---------+-------------------------+---------------------+---------------------+
+    | 1       | http://example.com/     | 2025-01-01 12:00:00 | 2025-01-01 12:00:00 |
+    +---------+-------------------------+---------------------+---------------------+
+
+    # Get site URL by site ID
+    $ wp site get 1 --field=url
+    http://example.com/
+
+    # Get site ID by URL
+    $ wp site get http://example.com/subdir/ --field=blog_id
+    2
+
+    # Delete a site by URL
+    $ wp site delete $(wp site get http://example.com/subdir/ --field=blog_id) --yes
+    Success: The site at 'http://example.com/subdir/' was deleted.
+
+
+
 ### wp site list
 
 Lists all sites in a multisite installation.
@@ -5022,6 +5716,251 @@ wp site option
 
 
 
+### wp site option add
+
+Adds a site option.
+
+~~~
+wp site option add <key> [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<key>
+		The name of the site option to add.
+
+	[<value>]
+		The value of the site option to add. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+**EXAMPLES**
+
+    # Create a site option by reading a JSON file
+    $ wp site option add my_option --format=json < config.json
+    Success: Added 'my_option' site option.
+
+
+
+### wp site option delete
+
+Deletes a site option.
+
+~~~
+wp site option delete <key>
+~~~
+
+**OPTIONS**
+
+	<key>
+		Key for the site option.
+
+**EXAMPLES**
+
+    $ wp site option delete my_option
+    Success: Deleted 'my_option' site option.
+
+
+
+### wp site option get
+
+Gets a site option.
+
+~~~
+wp site option get <key> [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<key>
+		Key for the site option.
+
+	[--format=<format>]
+		Get value in a particular format.
+		---
+		default: var_export
+		options:
+		  - var_export
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Get site upload filetypes
+    $ wp site option get upload_filetypes
+    jpg jpeg png gif mov avi mpg
+
+
+
+### wp site option list
+
+Lists site options.
+
+~~~
+wp site option list [--search=<pattern>] [--site_id=<id>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--search=<pattern>]
+		Use wildcards ( * and ? ) to match option name.
+
+	[--site_id=<id>]
+		Limit options to those of a particular site id.
+
+	[--field=<field>]
+		Prints the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields.
+
+	[--format=<format>]
+		The serialization format for the value. total_bytes displays the total size of matching options in bytes.
+		---
+		default: table
+		options:
+		  - table
+		  - json
+		  - csv
+		  - count
+		  - yaml
+		  - total_bytes
+		---
+
+**AVAILABLE FIELDS**
+
+This field will be displayed by default for each matching option:
+
+* meta_key
+* meta_value
+
+These fields are optionally available:
+
+* meta_id
+* site_id
+* size_bytes
+
+**EXAMPLES**
+
+    # List all site options beginning with "i2f_"
+    $ wp site option list --search="i2f_*"
+    +-------------+--------------+
+    | meta_key    | meta_value   |
+    +-------------+--------------+
+    | i2f_version | 0.1.0        |
+    +-------------+--------------+
+
+
+
+### wp site option patch
+
+Updates a nested value in an option.
+
+~~~
+wp site option patch <action> <key> <key-path>... [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<action>
+		Patch action to perform.
+		---
+		options:
+		  - insert
+		  - update
+		  - delete
+		---
+
+	<key>
+		The option name.
+
+	<key-path>...
+		The name(s) of the keys within the value to locate the value to patch.
+
+	[<value>]
+		The new value. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+
+
+### wp site option pluck
+
+Gets a nested value from an option.
+
+~~~
+wp site option pluck <key> <key-path>... [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<key>
+		The option name.
+
+	<key-path>...
+		The name(s) of the keys within the value to locate the value to pluck.
+
+	[--format=<format>]
+		The output format of the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		  - yaml
+
+
+
+### wp site option update
+
+Updates a site option.
+
+~~~
+wp site option update <key> [<value>] [--format=<format>]
+~~~
+
+**Alias:** `set`
+
+**OPTIONS**
+
+	<key>
+		The name of the site option to update.
+
+	[<value>]
+		The new value. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+**EXAMPLES**
+
+    # Update a site option by reading from a file
+    $ wp site option update my_option < value.txt
+    Success: Updated 'my_option' site option.
+
+
+
 ### wp site private
 
 Sets one or more sites as private.
@@ -5372,6 +6311,11 @@ See reference for [taxonomies and their terms](https://wordpress.org/documentati
     $ wp term recount category post_tag
     Success: Updated category term count
     Success: Updated post_tag term count
+
+    # Prune terms with 0 or 1 published posts
+    $ wp term prune post_tag
+    Deleted post_tag 15.
+    Success: Pruned 1 of 5 terms.
 
 
 
@@ -5912,6 +6856,45 @@ wp term meta update <id> <key> [<value>] [--format=<format>]
 
 
 
+### wp term migrate
+
+Migrate a term of a taxonomy to another taxonomy.
+
+~~~
+wp term migrate <term> [--by=<field>] [--from=<taxonomy>] [--to=<taxonomy>]
+~~~
+
+**OPTIONS**
+
+	<term>
+		Slug or ID of the term to migrate.
+
+	[--by=<field>]
+		Explicitly handle the term value as a slug or id.
+		---
+		default: id
+		options:
+		  - slug
+		  - id
+		---
+
+	[--from=<taxonomy>]
+		Taxonomy slug of the term to migrate.
+
+	[--to=<taxonomy>]
+		Taxonomy slug to migrate to.
+
+**EXAMPLES**
+
+    # Migrate a category's term (video) to tag taxonomy.
+    $ wp term migrate 9190 --from=category --to=post_tag
+    Term 'video' assigned to post 1155.
+    Term 'video' migrated.
+    Old instance of term 'video' removed from its original taxonomy.
+    Success: Migrated the term 'video' from taxonomy 'category' to taxonomy 'post_tag' for 1 post.
+
+
+
 ### wp term recount
 
 Recalculates number of posts assigned to each term.
@@ -5946,6 +6929,47 @@ to bring the count back to the correct value.
     Success: Updated nav_menu term count.
     Success: Updated link_category term count.
     Success: Updated post_format term count.
+
+
+
+### wp term prune
+
+Removes terms with 0 or 1 published posts from one or more taxonomies.
+
+~~~
+wp term prune <taxonomy>... [--dry-run]
+~~~
+
+Useful for cleaning up large sites with many unused or barely-used terms.
+The term count is based on the number of published posts assigned to each
+term.
+
+**OPTIONS**
+
+	<taxonomy>...
+		One or more taxonomies to prune.
+
+	[--dry-run]
+		Preview the terms to be pruned, without actually deleting them.
+
+**EXAMPLES**
+
+    # Prune post tags with 0 or 1 published posts.
+    $ wp term prune post_tag
+    Deleted post_tag 15.
+    Success: Pruned 1 of 5 terms.
+
+    # Dry run to preview which terms would be pruned.
+    $ wp term prune post_tag --dry-run
+    Would delete post_tag 15.
+    Success: 1 post_tag term would be pruned.
+
+    # Prune multiple taxonomies at once.
+    $ wp term prune category post_tag
+    Deleted category 8.
+    Success: Pruned 1 of 3 terms.
+    Deleted post_tag 15.
+    Success: Pruned 1 of 5 terms.
 
 
 
@@ -6404,6 +7428,39 @@ wp user application-password update <user> <uuid> [--<field>=<value>]
     # Update an existing application password
     $ wp user application-password update 123 6633824d-c1d7-4f79-9dd5-4586f734d69e --name=newappname
     Success: Updated application password.
+
+
+
+### wp user check-password
+
+Checks if a user's password is valid or not.
+
+~~~
+wp user check-password <user> <user_pass> [--escape-chars]
+~~~
+
+**OPTIONS**
+
+	<user>
+		The user login, user email or user ID of the user to check credentials for.
+
+	<user_pass>
+		A string that contains the plain text password for the user.
+
+	[--escape-chars]
+		Escape password with `wp_slash()` to mimic the same behavior as `wp-login.php`.
+
+**EXAMPLES**
+
+    # Check whether given credentials are valid; exit status 0 if valid, otherwise 1
+    $ wp user check-password admin adminpass
+    $ echo $?
+    1
+
+    # Bash script for checking whether given credentials are valid or not
+    if ! $(wp user check-password admin adminpass); then
+     notify-send "Invalid Credentials";
+    fi
 
 
 
@@ -7169,15 +8226,25 @@ wp user remove-role <user> [<role>...]
 		User ID, user email, or user login.
 
 	[<role>...]
-		Remove the specified role(s) from the user.
+		Remove the specified role(s) from the user. If not passed, all roles are
+		removed from the user; on multisite, this removes the user from the current
+		site/blog.
 
 **EXAMPLES**
 
     $ wp user remove-role 12 author
-    Success: Removed 'author' role for johndoe (12).
+    Success: Removed 'author' role from johndoe (12).
 
     $ wp user remove-role 12 author editor
-    Success: Removed 'author', 'editor' roles for johndoe (12).
+    Success: Removed 'author', 'editor' roles from johndoe (12).
+
+    # On single-site: removes all roles from the user
+    $ wp user remove-role 12
+    Success: Removed all roles from johndoe (12) on http://example.com.
+
+    # On multisite: removes the user from the current site/blog
+    $ wp user remove-role 12
+    Success: Removed johndoe (12) from http://example.com.
 
 
 
