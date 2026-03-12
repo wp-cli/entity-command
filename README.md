@@ -5063,13 +5063,20 @@ wp site archive [<id>...] [--slug=<slug>]
 Creates a site in a multisite installation.
 
 ~~~
-wp site create --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
+wp site create [--slug=<slug>] [--site-url=<url>] [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
 ~~~
 
 **OPTIONS**
 
-	--slug=<slug>
+	[--slug=<slug>]
 		Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
+		Required if --site-url is not provided.
+
+	[--site-url=<url>]
+		Full URL for the new site. Use this to specify a custom domain instead of the auto-generated one.
+		For subdomain installs, this allows you to use a different base domain (e.g., 'http://site.example.com' instead of 'http://site.main.example.com').
+		For subdirectory installs, this allows you to use a different path.
+		If provided, --slug is optional and will be derived from the URL. If both --slug and --site-url are provided, --slug will be used as the base for internal operations (like user creation), while the domain/path from --site-url will be used for the actual site URL.
 
 	[--title=<title>]
 		Title of the new site. Default: prettified slug.
@@ -5088,8 +5095,17 @@ wp site create --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<
 
 **EXAMPLES**
 
+    # Create a site with auto-generated domain
     $ wp site create --slug=example
     Success: Site 3 created: http://www.example.com/example/
+
+    # Create a site with a custom domain (subdomain multisite)
+    $ wp site create --site-url=http://site.example.com
+    Success: Site 4 created: http://site.example.com/
+
+    # Create a site with a custom subdirectory (subdirectory multisite)
+    $ wp site create --site-url=http://example.com/custom/path/
+    Success: Site 5 created: http://example.com/custom/path/
 
 
 
