@@ -8,13 +8,13 @@ Feature: Manage WordPress taxonomies
     When I run `wp taxonomy list --format=csv`
     Then STDOUT should be CSV containing:
       | name     | label      | description | object_type | show_tagcloud | hierarchical | public |
-      | category | Categories |             | post        | 1             | 1            | 1      |
-      | post_tag | Tags       |             | post        | 1             |              | 1      |
+      | category | Categories |             | post        | true          | true         | true   |
+      | post_tag | Tags       |             | post        | true          | false        | true   |
 
     When I run `wp taxonomy list --object_type=nav_menu_item --format=csv`
     Then STDOUT should be CSV containing:
       | name     | label            | description | object_type   | show_tagcloud | hierarchical | public |
-      | nav_menu | Navigation Menus |             | nav_menu_item |               |              |        |
+      | nav_menu | Navigation Menus |             | nav_menu_item | false         | false        | false  |
 
   @require-wp-5.0
   Scenario: Listing taxonomies with counts
@@ -75,17 +75,17 @@ Feature: Manage WordPress taxonomies
     When I run `wp taxonomy list --object_type=post --strict`
     Then STDOUT should be a table containing rows:
       | name        | label      | description | object_type | show_tagcloud | hierarchical | public |
-      | category    | Categories |             | post        | 1             | 1            | 1      |
-      | post_tag    | Tags       |             | post        | 1             |              | 1      |
-      | post_format | Formats    |             | post        |               |              | 1      |
+      | category    | Categories |             | post        | true          | true         | true   |
+      | post_tag    | Tags       |             | post        | true          | false        | true   |
+      | post_format | Formats    |             | post        | false         | false        | true   |
 
     When I run `wp taxonomy list --object_type=post --no-strict`
     Then STDOUT should be a table containing rows:
       | name        | label      | description | object_type | show_tagcloud | hierarchical | public |
-      | category    | Categories |             | post        | 1             | 1            | 1      |
-      | post_tag    | Tags       |             | post        | 1             |              | 1      |
-      | post_format | Formats    |             | post        |               |              | 1      |
-      | genres      | Genres     |             | post, page  | 1             | 1            | 1      |
+      | category    | Categories |             | post        | true          | true         | true   |
+      | post_tag    | Tags       |             | post        | true          | false        | true   |
+      | post_format | Formats    |             | post        | false         | false        | true   |
+      | genres      | Genres     |             | post, page  | true          | true         | true   |
 
   @less-than-wp-5.1
   Scenario: Listing taxonomies with strict/no-strict mode (for WP < 5.1)
@@ -115,14 +115,14 @@ Feature: Manage WordPress taxonomies
     When I run `wp taxonomy list --object_type=post --strict`
     Then STDOUT should be a table containing rows:
       | name        | label      | description | object_type | show_tagcloud | hierarchical | public |
-      | category    | Categories |             | post        | 1             | 1            | 1      |
-      | post_tag    | Tags       |             | post        | 1             |              | 1      |
-      | post_format | Format     |             | post        |               |              | 1      |
+      | category    | Categories |             | post        | true          | true         | true   |
+      | post_tag    | Tags       |             | post        | true          | false        | true   |
+      | post_format | Format     |             | post        | false         | false        | true   |
 
     When I run `wp taxonomy list --object_type=post --no-strict`
     Then STDOUT should be a table containing rows:
       | name        | label      | description | object_type | show_tagcloud | hierarchical | public |
-      | category    | Categories |             | post        | 1             | 1            | 1      |
-      | post_tag    | Tags       |             | post        | 1             |              | 1      |
-      | post_format | Format     |             | post        |               |              | 1      |
-      | genres      | Genres     |             | post, page  | 1             | 1            | 1      |
+      | category    | Categories |             | post        | true          | true         | true   |
+      | post_tag    | Tags       |             | post        | true          | false        | true   |
+      | post_format | Format     |             | post        | false         | false        | true   |
+      | genres      | Genres     |             | post, page  | true          | true         | true   |
