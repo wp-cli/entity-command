@@ -616,22 +616,16 @@ class Site_Command extends CommandWithDBObject {
 					// Sanitize and lowercase the derived base
 					$base = strtolower( $base );
 				} else {
-					// For subdirectory installs, use the path as the base
-					$base = trim( $custom_path, '/' );
-					// Use the last part of the path if there are multiple segments
-					if ( ! empty( $base ) ) {
-						$path_parts = explode( '/', $base );
-						$last_part  = array_pop( $path_parts );
-						if ( null !== $last_part && '' !== $last_part ) {
-							$base = $last_part;
-						}
-					}
-					// If base is empty (root path), require explicit slug
+					// For subdirectory installs, derive slug from the last part of the path.
+					$path_parts = array_filter( explode( '/', trim( $custom_path, '/' ) ) );
+					$base       = (string) array_pop( $path_parts );
+
+					// If base is empty (root path), require explicit slug.
 					if ( empty( $base ) ) {
 						WP_CLI::error( 'Could not derive a valid slug from the URL path. Please provide --slug explicitly.' );
 					}
 
-					// Sanitize and lowercase the derived base
+					// Sanitize and lowercase the derived base.
 					$base = strtolower( $base );
 				}
 			} else {
