@@ -684,29 +684,25 @@ class Site_Command extends CommandWithDBObject {
 			}
 		}
 
-		if ( is_subdomain_install() ) {
-			if ( null !== $custom_domain ) {
-				// Use custom domain if provided via --site-url
-				$newdomain = $custom_domain;
-				$path      = $custom_path;
-			} else {
-				// Use default behavior
-				$newdomain = $base . '.' . preg_replace( '|^www\.|', '', $current_site->domain );
-				$path      = $current_site->path;
-			}
-		} elseif ( null !== $custom_domain ) {
-			// Use custom domain and path if provided via --site-url
+		if ( null !== $custom_domain ) {
+			// A custom site URL was provided.
 			$newdomain = $custom_domain;
 			$path      = $custom_path;
 
-			// Warn if using a different domain in subdirectory install
-			$network_domain           = preg_replace( '|^www\.|', '', $current_site->domain );
-			$custom_domain_normalized = preg_replace( '|^www\.|', '', $custom_domain );
-			if ( $custom_domain_normalized !== $network_domain ) {
-				WP_CLI::warning( 'Using a different domain for a subdirectory multisite install may require additional configuration (such as domain mapping) to work properly.' );
+			// For subdirectory installs, warn if the domain is different from the network's domain.
+			if ( ! is_subdomain_install() ) {
+				$network_domain           = preg_replace( '|^www\.|', '', $current_site->domain );
+				$custom_domain_normalized = preg_replace( '|^www\.|', '', $custom_domain );
+				if ( $custom_domain_normalized !== $network_domain ) {
+					WP_CLI::warning( 'Using a different domain for a subdirectory multisite install may require additional configuration (such as domain mapping) to work properly.' );
+				}
 			}
+		} elseif ( is_subdomain_install() ) {
+			// No custom site URL, use the slug to generate the domain/path for subdomain install.
+			$newdomain = $base . '.' . preg_replace( '|^www\.|', '', $current_site->domain );
+			$path      = $current_site->path;
 		} else {
-			// Use default behavior
+			// No custom site URL, use the slug to generate the domain/path for subdirectory install.
 			$newdomain = $current_site->domain;
 			$path      = $current_site->path . $base . '/';
 		}
