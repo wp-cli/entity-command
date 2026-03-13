@@ -122,6 +122,8 @@ class Post_Command extends CommandWithDBObject {
 	 * [--tax_input=<tax_input>]
 	 * : Array of taxonomy terms keyed by their taxonomy name. Default empty.
 	 *
+	 *   Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
+	 *
 	 * [--meta_input=<meta_input>]
 	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
 	 *
@@ -212,7 +214,41 @@ class Post_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $params ) {
-				return wp_insert_post( $params, true );
+				$filter_callback = null;
+
+				if ( 0 === get_current_user_id() && ! empty( $params['tax_input'] ) ) {
+					$allowed_caps = [];
+					/**
+					 * @var string $taxonomy
+					 */
+					foreach ( array_keys( $params['tax_input'] ) as $taxonomy ) {
+						$tax_obj = get_taxonomy( $taxonomy );
+						if ( $tax_obj ) {
+							$primitive_caps = map_meta_cap( $tax_obj->cap->assign_terms, 0 );
+							$allowed_caps   = array_merge( $allowed_caps, $primitive_caps );
+						}
+					}
+
+					if ( ! empty( $allowed_caps ) ) {
+						$filter_callback = function ( $allcaps, $caps ) use ( $allowed_caps ) {
+							foreach ( $caps as $cap ) {
+								if ( in_array( $cap, $allowed_caps, true ) ) {
+									$allcaps[ $cap ] = true;
+								}
+							}
+							return $allcaps;
+						};
+						add_filter( 'user_has_cap', $filter_callback, 10, 2 );
+					}
+				}
+
+				$result = wp_insert_post( $params, true );
+
+				if ( $filter_callback ) {
+					remove_filter( 'user_has_cap', $filter_callback );
+				}
+
+				return $result;
 			}
 		);
 	}
@@ -297,6 +333,8 @@ class Post_Command extends CommandWithDBObject {
 	 * [--tax_input=<tax_input>]
 	 * : Array of taxonomy terms keyed by their taxonomy name. Default empty.
 	 *
+	 *   Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
+	 *
 	 * [--meta_input=<meta_input>]
 	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
 	 *
@@ -348,7 +386,7 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		$array_arguments = [ 'meta_input' ];
+		$array_arguments = [ 'meta_input', 'tax_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		$assoc_args = wp_slash( $assoc_args );
@@ -356,7 +394,41 @@ class Post_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $params ) {
-				return wp_update_post( $params, true );
+				$filter_callback = null;
+
+				if ( 0 === get_current_user_id() && ! empty( $params['tax_input'] ) ) {
+					$allowed_caps = [];
+					/**
+					 * @var string $taxonomy
+					 */
+					foreach ( array_keys( $params['tax_input'] ) as $taxonomy ) {
+						$tax_obj = get_taxonomy( $taxonomy );
+						if ( $tax_obj ) {
+							$primitive_caps = map_meta_cap( $tax_obj->cap->assign_terms, 0 );
+							$allowed_caps   = array_merge( $allowed_caps, $primitive_caps );
+						}
+					}
+
+					if ( ! empty( $allowed_caps ) ) {
+						$filter_callback = function ( $allcaps, $caps ) use ( $allowed_caps ) {
+							foreach ( $caps as $cap ) {
+								if ( in_array( $cap, $allowed_caps, true ) ) {
+									$allcaps[ $cap ] = true;
+								}
+							}
+							return $allcaps;
+						};
+						add_filter( 'user_has_cap', $filter_callback, 10, 2 );
+					}
+				}
+
+				$result = wp_update_post( $params, true );
+
+				if ( $filter_callback ) {
+					remove_filter( 'user_has_cap', $filter_callback );
+				}
+
+				return $result;
 			}
 		);
 	}

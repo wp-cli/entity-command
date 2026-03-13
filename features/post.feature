@@ -440,6 +440,17 @@ Feature: Manage WordPress posts
       | Second Category | category |
       | Term One        | post_tag |
       | Term Two        | post_tag |
+    When I run `wp post update {POST_ID} --tax_input='{"category":[{CAT_1}],"post_tag":["term-one"]}'`
+    Then STDOUT should contain:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post term list {POST_ID} category post_tag --format=table --fields=name,taxonomy`
+    Then STDOUT should be a table containing rows:
+      | name           | taxonomy |
+      | First Category | category |
+      | Term One       | post_tag |
 
   Scenario: Update categories on a post
     When I run `wp term create category "Test Category" --porcelain`
