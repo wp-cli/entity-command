@@ -3,7 +3,7 @@ wp-cli/entity-command
 
 Manage WordPress comments, menus, options, posts, sites, terms, and users.
 
-[![Testing](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml)
+[![Testing](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/entity-command/actions/workflows/testing.yml) [![Code Coverage](https://codecov.io/gh/wp-cli/entity-command/branch/main/graph/badge.svg)](https://codecov.io/gh/wp-cli/entity-command/tree/main)
 
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 
@@ -37,6 +37,34 @@ wp comment
     $ wp comment delete $(wp comment list --status=spam --format=ids)
     Success: Trashed comment 264.
     Success: Trashed comment 262.
+
+    # Create a note for a block (WordPress 6.9+).
+    $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
+    Success: Created comment 945.
+
+    # List notes for a specific post (WordPress 6.9+).
+    $ wp comment list --type=note --post_id=15
+    +------------+---------------------+----------------------------------+
+    | comment_ID | comment_date        | comment_content                  |
+    +------------+---------------------+----------------------------------+
+    | 945        | 2024-11-10 14:30:00 | This block needs revision        |
+    +------------+---------------------+----------------------------------+
+
+    # Reply to a note (WordPress 6.9+).
+    $ wp comment create --comment_post_ID=15 --comment_content="Updated per feedback" --comment_author="editor" --comment_type="note" --comment_parent=945
+    Success: Created comment 946.
+
+    # Resolve a note by adding a comment with status meta (WordPress 6.9+).
+    $ wp comment create --comment_post_ID=15 --comment_content="Resolving" --comment_author="editor" --comment_type="note" --comment_parent=945 --porcelain
+    947
+    $ wp comment meta add 947 _wp_note_status resolved
+    Success: Added custom field.
+
+    # Reopen a resolved note (WordPress 6.9+).
+    $ wp comment create --comment_post_ID=15 --comment_content="Reopening for further review" --comment_author="editor" --comment_type="note" --comment_parent=945 --porcelain
+    948
+    $ wp comment meta add 948 _wp_note_status reopen
+    Success: Added custom field.
 
 
 
@@ -119,6 +147,10 @@ wp comment create [--<field>=<value>] [--porcelain]
     # Create comment.
     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
     Success: Created comment 932.
+
+    # Create a note (WordPress 6.9+).
+    $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
+    Success: Created comment 933.
 
 
 
@@ -367,6 +399,15 @@ These fields are optionally available:
     | 3          | 2023-11-10 11:22:31 | John Doe       |
     +------------+---------------------+----------------+
 
+    # List notes for a specific post (WordPress 6.9+).
+    $ wp comment list --type=note --post_id=15 --fields=ID,comment_date,comment_content
+    +------------+---------------------+----------------------------------+
+    | comment_ID | comment_date        | comment_content                  |
+    +------------+---------------------+----------------------------------+
+    | 10         | 2024-11-10 14:30:00 | This block needs revision        |
+    | 11         | 2024-11-10 15:45:00 | Updated per feedback             |
+    +------------+---------------------+----------------------------------+
+
 
 
 ### wp comment meta
@@ -458,7 +499,7 @@ wp comment meta delete <id> [<key>] [<value>] [--all]
 Get meta field value.
 
 ~~~
-wp comment meta get <id> <key> [--format=<format>]
+wp comment meta get <id> <key> [--single] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -468,6 +509,9 @@ wp comment meta get <id> <key> [--format=<format>]
 
 	<key>
 		The name of the meta field to get.
+
+	[--single]
+		Whether to return a single value.
 
 	[--format=<format>]
 		Get value in a particular format.
@@ -615,6 +659,8 @@ Update a meta field.
 ~~~
 wp comment meta update <id> <key> [<value>] [--format=<format>]
 ~~~
+
+**Alias:** `set`
 
 **OPTIONS**
 
@@ -806,6 +852,427 @@ wp comment update <id>... --<field>=<value>
     # Update comment.
     $ wp comment update 123 --comment_author='That Guy'
     Success: Updated comment 123.
+
+
+
+### wp font
+
+Manages WordPress fonts.
+
+~~~
+wp font
+~~~
+
+**EXAMPLES**
+
+    # List all font collections
+    $ wp font collection list
+
+    # Install a font family from a collection
+    $ wp font family install google-fonts inter
+
+    # List installed font families
+    $ wp post list --post_type=wp_font_family
+
+    # List installed font faces
+    $ wp post list --post_type=wp_font_face
+
+
+
+### wp font collection
+
+Manages font collections.
+
+~~~
+wp font collection
+~~~
+
+Font collections are predefined sets of fonts that can be used in WordPress.
+Collections are registered by WordPress core or themes and cannot be created
+or deleted via the command line.
+
+**EXAMPLES**
+
+    # List all font collections
+    $ wp font collection list
+    +------------------+-------------------+---------+
+    | slug             | name              | count   |
+    +------------------+-------------------+---------+
+    | google-fonts     | Google Fonts      | 1500    |
+    +------------------+-------------------+---------+
+
+    # Get details about a specific font collection
+    $ wp font collection get google-fonts
+    +-------+------------------+
+    | Field | Value            |
+    +-------+------------------+
+    | slug  | google-fonts     |
+    | name  | Google Fonts     |
+    +-------+------------------+
+
+
+
+### wp font collection get
+
+Gets details about a registered font collection.
+
+~~~
+wp font collection get <slug> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+	[--field=<field>]
+		Instead of returning the whole collection, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for the specified collection:
+
+* slug
+* name
+* description
+* categories
+
+**EXAMPLES**
+
+    # Get details of a specific collection
+    $ wp font collection get google-fonts
+    +-------+------------------+
+    | Field | Value            |
+    +-------+------------------+
+    | slug  | google-fonts     |
+    | name  | Google Fonts     |
+    +-------+------------------+
+
+    # Get the name field only
+    $ wp font collection get google-fonts --field=name
+    Google Fonts
+
+
+
+### wp font collection is-registered
+
+Checks if a font collection is registered.
+
+~~~
+wp font collection is-registered <slug>
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+**EXAMPLES**
+
+    # Bash script for checking if a font collection is registered, with fallback.
+
+    if wp font collection is-registered google-fonts 2>/dev/null; then
+        # Font collection is registered. Do something.
+    else
+        # Fallback if collection is not registered.
+    fi
+
+
+
+### wp font collection list
+
+Lists registered font collections.
+
+~~~
+wp font collection list [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--field=<field>]
+		Prints the value of a single field for each collection.
+
+	[--fields=<fields>]
+		Limit the output to specific collection fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each collection:
+
+* slug
+* name
+* description
+* categories
+
+**EXAMPLES**
+
+    # List all font collections
+    $ wp font collection list
+    +------------------+-------------------+
+    | slug             | name              |
+    +------------------+-------------------+
+    | google-fonts     | Google Fonts      |
+    +------------------+-------------------+
+
+    # List collections in JSON format
+    $ wp font collection list --format=json
+    [{"slug":"google-fonts","name":"Google Fonts"}]
+
+
+
+### wp font collection list-categories
+
+Lists categories in a collection.
+
+~~~
+wp font collection list-categories <slug> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+	[--field=<field>]
+		Prints the value of a single field for each category.
+
+	[--fields=<fields>]
+		Limit the output to specific category fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+* slug
+* name
+
+**EXAMPLES**
+
+    # List all categories in a collection
+    $ wp font collection list-categories google-fonts
+    +-------------+--------------+
+    | slug        | name         |
+    +-------------+--------------+
+    | sans-serif  | Sans Serif   |
+    | display     | Display      |
+    +-------------+--------------+
+
+
+
+### wp font collection list-families
+
+Lists font families in a collection.
+
+~~~
+wp font collection list-families <slug> [--category=<slug>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Font collection slug.
+
+	[--category=<slug>]
+		Filter by category slug.
+
+	[--field=<field>]
+		Prints the value of a single field for each family.
+
+	[--fields=<fields>]
+		Limit the output to specific family fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+* slug
+* name
+* fontFamily
+* categories
+* preview
+
+**EXAMPLES**
+
+    # List all font families in a collection
+    $ wp font collection list-families google-fonts
+
+    # List font families in a specific category
+    $ wp font collection list-families google-fonts --category=sans-serif
+
+
+
+### wp font face
+
+Manages font faces.
+
+~~~
+wp font face
+~~~
+
+To list, get, create, update or delete font faces, use `wp post` with
+`--post_type=wp_font_face`.
+
+**EXAMPLES**
+
+    # Install a font face for an existing family
+    $ wp font face install 42 --src="https://example.com/font.woff2" --font-weight=700
+    Success: Created font face 43.
+
+    # List installed font faces
+    $ wp post list --post_type=wp_font_face
+
+
+
+### wp font face install
+
+Installs a font face.
+
+~~~
+wp font face install <family-id> --src=<src> [--font-family=<family>] [--font-style=<style>] [--font-weight=<weight>] [--font-display=<display>] [--porcelain]
+~~~
+
+Creates a new font face post with the specified settings.
+
+**OPTIONS**
+
+	<family-id>
+		Font family ID.
+
+	--src=<src>
+		Font face source URL or file path.
+
+	[--font-family=<family>]
+		CSS font-family value.
+
+	[--font-style=<style>]
+		CSS font-style value (e.g., normal, italic).
+		---
+		default: normal
+		---
+
+	[--font-weight=<weight>]
+		CSS font-weight value (e.g., 400, 700).
+		---
+		default: 400
+		---
+
+	[--font-display=<display>]
+		CSS font-display value.
+
+	[--porcelain]
+		Output just the new font face ID.
+
+**EXAMPLES**
+
+    # Install a font face
+    $ wp font face install 42 --src="https://example.com/font.woff2" --font-weight=700 --font-style=normal
+    Success: Created font face 43.
+
+    # Install a font face with porcelain output
+    $ wp font face install 42 --src="font.woff2" --porcelain
+    44
+
+
+
+### wp font family
+
+Manages font families.
+
+~~~
+wp font family
+~~~
+
+To list, get, create, update or delete font families, use `wp post` with
+`--post_type=wp_font_family`.
+
+**EXAMPLES**
+
+    # Install a font family from a collection
+    $ wp font family install google-fonts inter
+    Success: Installed font family "Inter" (ID: 42) with 9 font faces.
+
+    # List installed font families
+    $ wp post list --post_type=wp_font_family
+
+
+
+### wp font family install
+
+Installs a font family from a collection.
+
+~~~
+wp font family install <collection> <family> [--porcelain]
+~~~
+
+Retrieves a font family from a collection and creates the wp_font_family post
+along with all associated font faces.
+
+**OPTIONS**
+
+	<collection>
+		Font collection slug.
+
+	<family>
+		Font family slug from the collection.
+
+	[--porcelain]
+		Output just the new font family ID.
+
+**EXAMPLES**
+
+    # Install a font family from a collection
+    $ wp font family install google-fonts inter
+    Success: Installed font family "Inter" (ID: 42) with 9 font faces.
+
+    # Install and get the family ID
+    $ wp font family install google-fonts roboto --porcelain
+    43
 
 
 
@@ -1081,6 +1548,79 @@ wp menu item delete <db-id>...
 
     $ wp menu item delete 45
     Success: Deleted 1 of 1 menu items.
+
+
+
+### wp menu item get
+
+Gets details about a menu item.
+
+~~~
+wp menu item get <db-id> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<db-id>
+		Database ID for the menu item.
+
+	[--field=<field>]
+		Instead of returning the whole menu item, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to db_id, type, title, link, position.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields are available:
+
+* db_id
+* type
+* title
+* link
+* position
+* menu_item_parent
+* object_id
+* object
+* type_label
+* target
+* attr_title
+* description
+* classes
+* xfn
+
+**EXAMPLES**
+
+    # Get details about a menu item with ID 45
+    $ wp menu item get 45
+    +-------------+----------------------------------+
+    | Field       | Value                            |
+    +-------------+----------------------------------+
+    | db_id       | 45                               |
+    | type        | custom                           |
+    | title       | WordPress                        |
+    | link        | https://wordpress.org            |
+    | position    | 1                                |
+    +-------------+----------------------------------+
+
+    # Get a specific field from a menu item
+    $ wp menu item get 45 --field=title
+    WordPress
+
+    # Get menu item data in JSON format
+    $ wp menu item get 45 --format=json
+    {"db_id":45,"type":"custom","title":"WordPress","link":"https://wordpress.org","position":1}
 
 
 
@@ -1367,6 +1907,24 @@ wp menu location remove <menu> <location>
 
 
 
+### wp network
+
+Perform network-wide operations.
+
+~~~
+wp network
+~~~
+
+**EXAMPLES**
+
+    # Get a list of super-admins
+    $ wp network meta get 1 site_admins
+    array (
+      0 => 'supervisor',
+    )
+
+
+
 ### wp network meta
 
 Gets, adds, updates, deletes, and lists network custom fields.
@@ -1444,7 +2002,7 @@ wp network meta delete <id> [<key>] [<value>] [--all]
 Get meta field value.
 
 ~~~
-wp network meta get <id> <key> [--format=<format>]
+wp network meta get <id> <key> [--single] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -1454,6 +2012,9 @@ wp network meta get <id> <key> [--format=<format>]
 
 	<key>
 		The name of the meta field to get.
+
+	[--single]
+		Whether to return a single value.
 
 	[--format=<format>]
 		Get value in a particular format.
@@ -1602,6 +2163,8 @@ Update a meta field.
 wp network meta update <id> <key> [<value>] [--format=<format>]
 ~~~
 
+**Alias:** `set`
+
 **OPTIONS**
 
 	<id>
@@ -1633,6 +2196,21 @@ wp option
 ~~~
 
 See the [Plugin Settings API](https://developer.wordpress.org/plugins/settings/settings-api/) and the [Theme Options](https://developer.wordpress.org/themes/customize-api/) for more information on adding customized options.
+
+**COMMON OPTIONS**
+
+These are some of the most commonly used WordPress options:
+
+* `siteurl` - Site URL, e.g. http://example.com
+* `blogname` - Site title
+* `blogdescription` - Site tagline
+* `admin_email` - Administration email address
+* `default_role` - Default role for new users
+* `timezone_string` - Local timezone, e.g. "America/New_York"
+* `home` - Home URL, e.g. http://example.com
+* `blog_public` - Discourage search engines when set to 0
+
+For the full list of available options, see the [Option Reference](https://developer.wordpress.org/apis/options/).
 
 **EXAMPLES**
 
@@ -1979,6 +2557,8 @@ Updates an option value.
 ~~~
 wp option update <key> [<value>] [--autoload=<autoload>] [--format=<format>]
 ~~~
+
+**Alias:** `set`
 
 **OPTIONS**
 
@@ -2459,6 +3039,11 @@ wp post get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
     # Save the post content to a file
     $ wp post get 123 --field=content > file.txt
 
+    # Get the block version of a post (1 = has blocks, 0 = no blocks)
+    # Requires WordPress 5.0+.
+    $ wp post get 123 --field=block_version
+    1
+
 
 
 ### wp post list
@@ -2686,7 +3271,7 @@ wp post meta delete <id> [<key>] [<value>] [--all]
 Get meta field value.
 
 ~~~
-wp post meta get <id> <key> [--format=<format>]
+wp post meta get <id> <key> [--single] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -2696,6 +3281,9 @@ wp post meta get <id> <key> [--format=<format>]
 
 	<key>
 		The name of the meta field to get.
+
+	[--single]
+		Whether to return a single value.
 
 	[--format=<format>]
 		Get value in a particular format.
@@ -2844,6 +3432,8 @@ Update a meta field.
 wp post meta update <id> <key> [<value>] [--format=<format>]
 ~~~
 
+**Alias:** `set`
+
 **OPTIONS**
 
 	<id>
@@ -2863,6 +3453,116 @@ wp post meta update <id> <key> [<value>] [--format=<format>]
 		  - plaintext
 		  - json
 		---
+
+
+
+### wp post revision
+
+Manages post revisions.
+
+~~~
+wp post revision
+~~~
+
+**EXAMPLES**
+
+    # Restore a post revision
+    $ wp post revision restore 123
+    Success: Restored revision 123.
+
+    # Show diff between two revisions
+    $ wp post revision diff 123 456
+
+
+
+
+
+### wp post revision diff
+
+Shows the difference between two revisions.
+
+~~~
+wp post revision diff <from> [<to>] [--field=<field>]
+~~~
+
+**OPTIONS**
+
+	<from>
+		The 'from' revision ID or post ID.
+
+	[<to>]
+		The 'to' revision ID or post ID. If not provided, compares with the current post.
+
+	[--field=<field>]
+		Compare specific field(s). Default: post_content
+
+**EXAMPLES**
+
+    # Show diff between two revisions
+    $ wp post revision diff 123 456
+
+    # Show diff between a revision and the current post
+    $ wp post revision diff 123
+
+
+
+### wp post revision prune
+
+Deletes old post revisions.
+
+~~~
+wp post revision prune [<post-id>...] [--latest=<limit>] [--earliest=<limit>] [--yes]
+~~~
+
+**OPTIONS**
+
+	[<post-id>...]
+		One or more post IDs to prune revisions for. If not provided, prunes revisions for all posts.
+
+	[--latest=<limit>]
+		Keep only the latest N revisions per post. Older revisions will be deleted.
+
+	[--earliest=<limit>]
+		Keep only the earliest N revisions per post. Newer revisions will be deleted.
+
+	[--yes]
+		Skip confirmation prompt.
+
+**EXAMPLES**
+
+    # Delete all but the latest 5 revisions for post 123
+    $ wp post revision prune 123 --latest=5
+    Success: Deleted 3 revisions for post 123.
+
+    # Delete all but the latest 5 revisions for all posts
+    $ wp post revision prune --latest=5
+    Success: Deleted 150 revisions across 30 posts.
+
+    # Delete all but the earliest 2 revisions for posts 123 and 456
+    $ wp post revision prune 123 456 --earliest=2
+    Success: Deleted 5 revisions for post 123.
+    Success: Deleted 3 revisions for post 456.
+
+
+
+### wp post revision restore
+
+Restores a post revision.
+
+~~~
+wp post revision restore <revision_id>
+~~~
+
+**OPTIONS**
+
+	<revision_id>
+		The revision ID to restore.
+
+**EXAMPLES**
+
+    # Restore a post revision
+    $ wp post revision restore 123
+    Success: Restored revision 123.
 
 
 
@@ -3195,6 +3895,936 @@ wp post url-to-id <url>
 
 
 
+### wp post has-blocks
+
+Checks if a post contains any blocks.
+
+~~~
+wp post has-blocks <id>
+~~~
+
+Exits with return code 0 if the post contains blocks,
+or return code 1 if it does not.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to check.
+
+**EXAMPLES**
+
+    # Check if post contains blocks.
+    $ wp post has-blocks 123
+    Success: Post 123 contains blocks.
+
+    # Check a classic (non-block) post.
+    $ wp post has-blocks 456
+    Error: Post 456 does not contain blocks.
+
+    # Use in a shell conditional.
+    $ if wp post has-blocks 123 2>/dev/null; then
+    >   echo "Post uses blocks"
+    > fi
+
+
+
+### wp post has-block
+
+Checks if a post contains a specific block type.
+
+~~~
+wp post has-block <id> <block-name>
+~~~
+
+Exits with return code 0 if the post contains the specified block,
+or return code 1 if it does not.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to check.
+
+	<block-name>
+		The block type name to check for (e.g., 'core/paragraph').
+
+**EXAMPLES**
+
+    # Check if post contains a paragraph block.
+    $ wp post has-block 123 core/paragraph
+    Success: Post 123 contains block 'core/paragraph'.
+
+    # Check for a heading block.
+    $ wp post has-block 123 core/heading
+    Success: Post 123 contains block 'core/heading'.
+
+    # Check for a block that doesn't exist.
+    $ wp post has-block 123 core/gallery
+    Error: Post 123 does not contain block 'core/gallery'.
+
+    # Check for a custom block from a plugin.
+    $ wp post has-block 123 my-plugin/custom-block
+
+
+
+### wp post block
+
+Manages blocks within post content.
+
+~~~
+wp post block
+~~~
+
+Provides commands for inspecting, manipulating, and managing
+Gutenberg blocks in post content.
+
+**EXAMPLES**
+
+    # List all blocks in a post.
+    $ wp post block list 123
+    +------------------+-------+
+    | blockName        | count |
+    +------------------+-------+
+    | core/paragraph   | 2     |
+    | core/heading     | 1     |
+    +------------------+-------+
+
+    # Parse blocks in a post to JSON.
+    $ wp post block parse 123 --format=json
+
+    # Insert a paragraph block.
+    $ wp post block insert 123 core/paragraph --content="Hello World"
+
+
+
+
+
+### wp post block clone
+
+Clones a block within a post.
+
+~~~
+wp post block clone <id> <source-index> [--position=<position>] [--porcelain]
+~~~
+
+Duplicates an existing block and inserts it at a specified position.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post.
+
+	<source-index>
+		Index of the block to clone (0-indexed).
+
+	[--position=<position>]
+		Where to insert the cloned block. Accepts 'after', 'before', 'start', 'end', or a numeric index.
+		---
+		default: after
+		---
+
+	[--porcelain]
+		Output just the new block index.
+
+**EXAMPLES**
+
+    # Clone a block and insert immediately after it (default).
+    $ wp post block clone 123 2
+    Success: Cloned block to index 3 in post 123.
+
+    # Clone the first block and insert immediately before it.
+    $ wp post block clone 123 0 --position=before
+    Success: Cloned block to index 0 in post 123.
+
+    # Clone a block and insert at the end of the post.
+    $ wp post block clone 123 0 --position=end
+    Success: Cloned block to index 5 in post 123.
+
+    # Clone a block and insert at the start of the post.
+    $ wp post block clone 123 3 --position=start
+    Success: Cloned block to index 0 in post 123.
+
+    # Clone and get just the new block index for scripting.
+    $ wp post block clone 123 1 --porcelain
+    2
+
+    # Duplicate the hero section (first block) at the end for a footer.
+    $ wp post block clone 123 0 --position=end
+    Success: Cloned block to index 10 in post 123.
+
+
+
+### wp post block count
+
+Counts blocks across multiple posts.
+
+~~~
+wp post block count [<id>...] [--block=<block-name>] [--post-type=<type>] [--post-status=<status>] [--format=<format>]
+~~~
+
+Analyzes block usage across posts for site-wide reporting.
+
+**OPTIONS**
+
+	[<id>...]
+		Optional post IDs. If not specified, queries all posts.
+
+	[--block=<block-name>]
+		Only count specific block type.
+
+	[--post-type=<type>]
+		Limit to specific post type(s). Comma-separated.
+		---
+		default: post,page
+		---
+
+	[--post-status=<status>]
+		Post status to include.
+		---
+		default: publish
+		---
+
+	[--format=<format>]
+		Output format.
+		---
+		default: table
+		options:
+		  - table
+		  - json
+		  - csv
+		  - yaml
+		  - count
+		---
+
+**EXAMPLES**
+
+    # Count all blocks across published posts and pages.
+    $ wp post block count
+    +------------------+-------+-------+
+    | blockName        | count | posts |
+    +------------------+-------+-------+
+    | core/paragraph   | 1542  | 234   |
+    | core/heading     | 523   | 198   |
+    | core/image       | 312   | 156   |
+    +------------------+-------+-------+
+
+    # Count blocks in specific posts only.
+    $ wp post block count 123 456 789
+    +------------------+-------+-------+
+    | blockName        | count | posts |
+    +------------------+-------+-------+
+    | core/paragraph   | 8     | 3     |
+    | core/heading     | 3     | 2     |
+    +------------------+-------+-------+
+
+    # Count only paragraph blocks across the site.
+    $ wp post block count --block=core/paragraph --format=count
+    1542
+
+    # Count blocks in a custom post type.
+    $ wp post block count --post-type=product
+
+    # Count blocks in multiple post types.
+    $ wp post block count --post-type=post,page,product
+
+    # Count blocks including drafts.
+    $ wp post block count --post-status=draft
+
+    # Get count as JSON for further processing.
+    $ wp post block count --format=json
+    [{"blockName":"core/paragraph","count":1542,"posts":234}]
+
+    # Get total number of unique block types used.
+    $ wp post block count --format=count
+    15
+
+
+
+### wp post block export
+
+Exports block content to a file.
+
+~~~
+wp post block export <id> [--file=<file>] [--format=<format>] [--raw]
+~~~
+
+Exports blocks from a post to a file for backup or migration.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to export blocks from.
+
+	[--file=<file>]
+		Output file path. If not specified, outputs to STDOUT.
+
+	[--format=<format>]
+		Export format.
+		---
+		default: json
+		options:
+		  - json
+		  - yaml
+		  - html
+		---
+
+	[--raw]
+		Include innerHTML in JSON/YAML output.
+
+**EXAMPLES**
+
+    # Export blocks to a JSON file for backup.
+    $ wp post block export 123 --file=blocks.json
+    Success: Exported 5 blocks to blocks.json
+
+    # Export blocks to STDOUT as JSON.
+    $ wp post block export 123
+    {
+        "version": "1.0",
+        "generator": "wp-cli/entity-command",
+        "post_id": 123,
+        "exported_at": "2024-12-10T12:00:00+00:00",
+        "blocks": [...]
+    }
+
+    # Export as YAML format.
+    $ wp post block export 123 --format=yaml
+    version: "1.0"
+    generator: wp-cli/entity-command
+    blocks:
+      - blockName: core/paragraph
+        attrs: []
+
+    # Export rendered HTML (final output, not block structure).
+    $ wp post block export 123 --format=html --file=content.html
+    Success: Exported 5 blocks to content.html
+
+    # Export with raw innerHTML included for complete backup.
+    $ wp post block export 123 --raw --file=blocks-full.json
+    Success: Exported 5 blocks to blocks-full.json
+
+    # Pipe export to another command.
+    $ wp post block export 123 | jq '.blocks[].blockName'
+
+
+
+### wp post block extract
+
+Extracts data from blocks.
+
+~~~
+wp post block extract <id> [--block=<block-name>] [--index=<index>] [--attr=<attr>] [--content] [--format=<format>]
+~~~
+
+Extracts specific attribute values or content from blocks for scripting.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post.
+
+	[--block=<block-name>]
+		Filter by block type.
+
+	[--index=<index>]
+		Get from specific block index.
+
+	[--attr=<attr>]
+		Extract specific attribute value.
+
+	[--content]
+		Extract innerHTML content.
+
+	[--format=<format>]
+		Output format.
+		---
+		default: json
+		options:
+		  - json
+		  - yaml
+		  - csv
+		  - ids
+		---
+
+**EXAMPLES**
+
+    # Extract all image IDs from the post (one per line).
+    $ wp post block extract 123 --block=core/image --attr=id --format=ids
+    456
+    789
+    1024
+
+    # Extract all image URLs as JSON array.
+    $ wp post block extract 123 --block=core/image --attr=url --format=json
+    ["https://example.com/img1.jpg","https://example.com/img2.jpg"]
+
+    # Extract text content from all headings.
+    $ wp post block extract 123 --block=core/heading --content --format=ids
+    Introduction
+    Getting Started
+    Conclusion
+
+    # Get the heading level from the first block.
+    $ wp post block extract 123 --index=0 --attr=level --format=ids
+    2
+
+    # Extract all heading levels as CSV.
+    $ wp post block extract 123 --block=core/heading --attr=level --format=csv
+    2,3,3,2
+
+    # Extract paragraph content as YAML.
+    $ wp post block extract 123 --block=core/paragraph --content --format=yaml
+    - "First paragraph text"
+    - "Second paragraph text"
+
+    # Get all button URLs for link checking.
+    $ wp post block extract 123 --block=core/button --attr=url --format=ids
+    https://example.com/signup
+    https://example.com/learn-more
+
+    # Extract cover block image IDs for media audit.
+    $ wp post block extract 123 --block=core/cover --attr=id --format=json
+
+
+
+### wp post block get
+
+Gets a single block by index.
+
+~~~
+wp post block get <id> <index> [--raw] [--format=<format>]
+~~~
+
+Retrieves the full structure of a block at the specified position.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post.
+
+	<index>
+		The block index (0-indexed).
+
+	[--raw]
+		Include innerHTML in output.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: json
+		options:
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Get the first block in a post.
+    $ wp post block get 123 0
+    {
+        "blockName": "core/paragraph",
+        "attrs": {},
+        "innerBlocks": []
+    }
+
+    # Get the third block (index 2) with attributes.
+    $ wp post block get 123 2
+    {
+        "blockName": "core/heading",
+        "attrs": {
+            "level": 2
+        },
+        "innerBlocks": []
+    }
+
+    # Get block as YAML format.
+    $ wp post block get 123 1 --format=yaml
+    blockName: core/image
+    attrs:
+      id: 456
+      sizeSlug: large
+    innerBlocks: []
+
+    # Get block with raw HTML content included.
+    $ wp post block get 123 0 --raw
+    {
+        "blockName": "core/paragraph",
+        "attrs": {},
+        "innerBlocks": [],
+        "innerHTML": "<p>Hello World</p>",
+        "innerContent": ["<p>Hello World</p>"]
+    }
+
+
+
+### wp post block import
+
+Imports blocks from a file into a post.
+
+~~~
+wp post block import <id> [--file=<file>] [--position=<position>] [--replace] [--porcelain]
+~~~
+
+Imports blocks from a JSON or YAML file into a post's content.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to import blocks into.
+
+	[--file=<file>]
+		Input file path. If not specified, reads from STDIN.
+
+	[--position=<position>]
+		Where to insert imported blocks. Accepts 'start', 'end', or a numeric index.
+		---
+		default: end
+		---
+
+	[--replace]
+		Replace all existing blocks instead of appending.
+
+	[--porcelain]
+		Output just the number of blocks imported.
+
+**EXAMPLES**
+
+    # Import blocks from a JSON file, append to end of post.
+    $ wp post block import 123 --file=blocks.json
+    Success: Imported 5 blocks into post 123.
+
+    # Import blocks at the beginning of the post.
+    $ wp post block import 123 --file=blocks.json --position=start
+    Success: Imported 5 blocks into post 123.
+
+    # Replace all existing content with imported blocks.
+    $ wp post block import 123 --file=blocks.json --replace
+    Success: Imported 5 blocks into post 123.
+
+    # Import from STDIN (piped from another command).
+    $ cat blocks.json | wp post block import 123
+    Success: Imported 5 blocks into post 123.
+
+    # Copy blocks from one post to another.
+    $ wp post block export 123 | wp post block import 456
+    Success: Imported 5 blocks into post 456.
+
+    # Import YAML format.
+    $ wp post block import 123 --file=blocks.yaml
+    Success: Imported 3 blocks into post 123.
+
+    # Get just the count of imported blocks for scripting.
+    $ wp post block import 123 --file=blocks.json --porcelain
+    5
+
+
+
+### wp post block insert
+
+Inserts a block into a post at a specified position.
+
+~~~
+wp post block insert <id> <block-name> [--content=<content>] [--attrs=<attrs>] [--position=<position>] [--porcelain]
+~~~
+
+Adds a new block to the post content. By default, the block is
+appended to the end of the post.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to modify.
+
+	<block-name>
+		The block type name (e.g., 'core/paragraph').
+
+	[--content=<content>]
+		The inner content/HTML for the block.
+
+	[--attrs=<attrs>]
+		Block attributes as JSON.
+
+	[--position=<position>]
+		Position to insert the block (0-indexed). Use 'start' or 'end'.
+		---
+		default: end
+		---
+
+	[--porcelain]
+		Output just the post ID.
+
+**EXAMPLES**
+
+    # Insert a paragraph block at the end of the post.
+    $ wp post block insert 123 core/paragraph --content="Hello World"
+    Success: Inserted block into post 123.
+
+    # Insert a level-2 heading at the start.
+    $ wp post block insert 123 core/heading --content="My Title" --attrs='{"level":2}' --position=start
+    Success: Inserted block into post 123.
+
+    # Insert an image block at position 2.
+    $ wp post block insert 123 core/image --attrs='{"id":456,"url":"https://example.com/image.jpg"}' --position=2
+
+    # Insert a separator block.
+    $ wp post block insert 123 core/separator
+
+
+
+### wp post block list
+
+Lists blocks in a post with counts.
+
+~~~
+wp post block list <id> [--nested] [--format=<format>]
+~~~
+
+Displays a summary of block types used in the post and how many
+times each block type appears.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to analyze.
+
+	[--nested]
+		Include nested/inner blocks in the list.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		  - count
+		---
+
+**EXAMPLES**
+
+    # List blocks with counts.
+    $ wp post block list 123
+    +------------------+-------+
+    | blockName        | count |
+    +------------------+-------+
+    | core/paragraph   | 5     |
+    | core/heading     | 2     |
+    | core/image       | 1     |
+    +------------------+-------+
+
+    # List blocks as JSON.
+    $ wp post block list 123 --format=json
+    [{"blockName":"core/paragraph","count":5}]
+
+    # Include nested blocks (e.g., blocks inside columns or groups).
+    $ wp post block list 123 --nested
+
+    # Get the number of unique block types.
+    $ wp post block list 123 --format=count
+    3
+
+
+
+### wp post block move
+
+Moves a block from one position to another.
+
+~~~
+wp post block move <id> <from-index> <to-index> [--porcelain]
+~~~
+
+Reorders blocks within the post by moving a block from one index to another.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post.
+
+	<from-index>
+		Current block index (0-indexed).
+
+	<to-index>
+		Target position index (0-indexed).
+
+	[--porcelain]
+		Output just the post ID.
+
+**EXAMPLES**
+
+    # Move the first block to the third position.
+    $ wp post block move 123 0 2
+    Success: Moved block from index 0 to index 2 in post 123.
+
+    # Move the last block (index 4) to the beginning.
+    $ wp post block move 123 4 0
+    Success: Moved block from index 4 to index 0 in post 123.
+
+    # Move a heading block from position 3 to position 1.
+    $ wp post block move 123 3 1
+    Success: Moved block from index 3 to index 1 in post 123.
+
+    # Move block and get post ID for scripting.
+    $ wp post block move 123 2 0 --porcelain
+    123
+
+
+
+### wp post block parse
+
+Parses and displays the block structure of a post.
+
+~~~
+wp post block parse <id> [--raw] [--format=<format>]
+~~~
+
+Outputs the parsed block structure as JSON or YAML. By default,
+innerHTML is stripped from the output for readability.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to parse.
+
+	[--raw]
+		Include raw innerHTML in output.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: json
+		options:
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Parse blocks to JSON.
+    $ wp post block parse 123
+    [
+        {
+            "blockName": "core/paragraph",
+            "attrs": {}
+        }
+    ]
+
+    # Parse blocks to YAML format.
+    $ wp post block parse 123 --format=yaml
+    -
+      blockName: core/paragraph
+      attrs: {  }
+
+    # Parse blocks including raw HTML content.
+    $ wp post block parse 123 --raw
+
+
+
+### wp post block remove
+
+Removes blocks from a post by name or index.
+
+~~~
+wp post block remove <id> [<block-name>] [--index=<index>] [--all] [--porcelain]
+~~~
+
+Removes one or more blocks from the post content. Blocks can be
+removed by their type name or by their position index.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to modify.
+
+	[<block-name>]
+		The block type name to remove (e.g., 'core/paragraph').
+
+	[--index=<index>]
+		Remove block at specific index (0-indexed). Can be comma-separated for multiple indices.
+
+	[--all]
+		Remove all blocks of the specified type.
+
+	[--porcelain]
+		Output just the number of blocks removed.
+
+**EXAMPLES**
+
+    # Remove the first block (index 0).
+    $ wp post block remove 123 --index=0
+    Success: Removed 1 block from post 123.
+
+    # Remove the first paragraph block found.
+    $ wp post block remove 123 core/paragraph
+    Success: Removed 1 block from post 123.
+
+    # Remove all paragraph blocks.
+    $ wp post block remove 123 core/paragraph --all
+    Success: Removed 5 blocks from post 123.
+
+    # Remove blocks at multiple indices.
+    $ wp post block remove 123 --index=0,2,4
+    Success: Removed 3 blocks from post 123.
+
+    # Remove all image blocks and get count.
+    $ wp post block remove 123 core/image --all --porcelain
+    2
+
+
+
+### wp post block replace
+
+Replaces blocks in a post.
+
+~~~
+wp post block replace <id> <old-block-name> <new-block-name> [--attrs=<attrs>] [--content=<content>] [--all] [--porcelain]
+~~~
+
+Replaces blocks of one type with blocks of another type. Can also
+be used to update block attributes without changing the block type.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to modify.
+
+	<old-block-name>
+		The block type name to replace.
+
+	<new-block-name>
+		The new block type name.
+
+	[--attrs=<attrs>]
+		New block attributes as JSON.
+
+	[--content=<content>]
+		New block content. Use '{content}' to preserve original content.
+
+	[--all]
+		Replace all matching blocks. By default, only the first match is replaced.
+
+	[--porcelain]
+		Output just the number of blocks replaced.
+
+**EXAMPLES**
+
+    # Replace the first paragraph block with a heading.
+    $ wp post block replace 123 core/paragraph core/heading
+    Success: Replaced 1 block in post 123.
+
+    # Replace all paragraphs with preformatted blocks, keeping content.
+    $ wp post block replace 123 core/paragraph core/preformatted --content='{content}' --all
+    Success: Replaced 3 blocks in post 123.
+
+    # Change all h2 headings to h3.
+    $ wp post block replace 123 core/heading core/heading --attrs='{"level":3}' --all
+
+    # Replace and get count for scripting.
+    $ wp post block replace 123 core/quote core/pullquote --all --porcelain
+    2
+
+
+
+### wp post block render
+
+Renders blocks from a post to HTML.
+
+~~~
+wp post block render <id> [--block=<block-name>]
+~~~
+
+Outputs the rendered HTML of blocks in a post. This uses WordPress's
+block rendering system to produce the final HTML output.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post to render.
+
+	[--block=<block-name>]
+		Only render blocks of this type.
+
+**EXAMPLES**
+
+    # Render all blocks to HTML.
+    $ wp post block render 123
+    <p>Hello World</p>
+    <h2>My Heading</h2>
+
+    # Render only paragraph blocks.
+    $ wp post block render 123 --block=core/paragraph
+    <p>Hello World</p>
+
+    # Render only heading blocks.
+    $ wp post block render 123 --block=core/heading
+
+
+
+### wp post block update
+
+Updates a block's attributes or content by index.
+
+~~~
+wp post block update <id> <index> [--attrs=<attrs>] [--content=<content>] [--replace-attrs] [--porcelain]
+~~~
+
+Modifies a specific block without changing its type. For blocks where
+attributes are reflected in HTML (like heading levels), the HTML is
+automatically updated to match the new attributes.
+
+**OPTIONS**
+
+	<id>
+		The ID of the post.
+
+	<index>
+		The block index to update (0-indexed).
+
+	[--attrs=<attrs>]
+		Block attributes as JSON. Merges with existing attributes by default.
+
+	[--content=<content>]
+		New innerHTML content for the block.
+
+	[--replace-attrs]
+		Replace all attributes instead of merging.
+
+	[--porcelain]
+		Output just the post ID.
+
+**EXAMPLES**
+
+    # Change a heading from h2 to h3.
+    $ wp post block update 123 0 --attrs='{"level":3}'
+    Success: Updated block at index 0 in post 123.
+
+    # Add alignment to an existing paragraph (merges with existing attrs).
+    $ wp post block update 123 1 --attrs='{"align":"center"}'
+    Success: Updated block at index 1 in post 123.
+
+    # Update the text content of a paragraph block.
+    $ wp post block update 123 2 --content="<p>Updated paragraph text</p>"
+    Success: Updated block at index 2 in post 123.
+
+    # Update both attributes and content at once.
+    $ wp post block update 123 0 --attrs='{"level":2}' --content="<h2>New Heading</h2>"
+    Success: Updated block at index 0 in post 123.
+
+    # Replace all attributes instead of merging (removes existing attrs).
+    $ wp post block update 123 0 --attrs='{"level":4}' --replace-attrs
+    Success: Updated block at index 0 in post 123.
+
+    # Get just the post ID for scripting.
+    $ wp post block update 123 0 --attrs='{"level":2}' --porcelain
+    123
+
+    # Use custom HTML sync logic via the wp_cli_post_block_update_html filter.
+    # Use WP_CLI::add_wp_hook() in a file loaded with --require.
+    $ wp post block update 123 0 --attrs='{"url":"https://example.com"}' --require=my-sync-filters.php
+    Success: Updated block at index 0 in post 123.
+
+
+
 ### wp post-type
 
 Retrieves details on the site's registered post types.
@@ -3433,13 +5063,20 @@ wp site archive [<id>...] [--slug=<slug>]
 Creates a site in a multisite installation.
 
 ~~~
-wp site create --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
+wp site create [--slug=<slug>] [--site-url=<url>] [--title=<title>] [--email=<email>] [--network_id=<network-id>] [--private] [--porcelain]
 ~~~
 
 **OPTIONS**
 
-	--slug=<slug>
+	[--slug=<slug>]
 		Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
+		Required if --site-url is not provided.
+
+	[--site-url=<url>]
+		Full URL for the new site. Use this to specify a custom domain instead of the auto-generated one.
+		For subdomain installs, this allows you to use a different base domain (e.g., 'http://site.example.com' instead of 'http://site.main.example.com').
+		For subdirectory installs, this allows you to use a different path.
+		If provided, --slug is optional and will be derived from the URL. If both --slug and --site-url are provided, --slug will be used as the base for internal operations (like user creation), while the domain/path from --site-url will be used for the actual site URL.
 
 	[--title=<title>]
 		Title of the new site. Default: prettified slug.
@@ -3458,8 +5095,17 @@ wp site create --slug=<slug> [--title=<title>] [--email=<email>] [--network_id=<
 
 **EXAMPLES**
 
+    # Create a site with auto-generated domain
     $ wp site create --slug=example
     Success: Site 3 created: http://www.example.com/example/
+
+    # Create a site with a custom domain (subdomain multisite)
+    $ wp site create --site-url=http://site.example.com
+    Success: Site 4 created: http://site.example.com/
+
+    # Create a site with a custom subdirectory (subdirectory multisite)
+    $ wp site create --site-url=http://example.com/custom/path/
+    Success: Site 5 created: http://example.com/custom/path/
 
 
 
@@ -3606,6 +5252,81 @@ WP_CLI::add_hook( 'after_invoke:site empty', function(){
     $ wp site empty
     Are you sure you want to empty the site at http://www.example.com of all posts, links, comments, and terms? [y/n] y
     Success: The site at 'http://www.example.com' was emptied.
+
+
+
+### wp site get
+
+Gets details about a site in a multisite installation.
+
+~~~
+wp site get <site> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<site>
+		Site ID or URL of the site to get. For subdirectory sites, use the full URL (e.g., http://example.com/subdir/).
+
+	[--field=<field>]
+		Instead of returning the whole site, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for the site:
+
+* blog_id
+* url
+* last_updated
+* registered
+
+These fields are optionally available:
+
+* site_id
+* domain
+* path
+* public
+* archived
+* mature
+* spam
+* deleted
+* lang_id
+
+**EXAMPLES**
+
+    # Get site by ID
+    $ wp site get 1
+    +---------+-------------------------+---------------------+---------------------+
+    | blog_id | url                     | last_updated        | registered          |
+    +---------+-------------------------+---------------------+---------------------+
+    | 1       | http://example.com/     | 2025-01-01 12:00:00 | 2025-01-01 12:00:00 |
+    +---------+-------------------------+---------------------+---------------------+
+
+    # Get site URL by site ID
+    $ wp site get 1 --field=url
+    http://example.com/
+
+    # Get site ID by URL
+    $ wp site get http://example.com/subdir/ --field=blog_id
+    2
+
+    # Delete a site by URL
+    $ wp site delete $(wp site get http://example.com/subdir/ --field=blog_id) --yes
+    Success: The site at 'http://example.com/subdir/' was deleted.
 
 
 
@@ -3796,7 +5517,7 @@ wp site meta delete <id> [<key>] [<value>] [--all]
 Get meta field value.
 
 ~~~
-wp site meta get <id> <key> [--format=<format>]
+wp site meta get <id> <key> [--single] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -3806,6 +5527,9 @@ wp site meta get <id> <key> [--format=<format>]
 
 	<key>
 		The name of the meta field to get.
+
+	[--single]
+		Whether to return a single value.
 
 	[--format=<format>]
 		Get value in a particular format.
@@ -3954,6 +5678,8 @@ Update a meta field.
 wp site meta update <id> <key> [<value>] [--format=<format>]
 ~~~
 
+**Alias:** `set`
+
 **OPTIONS**
 
 	<id>
@@ -4003,6 +5729,251 @@ wp site option
     Success: Deleted 'my_option' site option.
 
 
+
+
+
+### wp site option add
+
+Adds a site option.
+
+~~~
+wp site option add <key> [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<key>
+		The name of the site option to add.
+
+	[<value>]
+		The value of the site option to add. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+**EXAMPLES**
+
+    # Create a site option by reading a JSON file
+    $ wp site option add my_option --format=json < config.json
+    Success: Added 'my_option' site option.
+
+
+
+### wp site option delete
+
+Deletes a site option.
+
+~~~
+wp site option delete <key>
+~~~
+
+**OPTIONS**
+
+	<key>
+		Key for the site option.
+
+**EXAMPLES**
+
+    $ wp site option delete my_option
+    Success: Deleted 'my_option' site option.
+
+
+
+### wp site option get
+
+Gets a site option.
+
+~~~
+wp site option get <key> [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<key>
+		Key for the site option.
+
+	[--format=<format>]
+		Get value in a particular format.
+		---
+		default: var_export
+		options:
+		  - var_export
+		  - json
+		  - yaml
+		---
+
+**EXAMPLES**
+
+    # Get site upload filetypes
+    $ wp site option get upload_filetypes
+    jpg jpeg png gif mov avi mpg
+
+
+
+### wp site option list
+
+Lists site options.
+
+~~~
+wp site option list [--search=<pattern>] [--site_id=<id>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--search=<pattern>]
+		Use wildcards ( * and ? ) to match option name.
+
+	[--site_id=<id>]
+		Limit options to those of a particular site id.
+
+	[--field=<field>]
+		Prints the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields.
+
+	[--format=<format>]
+		The serialization format for the value. total_bytes displays the total size of matching options in bytes.
+		---
+		default: table
+		options:
+		  - table
+		  - json
+		  - csv
+		  - count
+		  - yaml
+		  - total_bytes
+		---
+
+**AVAILABLE FIELDS**
+
+This field will be displayed by default for each matching option:
+
+* meta_key
+* meta_value
+
+These fields are optionally available:
+
+* meta_id
+* site_id
+* size_bytes
+
+**EXAMPLES**
+
+    # List all site options beginning with "i2f_"
+    $ wp site option list --search="i2f_*"
+    +-------------+--------------+
+    | meta_key    | meta_value   |
+    +-------------+--------------+
+    | i2f_version | 0.1.0        |
+    +-------------+--------------+
+
+
+
+### wp site option patch
+
+Updates a nested value in an option.
+
+~~~
+wp site option patch <action> <key> <key-path>... [<value>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<action>
+		Patch action to perform.
+		---
+		options:
+		  - insert
+		  - update
+		  - delete
+		---
+
+	<key>
+		The option name.
+
+	<key-path>...
+		The name(s) of the keys within the value to locate the value to patch.
+
+	[<value>]
+		The new value. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+
+
+### wp site option pluck
+
+Gets a nested value from an option.
+
+~~~
+wp site option pluck <key> <key-path>... [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<key>
+		The option name.
+
+	<key-path>...
+		The name(s) of the keys within the value to locate the value to pluck.
+
+	[--format=<format>]
+		The output format of the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		  - yaml
+
+
+
+### wp site option update
+
+Updates a site option.
+
+~~~
+wp site option update <key> [<value>] [--format=<format>]
+~~~
+
+**Alias:** `set`
+
+**OPTIONS**
+
+	<key>
+		The name of the site option to update.
+
+	[<value>]
+		The new value. If omitted, the value is read from STDIN.
+
+	[--format=<format>]
+		The serialization format for the value.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		---
+
+**EXAMPLES**
+
+    # Update a site option by reading from a file
+    $ wp site option update my_option < value.txt
+    Success: Updated 'my_option' site option.
 
 
 
@@ -4328,7 +6299,7 @@ Manages taxonomy terms and term meta, with create, delete, and list commands.
 wp term
 ~~~
 
-See reference for [taxonomies and their terms](https://codex.wordpress.org/Taxonomies).
+See reference for [taxonomies and their terms](https://wordpress.org/documentation/article/taxonomies).
 
 **EXAMPLES**
 
@@ -4356,6 +6327,11 @@ See reference for [taxonomies and their terms](https://codex.wordpress.org/Taxon
     $ wp term recount category post_tag
     Success: Updated category term count
     Success: Updated post_tag term count
+
+    # Prune terms with 0 or 1 published posts
+    $ wp term prune post_tag
+    Deleted post_tag 15.
+    Success: Pruned 1 of 5 terms.
 
 
 
@@ -4596,6 +6572,7 @@ These fields will be displayed by default for each term:
 
 These fields are optionally available:
 
+* term_group
 * url
 
 **EXAMPLES**
@@ -4710,7 +6687,7 @@ wp term meta delete <id> [<key>] [<value>] [--all]
 Get meta field value.
 
 ~~~
-wp term meta get <id> <key> [--format=<format>]
+wp term meta get <id> <key> [--single] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -4720,6 +6697,9 @@ wp term meta get <id> <key> [--format=<format>]
 
 	<key>
 		The name of the meta field to get.
+
+	[--single]
+		Whether to return a single value.
 
 	[--format=<format>]
 		Get value in a particular format.
@@ -4868,6 +6848,8 @@ Update a meta field.
 wp term meta update <id> <key> [<value>] [--format=<format>]
 ~~~
 
+**Alias:** `set`
+
 **OPTIONS**
 
 	<id>
@@ -4887,6 +6869,45 @@ wp term meta update <id> <key> [<value>] [--format=<format>]
 		  - plaintext
 		  - json
 		---
+
+
+
+### wp term migrate
+
+Migrate a term of a taxonomy to another taxonomy.
+
+~~~
+wp term migrate <term> [--by=<field>] [--from=<taxonomy>] [--to=<taxonomy>]
+~~~
+
+**OPTIONS**
+
+	<term>
+		Slug or ID of the term to migrate.
+
+	[--by=<field>]
+		Explicitly handle the term value as a slug or id.
+		---
+		default: id
+		options:
+		  - slug
+		  - id
+		---
+
+	[--from=<taxonomy>]
+		Taxonomy slug of the term to migrate.
+
+	[--to=<taxonomy>]
+		Taxonomy slug to migrate to.
+
+**EXAMPLES**
+
+    # Migrate a category's term (video) to tag taxonomy.
+    $ wp term migrate 9190 --from=category --to=post_tag
+    Term 'video' assigned to post 1155.
+    Term 'video' migrated.
+    Old instance of term 'video' removed from its original taxonomy.
+    Success: Migrated the term 'video' from taxonomy 'category' to taxonomy 'post_tag' for 1 post.
 
 
 
@@ -4924,6 +6945,47 @@ to bring the count back to the correct value.
     Success: Updated nav_menu term count.
     Success: Updated link_category term count.
     Success: Updated post_format term count.
+
+
+
+### wp term prune
+
+Removes terms with 0 or 1 published posts from one or more taxonomies.
+
+~~~
+wp term prune <taxonomy>... [--dry-run]
+~~~
+
+Useful for cleaning up large sites with many unused or barely-used terms.
+The term count is based on the number of published posts assigned to each
+term.
+
+**OPTIONS**
+
+	<taxonomy>...
+		One or more taxonomies to prune.
+
+	[--dry-run]
+		Preview the terms to be pruned, without actually deleting them.
+
+**EXAMPLES**
+
+    # Prune post tags with 0 or 1 published posts.
+    $ wp term prune post_tag
+    Deleted post_tag 15.
+    Success: Pruned 1 of 5 terms.
+
+    # Dry run to preview which terms would be pruned.
+    $ wp term prune post_tag --dry-run
+    Would delete post_tag 15.
+    Success: 1 post_tag term would be pruned.
+
+    # Prune multiple taxonomies at once.
+    $ wp term prune category post_tag
+    Deleted category 8.
+    Success: Pruned 1 of 3 terms.
+    Deleted post_tag 15.
+    Success: Pruned 1 of 5 terms.
 
 
 
@@ -4984,7 +7046,8 @@ Manages users, along with their roles, capabilities, and meta.
 wp user
 ~~~
 
-See references for [Roles and Capabilities](https://codex.wordpress.org/Roles_and_Capabilities) and [WP User class](https://codex.wordpress.org/Class_Reference/WP_User).
+See references for [Roles and Capabilities](https://wordpress.org/documentation/article/roles-and-capabilities)
+and [WP User class](https://developer.wordpress.org/reference/classes/wp_user).
 
 **EXAMPLES**
 
@@ -5381,6 +7444,39 @@ wp user application-password update <user> <uuid> [--<field>=<value>]
     # Update an existing application password
     $ wp user application-password update 123 6633824d-c1d7-4f79-9dd5-4586f734d69e --name=newappname
     Success: Updated application password.
+
+
+
+### wp user check-password
+
+Checks if a user's password is valid or not.
+
+~~~
+wp user check-password <user> <user_pass> [--escape-chars]
+~~~
+
+**OPTIONS**
+
+	<user>
+		The user login, user email or user ID of the user to check credentials for.
+
+	<user_pass>
+		A string that contains the plain text password for the user.
+
+	[--escape-chars]
+		Escape password with `wp_slash()` to mimic the same behavior as `wp-login.php`.
+
+**EXAMPLES**
+
+    # Check whether given credentials are valid; exit status 0 if valid, otherwise 1
+    $ wp user check-password admin adminpass
+    $ echo $?
+    1
+
+    # Bash script for checking whether given credentials are valid or not
+    if ! $(wp user check-password admin adminpass); then
+     notify-send "Invalid Credentials";
+    fi
 
 
 
@@ -6067,6 +8163,8 @@ Updates a meta field.
 wp user meta update <user> <key> <value> [--format=<format>]
 ~~~
 
+**Alias:** `set`
+
 **OPTIONS**
 
 	<user>
@@ -6100,7 +8198,7 @@ wp user meta update <user> <key> <value> [--format=<format>]
 Removes a user's capability.
 
 ~~~
-wp user remove-cap <user> <cap>
+wp user remove-cap <user> <cap> [--force]
 ~~~
 
 **OPTIONS**
@@ -6110,6 +8208,9 @@ wp user remove-cap <user> <cap>
 
 	<cap>
 		The capability to be removed.
+
+	[--force]
+		Forcefully remove a capability.
 
 **EXAMPLES**
 
@@ -6121,6 +8222,9 @@ wp user remove-cap <user> <cap>
 
     $ wp user remove-cap 11 nonexistent_cap
     Error: No such 'nonexistent_cap' cap for supervisor (11).
+
+    $ wp user remove-cap 11 publish_newsletters --force
+    Success: Removed 'publish_newsletters' cap for supervisor (11).
 
 
 
@@ -6138,15 +8242,25 @@ wp user remove-role <user> [<role>...]
 		User ID, user email, or user login.
 
 	[<role>...]
-		Remove the specified role(s) from the user.
+		Remove the specified role(s) from the user. If not passed, all roles are
+		removed from the user; on multisite, this removes the user from the current
+		site/blog.
 
 **EXAMPLES**
 
     $ wp user remove-role 12 author
-    Success: Removed 'author' role for johndoe (12).
+    Success: Removed 'author' role from johndoe (12).
 
     $ wp user remove-role 12 author editor
-    Success: Removed 'author', 'editor' roles for johndoe (12).
+    Success: Removed 'author', 'editor' roles from johndoe (12).
+
+    # On single-site: removes all roles from the user
+    $ wp user remove-role 12
+    Success: Removed all roles from johndoe (12) on http://example.com.
+
+    # On multisite: removes the user from the current site/blog
+    $ wp user remove-role 12
+    Success: Removed johndoe (12) from http://example.com.
 
 
 
@@ -6476,6 +8590,8 @@ Lists signups.
 ~~~
 wp user signup list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--per_page=<per_page>]
 ~~~
+
+**OPTIONS**
 
 	[--<field>=<value>]
 		Filter the list by a specific field.

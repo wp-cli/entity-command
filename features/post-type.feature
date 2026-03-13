@@ -7,8 +7,8 @@ Feature: Manage WordPress post types
     When I run `wp post-type list --format=csv`
     Then STDOUT should be CSV containing:
       | name | label | description | hierarchical | public | capability_type |
-      | post | Posts |             |              | 1      | post            |
-      | page | Pages |             | 1            | 1      | page            |
+      | post | Posts |             | false        | true   | post            |
+      | page | Pages |             | true         | true   | page            |
 
   @require-wp-5.0
   Scenario: Listing post types with count

@@ -11,6 +11,11 @@ if ( file_exists( $wpcli_entity_autoloader ) ) {
 	require_once $wpcli_entity_autoloader;
 }
 
+// Load the BlockProcessorLoader class (but don't call load() yet).
+// The polyfills will be loaded on-demand by Block_Processor_Helper
+// when needed, ensuring WordPress classes take precedence if available.
+require_once __DIR__ . '/src/Compat/BlockProcessorLoader.php';
+
 WP_CLI::add_command( 'comment', 'Comment_Command' );
 WP_CLI::add_command( 'comment meta', 'Comment_Meta_Command' );
 WP_CLI::add_command( 'menu', 'Menu_Command' );
@@ -29,7 +34,19 @@ WP_CLI::add_command(
 );
 WP_CLI::add_command( 'option', 'Option_Command' );
 WP_CLI::add_command( 'post', 'Post_Command' );
+WP_CLI::add_command(
+	'post block',
+	'Post_Block_Command',
+	array(
+		'before_invoke' => function () {
+			if ( Utils\wp_version_compare( '5.0', '<' ) ) {
+				WP_CLI::error( 'Requires WordPress 5.0 or greater.' );
+			}
+		},
+	)
+);
 WP_CLI::add_command( 'post meta', 'Post_Meta_Command' );
+WP_CLI::add_command( 'post revision', 'Post_Revision_Command' );
 WP_CLI::add_command( 'post term', 'Post_Term_Command' );
 WP_CLI::add_command( 'post-type', 'Post_Type_Command' );
 WP_CLI::add_command( 'site', 'Site_Command' );
@@ -38,11 +55,15 @@ WP_CLI::add_command(
 	'Site_Meta_Command',
 	array(
 		'before_invoke' => function () {
+			/**
+			 * @var \wpdb $wpdb
+			 */
+			global $wpdb;
 			if ( ! is_multisite() ) {
 				WP_CLI::error( 'This is not a multisite installation.' );
 			}
 			if ( ! function_exists( 'is_site_meta_supported' ) || ! is_site_meta_supported() ) {
-				WP_CLI::error( sprintf( 'The %s table is not installed. Please run the network database upgrade.', $GLOBALS['wpdb']->blogmeta ) );
+				WP_CLI::error( sprintf( 'The %s table is not installed. Please run the network database upgrade.', $wpdb->blogmeta ) );
 			}
 		},
 	)
@@ -92,3 +113,19 @@ WP_CLI::add_command(
 		},
 	)
 );
+
+if ( class_exists( 'WP_CLI\Dispatcher\CommandNamespace' ) ) {
+	WP_CLI::add_command( 'font', 'Font_Namespace' );
+}
+
+$wpcli_entity_font_version_check = array(
+	'before_invoke' => function () {
+		if ( Utils\wp_version_compare( '6.5', '<' ) ) {
+			WP_CLI::error( 'Requires WordPress 6.5 or greater.' );
+		}
+	},
+);
+
+WP_CLI::add_command( 'font collection', 'Font_Collection_Command', $wpcli_entity_font_version_check );
+WP_CLI::add_command( 'font family', 'Font_Family_Command', $wpcli_entity_font_version_check );
+WP_CLI::add_command( 'font face', 'Font_Face_Command', $wpcli_entity_font_version_check );

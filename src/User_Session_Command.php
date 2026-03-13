@@ -174,6 +174,7 @@ class User_Session_Command extends WP_CLI_Command {
 		// Make the private session data accessible to WP-CLI
 		$get_sessions = new ReflectionMethod( $manager, 'get_sessions' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$get_sessions->setAccessible( true );
 		}
 
@@ -197,6 +198,7 @@ class User_Session_Command extends WP_CLI_Command {
 	protected function destroy_session( WP_Session_Tokens $manager, $token ) {
 		$update_session = new ReflectionMethod( $manager, 'update_session' );
 		if ( PHP_VERSION_ID < 80100 ) {
+			// @phpstan-ignore method.deprecated
 			$update_session->setAccessible( true );
 		}
 		return $update_session->invoke( $manager, $token, null );

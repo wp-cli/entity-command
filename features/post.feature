@@ -41,21 +41,48 @@ Feature: Manage WordPress posts
       Success: Deleted post {POST_ID}.
       """
 
-    When I try `wp post delete {CUSTOM_POST_ID}`
-    Then STDERR should be:
+    When I run `wp post delete {CUSTOM_POST_ID}`
+    Then STDOUT should be:
       """
-      Warning: Posts of type 'test' do not support being sent to trash.
-      Please use the --force flag to skip trash and delete them permanently.
+      Success: Trashed post {CUSTOM_POST_ID}.
       """
 
-    When I run `wp post delete {CUSTOM_POST_ID} --force`
+    When I run the previous command again
     Then STDOUT should be:
       """
       Success: Deleted post {CUSTOM_POST_ID}.
       """
 
+  Scenario: Force-deleting a custom post type post skips trash
+    When I run `wp post create --post_title='Test CPT post' --post_type='book' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BOOK_POST_ID}
+
+    When I run `wp post delete {BOOK_POST_ID} --force`
+    Then STDOUT should be:
+      """
+      Success: Deleted post {BOOK_POST_ID}.
+      """
+
     When I try the previous command again
     Then the return code should be 1
+
+  Scenario: Deleting already trashed custom post type posts
+    When I run `wp post create --post_title='Test CPT post' --post_type='book' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BOOK_POST_ID}
+
+    When I run `wp post update {BOOK_POST_ID} --post_status='trash'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {BOOK_POST_ID}.
+      """
+
+    When I run `wp post delete {BOOK_POST_ID}`
+    Then STDOUT should be:
+      """
+      Success: Deleted post {BOOK_POST_ID}.
+      """
 
   Scenario: Updating an invalid post should exit with an error
     Given a WP install
@@ -527,4 +554,40 @@ Feature: Manage WordPress posts
     Then STDOUT should contain:
       """
       2005-01-24T09:52:00.000Z
+      """
+
+  @require-wp-5.0
+  Scenario: Get block_version field for post with blocks
+    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello block world</p><!-- /wp:paragraph -->' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=block_version`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+  @require-wp-5.0
+  Scenario: Get block_version field for post without blocks
+    When I run `wp post create --post_title='Classic Post' --post_content='<p>Just plain HTML</p>' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=block_version`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+  @require-wp-5.0
+  Scenario: Get block_version field included in default output
+    When I run `wp post create --post_title='Test Post' --post_content='<!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {"block_version":1}
       """

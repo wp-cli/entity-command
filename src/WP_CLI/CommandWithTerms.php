@@ -103,10 +103,16 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 			$taxonomy_args['fields'] = 'ids';
 		}
 
+		$items = wp_get_object_terms( $object_id, $taxonomy_names, $taxonomy_args );
+
+		// This should never happen because of the taxonomy_exists check above.
+		if ( is_wp_error( $items ) ) {
+			WP_CLI::error( $items );
+		}
+
 		/**
 		 * @var \WP_Term[] $items
 		 */
-		$items = wp_get_object_terms( $object_id, $taxonomy_names, $taxonomy_args );
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );

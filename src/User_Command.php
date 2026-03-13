@@ -9,7 +9,8 @@ use WP_CLI\Utils;
 /**
  * Manages users, along with their roles, capabilities, and meta.
  *
- * See references for [Roles and Capabilities](https://codex.wordpress.org/Roles_and_Capabilities) and [WP User class](https://codex.wordpress.org/Class_Reference/WP_User).
+ * See references for [Roles and Capabilities](https://wordpress.org/documentation/article/roles-and-capabilities)
+ * and [WP User class](https://developer.wordpress.org/reference/classes/wp_user).
  *
  * ## EXAMPLES
  *
@@ -553,6 +554,9 @@ class User_Command extends CommandWithDBObject {
 	 *     # Update user
 	 *     $ wp user update 123 --display_name=Mary --user_pass=marypass
 	 *     Success: Updated user 123.
+	 *
+	 * @param string[] $args Positional arguments. Users to update.
+	 * @param array $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['user_login'] ) ) {
@@ -803,15 +807,25 @@ class User_Command extends CommandWithDBObject {
 	 * : User ID, user email, or user login.
 	 *
 	 * [<role>...]
-	 * : Remove the specified role(s) from the user.
+	 * : Remove the specified role(s) from the user. If not passed, all roles are
+	 * removed from the user; on multisite, this removes the user from the current
+	 * site/blog.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user remove-role 12 author
-	 *     Success: Removed 'author' role for johndoe (12).
+	 *     Success: Removed 'author' role from johndoe (12).
 	 *
 	 *     $ wp user remove-role 12 author editor
-	 *     Success: Removed 'author', 'editor' roles for johndoe (12).
+	 *     Success: Removed 'author', 'editor' roles from johndoe (12).
+	 *
+	 *     # On single-site: removes all roles from the user
+	 *     $ wp user remove-role 12
+	 *     Success: Removed all roles from johndoe (12) on http://example.com.
+	 *
+	 *     # On multisite: removes the user from the current site/blog
+	 *     $ wp user remove-role 12
+	 *     Success: Removed johndoe (12) from http://example.com.
 	 *
 	 * @subcommand remove-role
 	 */
@@ -833,14 +847,14 @@ class User_Command extends CommandWithDBObject {
 			$label   = count( $roles ) > 1 ? 'roles' : 'role';
 			WP_CLI::success( "Removed '{$message}' {$label} from {$user->user_login} ({$user->ID})." );
 		} else {
-			// Multisite
+			$site_url = site_url();
 			if ( function_exists( 'remove_user_from_blog' ) ) {
 				remove_user_from_blog( $user->ID, get_current_blog_id() );
+				WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from {$site_url}." );
 			} else {
 				$user->remove_all_caps();
+				WP_CLI::success( "Removed all roles from {$user->user_login} ({$user->ID}) on {$site_url}." );
 			}
-
-			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() . '.' );
 		}
 	}
 

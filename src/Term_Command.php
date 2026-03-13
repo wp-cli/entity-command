@@ -6,7 +6,7 @@ use WP_CLI\Utils;
 /**
  * Manages taxonomy terms and term meta, with create, delete, and list commands.
  *
- * See reference for [taxonomies and their terms](https://codex.wordpress.org/Taxonomies).
+ * See reference for [taxonomies and their terms](https://wordpress.org/documentation/article/taxonomies).
  *
  * ## EXAMPLES
  *
@@ -34,6 +34,11 @@ use WP_CLI\Utils;
  *     $ wp term recount category post_tag
  *     Success: Updated category term count
  *     Success: Updated post_tag term count
+ *
+ *     # Prune terms with 0 or 1 published posts
+ *     $ wp term prune post_tag
+ *     Deleted post_tag 15.
+ *     Success: Pruned 1 of 5 terms.
  *
  * @package wp-cli
  */
@@ -93,6 +98,7 @@ class Term_Command extends WP_CLI_Command {
 	 *
 	 * These fields are optionally available:
 	 *
+	 * * term_group
 	 * * url
 	 *
 	 * ## EXAMPLES
@@ -139,11 +145,23 @@ class Term_Command extends WP_CLI_Command {
 			$term  = get_term_by( 'id', $assoc_args['term_id'], $args[0] );
 			$terms = [ $term ];
 		} else {
+			$terms = get_terms(
+				array_merge(
+					$assoc_args,
+					[
+						'taxonomy' => $args,
+					]
+				)
+			);
+
+			// This should never happen because of the taxonomy_exists check above.
+			if ( is_wp_error( $terms ) ) {
+				WP_CLI::error( $terms );
+			}
+
 			/**
 			 * @var \WP_Term[] $terms
 			 */
-			// phpcs:ignore WordPress.WP.DeprecatedParameters.Get_termsParam2Found -- Required for backward compatibility.
-			$terms = get_terms( $args, $assoc_args );
 		}
 
 		$terms = array_map(
@@ -211,7 +229,11 @@ class Term_Command extends WP_CLI_Command {
 
 		$assoc_args = wp_slash( $assoc_args );
 		$term       = wp_slash( $term );
-		$result     = wp_insert_term( $term, $taxonomy, $assoc_args );
+
+		/**
+		 * @var string $term
+		 */
+		$result = wp_insert_term( $term, $taxonomy, $assoc_args );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( $result->get_error_message() );
@@ -284,6 +306,7 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "Term doesn't exist." );
 		}
 
+		// @phpstan-ignore property.notFound
 		if ( ! isset( $term->url ) ) {
 			// @phpstan-ignore property.notFound
 			$term->url = get_term_link( $term );
@@ -638,18 +661,113 @@ class Term_Command extends WP_CLI_Command {
 			if ( ! taxonomy_exists( $taxonomy ) ) {
 				WP_CLI::warning( "Taxonomy {$taxonomy} does not exist." );
 			} else {
+				$terms = get_terms(
+					[
+						'taxonomy'   => $taxonomy,
+						'hide_empty' => false,
+					]
+				);
+
+				// This should never happen because of the taxonomy_exists check above.
+				if ( is_wp_error( $terms ) ) {
+					WP_CLI::warning( "Taxonomy {$taxonomy} does not exist." );
+					continue;
+				}
 
 				/**
 				 * @var \WP_Term[] $terms
 				 */
 
-				// phpcs:ignore WordPress.WP.DeprecatedParameters.Get_termsParam2Found -- Required for backward compatibility.
-				$terms             = get_terms( $taxonomy, [ 'hide_empty' => false ] );
 				$term_taxonomy_ids = wp_list_pluck( $terms, 'term_taxonomy_id' );
 
 				wp_update_term_count( $term_taxonomy_ids, $taxonomy );
 
 				WP_CLI::success( "Updated {$taxonomy} term count." );
+			}
+		}
+	}
+
+	/**
+	 * Removes terms with 0 or 1 published posts from one or more taxonomies.
+	 *
+	 * Useful for cleaning up large sites with many unused or barely-used terms.
+	 * The term count is based on the number of published posts assigned to each
+	 * term.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <taxonomy>...
+	 * : One or more taxonomies to prune.
+	 *
+	 * [--dry-run]
+	 * : Preview the terms to be pruned, without actually deleting them.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Prune post tags with 0 or 1 published posts.
+	 *     $ wp term prune post_tag
+	 *     Deleted post_tag 15.
+	 *     Success: Pruned 1 of 5 terms.
+	 *
+	 *     # Dry run to preview which terms would be pruned.
+	 *     $ wp term prune post_tag --dry-run
+	 *     Would delete post_tag 15.
+	 *     Success: 1 post_tag term would be pruned.
+	 *
+	 *     # Prune multiple taxonomies at once.
+	 *     $ wp term prune category post_tag
+	 *     Deleted category 8.
+	 *     Success: Pruned 1 of 3 terms.
+	 *     Deleted post_tag 15.
+	 *     Success: Pruned 1 of 5 terms.
+	 */
+	public function prune( $args, $assoc_args ) {
+		global $wpdb;
+
+		$dry_run = (bool) Utils\get_flag_value( $assoc_args, 'dry-run', false );
+
+		foreach ( $args as $taxonomy ) {
+			if ( ! taxonomy_exists( $taxonomy ) ) {
+				WP_CLI::error( "Taxonomy {$taxonomy} doesn't exist." );
+			}
+
+			$term_ids_to_prune = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT term_id FROM {$wpdb->term_taxonomy} WHERE taxonomy = %s AND count <= 1",
+					$taxonomy
+				)
+			);
+
+			$total     = count( $term_ids_to_prune );
+			$successes = 0;
+			$errors    = 0;
+
+			foreach ( $term_ids_to_prune as $term_id ) {
+				if ( $dry_run ) {
+					WP_CLI::log( "Would delete {$taxonomy} {$term_id}." );
+					++$successes;
+					continue;
+				}
+
+				$result = wp_delete_term( $term_id, $taxonomy );
+
+				if ( is_wp_error( $result ) ) {
+					WP_CLI::warning( $result );
+					++$errors;
+				} elseif ( $result ) {
+					WP_CLI::log( "Deleted {$taxonomy} {$term_id}." );
+					++$successes;
+				} else {
+					WP_CLI::warning( "Term {$term_id} in taxonomy {$taxonomy} doesn't exist." );
+					++$errors;
+				}
+			}
+
+			if ( $dry_run ) {
+				$term_word = Utils\pluralize( 'term', $successes );
+				WP_CLI::success( "{$successes} {$taxonomy} {$term_word} would be pruned." );
+			} else {
+				Utils\report_batch_operation_results( 'term', 'prune', $total, $successes, $errors );
 			}
 		}
 	}

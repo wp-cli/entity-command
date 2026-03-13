@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\CommandWithDBObject;
+use WP_CLI\Entity\Block_Processor_Helper;
 use WP_CLI\Fetchers\Post as PostFetcher;
 use WP_CLI\Fetchers\User as UserFetcher;
 use WP_CLI\Utils;
@@ -423,6 +424,11 @@ class Post_Command extends CommandWithDBObject {
 	 *
 	 *     # Save the post content to a file
 	 *     $ wp post get 123 --field=content > file.txt
+	 *
+	 *     # Get the block version of a post (1 = has blocks, 0 = no blocks)
+	 *     # Requires WordPress 5.0+.
+	 *     $ wp post get 123 --field=block_version
+	 *     1
 	 */
 	public function get( $args, $assoc_args ) {
 		$post = $this->fetcher->get_check( $args[0] );
@@ -432,6 +438,10 @@ class Post_Command extends CommandWithDBObject {
 
 		if ( ! isset( $post_arr['url'] ) ) {
 			$post_arr['url'] = get_permalink( $post->ID );
+		}
+
+		if ( function_exists( 'block_version' ) ) {
+			$post_arr['block_version'] = block_version( $post->post_content );
 		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
@@ -496,22 +506,24 @@ class Post_Command extends CommandWithDBObject {
 		$status    = get_post_status( $post_id );
 		$post_type = get_post_type( $post_id );
 
-		if ( ! $assoc_args['force']
-			&& ( 'post' !== $post_type && 'page' !== $post_type ) ) {
-			return [
-				'error',
-				"Posts of type '{$post_type}' do not support being sent to trash.\n"
-				. 'Please use the --force flag to skip trash and delete them permanently.',
-			];
+		$force_delete = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type;
+
+		if ( $force_delete || ! EMPTY_TRASH_DAYS ) {
+			if ( ! wp_delete_post( $post_id, true ) ) {
+				return [ 'error', "Failed deleting post {$post_id}." ];
+			}
+
+			return [ 'success', "Deleted post {$post_id}." ];
 		}
 
-		if ( ! wp_delete_post( $post_id, $assoc_args['force'] ) ) {
-			return [ 'error', "Failed deleting post {$post_id}." ];
+		// Use wp_trash_post() directly because wp_delete_post() only auto-trashes
+		// 'post' and 'page' types, permanently deleting all other post types even
+		// when $force_delete is false. wp_trash_post() works for all post types.
+		if ( wp_trash_post( $post_id ) ) {
+			return [ 'success', "Trashed post {$post_id}." ];
 		}
 
-		$action = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type ? 'Deleted' : 'Trashed';
-
-		return [ 'success', "{$action} post {$post_id}." ];
+		return [ 'error', "Failed trashing post {$post_id}." ];
 	}
 
 	/**
@@ -767,7 +779,6 @@ class Post_Command extends CommandWithDBObject {
 		$post_data['post_date_gmt'] = $this->maybe_convert_hyphenated_date_format( $post_data['post_date_gmt'] );
 
 		// Add time if the string is a valid date without time.
-		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
 		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
 		if ( $date && $date->format( 'Y-m-d' ) === $post_data['post_date'] ) {
 			$post_data['post_date'] .= ' 00:00:00';
@@ -1056,6 +1067,88 @@ class Post_Command extends CommandWithDBObject {
 			WP_CLI::success( "Post with ID {$args[0]} exists." );
 		} else {
 			WP_CLI::halt( 1 );
+		}
+	}
+
+	/**
+	 * Checks if a post contains any blocks.
+	 *
+	 * Exits with return code 0 if the post contains blocks,
+	 * or return code 1 if it does not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check if post contains blocks.
+	 *     $ wp post has-blocks 123
+	 *     Success: Post 123 contains blocks.
+	 *
+	 *     # Check a classic (non-block) post.
+	 *     $ wp post has-blocks 456
+	 *     Error: Post 456 does not contain blocks.
+	 *
+	 *     # Use in a shell conditional.
+	 *     $ if wp post has-blocks 123 2>/dev/null; then
+	 *     >   echo "Post uses blocks"
+	 *     > fi
+	 *
+	 * @subcommand has-blocks
+	 */
+	public function has_blocks( $args, $assoc_args ) {
+		$post = $this->fetcher->get_check( $args[0] );
+
+		if ( Block_Processor_Helper::has_blocks( $post->post_content ) ) {
+			WP_CLI::success( "Post {$post->ID} contains blocks." );
+		} else {
+			WP_CLI::error( "Post {$post->ID} does not contain blocks." );
+		}
+	}
+
+	/**
+	 * Checks if a post contains a specific block type.
+	 *
+	 * Exits with return code 0 if the post contains the specified block,
+	 * or return code 1 if it does not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * <block-name>
+	 * : The block type name to check for (e.g., 'core/paragraph').
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check if post contains a paragraph block.
+	 *     $ wp post has-block 123 core/paragraph
+	 *     Success: Post 123 contains block 'core/paragraph'.
+	 *
+	 *     # Check for a heading block.
+	 *     $ wp post has-block 123 core/heading
+	 *     Success: Post 123 contains block 'core/heading'.
+	 *
+	 *     # Check for a block that doesn't exist.
+	 *     $ wp post has-block 123 core/gallery
+	 *     Error: Post 123 does not contain block 'core/gallery'.
+	 *
+	 *     # Check for a custom block from a plugin.
+	 *     $ wp post has-block 123 my-plugin/custom-block
+	 *
+	 * @subcommand has-block
+	 */
+	public function has_block( $args, $assoc_args ) {
+		$post       = $this->fetcher->get_check( $args[0] );
+		$block_name = $args[1];
+
+		if ( has_block( $block_name, $post ) ) {
+			WP_CLI::success( "Post {$post->ID} contains block '{$block_name}'." );
+		} else {
+			WP_CLI::error( "Post {$post->ID} does not contain block '{$block_name}'." );
 		}
 	}
 

@@ -385,12 +385,152 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	/**
+	 * Gets details about a site in a multisite installation.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <site>
+	 * : Site ID or URL of the site to get. For subdirectory sites, use the full URL (e.g., http://example.com/subdir/).
+	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole site, returns the value of a single field.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for the site:
+	 *
+	 * * blog_id
+	 * * url
+	 * * last_updated
+	 * * registered
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * site_id
+	 * * domain
+	 * * path
+	 * * public
+	 * * archived
+	 * * mature
+	 * * spam
+	 * * deleted
+	 * * lang_id
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get site by ID
+	 *     $ wp site get 1
+	 *     +---------+-------------------------+---------------------+---------------------+
+	 *     | blog_id | url                     | last_updated        | registered          |
+	 *     +---------+-------------------------+---------------------+---------------------+
+	 *     | 1       | http://example.com/     | 2025-01-01 12:00:00 | 2025-01-01 12:00:00 |
+	 *     +---------+-------------------------+---------------------+---------------------+
+	 *
+	 *     # Get site URL by site ID
+	 *     $ wp site get 1 --field=url
+	 *     http://example.com/
+	 *
+	 *     # Get site ID by URL
+	 *     $ wp site get http://example.com/subdir/ --field=blog_id
+	 *     2
+	 *
+	 *     # Delete a site by URL
+	 *     $ wp site delete $(wp site get http://example.com/subdir/ --field=blog_id) --yes
+	 *     Success: The site at 'http://example.com/subdir/' was deleted.
+	 */
+	public function get( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite installation.' );
+		}
+
+		$site_arg = $args[0];
+		$site     = null;
+
+		// Check if the argument is a URL or a domain (non-numeric)
+		if ( ! is_numeric( $site_arg ) ) {
+			// Normalize URLs without a scheme for proper parsing.
+			$url_to_parse = $site_arg;
+			if ( false === strpos( $url_to_parse, '://' ) ) {
+				$url_to_parse = 'http://' . $url_to_parse;
+			}
+
+			// Parse the URL to get domain and path
+			$url_parts = wp_parse_url( $url_to_parse );
+
+			if ( ! isset( $url_parts['host'] ) ) {
+				WP_CLI::error( "Invalid URL: {$site_arg}" );
+			}
+
+			$domain = $url_parts['host'];
+			$path   = isset( $url_parts['path'] ) ? $url_parts['path'] : '/';
+
+			// Ensure path ends with /
+			if ( '/' !== substr( $path, -1 ) ) {
+				$path .= '/';
+			}
+
+			// Use WordPress's cached function to get the blog ID
+			$blog_id = get_blog_id_from_url( $domain, $path );
+
+			if ( ! $blog_id ) {
+				WP_CLI::error( "Could not find site with URL: {$site_arg}" );
+			}
+
+			$site = $this->fetcher->get_check( $blog_id );
+		} else {
+			// Treat as site ID
+			$site = $this->fetcher->get_check( $site_arg );
+		}
+
+		// Get the site details and add URL
+		$site_data        = get_object_vars( $site );
+		$site_data['url'] = trailingslashit( get_home_url( $site->blog_id ) );
+
+		// Cast numeric fields to int for consistent output
+		$numeric_fields = [ 'blog_id', 'site_id', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' ];
+		foreach ( $numeric_fields as $field ) {
+			if ( isset( $site_data[ $field ] ) && is_scalar( $site_data[ $field ] ) ) {
+				$site_data[ $field ] = (int) $site_data[ $field ];
+			}
+		}
+
+		// Set default fields if not specified
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = [ 'blog_id', 'url', 'last_updated', 'registered' ];
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $site_data );
+	}
+
+	/**
 	 * Creates a site in a multisite installation.
 	 *
 	 * ## OPTIONS
 	 *
-	 * --slug=<slug>
+	 * [--slug=<slug>]
 	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
+	 * Required if --site-url is not provided.
+	 *
+	 * [--site-url=<url>]
+	 * : Full URL for the new site. Use this to specify a custom domain instead of the auto-generated one.
+	 * For subdomain installs, this allows you to use a different base domain (e.g., 'http://site.example.com' instead of 'http://site.main.example.com').
+	 * For subdirectory installs, this allows you to use a different path.
+	 * If provided, --slug is optional and will be derived from the URL. If both --slug and --site-url are provided, --slug will be used as the base for internal operations (like user creation), while the domain/path from --site-url will be used for the actual site URL.
 	 *
 	 * [--title=<title>]
 	 * : Title of the new site. Default: prettified slug.
@@ -409,8 +549,17 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Create a site with auto-generated domain
 	 *     $ wp site create --slug=example
 	 *     Success: Site 3 created: http://www.example.com/example/
+	 *
+	 *     # Create a site with a custom domain (subdomain multisite)
+	 *     $ wp site create --site-url=http://site.example.com
+	 *     Success: Site 4 created: http://site.example.com/
+	 *
+	 *     # Create a site with a custom subdirectory (subdirectory multisite)
+	 *     $ wp site create --site-url=http://example.com/custom/path/
+	 *     Success: Site 5 created: http://example.com/custom/path/
 	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
@@ -419,7 +568,72 @@ class Site_Command extends CommandWithDBObject {
 
 		global $wpdb, $current_site;
 
-		$base = $assoc_args['slug'];
+		// Check if either slug or site-url is provided
+		$has_slug     = isset( $assoc_args['slug'] );
+		$has_site_url = isset( $assoc_args['site-url'] );
+
+		if ( ! $has_slug && ! $has_site_url ) {
+			WP_CLI::error( 'Either --slug or --site-url must be provided.' );
+		}
+
+		// If site URL is provided, parse it to get domain and path
+		$custom_domain = null;
+		$custom_path   = null;
+		$base          = null;
+
+		if ( $has_site_url ) {
+			$parsed_url = wp_parse_url( $assoc_args['site-url'] );
+			if ( ! isset( $parsed_url['host'] ) ) {
+				WP_CLI::error( 'Invalid URL format. Please provide a valid URL (e.g., http://site.example.com).' );
+			}
+
+			// Validate the scheme if present
+			if ( isset( $parsed_url['scheme'] ) && ! in_array( $parsed_url['scheme'], [ 'http', 'https' ], true ) ) {
+				WP_CLI::error( 'Invalid URL scheme. Only http and https schemes are supported.' );
+			}
+
+			// Sanitize domain and path
+			$custom_domain = sanitize_text_field( $parsed_url['host'] );
+			$custom_path   = isset( $parsed_url['path'] ) ? sanitize_text_field( '/' . ltrim( $parsed_url['path'], '/' ) ) : '/';
+
+			// Ensure path ends with /
+			if ( '/' !== substr( $custom_path, -1 ) ) {
+				$custom_path .= '/';
+			}
+
+			// Derive base/slug from the URL if not explicitly provided
+			if ( ! $has_slug ) {
+				if ( is_subdomain_install() ) {
+					// For subdomain installs, use the first part of the domain as the base
+					$domain_parts = explode( '.', $custom_domain );
+					$base         = $domain_parts[0];
+
+					// Validate that the derived base is suitable for use as a slug
+					if ( empty( $base ) || is_numeric( $base ) ) {
+						WP_CLI::error( 'Could not derive a valid slug from the domain (numeric-only or empty slugs are not allowed). Please provide --slug explicitly.' );
+					}
+
+					// Sanitize and lowercase the derived base
+					$base = strtolower( $base );
+				} else {
+					// For subdirectory installs, derive slug from the last part of the path.
+					$path_parts = array_filter( explode( '/', trim( $custom_path, '/' ) ) );
+					$base       = (string) array_pop( $path_parts );
+
+					// If base is empty (root path), require explicit slug.
+					if ( empty( $base ) ) {
+						WP_CLI::error( 'Could not derive a valid slug from the URL path. Please provide --slug explicitly.' );
+					}
+
+					// Sanitize and lowercase the derived base.
+					$base = strtolower( $base );
+				}
+			} else {
+				$base = $assoc_args['slug'];
+			}
+		} else {
+			$base = $assoc_args['slug'];
+		}
 
 		/**
 		 * @var string $title
@@ -470,10 +684,25 @@ class Site_Command extends CommandWithDBObject {
 			}
 		}
 
-		if ( is_subdomain_install() ) {
+		if ( null !== $custom_domain ) {
+			// A custom site URL was provided.
+			$newdomain = $custom_domain;
+			$path      = $custom_path;
+
+			// For subdirectory installs, warn if the domain is different from the network's domain.
+			if ( ! is_subdomain_install() ) {
+				$network_domain           = preg_replace( '|^www\.|', '', $current_site->domain );
+				$custom_domain_normalized = preg_replace( '|^www\.|', '', $custom_domain );
+				if ( $custom_domain_normalized !== $network_domain ) {
+					WP_CLI::warning( 'Using a different domain for a subdirectory multisite install may require additional configuration (such as domain mapping) to work properly.' );
+				}
+			}
+		} elseif ( is_subdomain_install() ) {
+			// No custom site URL, use the slug to generate the domain/path for subdomain install.
 			$newdomain = $base . '.' . preg_replace( '|^www\.|', '', $current_site->domain );
 			$path      = $current_site->path;
 		} else {
+			// No custom site URL, use the slug to generate the domain/path for subdirectory install.
 			$newdomain = $current_site->domain;
 			$path      = $current_site->path . $base . '/';
 		}
@@ -1244,7 +1473,6 @@ class Site_Command extends CommandWithDBObject {
 	 * @param  array  $assoc_args  Passed-in parameters.
 	 *
 	 * @return bool
-	 * @throws ExitException If neither site ids nor site slug using --slug were provided.
 	 */
 	private function check_site_ids_and_slug( $args, $assoc_args ) {
 		if ( ( empty( $args ) && empty( $assoc_args['slug'] ) )
