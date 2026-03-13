@@ -2781,6 +2781,8 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
 	[--tax_input=<tax_input>]
 		Array of taxonomy terms keyed by their taxonomy name. Default empty.
 
+  Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
+
 	[--meta_input=<meta_input>]
 		Array in JSON format of post meta values keyed by their post meta key. Default empty.
 
@@ -3836,6 +3838,8 @@ wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [
 
 	[--tax_input=<tax_input>]
 		Array of taxonomy terms keyed by their taxonomy name. Default empty.
+
+  Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
 
 	[--meta_input=<meta_input>]
 		Array in JSON format of post meta values keyed by their post meta key. Default empty.
