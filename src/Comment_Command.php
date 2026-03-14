@@ -802,7 +802,7 @@ class Comment_Command extends CommandWithDBObject {
 	 * @param int|null $end   End of the ID range (inclusive), or null for no upper bound.
 	 * @return int[] List of existing comment IDs.
 	 */
-	private function get_comment_ids_in_range( int $start, ?int $end ): array {
+	protected function get_comment_ids_in_range( int $start, ?int $end ): array {
 		global $wpdb;
 
 		if ( null === $end ) {

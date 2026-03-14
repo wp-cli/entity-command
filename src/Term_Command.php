@@ -918,7 +918,7 @@ class Term_Command extends WP_CLI_Command {
 	 * @param int|null $end      End of the ID range (inclusive), or null for no upper bound.
 	 * @return int[] List of existing term IDs.
 	 */
-	private function get_term_ids_in_range( string $taxonomy, int $start, ?int $end ): array {
+	protected function get_term_ids_in_range( string $taxonomy, int $start, ?int $end ): array {
 		global $wpdb;
 
 		if ( null === $end ) {
