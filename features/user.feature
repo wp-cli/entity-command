@@ -774,3 +774,30 @@ Feature: Manage WordPress users
       """
       newtestuser
       """
+
+  Scenario: Delete users using ID ranges
+    When I run `wp user create testrange1 testrange1@example.com --role=subscriber --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID_1}
+
+    When I run `wp user create testrange2 testrange2@example.com --role=subscriber --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID_2}
+
+    When I run `wp user create testrange3 testrange3@example.com --role=subscriber --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID_3}
+
+    When I run `wp user delete {USER_ID_1}-{USER_ID_3} --yes`
+    Then STDOUT should contain:
+      """
+      Removed user {USER_ID_1}
+      """
+    And STDOUT should contain:
+      """
+      Removed user {USER_ID_2}
+      """
+    And STDOUT should contain:
+      """
+      Removed user {USER_ID_3}
+      """

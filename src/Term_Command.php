@@ -1,5 +1,6 @@
 <?php
 
+use WP_CLI\ExpandsIdRanges;
 use WP_CLI\Formatter;
 use WP_CLI\Utils;
 
@@ -43,6 +44,8 @@ use WP_CLI\Utils;
  * @package wp-cli
  */
 class Term_Command extends WP_CLI_Command {
+
+	use ExpandsIdRanges;
 
 	private $fields = [
 		'term_id',
@@ -450,6 +453,16 @@ class Term_Command extends WP_CLI_Command {
 	 */
 	public function delete( $args, $assoc_args ) {
 		$taxonomy = array_shift( $args );
+
+		$field = Utils\get_flag_value( $assoc_args, 'by' );
+		if ( 'slug' !== $field ) {
+			$args = self::expand_id_ranges(
+				$args,
+				function ( $start, $end ) use ( $taxonomy ) {
+					return $this->get_term_ids_in_range( $taxonomy, $start, $end );
+				}
+			);
+		}
 
 		$successes = 0;
 		$errors    = 0;
@@ -895,5 +908,42 @@ class Term_Command extends WP_CLI_Command {
 
 	private function get_formatter( &$assoc_args ) {
 		return new Formatter( $assoc_args, $this->fields, 'term' );
+	}
+
+	/**
+	 * Returns existing term IDs within the given range for a specific taxonomy.
+	 *
+	 * @param string   $taxonomy Taxonomy to filter terms by.
+	 * @param int      $start    Start of the ID range (inclusive).
+	 * @param int|null $end      End of the ID range (inclusive), or null for no upper bound.
+	 * @return int[] List of existing term IDs.
+	 */
+	private function get_term_ids_in_range( string $taxonomy, int $start, ?int $end ): array {
+		global $wpdb;
+
+		if ( null === $end ) {
+			return array_map(
+				'intval',
+				$wpdb->get_col(
+					$wpdb->prepare(
+						"SELECT t.term_id FROM {$wpdb->terms} t JOIN {$wpdb->term_taxonomy} tt ON t.term_id = tt.term_id WHERE t.term_id >= %d AND tt.taxonomy = %s ORDER BY t.term_id ASC",
+						$start,
+						$taxonomy
+					)
+				)
+			);
+		}
+
+		return array_map(
+			'intval',
+			$wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT t.term_id FROM {$wpdb->terms} t JOIN {$wpdb->term_taxonomy} tt ON t.term_id = tt.term_id WHERE t.term_id BETWEEN %d AND %d AND tt.taxonomy = %s ORDER BY t.term_id ASC",
+					$start,
+					$end,
+					$taxonomy
+				)
+			)
+		);
 	}
 }

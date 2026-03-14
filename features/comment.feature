@@ -472,3 +472,32 @@ Feature: Manage WordPress comments
     And I run `wp comment unspam {COMMENT_ID} --url=www.example.com`
     And I run `wp comment trash {COMMENT_ID} --url=www.example.com`
     And I run `wp comment untrash {COMMENT_ID} --url=www.example.com`
+
+  Scenario: Delete comments using ID ranges
+    Given a WP install
+
+    When I run `wp comment create --comment_post_ID=1 --comment_content='Comment A' --comment_author='A' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {COMMENT_ID_1}
+
+    When I run `wp comment create --comment_post_ID=1 --comment_content='Comment B' --comment_author='B' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {COMMENT_ID_2}
+
+    When I run `wp comment create --comment_post_ID=1 --comment_content='Comment C' --comment_author='C' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {COMMENT_ID_3}
+
+    When I run `wp comment delete {COMMENT_ID_1}-{COMMENT_ID_3} --force`
+    Then STDOUT should contain:
+      """
+      Deleted comment {COMMENT_ID_1}.
+      """
+    And STDOUT should contain:
+      """
+      Deleted comment {COMMENT_ID_2}.
+      """
+    And STDOUT should contain:
+      """
+      Deleted comment {COMMENT_ID_3}.
+      """

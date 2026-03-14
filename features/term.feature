@@ -298,3 +298,30 @@ Feature: Manage WordPress terms
         "term_group":0
       }]
       """
+
+  Scenario: Delete terms using ID ranges
+    When I run `wp term create category 'Range Term A' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID_1}
+
+    When I run `wp term create category 'Range Term B' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID_2}
+
+    When I run `wp term create category 'Range Term C' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TERM_ID_3}
+
+    When I run `wp term delete category {TERM_ID_1}-{TERM_ID_3}`
+    Then STDOUT should contain:
+      """
+      Deleted category {TERM_ID_1}.
+      """
+    And STDOUT should contain:
+      """
+      Deleted category {TERM_ID_2}.
+      """
+    And STDOUT should contain:
+      """
+      Deleted category {TERM_ID_3}.
+      """

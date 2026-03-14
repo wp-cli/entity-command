@@ -150,6 +150,7 @@ class Comment_Command extends CommandWithDBObject {
 	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
+		$args       = self::expand_id_ranges( $args, [ $this, 'get_comment_ids_in_range' ] );
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update(
 			$args,
@@ -486,6 +487,7 @@ class Comment_Command extends CommandWithDBObject {
 	 *     Success: Deleted comment 2341.
 	 */
 	public function delete( $args, $assoc_args ) {
+		$args = self::expand_id_ranges( $args, [ $this, 'get_comment_ids_in_range' ] );
 		parent::_delete(
 			$args,
 			$assoc_args,
@@ -556,6 +558,7 @@ class Comment_Command extends CommandWithDBObject {
 	 *     Success: Trashed comment 1337.
 	 */
 	public function trash( $args, $assoc_args ) {
+		$args = self::expand_id_ranges( $args, [ $this, 'get_comment_ids_in_range' ] );
 		foreach ( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Trashed %s.', 'Failed trashing %s.' );
 		}
@@ -577,6 +580,7 @@ class Comment_Command extends CommandWithDBObject {
 	 */
 	public function untrash( $args, $assoc_args ) {
 		$this->check_server_name();
+		$args = self::expand_id_ranges( $args, [ $this, 'get_comment_ids_in_range' ] );
 		foreach ( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Untrashed %s.', 'Failed untrashing %s.' );
 		}
@@ -597,6 +601,7 @@ class Comment_Command extends CommandWithDBObject {
 	 *     Success: Marked as spam comment 1337.
 	 */
 	public function spam( $args, $assoc_args ) {
+		$args = self::expand_id_ranges( $args, [ $this, 'get_comment_ids_in_range' ] );
 		foreach ( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Marked %s as spam.', 'Failed marking %s as spam.' );
 		}
@@ -618,6 +623,7 @@ class Comment_Command extends CommandWithDBObject {
 	 */
 	public function unspam( $args, $assoc_args ) {
 		$this->check_server_name();
+		$args = self::expand_id_ranges( $args, [ $this, 'get_comment_ids_in_range' ] );
 		foreach ( $args as $id ) {
 			$this->call( $id, __FUNCTION__, 'Unspammed %s.', 'Failed unspamming %s.' );
 		}
@@ -639,6 +645,7 @@ class Comment_Command extends CommandWithDBObject {
 	 */
 	public function approve( $args, $assoc_args ) {
 		$this->check_server_name();
+		$args = self::expand_id_ranges( $args, [ $this, 'get_comment_ids_in_range' ] );
 		foreach ( $args as $id ) {
 			$this->set_status( $id, 'approve', 'Approved' );
 		}
@@ -660,6 +667,7 @@ class Comment_Command extends CommandWithDBObject {
 	 */
 	public function unapprove( $args, $assoc_args ) {
 		$this->check_server_name();
+		$args = self::expand_id_ranges( $args, [ $this, 'get_comment_ids_in_range' ] );
 		foreach ( $args as $id ) {
 			$this->set_status( $id, 'hold', 'Unapproved' );
 		}
@@ -785,5 +793,28 @@ class Comment_Command extends CommandWithDBObject {
 		if ( $this->fetcher->get( $args[0] ) ) {
 			WP_CLI::success( "Comment with ID {$args[0]} exists." );
 		}
+	}
+
+	/**
+	 * Returns existing comment IDs within the given range.
+	 *
+	 * @param int      $start Start of the ID range (inclusive).
+	 * @param int|null $end   End of the ID range (inclusive), or null for no upper bound.
+	 * @return int[] List of existing comment IDs.
+	 */
+	private function get_comment_ids_in_range( int $start, ?int $end ): array {
+		global $wpdb;
+
+		if ( null === $end ) {
+			return array_map(
+				'intval',
+				$wpdb->get_col( $wpdb->prepare( "SELECT comment_ID FROM {$wpdb->comments} WHERE comment_ID >= %d ORDER BY comment_ID ASC", $start ) )
+			);
+		}
+
+		return array_map(
+			'intval',
+			$wpdb->get_col( $wpdb->prepare( "SELECT comment_ID FROM {$wpdb->comments} WHERE comment_ID BETWEEN %d AND %d ORDER BY comment_ID ASC", $start, $end ) )
+		);
 	}
 }
