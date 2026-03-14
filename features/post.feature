@@ -602,3 +602,57 @@ Feature: Manage WordPress posts
       """
       {"block_version":1}
       """
+
+  Scenario: Delete posts using ID ranges
+    When I run `wp post create --post_title='Post A' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID_1}
+
+    When I run `wp post create --post_title='Post B' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID_2}
+
+    When I run `wp post create --post_title='Post C' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID_3}
+
+    When I run `wp post delete {POST_ID_1}-{POST_ID_3} --force`
+    Then STDOUT should contain:
+      """
+      Deleted post {POST_ID_1}.
+      """
+    And STDOUT should contain:
+      """
+      Deleted post {POST_ID_2}.
+      """
+    And STDOUT should contain:
+      """
+      Deleted post {POST_ID_3}.
+      """
+
+  Scenario: Update posts using ID ranges
+    When I run `wp post create --post_title='Post A' --post_status=draft --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID_1}
+
+    When I run `wp post create --post_title='Post B' --post_status=draft --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID_2}
+
+    When I run `wp post create --post_title='Post C' --post_status=draft --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID_3}
+
+    When I run `wp post update {POST_ID_1}-{POST_ID_3} --post_status=publish`
+    Then STDOUT should contain:
+      """
+      Updated post {POST_ID_1}.
+      """
+    And STDOUT should contain:
+      """
+      Updated post {POST_ID_2}.
+      """
+    And STDOUT should contain:
+      """
+      Updated post {POST_ID_3}.
+      """

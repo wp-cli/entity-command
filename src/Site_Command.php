@@ -1463,7 +1463,7 @@ class Site_Command extends CommandWithDBObject {
 			return [ $blog_id ];
 		}
 
-		return $args;
+		return self::expand_id_ranges( $args, [ $this, 'get_site_ids_in_range' ] );
 	}
 
 	/**
@@ -1481,5 +1481,28 @@ class Site_Command extends CommandWithDBObject {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns existing site IDs within the given range.
+	 *
+	 * @param int      $start Start of the ID range (inclusive).
+	 * @param int|null $end   End of the ID range (inclusive), or null for no upper bound.
+	 * @return int[] List of existing site IDs.
+	 */
+	protected function get_site_ids_in_range( int $start, ?int $end ): array {
+		global $wpdb;
+
+		if ( null === $end ) {
+			return array_map(
+				'intval',
+				$wpdb->get_col( $wpdb->prepare( "SELECT blog_id FROM {$wpdb->blogs} WHERE blog_id >= %d ORDER BY blog_id ASC", $start ) )
+			);
+		}
+
+		return array_map(
+			'intval',
+			$wpdb->get_col( $wpdb->prepare( "SELECT blog_id FROM {$wpdb->blogs} WHERE blog_id BETWEEN %d AND %d ORDER BY blog_id ASC", $start, $end ) )
+		);
 	}
 }
