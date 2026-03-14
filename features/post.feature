@@ -603,7 +603,6 @@ Feature: Manage WordPress posts
       {"block_version":1}
       """
 
-
   Scenario: Delete posts using ID ranges
     When I run `wp post create --post_title='Post A' --porcelain`
     Then STDOUT should be a number
