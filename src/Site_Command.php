@@ -961,13 +961,18 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * [--<field>=<value>]
 	 * : Filter by one or more fields (see "Available Fields" section). However,
-	 * 'url' isn't an available filter, as it comes from 'home' in wp_options.
+	 * 'url' isn't an available filter, as it comes from 'home' in wp_options,
+	 * and 'path' isn't an available filter, as it conflicts with the global
+	 * `--path` parameter. Use `--site-path` to filter by path instead.
 	 *
 	 * [--site__in=<value>]
 	 * : Only list the sites with these blog_id values (comma-separated).
 	 *
 	 * [--site_user=<value>]
 	 * : Only list the sites with this user.
+	 *
+	 * [--site-path=<path>]
+	 * : Filter by path. Avoids conflict with the global `--path` parameter.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
@@ -1038,11 +1043,15 @@ class Site_Command extends CommandWithDBObject {
 		$where  = [];
 		$append = '';
 
-		$site_cols = [ 'blog_id', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' ];
+		$site_cols = [ 'blog_id', 'last_updated', 'registered', 'site_id', 'domain', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' ];
 		foreach ( $site_cols as $col ) {
 			if ( isset( $assoc_args[ $col ] ) ) {
 				$where[ $col ] = $assoc_args[ $col ];
 			}
+		}
+
+		if ( isset( $assoc_args['site-path'] ) ) {
+			$where['path'] = $assoc_args['site-path'];
 		}
 
 		if ( isset( $assoc_args['site__in'] ) ) {
