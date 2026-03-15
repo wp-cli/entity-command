@@ -266,6 +266,9 @@ Feature: Manage WordPress menu items
       | db_id     | type               | object |
       | {ITEM_ID} | post_type_archive  | post   |
 
+    When I run `wp menu item get {ITEM_ID} --field=link`
+    Then STDOUT should not be empty
+
     When I try `wp menu item add-post-type-archive archive-menu invalidposttype`
     Then STDERR should be:
       """
