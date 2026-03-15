@@ -282,7 +282,31 @@ class User_Command extends CommandWithDBObject {
 	 *     $ wp user delete $(wp user list --role=contributor --field=ID | head -n 100)
 	 */
 	public function delete( $args, $assoc_args ) {
-		$args    = self::expand_id_ranges( $args, [ $this, 'get_user_ids_in_range' ] );
+		// Only expand arguments that look like numeric ID ranges, and only if no user
+		// exists with that exact login or email. This avoids misinterpreting a valid
+		// user_login like "12-24" as an ID range.
+		$expanded_args = [];
+
+		foreach ( $args as $arg ) {
+			if ( is_string( $arg ) && preg_match( '/^\d+-\d+$/', $arg ) ) {
+				$user_by_login = get_user_by( 'login', $arg );
+				$user_by_email = get_user_by( 'email', $arg );
+
+				if ( $user_by_login || $user_by_email ) {
+					// Treat as login/email, do not expand as an ID range.
+					$expanded_args[] = $arg;
+				} else {
+					$range_expanded = self::expand_id_ranges( [ $arg ], [ $this, 'get_user_ids_in_range' ] );
+					foreach ( $range_expanded as $expanded_arg ) {
+						$expanded_args[] = $expanded_arg;
+					}
+				}
+			} else {
+				$expanded_args[] = $arg;
+			}
+		}
+
+		$args    = $expanded_args;
 		$network = Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
 
 		/**
