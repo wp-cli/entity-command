@@ -379,8 +379,14 @@ class Menu_Item_Command extends WP_CLI_Command {
 		$assoc_args['object'] = $args[1];
 		unset( $args[1] );
 
-		if ( ! get_post_type_object( $assoc_args['object'] ) ) {
+		$post_type = $assoc_args['object'];
+
+		if ( ! get_post_type_object( $post_type ) ) {
 			WP_CLI::error( 'Invalid post type.' );
+		}
+
+		if ( false === get_post_type_archive_link( $post_type ) ) {
+			WP_CLI::error( 'Post type does not have an archive.' );
 		}
 
 		$this->add_or_update_item( 'add', 'post_type_archive', $args, $assoc_args );
