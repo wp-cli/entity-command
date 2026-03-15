@@ -31,7 +31,15 @@ trait ExpandsIdRanges {
 		foreach ( $args as $arg ) {
 			if ( preg_match( '/^(\d+)-(\d+)$/', $arg, $matches ) ) {
 				// Full range: "15-35"
-				$ids = array_merge( $ids, $get_ids_in_range( (int) $matches[1], (int) $matches[2] ) );
+				$start = (int) $matches[1];
+				$end   = (int) $matches[2];
+				if ( $start > $end ) {
+					// Normalize reversed ranges like "35-15" to "15-35".
+					$temp  = $start;
+					$start = $end;
+					$end   = $temp;
+				}
+				$ids = array_merge( $ids, $get_ids_in_range( $start, $end ) );
 			} elseif ( preg_match( '/^(\d+)-$/', $arg, $matches ) ) {
 				// Open-ended range: "34-"
 				$ids = array_merge( $ids, $get_ids_in_range( (int) $matches[1], null ) );
