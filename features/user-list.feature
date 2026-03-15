@@ -27,6 +27,20 @@ Feature: List WordPress users
       bobjones
       """
 
+  Scenario: List network users excludes roles field
+    Given a WP multisite install
+    And I run `wp user create bobjones bob@example.com --role=author`
+
+    When I run `wp user list --network --format=csv`
+    Then STDOUT should contain:
+      """
+      ID,user_login,display_name,user_email,user_registered
+      """
+    And STDOUT should not contain:
+      """
+      roles
+      """
+
   @require-wp-4.9
   Scenario: List users without roles
     Given a WP install
