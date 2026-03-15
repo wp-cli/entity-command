@@ -330,6 +330,69 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Adds a post type archive as a menu item.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <menu>
+	 * : The name, slug, or term ID for the menu.
+	 *
+	 * <post-type>
+	 * : Post type slug.
+	 *
+	 * [--title=<title>]
+	 * : Set a custom title for the menu item.
+	 *
+	 * [--link=<link>]
+	 * : Set a custom url for the menu item.
+	 *
+	 * [--description=<description>]
+	 * : Set a custom description for the menu item.
+	 *
+	 * [--attr-title=<attr-title>]
+	 * : Set a custom title attribute for the menu item.
+	 *
+	 * [--target=<target>]
+	 * : Set a custom link target for the menu item.
+	 *
+	 * [--classes=<classes>]
+	 * : Set a custom link classes for the menu item.
+	 *
+	 * [--position=<position>]
+	 * : Specify the position of this menu item.
+	 *
+	 * [--parent-id=<parent-id>]
+	 * : Make this menu item a child of another menu item.
+	 *
+	 * [--porcelain]
+	 * : Output just the new menu item id.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp menu item add-post-type-archive sidebar-menu post
+	 *     Success: Menu item added.
+	 *
+	 * @subcommand add-post-type-archive
+	 */
+	public function add_post_type_archive( $args, $assoc_args ) {
+
+		$assoc_args['object'] = $args[1];
+		unset( $args[1] );
+
+		$post_type = $assoc_args['object'];
+
+		if ( ! get_post_type_object( $post_type ) ) {
+			WP_CLI::error( 'Invalid post type.' );
+		}
+
+		if ( false === get_post_type_archive_link( $post_type ) ) {
+			WP_CLI::error( 'Post type does not have an archive.' );
+		}
+
+		$this->add_or_update_item( 'add', 'post_type_archive', $args, $assoc_args );
+	}
+
+	/**
 	 * Adds a custom menu item.
 	 *
 	 * ## OPTIONS
