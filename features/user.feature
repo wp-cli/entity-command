@@ -776,6 +776,8 @@ Feature: Manage WordPress users
       """
 
   Scenario: Delete users using ID ranges
+    Given a WP install
+
     When I run `wp user create testrange1 testrange1@example.com --role=subscriber --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {USER_ID_1}

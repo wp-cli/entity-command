@@ -300,6 +300,8 @@ Feature: Manage WordPress terms
       """
 
   Scenario: Delete terms using ID ranges
+    Given a WP install
+
     When I run `wp term create category 'Range Term A' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {TERM_ID_1}

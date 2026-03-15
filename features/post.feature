@@ -604,6 +604,8 @@ Feature: Manage WordPress posts
       """
 
   Scenario: Delete posts using ID ranges
+    Given a WP install
+
     When I run `wp post create --post_title='Post A' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID_1}
@@ -631,6 +633,8 @@ Feature: Manage WordPress posts
       """
 
   Scenario: Update posts using ID ranges
+    Given a WP install
+
     When I run `wp post create --post_title='Post A' --post_status=draft --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID_1}
