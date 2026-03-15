@@ -252,3 +252,24 @@ Feature: Manage WordPress menu items
       """
     And the return code should be 1
 
+  Scenario: Add a post type archive as a menu item
+
+    When I run `wp menu create "Archive Menu"`
+    Then STDOUT should not be empty
+
+    When I run `wp menu item add-post-type-archive archive-menu post --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ITEM_ID}
+
+    When I run `wp menu item list archive-menu --fields=db_id,type,object`
+    Then STDOUT should be a table containing rows:
+      | db_id     | type               | object |
+      | {ITEM_ID} | post_type_archive  | post   |
+
+    When I try `wp menu item add-post-type-archive archive-menu invalidposttype`
+    Then STDERR should be:
+      """
+      Error: Invalid post type.
+      """
+    And the return code should be 1
+
