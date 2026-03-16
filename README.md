@@ -7768,7 +7768,7 @@ Display WordPress users based on all arguments supported by
 		Control output by one or more arguments of WP_User_Query().
 
 	[--network]
-		List all users in the network for multisite.
+		List all users in the network for multisite. Roles are not included when using this flag, as users can have different roles on different sites in a multisite network.
 
 	[--field=<field>]
 		Prints the value of a single field for each user.
