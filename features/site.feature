@@ -98,6 +98,12 @@ Feature: Manage sites in a multisite installation
       {SCHEME}://example.com/first/
       """
 
+    When I run `wp site list --field=url --site-path=/first/`
+    Then STDOUT should be:
+      """
+      {SCHEME}://example.com/first/
+      """
+
   Scenario: Filter site list by user
     Given a WP multisite install
 
