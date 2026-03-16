@@ -286,7 +286,7 @@ Feature: Manage WordPress users
       """
     And the return code should be 1
 
-  @require-wp-5.9 
+  @require-wp-5.9
   Scenario: Creating a user with an existing email in multisite shows a clean error message
     Given a WP multisite install
 
