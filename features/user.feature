@@ -803,3 +803,28 @@ Feature: Manage WordPress users
       """
       Removed user {USER_ID_3}
       """
+
+  Scenario: Reset passwords using ID ranges
+    Given a WP install
+
+    When I run `wp user create resetrange1 resetrange1@example.com --role=subscriber --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID_1}
+
+    When I run `wp user create resetrange2 resetrange2@example.com --role=subscriber --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID_2}
+
+    When I run `wp user reset-password {USER_ID_1}-{USER_ID_2} --skip-email`
+    Then STDOUT should contain:
+      """
+      Reset password for resetrange1.
+      """
+    And STDOUT should contain:
+      """
+      Reset password for resetrange2.
+      """
+    And STDOUT should contain:
+      """
+      Passwords reset for 2 users.
+      """

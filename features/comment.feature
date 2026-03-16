@@ -501,3 +501,24 @@ Feature: Manage WordPress comments
       """
       Deleted comment {COMMENT_ID_3}.
       """
+
+  Scenario: Trash comments using ID ranges
+    Given a WP install
+
+    When I run `wp comment create --comment_post_ID=1 --comment_content='Comment D' --comment_author='D' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {COMMENT_ID_1}
+
+    When I run `wp comment create --comment_post_ID=1 --comment_content='Comment E' --comment_author='E' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {COMMENT_ID_2}
+
+    When I run `wp comment trash {COMMENT_ID_1}-{COMMENT_ID_2}`
+    Then STDOUT should contain:
+      """
+      Trashed comment {COMMENT_ID_1}.
+      """
+    And STDOUT should contain:
+      """
+      Trashed comment {COMMENT_ID_2}.
+      """

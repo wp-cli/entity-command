@@ -2,6 +2,8 @@
 
 namespace WP_CLI;
 
+use WP_CLI;
+
 /**
  * Trait that provides ID range expansion for WP-CLI commands.
  *
@@ -39,13 +41,19 @@ trait ExpandsIdRanges {
 					$start = $end;
 					$end   = $temp;
 				}
-				$ids = array_merge( $ids, $get_ids_in_range( $start, $end ) );
+				$range_ids = $get_ids_in_range( $start, $end );
+				WP_CLI::debug( sprintf( "Expanded range '%s' to %d IDs.", $arg, count( $range_ids ) ), 'range-expansion' );
+				$ids = array_merge( $ids, $range_ids );
 			} elseif ( preg_match( '/^(\d+)-$/', $arg, $matches ) ) {
 				// Open-ended range: "34-"
-				$ids = array_merge( $ids, $get_ids_in_range( (int) $matches[1], null ) );
+				$range_ids = $get_ids_in_range( (int) $matches[1], null );
+				WP_CLI::debug( sprintf( "Expanded range '%s' to %d IDs.", $arg, count( $range_ids ) ), 'range-expansion' );
+				$ids = array_merge( $ids, $range_ids );
 			} elseif ( preg_match( '/^-(\d+)$/', $arg, $matches ) ) {
 				// Lower-bounded range: "-35"
-				$ids = array_merge( $ids, $get_ids_in_range( 1, (int) $matches[1] ) );
+				$range_ids = $get_ids_in_range( 1, (int) $matches[1] );
+				WP_CLI::debug( sprintf( "Expanded range '%s' to %d IDs.", $arg, count( $range_ids ) ), 'range-expansion' );
+				$ids = array_merge( $ids, $range_ids );
 			} else {
 				$ids[] = $arg;
 			}
