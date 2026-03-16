@@ -267,6 +267,26 @@ Feature: Manage WordPress users
       Bob Jones
       """
 
+  # The error message changed in WP 5.9.
+  @less-than-wp-5.9
+  Scenario: Creating a user with an existing email in multisite shows a clean error message
+    Given a WP multisite install
+
+    When I run `wp user create bobjones bobjones@example.com`
+    Then STDOUT should not be empty
+
+    When I try `wp user create bobjones2 bobjones@example.com`
+    Then STDERR should contain:
+      """
+      Sorry, that email address is already used!
+      """
+    And STDERR should not contain:
+      """
+      <
+      """
+    And the return code should be 1
+
+  @require-wp-5.9 
   Scenario: Creating a user with an existing email in multisite shows a clean error message
     Given a WP multisite install
 
