@@ -5339,7 +5339,7 @@ These fields are optionally available:
 Lists all sites in a multisite installation.
 
 ~~~
-wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_user=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_user=<value>] [--site-path=<path>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -5350,12 +5350,17 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_u
 	[--<field>=<value>]
 		Filter by one or more fields (see "Available Fields" section). However,
 		'url' isn't an available filter, as it comes from 'home' in wp_options.
+		Note: '--path' conflicts with the global parameter of the same name; use
+		'--site-path' to filter by path instead.
 
 	[--site__in=<value>]
 		Only list the sites with these blog_id values (comma-separated).
 
 	[--site_user=<value>]
 		Only list the sites with this user.
+
+	[--site-path=<path>]
+		Filter by path. Avoids conflict with the global `--path` parameter.
 
 	[--field=<field>]
 		Prints the value of a single field for each site.
