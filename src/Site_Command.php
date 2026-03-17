@@ -71,9 +71,23 @@ class Site_Command extends CommandWithDBObject {
 		 */
 		global $wpdb;
 
-		$taxonomies = $wpdb->get_col( "SELECT DISTINCT taxonomy FROM $wpdb->term_taxonomy" );
-		foreach ( $taxonomies as $taxonomy ) {
-			delete_option( "{$taxonomy}_children" );
+		$taxonomies = array_keys( get_taxonomies() );
+		if ( ! empty( $taxonomies ) ) {
+			$option_names = array_map(
+				static function ( $taxonomy ) {
+					return "{$taxonomy}_children";
+				},
+				$taxonomies
+			);
+			$placeholders = implode( ', ', array_fill( 0, count( $option_names ), '%s' ) );
+			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+			// @phpstan-ignore argument.type
+			$query = $wpdb->prepare( 'DELETE FROM ' . $wpdb->options . ' WHERE option_name IN ( ' . $placeholders . ' )', $option_names );
+			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+			if ( $query ) {
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query is already prepared above.
+				$wpdb->query( $query );
+			}
 		}
 
 		$wpdb->query( "TRUNCATE TABLE $wpdb->terms" );
