@@ -99,7 +99,7 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Delete all links, link_category terms, and related cache.
+	 * Delete all links by truncating the links table.
 	 */
 	private function empty_links() {
 		global $wpdb;
