@@ -572,8 +572,6 @@ class Menu_Item_Command extends WP_CLI_Command {
 		// `url` is protected in WP-CLI, so we use `link` instead
 		$assoc_args['url'] = Utils\get_flag_value( $assoc_args, 'link' );
 
-		$old_position = 0;
-
 		// Need to persist the menu item data. See https://core.trac.wordpress.org/ticket/28138
 		if ( 'update' === $method ) {
 
@@ -637,7 +635,23 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 
 		$menu_item_args['menu-item-type'] = $type;
-		$result                           = wp_update_nav_menu_item( $menu->term_id, $menu_item_db_id, $menu_item_args );
+
+		// Reorder other menu items before updating the current one.
+		// The item being moved is at $old_position, which is never inside the affected
+		// range ([new, old-1] for moving up or [old+1, new] for moving down), so no
+		// exclusion of the item itself is necessary.
+		if ( 'update' === $method ) {
+			$new_position = (int) $menu_item_args['menu-item-position'];
+			if ( $new_position > 0 && $new_position !== $old_position ) {
+				if ( $new_position < $old_position ) {
+					$this->reorder_menu_items_in_range( $menu->term_id, $new_position, $old_position - 1, +1 );
+				} else {
+					$this->reorder_menu_items_in_range( $menu->term_id, $old_position + 1, $new_position, -1 );
+				}
+			}
+		}
+
+		$result = wp_update_nav_menu_item( $menu->term_id, $menu_item_db_id, $menu_item_args );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( $result->get_error_message() );
@@ -651,15 +665,6 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 			if ( ( 'add' === $method ) && $menu_item_args['menu-item-position'] ) {
 				$this->reorder_menu_items( $menu->term_id, $menu_item_args['menu-item-position'], +1, $result );
-			} elseif ( 'update' === $method ) {
-				$new_position = (int) $menu_item_args['menu-item-position'];
-				if ( $new_position > 0 && $new_position !== $old_position ) {
-					if ( $new_position < $old_position ) {
-						$this->reorder_menu_items_in_range( $menu->term_id, $new_position, $old_position - 1, +1, $result );
-					} else {
-						$this->reorder_menu_items_in_range( $menu->term_id, $old_position + 1, $new_position, -1, $result );
-					}
-				}
 			}
 
 			/**
@@ -708,12 +713,11 @@ class Menu_Item_Command extends WP_CLI_Command {
 	 * @param int $min_position minimal menu_order to touch (inclusive)
 	 * @param int $max_position maximal menu_order to touch (inclusive)
 	 * @param int $increment how much to change menu_order: +1 to move down, -1 to move up
-	 * @param int $ignore_item_id menu item that should be ignored by the change (e.g. the updated menu item)
 	 * @return int|false number of rows affected, or false on failure
 	 */
-	private function reorder_menu_items_in_range( $menu_id, $min_position, $max_position, $increment, $ignore_item_id = 0 ) {
+	private function reorder_menu_items_in_range( $menu_id, $min_position, $max_position, $increment ) {
 		global $wpdb;
-		return $wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET `menu_order`=`menu_order`+(%d) WHERE `menu_order` BETWEEN %d AND %d AND ID IN (SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id=%d) AND ID<>%d", (int) $increment, (int) $min_position, (int) $max_position, (int) $menu_id, (int) $ignore_item_id ) );
+		return $wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET `menu_order`=`menu_order`+(%d) WHERE `menu_order` BETWEEN %d AND %d AND ID IN (SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id=%d)", (int) $increment, (int) $min_position, (int) $max_position, (int) $menu_id ) );
 	}
 
 	protected function get_formatter( &$assoc_args ) {
