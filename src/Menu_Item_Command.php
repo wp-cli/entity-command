@@ -636,17 +636,61 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		$menu_item_args['menu-item-type'] = $type;
 
-		// Reorder other menu items before updating the current one.
-		// The item being moved is at $old_position, which is never inside the affected
-		// range ([new, old-1] for moving up or [old+1, new] for moving down), so no
-		// exclusion of the item itself is necessary.
+		// Reorder other menu items when the position changes on update.
 		if ( 'update' === $method ) {
 			$new_position = (int) $menu_item_args['menu-item-position'];
-			if ( $new_position > 0 && $new_position !== $old_position ) {
-				if ( $new_position < $old_position ) {
-					$this->reorder_menu_items_in_range( $menu->term_id, $new_position, $old_position - 1, +1 );
-				} else {
-					$this->reorder_menu_items_in_range( $menu->term_id, $old_position + 1, $new_position, -1 );
+			if ( $new_position > 0 ) {
+				// Fetch all menu items sorted by their raw menu_order to determine
+				// normalized (1-indexed) ranks, since wp_get_nav_menu_items(ARRAY_A)
+				// normalises menu_order to 1,2,3… which may differ from the raw DB values.
+				$sorted_items = get_posts(
+					[
+						'post_type'      => 'nav_menu_item',
+						'numberposts'    => -1,
+						'orderby'        => 'menu_order',
+						'order'          => 'ASC',
+						'post_status'    => 'any',
+						'tax_query'      => [
+							[
+								'taxonomy' => 'nav_menu',
+								'field'    => 'term_taxonomy_id',
+								'terms'    => $menu->term_taxonomy_id,
+							],
+						],
+					]
+				);
+
+				// Find the 1-indexed normalized rank of the item being moved.
+				$old_position_normalized = 0;
+				foreach ( $sorted_items as $idx => $sorted_item ) {
+					if ( (int) $sorted_item->ID === (int) $menu_item_db_id ) {
+						$old_position_normalized = $idx + 1;
+						break;
+					}
+				}
+
+				if ( $old_position_normalized > 0 && $new_position !== $old_position_normalized ) {
+					if ( $new_position < $old_position_normalized ) {
+						// Moving up: items at 0-indexed [new_pos-1, old_pos-2] shift down by +1.
+						for ( $i = $new_position - 1; $i <= $old_position_normalized - 2; $i++ ) {
+							wp_update_post(
+								[
+									'ID'         => $sorted_items[ $i ]->ID,
+									'menu_order' => $i + 2,
+								]
+							);
+						}
+					} else {
+						// Moving down: items at 0-indexed [old_pos, new_pos-1] shift up by -1.
+						for ( $i = $old_position_normalized; $i <= $new_position - 1; $i++ ) {
+							wp_update_post(
+								[
+									'ID'         => $sorted_items[ $i ]->ID,
+									'menu_order' => $i,
+								]
+							);
+						}
+					}
 				}
 			}
 		}
