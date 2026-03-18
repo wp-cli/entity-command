@@ -645,12 +645,12 @@ class Menu_Item_Command extends WP_CLI_Command {
 				// normalises menu_order to 1,2,3… which may differ from the raw DB values.
 				$sorted_items = get_posts(
 					[
-						'post_type'      => 'nav_menu_item',
-						'numberposts'    => -1,
-						'orderby'        => 'menu_order',
-						'order'          => 'ASC',
-						'post_status'    => 'any',
-						'tax_query'      => [
+						'post_type'   => 'nav_menu_item',
+						'numberposts' => -1,
+						'orderby'     => 'menu_order',
+						'order'       => 'ASC',
+						'post_status' => 'any',
+						'tax_query'   => [
 							[
 								'taxonomy' => 'nav_menu',
 								'field'    => 'term_taxonomy_id',
@@ -747,21 +747,6 @@ class Menu_Item_Command extends WP_CLI_Command {
 	private function reorder_menu_items( $menu_id, $min_position, $increment, $ignore_item_id = 0 ) {
 		global $wpdb;
 		return $wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET `menu_order`=`menu_order`+(%d) WHERE `menu_order`>=%d AND ID IN (SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id=%d) AND ID<>%d", (int) $increment, (int) $min_position, (int) $menu_id, (int) $ignore_item_id ) );
-	}
-
-	/**
-	 * Move a range of items in one nav_menu up or down by incrementing/decrementing their menu_order field.
-	 * Only affects items with menu_order between min_position and max_position (inclusive).
-	 *
-	 * @param int $menu_id ID of the nav_menu
-	 * @param int $min_position minimal menu_order to touch (inclusive)
-	 * @param int $max_position maximal menu_order to touch (inclusive)
-	 * @param int $increment how much to change menu_order: +1 to move down, -1 to move up
-	 * @return int|false number of rows affected, or false on failure
-	 */
-	private function reorder_menu_items_in_range( $menu_id, $min_position, $max_position, $increment ) {
-		global $wpdb;
-		return $wpdb->query( $wpdb->prepare( "UPDATE $wpdb->posts SET `menu_order`=`menu_order`+(%d) WHERE `menu_order` BETWEEN %d AND %d AND ID IN (SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id=%d)", (int) $increment, (int) $min_position, (int) $max_position, (int) $menu_id ) );
 	}
 
 	protected function get_formatter( &$assoc_args ) {
