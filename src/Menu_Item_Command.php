@@ -634,6 +634,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 
 		$menu_item_args['menu-item-type'] = $type;
+		$pending_menu_order_updates       = [];
 
 		// Reorder other menu items when the position changes on update.
 		if ( 'update' === $method ) {
@@ -679,22 +680,18 @@ class Menu_Item_Command extends WP_CLI_Command {
 					if ( $new_position < $old_position_normalized ) {
 						// Moving up: items at 0-indexed [new_pos-1, old_pos-2] shift down by +1.
 						for ( $i = $new_position - 1; $i <= $old_position_normalized - 2; $i++ ) {
-							wp_update_post(
-								[
-									'ID'         => $sorted_items[ $i ]->ID,
-									'menu_order' => $i + 2,
-								]
-							);
+							$pending_menu_order_updates[] = [
+								'ID'         => $sorted_items[ $i ]->ID,
+								'menu_order' => $i + 2,
+							];
 						}
 					} else {
 						// Moving down: items at 0-indexed [old_pos, new_pos-1] shift up by -1.
 						for ( $i = $old_position_normalized; $i <= $new_position - 1; $i++ ) {
-							wp_update_post(
-								[
-									'ID'         => $sorted_items[ $i ]->ID,
-									'menu_order' => $i,
-								]
-							);
+							$pending_menu_order_updates[] = [
+								'ID'         => $sorted_items[ $i ]->ID,
+								'menu_order' => $i,
+							];
 						}
 					}
 				}
@@ -712,6 +709,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 				WP_CLI::error( "Couldn't update menu item." );
 			}
 		} else {
+			// Apply deferred reordering of other menu items only after a successful update.
+			foreach ( $pending_menu_order_updates as $update_args ) {
+				wp_update_post( $update_args );
+			}
 
 			if ( ( 'add' === $method ) && $menu_item_args['menu-item-position'] ) {
 				$this->reorder_menu_items( $menu->term_id, $menu_item_args['menu-item-position'], +1, $result );
