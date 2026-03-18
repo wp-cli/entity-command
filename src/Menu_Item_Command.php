@@ -659,6 +659,13 @@ class Menu_Item_Command extends WP_CLI_Command {
 					]
 				);
 
+				// Clamp the requested position to the valid range of menu items.
+				$max_position = count( $sorted_items );
+				if ( $max_position > 0 && $new_position > $max_position ) {
+					// Treat out-of-range positions as "move to end", consistent with core behavior.
+					$new_position = $max_position;
+				}
+
 				// Find the 1-indexed normalized rank of the item being moved.
 				$old_position_normalized = 0;
 				foreach ( $sorted_items as $idx => $sorted_item ) {
