@@ -71,7 +71,7 @@ class Site_Command extends CommandWithDBObject {
 		 */
 		global $wpdb;
 
-		$taxonomies = array_keys( get_taxonomies() );
+		$taxonomies = $wpdb->get_col( "SELECT DISTINCT taxonomy FROM $wpdb->term_taxonomy" );
 		if ( ! empty( $taxonomies ) ) {
 			$option_names = array_map(
 				static function ( $taxonomy ) {
