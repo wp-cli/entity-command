@@ -175,9 +175,9 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Empties a site of its content (posts, comments, terms, and meta).
+	 * Empties a site of its content (posts, comments, terms, links, and meta).
 	 *
-	 * Truncates posts, comments, and terms tables to empty a site of its
+	 * Truncates posts, comments, terms, and links tables to empty a site of its
 	 * content. Doesn't affect site configuration (options) or users.
 	 *
 	 * Flushes the object cache after emptying the site to ensure stale data
