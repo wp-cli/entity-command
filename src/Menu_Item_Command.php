@@ -587,8 +587,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			$menu_item_obj = wp_setup_nav_menu_item( $menu_item_obj );
 
 			// Correct the menu position if this was the first item. See https://core.trac.wordpress.org/ticket/28140
-			$position     = ( 0 === $menu_item_obj->menu_order ) ? 1 : $menu_item_obj->menu_order;
-			$old_position = $position;
+			$position = ( 0 === $menu_item_obj->menu_order ) ? 1 : $menu_item_obj->menu_order;
 
 			$default_args = [
 				'position'    => $position,
