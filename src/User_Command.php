@@ -71,7 +71,7 @@ class User_Command extends CommandWithDBObject {
 	 * : Control output by one or more arguments of WP_User_Query().
 	 *
 	 * [--network]
-	 * : List all users in the network for multisite.
+	 * : List all users in the network for multisite. Roles are not included when using this flag, as users can have different roles on different sites in a multisite network.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each user.
@@ -485,7 +485,8 @@ class User_Command extends CommandWithDBObject {
 		if ( is_multisite() ) {
 			$result = wpmu_validate_user_signup( $user->user_login, $user->user_email );
 			if ( ! empty( $result['errors']->errors ) ) {
-				WP_CLI::error( $result['errors'] );
+				$error_message = implode( ' ', array_map( 'wp_strip_all_tags', $result['errors']->get_error_messages() ) );
+				WP_CLI::error( $error_message );
 			}
 			$user_id = wpmu_create_user( $user->user_login, $user->user_pass, $user->user_email );
 			if ( ! $user_id ) {
@@ -1255,7 +1256,7 @@ class User_Command extends CommandWithDBObject {
 				if ( is_multisite() ) {
 					$result = wpmu_validate_user_signup( $new_user['user_login'], $new_user['user_email'] );
 					if ( ! empty( $result['errors']->errors ) ) {
-						WP_CLI::warning( $result['errors'] );
+						WP_CLI::warning( implode( ' ', array_map( 'wp_strip_all_tags', $result['errors']->get_error_messages() ) ) );
 						continue;
 					}
 					$user_id = wpmu_create_user( $new_user['user_login'], $new_user['user_pass'], $new_user['user_email'] );
