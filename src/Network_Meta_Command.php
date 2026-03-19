@@ -32,10 +32,7 @@ class Network_Meta_Command extends CommandWithMeta {
 	 * @return int|false The meta ID on success, false on failure.
 	 */
 	protected function add_metadata( $object_id, $meta_key, $meta_value, $unique = false ) {
-		if ( function_exists( 'add_network_option' ) && $unique ) {
-			return add_network_option( $object_id, $meta_key, $meta_value );
-		}
-		return add_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, $unique );
+		return add_network_option( $object_id, $meta_key, $meta_value );
 	}
 
 	/**
@@ -53,10 +50,7 @@ class Network_Meta_Command extends CommandWithMeta {
 	 *                  update, false on failure.
 	 */
 	protected function update_metadata( $object_id, $meta_key, $meta_value, $prev_value = '' ) {
-		if ( function_exists( 'update_network_option' ) && '' === $prev_value ) {
-			return update_network_option( $object_id, $meta_key, $meta_value );
-		}
-		return update_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, $prev_value );
+		return update_network_option( $object_id, $meta_key, $meta_value );
 	}
 
 	/**
@@ -73,10 +67,7 @@ class Network_Meta_Command extends CommandWithMeta {
 	 * @return mixed Single metadata value, or array of values.
 	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
-		if ( function_exists( 'get_network_option' ) && '' !== $meta_key && $single ) {
-			return get_network_option( $object_id, $meta_key );
-		}
-		return get_metadata( $this->meta_type, $object_id, $meta_key, $single );
+		return get_network_option( $object_id, $meta_key );
 	}
 
 	/**
@@ -96,9 +87,6 @@ class Network_Meta_Command extends CommandWithMeta {
 	 * @return bool True on successful delete, false on failure.
 	 */
 	protected function delete_metadata( $object_id, $meta_key, $meta_value = '' ) {
-		if ( function_exists( 'delete_network_option' ) && '' === $meta_value ) {
-			return delete_network_option( $object_id, $meta_key );
-		}
-		return delete_metadata( $this->meta_type, $object_id, $meta_key, $meta_value, false );
+		return delete_network_option( $object_id, $meta_key );
 	}
 }
