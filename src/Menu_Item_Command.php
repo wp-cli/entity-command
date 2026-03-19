@@ -643,7 +643,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 				// Fetch all menu items sorted by their raw menu_order to determine
 				// normalized (1-indexed) ranks, since wp_get_nav_menu_items(ARRAY_A)
 				// normalises menu_order to 1,2,3… which may differ from the raw DB values.
-				$sorted_items = get_posts(
+				$sorted_item_ids = get_posts(
 					[
 						'post_type'   => 'nav_menu_item',
 						'numberposts' => -1,
@@ -657,31 +657,27 @@ class Menu_Item_Command extends WP_CLI_Command {
 								'terms'    => $menu->term_taxonomy_id,
 							],
 						],
+						'fields'      => 'ids',
 					]
 				);
 
 				// Clamp the requested position to the valid range of menu items.
-				$max_position = count( $sorted_items );
+				$max_position = count( $sorted_item_ids );
 				if ( $max_position > 0 && $new_position > $max_position ) {
 					// Treat out-of-range positions as "move to end", consistent with core behavior.
 					$new_position = $max_position;
 				}
 
 				// Find the 1-indexed normalized rank of the item being moved.
-				$old_position_normalized = 0;
-				foreach ( $sorted_items as $idx => $sorted_item ) {
-					if ( (int) $sorted_item->ID === (int) $menu_item_db_id ) {
-						$old_position_normalized = $idx + 1;
-						break;
-					}
-				}
+				$item_idx = array_search( (string) $menu_item_db_id, $sorted_item_ids, true );
+				$old_position_normalized = ( false !== $item_idx ) ? $item_idx + 1 : 0;
 
 				if ( $old_position_normalized > 0 && $new_position !== $old_position_normalized ) {
 					if ( $new_position < $old_position_normalized ) {
 						// Moving up: items at 0-indexed [new_pos-1, old_pos-2] shift down by +1.
 						for ( $i = $new_position - 1; $i <= $old_position_normalized - 2; $i++ ) {
 							$pending_menu_order_updates[] = [
-								'ID'         => $sorted_items[ $i ]->ID,
+								'ID'         => $sorted_item_ids[ $i ],
 								'menu_order' => $i + 2,
 							];
 						}
@@ -689,7 +685,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 						// Moving down: items at 0-indexed [old_pos, new_pos-1] shift up by -1.
 						for ( $i = $old_position_normalized; $i <= $new_position - 1; $i++ ) {
 							$pending_menu_order_updates[] = [
-								'ID'         => $sorted_items[ $i ]->ID,
+								'ID'         => $sorted_item_ids[ $i ],
 								'menu_order' => $i,
 							];
 						}
@@ -710,8 +706,24 @@ class Menu_Item_Command extends WP_CLI_Command {
 			}
 		} else {
 			// Apply deferred reordering of other menu items only after a successful update.
-			foreach ( $pending_menu_order_updates as $update_args ) {
-				wp_update_post( $update_args );
+			if ( ! empty( $pending_menu_order_updates ) ) {
+				global $wpdb;
+
+				$ids_to_update = [];
+				$case_clauses  = '';
+				foreach ( $pending_menu_order_updates as $update_args ) {
+					$item_id         = (int) $update_args['ID'];
+					$ids_to_update[] = $item_id;
+					$case_clauses   .= $wpdb->prepare( ' WHEN %d THEN %d', $item_id, $update_args['menu_order'] );
+				}
+
+				$ids_sql = implode( ',', $ids_to_update );
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $case_clauses and $ids_sql are constructed from prepared/safe values.
+				$wpdb->query( "UPDATE {$wpdb->posts} SET menu_order = CASE ID {$case_clauses} END WHERE ID IN ({$ids_sql})" );
+
+				foreach ( $ids_to_update as $id ) {
+					clean_post_cache( $id );
+				}
 			}
 
 			if ( ( 'add' === $method ) && $menu_item_args['menu-item-position'] ) {
