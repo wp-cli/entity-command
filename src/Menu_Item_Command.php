@@ -669,7 +669,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 				}
 
 				// Find the 1-indexed normalized rank of the item being moved.
-				$item_idx = array_search( (string) $menu_item_db_id, $sorted_item_ids, true );
+				$item_idx                = array_search( (string) $menu_item_db_id, $sorted_item_ids, true );
 				$old_position_normalized = ( false !== $item_idx ) ? $item_idx + 1 : 0;
 
 				if ( $old_position_normalized > 0 && $new_position !== $old_position_normalized ) {
