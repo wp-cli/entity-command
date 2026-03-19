@@ -92,7 +92,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 	public function list_( $args, $assoc_args ) {
 
 		$items = wp_get_nav_menu_items( $args[0] );
-		if ( false === $items || is_wp_error( $items ) ) {
+		if ( false === $items ) {
 			WP_CLI::error( 'Invalid menu.' );
 		}
 
@@ -118,6 +118,95 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
+	}
+
+	/**
+	 * Gets details about a menu item.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <db-id>
+	 * : Database ID for the menu item.
+	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole menu item, returns the value of a single field.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to db_id, type, title, link, position.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields are available:
+	 *
+	 * * db_id
+	 * * type
+	 * * title
+	 * * link
+	 * * position
+	 * * menu_item_parent
+	 * * object_id
+	 * * object
+	 * * type_label
+	 * * target
+	 * * attr_title
+	 * * description
+	 * * classes
+	 * * xfn
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get details about a menu item with ID 45
+	 *     $ wp menu item get 45
+	 *     +-------------+----------------------------------+
+	 *     | Field       | Value                            |
+	 *     +-------------+----------------------------------+
+	 *     | db_id       | 45                               |
+	 *     | type        | custom                           |
+	 *     | title       | WordPress                        |
+	 *     | link        | https://wordpress.org            |
+	 *     | position    | 1                                |
+	 *     +-------------+----------------------------------+
+	 *
+	 *     # Get a specific field from a menu item
+	 *     $ wp menu item get 45 --field=title
+	 *     WordPress
+	 *
+	 *     # Get menu item data in JSON format
+	 *     $ wp menu item get 45 --format=json
+	 *     {"db_id":45,"type":"custom","title":"WordPress","link":"https://wordpress.org","position":1}
+	 */
+	public function get( $args, $assoc_args ) {
+
+		$db_id = $args[0];
+
+		$menu_item = get_post( $db_id );
+
+		if ( ! $menu_item || 'nav_menu_item' !== $menu_item->post_type ) {
+			WP_CLI::error( 'Invalid menu item.' );
+		}
+
+		/**
+		 * @var object{title: string, url: string, description: string, object: string, object_id: int, menu_item_parent: int, attr_title: string, target: string, classes: string[], xfn: string, type: string, type_label: string, menu_order: int, db_id: int, post_type: string}&\stdClass $menu_item
+		 */
+		$menu_item = wp_setup_nav_menu_item( $menu_item );
+
+		// Correct position inconsistency and protected `url` param in WP-CLI
+		$menu_item->position = ( 0 === $menu_item->menu_order ) ? 1 : $menu_item->menu_order;
+		$menu_item->link     = $menu_item->url;
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $menu_item );
 	}
 
 	/**
@@ -238,6 +327,69 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 
 		$this->add_or_update_item( 'add', 'taxonomy', $args, $assoc_args );
+	}
+
+	/**
+	 * Adds a post type archive as a menu item.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <menu>
+	 * : The name, slug, or term ID for the menu.
+	 *
+	 * <post-type>
+	 * : Post type slug.
+	 *
+	 * [--title=<title>]
+	 * : Set a custom title for the menu item.
+	 *
+	 * [--link=<link>]
+	 * : Set a custom url for the menu item.
+	 *
+	 * [--description=<description>]
+	 * : Set a custom description for the menu item.
+	 *
+	 * [--attr-title=<attr-title>]
+	 * : Set a custom title attribute for the menu item.
+	 *
+	 * [--target=<target>]
+	 * : Set a custom link target for the menu item.
+	 *
+	 * [--classes=<classes>]
+	 * : Set a custom link classes for the menu item.
+	 *
+	 * [--position=<position>]
+	 * : Specify the position of this menu item.
+	 *
+	 * [--parent-id=<parent-id>]
+	 * : Make this menu item a child of another menu item.
+	 *
+	 * [--porcelain]
+	 * : Output just the new menu item id.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp menu item add-post-type-archive sidebar-menu post
+	 *     Success: Menu item added.
+	 *
+	 * @subcommand add-post-type-archive
+	 */
+	public function add_post_type_archive( $args, $assoc_args ) {
+
+		$assoc_args['object'] = $args[1];
+		unset( $args[1] );
+
+		$post_type = $assoc_args['object'];
+
+		if ( ! get_post_type_object( $post_type ) ) {
+			WP_CLI::error( 'Invalid post type.' );
+		}
+
+		if ( false === get_post_type_archive_link( $post_type ) ) {
+			WP_CLI::error( 'Post type does not have an archive.' );
+		}
+
+		$this->add_or_update_item( 'add', 'post_type_archive', $args, $assoc_args );
 	}
 
 	/**
@@ -367,8 +519,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 
 		foreach ( $args as $arg ) {
 
-			$post           = get_post( $arg );
-			$menu_term      = get_the_terms( $arg, 'nav_menu' );
+			$post      = get_post( $arg );
+			$menu_term = get_the_terms( $arg, 'nav_menu' );
+
+			// @phpstan-ignore cast.int
 			$parent_menu_id = (int) get_post_meta( $arg, '_menu_item_menu_item_parent', true );
 			$result         = wp_delete_post( $arg, true );
 			if ( ! $result ) {
@@ -408,10 +562,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 	private function add_or_update_item( $method, $type, $args, $assoc_args ) {
 
 		$menu            = $args[0];
-		$menu_item_db_id = Utils\get_flag_value( $args, 1, 0 );
+		$menu_item_db_id = $args[1] ?? 0;
 
 		$menu = wp_get_nav_menu_object( $menu );
-		if ( ! $menu || is_wp_error( $menu ) ) {
+		if ( false === $menu ) {
 			WP_CLI::error( 'Invalid menu.' );
 		}
 
@@ -422,6 +576,14 @@ class Menu_Item_Command extends WP_CLI_Command {
 		if ( 'update' === $method ) {
 
 			$menu_item_obj = get_post( $menu_item_db_id );
+
+			if ( ! $menu_item_obj ) {
+				WP_CLI::error( 'Invalid menu.' );
+			}
+
+			/**
+			 * @var object{title: string, url: string, description: string, object: string, object_id: int, menu_item_parent: int, attr_title: string, target: string, classes: string[], xfn: string, post_status: string, menu_order: int} $menu_item_obj
+			 */
 			$menu_item_obj = wp_setup_nav_menu_item( $menu_item_obj );
 
 			// Correct the menu position if this was the first item. See https://core.trac.wordpress.org/ticket/28140
@@ -502,7 +664,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 			}
 
 			if ( 'add' === $method && ! empty( $assoc_args['porcelain'] ) ) {
-				WP_CLI::line( $result );
+				WP_CLI::line( (string) $result );
 			} elseif ( 'add' === $method ) {
 					WP_CLI::success( 'Menu item added.' );
 			} elseif ( 'update' === $method ) {

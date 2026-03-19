@@ -33,7 +33,7 @@ Feature: Manage user session
       Success: Destroyed all sessions.
       """
 
-    And I run `wp user session list admin --format=count`
+    When I run `wp user session list admin --format=count`
     Then STDOUT should be:
       """
       0

@@ -219,6 +219,39 @@ Feature: Manage post custom fields
       My\New\Meta
       """
 
+  Scenario: List post meta with or without single flag
+    Given a WP install
+
+    When I run `wp post meta add 1 apple banana`
+    And I run `wp post meta add 1 apple mango`
+    Then STDOUT should not be empty
+
+    When I run `wp post meta get 1 apple`
+    Then STDOUT should be:
+      """
+      banana
+      """
+
+    When I run `wp post meta get 1 apple --single`
+    Then STDOUT should be:
+      """
+      banana
+      """
+
+    When I run `wp post meta get 1 apple --no-single`
+    Then STDOUT should be:
+      """
+      array (
+        0 => 'banana',
+        1 => 'mango',
+      )
+      """
+    When I run `wp post meta get 1 apple --no-single --format=json`
+    Then STDOUT should be:
+      """
+      ["banana","mango"]
+      """
+
   @pluck
   Scenario: Nested values can be retrieved.
     Given a WP install

@@ -12,7 +12,7 @@
         }
     ],
     "require": {
-        "wp-cli/wp-cli": "^2.12"
+        "wp-cli/wp-cli": "^2.13"
     },
     "require-dev": {
         "wp-cli/cache-command": "^1 || ^2",
@@ -20,14 +20,15 @@
         "wp-cli/extension-command": "^1.2 || ^2",
         "wp-cli/media-command": "^1.1 || ^2",
         "wp-cli/super-admin-command": "^1 || ^2",
-        "wp-cli/wp-cli-tests": "^4"
+        "wp-cli/wp-cli-tests": "^5"
     },
     "config": {
         "process-timeout": 7200,
         "sort-packages": true,
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
-            "johnpbloch/wordpress-core-installer": true
+            "johnpbloch/wordpress-core-installer": true,
+            "phpstan/extension-installer": true
         },
         "lock": false
     },
@@ -62,6 +63,17 @@
             "comment unspam",
             "comment untrash",
             "comment update",
+            "font",
+            "font collection",
+            "font collection get",
+            "font collection is-registered",
+            "font collection list",
+            "font collection list-categories",
+            "font collection list-families",
+            "font face",
+            "font face install",
+            "font family",
+            "font family install",
             "menu",
             "menu create",
             "menu delete",
@@ -70,6 +82,7 @@
             "menu item add-post",
             "menu item add-term",
             "menu item delete",
+            "menu item get",
             "menu item list",
             "menu item update",
             "menu list",
@@ -77,6 +90,7 @@
             "menu location assign",
             "menu location list",
             "menu location remove",
+            "network",
             "network meta",
             "network meta add",
             "network meta delete",
@@ -112,6 +126,10 @@
             "post meta patch",
             "post meta pluck",
             "post meta update",
+            "post revision",
+            "post revision diff",
+            "post revision prune",
+            "post revision restore",
             "post term",
             "post term add",
             "post term list",
@@ -119,6 +137,23 @@
             "post term set",
             "post update",
             "post url-to-id",
+            "post has-blocks",
+            "post has-block",
+            "post block",
+            "post block clone",
+            "post block count",
+            "post block export",
+            "post block extract",
+            "post block get",
+            "post block import",
+            "post block insert",
+            "post block list",
+            "post block move",
+            "post block parse",
+            "post block remove",
+            "post block replace",
+            "post block render",
+            "post block update",
             "post-type",
             "post-type get",
             "post-type list",
@@ -130,6 +165,7 @@
             "site deactivate",
             "site delete",
             "site empty",
+            "site get",
             "site list",
             "site mature",
             "site meta",
@@ -141,6 +177,13 @@
             "site meta pluck",
             "site meta update",
             "site option",
+            "site option add",
+            "site option delete",
+            "site option get",
+            "site option list",
+            "site option patch",
+            "site option pluck",
+            "site option update",
             "site private",
             "site public",
             "site spam",
@@ -164,7 +207,9 @@
             "term meta patch",
             "term meta pluck",
             "term meta update",
+            "term migrate",
             "term recount",
+            "term prune",
             "term update",
             "user",
             "user add-cap",
@@ -177,6 +222,7 @@
             "user application-password list",
             "user application-password record-usage",
             "user application-password update",
+            "user check-password",
             "user create",
             "user delete",
             "user exists",
@@ -219,6 +265,11 @@
         "classmap": [
             "src/"
         ],
+        "exclude-from-classmap": [
+            "src/Compat/WP_HTML_Span.php",
+            "src/Compat/WP_Block_Processor.php",
+            "src/Compat/polyfills.php"
+        ],
         "files": [
             "entity-command.php"
         ]
@@ -230,12 +281,14 @@
         "behat-rerun": "rerun-behat-tests",
         "lint": "run-linter-tests",
         "phpcs": "run-phpcs-tests",
+        "phpstan": "run-phpstan-tests",
         "phpunit": "run-php-unit-tests",
         "phpcbf": "run-phpcbf-cleanup",
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",
             "@phpcs",
+            "@phpstan",
             "@phpunit",
             "@behat"
         ]

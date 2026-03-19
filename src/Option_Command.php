@@ -9,6 +9,21 @@ use WP_CLI\Utils;
  *
  * See the [Plugin Settings API](https://developer.wordpress.org/plugins/settings/settings-api/) and the [Theme Options](https://developer.wordpress.org/themes/customize-api/) for more information on adding customized options.
  *
+ * ## COMMON OPTIONS
+ *
+ * These are some of the most commonly used WordPress options:
+ *
+ * * `siteurl` - Site URL, e.g. http://example.com
+ * * `blogname` - Site title
+ * * `blogdescription` - Site tagline
+ * * `admin_email` - Administration email address
+ * * `default_role` - Default role for new users
+ * * `timezone_string` - Local timezone, e.g. "America/New_York"
+ * * `home` - Home URL, e.g. http://example.com
+ * * `blog_public` - Discourage search engines when set to 0
+ *
+ * For the full list of available options, see the [Option Reference](https://developer.wordpress.org/apis/options/).
+ *
  * ## EXAMPLES
  *
  *     # Get site URL.
@@ -133,6 +148,7 @@ class Option_Command extends WP_CLI_Command {
 			$autoload = 'yes';
 		}
 
+		// @phpstan-ignore argument.type
 		if ( ! add_option( $key, $value, '', $autoload ) ) {
 			WP_CLI::error( "Could not add option '{$key}'. Does it already exist?" );
 		} else {
@@ -240,6 +256,9 @@ class Option_Command extends WP_CLI_Command {
 	 *     Success: Deleted 'theme_mods_twentyfourteen' option.
 	 *
 	 * @subcommand list
+	 *
+	 * @param string[] $args Positional arguments. Unused.
+	 * @param array{search?: string, exclude: string, autoload: string, transients?: bool, unserialize?: bool, field?: string, fields: string, format: 'table'|'csv'|'json'|'yaml'|'count'|'total_bytes', orderby: 'option_id'|'option_name'|'option_value', order: 'asc'|'desc'} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
 
@@ -275,9 +294,9 @@ class Option_Command extends WP_CLI_Command {
 		if ( isset( $assoc_args['autoload'] ) ) {
 			$autoload = $assoc_args['autoload'];
 			if ( 'on' === $autoload || 'yes' === $autoload ) {
-				$autoload_query = " AND autoload='yes'";
+				$autoload_query = " AND (autoload='on') OR (autoload='yes')";
 			} elseif ( 'off' === $autoload || 'no' === $autoload ) {
-				$autoload_query = " AND autoload='no'";
+				$autoload_query = " AND (autoload='off') OR (autoload='no')";
 			} else {
 				WP_CLI::error( "Value of '--autoload' should be 'on', 'off', 'yes', or 'no'." );
 			}
@@ -321,11 +340,11 @@ class Option_Command extends WP_CLI_Command {
 				function ( $a, $b ) use ( $orderby, $order ) {
 					// Sort array.
 					return 'asc' === $order
-						? $a->$orderby > $b->$orderby
-						: $a->$orderby < $b->$orderby;
+						? $a->$orderby <=> $b->$orderby
+						: $b->$orderby <=> $a->$orderby;
 				}
 			);
-		} elseif ( 'option_id' === $orderby && 'desc' === $order ) { // Sort by default descending.
+		} elseif ( 'desc' === $order ) { // Sort by default descending.
 			krsort( $results );
 		}
 
@@ -422,7 +441,11 @@ class Option_Command extends WP_CLI_Command {
 			$autoload = null;
 		}
 
+		/**
+		 * @var string $value
+		 */
 		$value = sanitize_option( $key, $value );
+
 		// Sanitization WordPress normally performs when getting an option
 		if ( in_array( $key, [ 'siteurl', 'home', 'category_base', 'tag_base' ], true ) ) {
 			$value = untrailingslashit( $value );
@@ -431,6 +454,7 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( $value === $old_value && null === $autoload ) {
 			WP_CLI::success( "Value passed for '{$key}' option is unchanged." );
+			// @phpstan-ignore argument.type
 		} elseif ( update_option( $key, $value, $autoload ) ) {
 				WP_CLI::success( "Updated '{$key}' option." );
 		} else {
@@ -744,17 +768,11 @@ class Option_Command extends WP_CLI_Command {
 	}
 
 	private static function esc_like( $old ) {
+		/**
+		 * @var \wpdb $wpdb
+		 */
 		global $wpdb;
 
-		// Remove notices in 4.0 and support backwards compatibility
-		if ( method_exists( $wpdb, 'esc_like' ) ) {
-			// 4.0
-			$old = $wpdb->esc_like( $old );
-		} else {
-			// phpcs:ignore WordPress.WP.DeprecatedFunctions.like_escapeFound -- called in WordPress 3.9 or less.
-			$old = like_escape( esc_sql( $old ) );
-		}
-
-		return $old;
+		return $wpdb->esc_like( $old );
 	}
 }

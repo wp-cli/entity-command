@@ -65,7 +65,7 @@ Feature: Manage WordPress menu items
       Success: Deleted 1 of 1 menu items.
       """
     And I run `wp menu item list sidebar-menu --format=count`
-    Then STDOUT should be:
+    And STDOUT should be:
       """
       2
       """
@@ -76,7 +76,7 @@ Feature: Manage WordPress menu items
       Success: Deleted 2 of 2 menu items.
       """
     And I run `wp menu item list sidebar-menu --format=count`
-    Then STDOUT should be:
+    And STDOUT should be:
       """
       0
       """
@@ -103,8 +103,7 @@ Feature: Manage WordPress menu items
       | Child       | {CHILD_ID}       | {PARENT_ID}      |
 
     When I run `wp menu item delete {PARENT_ID}`
-
-    When I run `wp menu item list grandparent-test --fields=title,db_id,menu_item_parent`
+    And I run `wp menu item list grandparent-test --fields=title,db_id,menu_item_parent`
     Then STDOUT should be a table containing rows:
       | title       | db_id            | menu_item_parent |
       | Grandparent | {GRANDPARENT_ID} | 0                |
@@ -195,3 +194,85 @@ Feature: Manage WordPress menu items
       | type   | title  | position | link               |
       | custom | First  | 1        | https://first.com  |
       | custom | Third  | 2        | https://third.com  |
+
+  Scenario: Get menu item details
+    When I run `wp menu create "Sidebar Menu"`
+    Then STDOUT should not be empty
+
+    When I run `wp menu item add-custom sidebar-menu Apple https://apple.com --porcelain`
+    Then save STDOUT as {ITEM_ID}
+
+    When I run `wp menu item get {ITEM_ID}`
+    Then STDOUT should be a table containing rows:
+      | Field    | Value           |
+      | db_id    | {ITEM_ID}       |
+      | type     | custom          |
+      | title    | Apple           |
+      | link     | https://apple.com |
+      | position | 1               |
+
+    When I run `wp menu item get {ITEM_ID} --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "db_id": {ITEM_ID},
+        "type": "custom",
+        "title": "Apple",
+        "link": "https://apple.com"
+      }
+      """
+
+    When I run `wp menu item get {ITEM_ID} --field=title`
+    Then STDOUT should be:
+      """
+      Apple
+      """
+
+    When I run `wp menu item get {ITEM_ID} --fields=db_id,title,type --format=csv`
+    Then STDOUT should be CSV containing:
+      | Field  | Value      |
+      | db_id  | {ITEM_ID}  |
+      | title  | Apple      |
+      | type   | custom     |
+
+    When I try `wp menu item get 99999999`
+    Then STDERR should be:
+      """
+      Error: Invalid menu item.
+      """
+    And the return code should be 1
+
+    When I run `wp post create --post_title='Test Post' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I try `wp menu item get {POST_ID}`
+    Then STDERR should be:
+      """
+      Error: Invalid menu item.
+      """
+    And the return code should be 1
+
+  Scenario: Add a post type archive as a menu item
+
+    When I run `wp menu create "Archive Menu"`
+    Then STDOUT should not be empty
+
+    When I run `wp menu item add-post-type-archive archive-menu post --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ITEM_ID}
+
+    When I run `wp menu item list archive-menu --fields=db_id,type,object`
+    Then STDOUT should be a table containing rows:
+      | db_id     | type               | object |
+      | {ITEM_ID} | post_type_archive  | post   |
+
+    When I run `wp menu item get {ITEM_ID} --field=link`
+    Then STDOUT should not be empty
+
+    When I try `wp menu item add-post-type-archive archive-menu invalidposttype`
+    Then STDERR should be:
+      """
+      Error: Invalid post type.
+      """
+    And the return code should be 1
+

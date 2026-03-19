@@ -20,7 +20,7 @@ Feature: Manage WordPress posts
     And the return code should be 0
 
     When I try `wp post exists 1000`
-    And STDOUT should be empty
+    Then STDOUT should be empty
     And the return code should be 1
 
     When I run `wp post update {POST_ID} --post_title='Updated post'`
@@ -41,21 +41,48 @@ Feature: Manage WordPress posts
       Success: Deleted post {POST_ID}.
       """
 
-    When I try `wp post delete {CUSTOM_POST_ID}`
-    Then STDERR should be:
+    When I run `wp post delete {CUSTOM_POST_ID}`
+    Then STDOUT should be:
       """
-      Warning: Posts of type 'test' do not support being sent to trash.
-      Please use the --force flag to skip trash and delete them permanently.
+      Success: Trashed post {CUSTOM_POST_ID}.
       """
 
-    When I run `wp post delete {CUSTOM_POST_ID} --force`
+    When I run the previous command again
     Then STDOUT should be:
       """
       Success: Deleted post {CUSTOM_POST_ID}.
       """
 
+  Scenario: Force-deleting a custom post type post skips trash
+    When I run `wp post create --post_title='Test CPT post' --post_type='book' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BOOK_POST_ID}
+
+    When I run `wp post delete {BOOK_POST_ID} --force`
+    Then STDOUT should be:
+      """
+      Success: Deleted post {BOOK_POST_ID}.
+      """
+
     When I try the previous command again
     Then the return code should be 1
+
+  Scenario: Deleting already trashed custom post type posts
+    When I run `wp post create --post_title='Test CPT post' --post_type='book' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BOOK_POST_ID}
+
+    When I run `wp post update {BOOK_POST_ID} --post_status='trash'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {BOOK_POST_ID}.
+      """
+
+    When I run `wp post delete {BOOK_POST_ID}`
+    Then STDOUT should be:
+      """
+      Success: Deleted post {BOOK_POST_ID}.
+      """
 
   Scenario: Updating an invalid post should exit with an error
     Given a WP install
@@ -69,9 +96,10 @@ Feature: Manage WordPress posts
 
   Scenario: Setting post categories
     When I run `wp term create category "First Category" --porcelain`
-    And save STDOUT as {TERM_ID}
-    And I run `wp term create category "Second Category" --porcelain`
-    And save STDOUT as {SECOND_TERM_ID}
+    Then save STDOUT as {TERM_ID}
+
+    When I run `wp term create category "Second Category" --porcelain`
+    Then save STDOUT as {SECOND_TERM_ID}
 
     When I run `wp post create --post_title="Test category" --post_category="First Category" --porcelain`
     Then STDOUT should be a number
@@ -246,7 +274,7 @@ Feature: Manage WordPress posts
 
     When I run `EDITOR='ex -i NONE -c %s/content/bunkum -c wq' wp post edit {POST_ID}`
     Then STDERR should be empty
-    Then STDOUT should contain:
+    And STDOUT should contain:
       """
       Updated post {POST_ID}.
       """
@@ -365,6 +393,65 @@ Feature: Manage WordPress posts
       | Publish post | publish-post | publish      |
       | Sample Page  | sample-page  | publish      |
 
+  Scenario: List posts with date query
+    When I run `wp post create --post_title='old post' --post_date='2023-01-24T09:52:00.000Z'`
+    And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
+    And I run `wp post list --field=post_title --date_query='{"before":{"year":"2024"}}'`
+    Then STDOUT should contain:
+      """
+      old post
+      """
+    And STDOUT should not contain:
+      """
+      new post
+      """
+
+  Scenario: List posts with tax query
+    When I run `wp term create category "First Category" --porcelain`
+    And I run `wp term create category "Second Category" --porcelain`
+    And I run `wp post create --post_title='post-1' --post_category="First Category"`
+    And I run `wp post create --post_title='post-2' --post_category="Second Category"`
+    And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
+    And I run `wp post list --field=post_title --tax_query='[{"taxonomy":"category","field":"slug","terms":"first-category"}]'`
+    Then STDOUT should contain:
+      """
+      post-1
+      """
+    And STDOUT should not contain:
+      """
+      post-2
+      """
+
+  Scenario: Creating/updating posts with taxonomies
+    When I run `wp term create category "First Category" --porcelain`
+    And save STDOUT as {CAT_1}
+    And I run `wp term create category "Second Category" --porcelain`
+    And save STDOUT as {CAT_2}
+    And I run `wp term create post_tag "Term One" --porcelain`
+    And I run `wp term create post_tag "Term Two" --porcelain`
+    And I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"category":[{CAT_1},{CAT_2}],"post_tag":["term-one", "term-two"]}' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post term list {POST_ID} category post_tag --format=table --fields=name,taxonomy`
+    Then STDOUT should be a table containing rows:
+      | name            | taxonomy |
+      | First Category  | category |
+      | Second Category | category |
+      | Term One        | post_tag |
+      | Term Two        | post_tag |
+    When I run `wp post update {POST_ID} --tax_input='{"category":[{CAT_1}],"post_tag":["term-one"]}'`
+    Then STDOUT should contain:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post term list {POST_ID} category post_tag --format=table --fields=name,taxonomy`
+    Then STDOUT should be a table containing rows:
+      | name           | taxonomy |
+      | First Category | category |
+      | Term One       | post_tag |
+
   Scenario: Update categories on a post
     When I run `wp term create category "Test Category" --porcelain`
     Then save STDOUT as {TERM_ID}
@@ -415,38 +502,10 @@ Feature: Manage WordPress posts
       | {POST_ID} | key2     | value2b    |
       | {POST_ID} | key3     | value3     |
 
-  @less-than-wp-4.4
-  Scenario: Creating/updating posts with meta keys for WP < 4.4 has no effect so should give warning
-    When I try `wp post create --post_title='Test Post' --post_content='Test post content' --meta_input='{"key1":"value1","key2":"value2"}' --porcelain`
-    Then the return code should be 0
-    And STDOUT should be a number
-    And save STDOUT as {POST_ID}
-    And STDERR should be:
+    When I run `wp post list --field=post_title --meta_query='[{"key":"key2","value":"value2b"}]'`
+    Then STDOUT should contain:
       """
-      Warning: The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect.
-      """
-
-    When I run `wp post meta list {POST_ID} --format=count`
-    Then STDOUT should be:
-      """
-      0
-      """
-
-    When I try `wp post update {POST_ID} --meta_input='{"key2":"value2b","key3":"value3"}'`
-    Then the return code should be 0
-    And STDERR should be:
-      """
-      Warning: The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect.
-      """
-    And STDOUT should be:
-      """
-      Success: Updated post {POST_ID}.
-      """
-
-    When I run `wp post meta list {POST_ID} --format=count`
-    Then STDOUT should be:
-      """
-      0
+      Test Post
       """
 
   Scenario: Publishing a post and setting a date fails if the edit_date flag is not passed.
@@ -506,4 +565,40 @@ Feature: Manage WordPress posts
     Then STDOUT should contain:
       """
       2005-01-24T09:52:00.000Z
+      """
+
+  @require-wp-5.0
+  Scenario: Get block_version field for post with blocks
+    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello block world</p><!-- /wp:paragraph -->' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=block_version`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+  @require-wp-5.0
+  Scenario: Get block_version field for post without blocks
+    When I run `wp post create --post_title='Classic Post' --post_content='<p>Just plain HTML</p>' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=block_version`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+  @require-wp-5.0
+  Scenario: Get block_version field included in default output
+    When I run `wp post create --post_title='Test Post' --post_content='<!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {"block_version":1}
       """

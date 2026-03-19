@@ -98,6 +98,12 @@ Feature: Manage sites in a multisite installation
       {SCHEME}://example.com/first/
       """
 
+    When I run `wp site list --field=url --site-path=/first/`
+    Then STDOUT should be:
+      """
+      {SCHEME}://example.com/first/
+      """
+
   Scenario: Filter site list by user
     Given a WP multisite install
 
@@ -106,7 +112,8 @@ Feature: Manage sites in a multisite installation
     And save STDOUT as {SITE_ID}
     And I run `wp site list --blog_id={SITE_ID} --field=url`
     And save STDOUT as {SITE_URL}
-    And I run `wp user create newuser newuser@example.com --porcelain --url={SITE_URL}`
+
+    When I run `wp user create newuser newuser@example.com --porcelain --url={SITE_URL}`
     Then STDOUT should be a number
     And save STDOUT as {USER_ID}
     And I run `wp user get {USER_ID} --field=user_login`
@@ -133,7 +140,6 @@ Feature: Manage sites in a multisite installation
 
     When I run `wp site list --field=url --site_user={USER_LOGIN}`
     Then STDOUT should be empty
-
 
   Scenario: Delete a site by slug
     Given a WP multisite install
@@ -763,3 +769,131 @@ Feature: Manage sites in a multisite installation
     Then STDOUT should be a table containing rows:
       | blog_id | public |
       | 2       | 1      |
+
+  Scenario: Get site by ID
+    Given a WP multisite install
+
+    When I run `wp site create --slug=testsite --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get {SITE_ID} --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+    When I run `wp site get {SITE_ID}`
+    Then STDOUT should be a table containing rows:
+      | Field     | Value     |
+      | blog_id   | {SITE_ID} |
+
+  Scenario: Get site by URL
+    Given a WP multisite install
+
+    When I run `wp site create --slug=testsite --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+    And I run `wp site list --blog_id={SITE_ID} --field=url`
+    And save STDOUT as {SITE_URL}
+
+    When I run `wp site get {SITE_URL} --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+  Scenario: Get site by URL with subdirectory
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --slug=mysubdir --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get http://example.com/mysubdir/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+  Scenario: Use site get with site delete
+    Given a WP multisite install
+
+    When I run `wp site create --slug=deleteme --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get http://example.com/deleteme/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+    And save STDOUT as {BLOG_ID}
+
+    When I run `wp site delete {BLOG_ID} --yes`
+    Then STDOUT should contain:
+      """
+      Success: The site at
+      """
+    And STDOUT should contain:
+      """
+      was deleted.
+      """
+
+  Scenario: Get site with invalid URL should fail
+    Given a WP multisite install
+
+    When I try `wp site get http://example.com/nonexistent/ --field=blog_id`
+    Then STDERR should contain:
+      """
+      Error: Could not find site with URL: http://example.com/nonexistent/
+      """
+    And the return code should be 1
+
+  Scenario: Get site by domain without scheme
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --slug=noscheme --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get example.com/noscheme/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+  Scenario: Get site by simple domain path
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --slug=simplepath --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get example.com/simplepath --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+  Scenario: Get site by subdomain without scheme
+    Given a WP multisite subdomain install
+
+    When I run `wp site create --slug=subdomain --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I run `wp site get subdomain.example.com --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SITE_ID}
+      """
+
+  Scenario: Get main site by domain
+    Given a WP multisite install
+
+    When I run `wp site get example.com --field=blog_id`
+    Then STDOUT should be:
+      """
+      1
+      """

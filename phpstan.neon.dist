@@ -1,0 +1,21 @@
+parameters:
+  level: 9
+  paths:
+    - src
+    - entity-command.php
+  excludePaths:
+    # Polyfill files are copies of WordPress core code with GOTO control flow
+    # that PHPStan cannot analyze correctly
+    - src/Compat/WP_Block_Processor.php
+    - src/Compat/WP_HTML_Span.php
+    - src/Compat/polyfills.php
+  scanDirectories:
+    - vendor/wp-cli/wp-cli/php
+  scanFiles:
+    - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+  treatPhpDocTypesAsCertain: false
+  ignoreErrors:
+    - identifier: missingType.iterableValue
+    - identifier: missingType.property
+    - identifier: missingType.parameter
+    - identifier: missingType.return

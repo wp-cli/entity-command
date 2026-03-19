@@ -15,7 +15,6 @@ Feature: Manage user term
       """
     And I run `wp plugin activate test-add-tax`
 
-
     When I run `wp user term add 1 user_type foo`
     Then STDOUT should be:
       """

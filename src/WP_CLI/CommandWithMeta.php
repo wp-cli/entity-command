@@ -66,6 +66,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 * : Unserialize meta_value output.
 	 *
 	 * @subcommand list
+	 *
+	 * @param array{0: string} $args Positional arguments..
+	 * @param array{keys?: string, fields?: string, format: 'table'|'csv'|'json'|'yaml'|'count', orderby: 'id'|'meta_key'|'meta_value', order: 'asc'|'desc', unserialize?: bool} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
 
@@ -91,7 +94,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 			foreach ( $values as $item_value ) {
 
 				if ( Utils\get_flag_value( $assoc_args, 'unserialize' ) ) {
-					$item_value = maybe_unserialize( $item_value );
+					$item_value = maybe_unserialize( (string) $item_value );
 				}
 
 				$items[] = (object) [
@@ -112,12 +115,12 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 				function ( $a, $b ) use ( $orderby, $order ) {
 					// Sort array.
 					return 'asc' === $order
-						? $a->$orderby > $b->$orderby
-						: $a->$orderby < $b->$orderby;
+						? $a->$orderby <=> $b->$orderby
+						: $b->$orderby <=> $a->$orderby;
 				}
 			);
 
-		} elseif ( 'id' === $orderby && 'desc' === $order ) { // Sort by default descending.
+		} elseif ( 'desc' === $order ) { // Sort by default descending.
 			krsort( $items );
 		}
 
@@ -142,6 +145,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 * <key>
 	 * : The name of the meta field to get.
 	 *
+	 * [--single]
+	 * : Whether to return a single value.
+	 *
 	 * [--format=<format>]
 	 * : Get value in a particular format.
 	 * ---
@@ -151,13 +157,17 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *   - json
 	 *   - yaml
 	 * ---
+	 *
+	 * @param array{0: string, 1: string} $args Positional arguments.
+	 * @param array{single?: bool, format: 'table'|'csv'|'json'|'yaml'} $assoc_args Associative arguments.
 	 */
 	public function get( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
 
 		$object_id = $this->check_object_id( $object_id );
+		$single    = (bool) Utils\get_flag_value( $assoc_args, 'single', true );
 
-		$value = $this->get_metadata( $object_id, $meta_key, true );
+		$value = $this->get_metadata( $object_id, $meta_key, $single );
 
 		if ( '' === $value ) {
 			die( 1 );
@@ -182,6 +192,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *
 	 * [--all]
 	 * : Delete all meta for the object.
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{all?: bool} $assoc_args Associative arguments.
 	 */
 	public function delete( $args, $assoc_args ) {
 		list( $object_id ) = $args;
@@ -243,6 +256,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *   - plaintext
 	 *   - json
 	 * ---
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{format: 'plaintext'|'json'} $assoc_args Associative arguments.
 	 */
 	public function add( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -286,6 +302,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 * ---
 	 *
 	 * @alias set
+	 *
+	 * @param array<string> $args Positional arguments.
+	 * @param array{format: 'plaintext'|'json'} $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 		list( $object_id, $meta_key ) = $args;
@@ -295,6 +314,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 
 		$object_id = $this->check_object_id( $object_id );
 
+		/**
+		 * @var array|string $meta_value
+		 */
 		$meta_value = sanitize_meta( $meta_key, $meta_value, $this->meta_type );
 		$old_value  = sanitize_meta( $meta_key, $this->get_metadata( $object_id, $meta_key, true ), $this->meta_type );
 
@@ -435,6 +457,9 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 			WP_CLI::error( $exception->getMessage() );
 		}
 
+		/**
+		 * @var array|string $patched_meta_value
+		 */
 		$patched_meta_value = sanitize_meta( $meta_key, $traverser->value(), $this->meta_type );
 
 		if ( $patched_meta_value === $old_meta_value ) {
@@ -500,8 +525,11 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	 *                          specified.
 	 *
 	 * @return mixed Single metadata value, or array of values.
+	 *
+	 * @phpstan-return ($single is true ? string : $meta_key is "" ? array<array<string>> : array<string>)
 	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
+		// @phpstan-ignore return.type
 		return get_metadata( $this->meta_type, $object_id, $meta_key, $single );
 	}
 
@@ -541,10 +569,11 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 	/**
 	 * Check that the object ID exists
 	 *
-	 * @param int
+	 * @param string|int $object_id
+	 * @return int
 	 */
 	protected function check_object_id( $object_id ) {
 		// Needs to be set in subclass
-		return $object_id;
+		return (int) $object_id;
 	}
 }

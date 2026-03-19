@@ -26,6 +26,34 @@ use WP_CLI\Utils;
  *     Success: Trashed comment 264.
  *     Success: Trashed comment 262.
  *
+ *     # Create a note for a block (WordPress 6.9+).
+ *     $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
+ *     Success: Created comment 945.
+ *
+ *     # List notes for a specific post (WordPress 6.9+).
+ *     $ wp comment list --type=note --post_id=15
+ *     +------------+---------------------+----------------------------------+
+ *     | comment_ID | comment_date        | comment_content                  |
+ *     +------------+---------------------+----------------------------------+
+ *     | 945        | 2024-11-10 14:30:00 | This block needs revision        |
+ *     +------------+---------------------+----------------------------------+
+ *
+ *     # Reply to a note (WordPress 6.9+).
+ *     $ wp comment create --comment_post_ID=15 --comment_content="Updated per feedback" --comment_author="editor" --comment_type="note" --comment_parent=945
+ *     Success: Created comment 946.
+ *
+ *     # Resolve a note by adding a comment with status meta (WordPress 6.9+).
+ *     $ wp comment create --comment_post_ID=15 --comment_content="Resolving" --comment_author="editor" --comment_type="note" --comment_parent=945 --porcelain
+ *     947
+ *     $ wp comment meta add 947 _wp_note_status resolved
+ *     Success: Added custom field.
+ *
+ *     # Reopen a resolved note (WordPress 6.9+).
+ *     $ wp comment create --comment_post_ID=15 --comment_content="Reopening for further review" --comment_author="editor" --comment_type="note" --comment_parent=945 --porcelain
+ *     948
+ *     $ wp comment meta add 948 _wp_note_status reopen
+ *     Success: Added custom field.
+ *
  * @package wp-cli
  */
 class Comment_Command extends CommandWithDBObject {
@@ -63,6 +91,13 @@ class Comment_Command extends CommandWithDBObject {
 	 *     # Create comment.
 	 *     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
 	 *     Success: Created comment 932.
+	 *
+	 *     # Create a note (WordPress 6.9+).
+	 *     $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
+	 *     Success: Created comment 933.
+	 *
+	 * @param string[] $args Positional arguments. Unused.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function create( $args, $assoc_args ) {
 		$assoc_args = wp_slash( $assoc_args );
@@ -110,6 +145,9 @@ class Comment_Command extends CommandWithDBObject {
 	 *     # Update comment.
 	 *     $ wp comment update 123 --comment_author='That Guy'
 	 *     Success: Updated comment 123.
+	 *
+	 * @param string[] $args Positional arguments. Comment IDs to update.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 		$assoc_args = wp_slash( $assoc_args );
@@ -242,7 +280,9 @@ class Comment_Command extends CommandWithDBObject {
 			WP_CLI::error( 'Invalid comment ID.' );
 		}
 
+		// @phpstan-ignore property.notFound
 		if ( ! isset( $comment->url ) ) {
+			// @phpstan-ignore property.notFound
 			$comment->url = get_comment_link( $comment );
 		}
 
@@ -361,6 +401,15 @@ class Comment_Command extends CommandWithDBObject {
 	 *     | 3          | 2023-11-10 11:22:31 | John Doe       |
 	 *     +------------+---------------------+----------------+
 	 *
+	 *     # List notes for a specific post (WordPress 6.9+).
+	 *     $ wp comment list --type=note --post_id=15 --fields=ID,comment_date,comment_content
+	 *     +------------+---------------------+----------------------------------+
+	 *     | comment_ID | comment_date        | comment_content                  |
+	 *     +------------+---------------------+----------------------------------+
+	 *     | 10         | 2024-11-10 14:30:00 | This block needs revision        |
+	 *     | 11         | 2024-11-10 15:45:00 | Updated per feedback             |
+	 *     +------------+---------------------+----------------------------------+
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -376,34 +425,36 @@ class Comment_Command extends CommandWithDBObject {
 			$assoc_args['count'] = true;
 		}
 
-		if ( ! empty( $assoc_args['comment__in'] )
-			&& ! empty( $assoc_args['orderby'] )
-			&& 'comment__in' === $assoc_args['orderby']
-			&& Utils\wp_version_compare( '4.4', '<' ) ) {
-			$comments = [];
-			foreach ( $assoc_args['comment__in'] as $comment_id ) {
-				$comment = get_comment( $comment_id );
-				if ( $comment ) {
-					$comments[] = $comment;
-				} else {
-					WP_CLI::warning( "Invalid comment {$comment_id}." );
-				}
-			}
-		} else {
-			$query    = new WP_Comment_Query();
-			$comments = $query->query( $assoc_args );
-		}
+		$query    = new WP_Comment_Query();
+		$comments = $query->query( $assoc_args );
 
 		if ( 'count' === $formatter->format ) {
+			/**
+			 * @var int $comments
+			 */
 			echo $comments;
+			return;
 		} else {
+			/**
+			 * @var array $comments
+			 */
+
 			if ( 'ids' === $formatter->format ) {
-				$comments = wp_list_pluck( $comments, 'comment_ID' );
+				/**
+				 * @var \WP_Comment[] $comments
+				 */
+				$items = wp_list_pluck( $comments, 'comment_ID' );
+
+				$comments = $items;
 			} elseif ( is_array( $comments ) ) {
 				$comments = array_map(
 					function ( $comment ) {
-							$comment->url = get_comment_link( $comment->comment_ID );
-							return $comment;
+						/**
+						 * @var \WP_Comment $comment
+						 */
+						// @phpstan-ignore property.notFound
+						$comment->url = get_comment_link( (int) $comment->comment_ID );
+						return $comment;
 					},
 					$comments
 				);
@@ -439,7 +490,7 @@ class Comment_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $comment_id, $assoc_args ) {
-				$force = Utils\get_flag_value( $assoc_args, 'force' );
+				$force = (bool) Utils\get_flag_value( $assoc_args, 'force' );
 
 				$status = wp_get_comment_status( $comment_id );
 				$result = wp_delete_comment( $comment_id, $force );
@@ -457,6 +508,9 @@ class Comment_Command extends CommandWithDBObject {
 	private function call( $args, $status, $success, $failure ) {
 		$comment_id = absint( $args );
 
+		/**
+		 * @var callable $func
+		 */
 		$func = "wp_{$status}_comment";
 
 		if ( ! $func( $comment_id ) ) {
@@ -642,16 +696,17 @@ class Comment_Command extends CommandWithDBObject {
 	 *     total_comments:  19
 	 */
 	public function count( $args, $assoc_args ) {
-		$post_id = Utils\get_flag_value( $args, 0, 0 );
+		$post_id = $args[0] ?? null;
 
 		$count = wp_count_comments( $post_id );
 
 		// Move total_comments to the end of the object
 		$total = $count->total_comments;
 		unset( $count->total_comments );
+		// @phpstan-ignore assign.propertyReadOnly
 		$count->total_comments = $total;
 
-		foreach ( $count as $status => $count ) {
+		foreach ( (array) $count as $status => $count ) {
 			WP_CLI::line( str_pad( "$status:", 17 ) . $count );
 		}
 	}
@@ -673,6 +728,9 @@ class Comment_Command extends CommandWithDBObject {
 	public function recount( $args ) {
 		foreach ( $args as $id ) {
 			if ( wp_update_comment_count( $id ) ) {
+				/**
+				 * @var \WP_Post $post
+				 */
 				$post = get_post( $id );
 				WP_CLI::log( "Updated post {$post->ID} comment count to {$post->comment_count}." );
 			} else {

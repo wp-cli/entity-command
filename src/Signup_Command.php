@@ -130,9 +130,12 @@ class Signup_Command extends CommandWithDBObject {
 
 		$signups = array();
 
-		$per_page = (int) Utils\get_flag_value( $assoc_args, 'per_page' );
+		/**
+		 * @var string|null $per_page
+		 */
+		$per_page = Utils\get_flag_value( $assoc_args, 'per_page' );
 
-		$limit = $per_page ? $wpdb->prepare( 'LIMIT %d', $per_page ) : '';
+		$limit = $per_page ? $wpdb->prepare( 'LIMIT %d', (int) $per_page ) : '';
 
 		$query = "SELECT * FROM $wpdb->signups {$limit}";
 
@@ -308,7 +311,7 @@ class Signup_Command extends CommandWithDBObject {
 	/**
 	 * Deletes signup.
 	 *
-	 * @param stdClasss $signup
+	 * @param object{signup_id: int|string} $signup
 	 * @return bool True if success; otherwise false.
 	 */
 	private function delete_signup( $signup ) {

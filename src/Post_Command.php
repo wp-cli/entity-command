@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\CommandWithDBObject;
+use WP_CLI\Entity\Block_Processor_Helper;
 use WP_CLI\Fetchers\Post as PostFetcher;
 use WP_CLI\Fetchers\User as UserFetcher;
 use WP_CLI\Utils;
@@ -121,6 +122,8 @@ class Post_Command extends CommandWithDBObject {
 	 * [--tax_input=<tax_input>]
 	 * : Array of taxonomy terms keyed by their taxonomy name. Default empty.
 	 *
+	 *   Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
+	 *
 	 * [--meta_input=<meta_input>]
 	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
 	 *
@@ -182,11 +185,7 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
-			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
-		}
-
-		$array_arguments = [ 'meta_input' ];
+		$array_arguments = [ 'meta_input', 'tax_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		if ( isset( $assoc_args['from-post'] ) ) {
@@ -215,7 +214,41 @@ class Post_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $params ) {
-				return wp_insert_post( $params, true );
+				$filter_callback = null;
+
+				if ( 0 === get_current_user_id() && ! empty( $params['tax_input'] ) ) {
+					$allowed_caps = [];
+					/**
+					 * @var string $taxonomy
+					 */
+					foreach ( array_keys( $params['tax_input'] ) as $taxonomy ) {
+						$tax_obj = get_taxonomy( $taxonomy );
+						if ( $tax_obj ) {
+							$primitive_caps = map_meta_cap( $tax_obj->cap->assign_terms, 0 );
+							$allowed_caps   = array_merge( $allowed_caps, $primitive_caps );
+						}
+					}
+
+					if ( ! empty( $allowed_caps ) ) {
+						$filter_callback = function ( $allcaps, $caps ) use ( $allowed_caps ) {
+							foreach ( $caps as $cap ) {
+								if ( in_array( $cap, $allowed_caps, true ) ) {
+									$allcaps[ $cap ] = true;
+								}
+							}
+							return $allcaps;
+						};
+						add_filter( 'user_has_cap', $filter_callback, 10, 2 );
+					}
+				}
+
+				$result = wp_insert_post( $params, true );
+
+				if ( $filter_callback ) {
+					remove_filter( 'user_has_cap', $filter_callback );
+				}
+
+				return $result;
 			}
 		);
 	}
@@ -300,6 +333,8 @@ class Post_Command extends CommandWithDBObject {
 	 * [--tax_input=<tax_input>]
 	 * : Array of taxonomy terms keyed by their taxonomy name. Default empty.
 	 *
+	 *   Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
+	 *
 	 * [--meta_input=<meta_input>]
 	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
 	 *
@@ -351,11 +386,7 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		if ( isset( $assoc_args['meta_input'] ) && Utils\wp_version_compare( '4.4', '<' ) ) {
-			WP_CLI::warning( "The 'meta_input' field was only introduced in WordPress 4.4 so will have no effect." );
-		}
-
-		$array_arguments = [ 'meta_input' ];
+		$array_arguments = [ 'meta_input', 'tax_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		$assoc_args = wp_slash( $assoc_args );
@@ -363,7 +394,41 @@ class Post_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $params ) {
-				return wp_update_post( $params, true );
+				$filter_callback = null;
+
+				if ( 0 === get_current_user_id() && ! empty( $params['tax_input'] ) ) {
+					$allowed_caps = [];
+					/**
+					 * @var string $taxonomy
+					 */
+					foreach ( array_keys( $params['tax_input'] ) as $taxonomy ) {
+						$tax_obj = get_taxonomy( $taxonomy );
+						if ( $tax_obj ) {
+							$primitive_caps = map_meta_cap( $tax_obj->cap->assign_terms, 0 );
+							$allowed_caps   = array_merge( $allowed_caps, $primitive_caps );
+						}
+					}
+
+					if ( ! empty( $allowed_caps ) ) {
+						$filter_callback = function ( $allcaps, $caps ) use ( $allowed_caps ) {
+							foreach ( $caps as $cap ) {
+								if ( in_array( $cap, $allowed_caps, true ) ) {
+									$allcaps[ $cap ] = true;
+								}
+							}
+							return $allcaps;
+						};
+						add_filter( 'user_has_cap', $filter_callback, 10, 2 );
+					}
+				}
+
+				$result = wp_update_post( $params, true );
+
+				if ( $filter_callback ) {
+					remove_filter( 'user_has_cap', $filter_callback );
+				}
+
+				return $result;
 			}
 		);
 	}
@@ -387,7 +452,7 @@ class Post_Command extends CommandWithDBObject {
 		$result = $this->_edit( $post->post_content, "WP-CLI post {$post->ID}" );
 
 		if ( false === $result ) {
-			WP_CLI::warning( 'No change made to post content.', 'Aborted' );
+			WP_CLI::warning( 'No change made to post content.' );
 		} else {
 			$this->update( $args, [ 'post_content' => $result ] );
 		}
@@ -431,6 +496,11 @@ class Post_Command extends CommandWithDBObject {
 	 *
 	 *     # Save the post content to a file
 	 *     $ wp post get 123 --field=content > file.txt
+	 *
+	 *     # Get the block version of a post (1 = has blocks, 0 = no blocks)
+	 *     # Requires WordPress 5.0+.
+	 *     $ wp post get 123 --field=block_version
+	 *     1
 	 */
 	public function get( $args, $assoc_args ) {
 		$post = $this->fetcher->get_check( $args[0] );
@@ -440,6 +510,10 @@ class Post_Command extends CommandWithDBObject {
 
 		if ( ! isset( $post_arr['url'] ) ) {
 			$post_arr['url'] = get_permalink( $post->ID );
+		}
+
+		if ( function_exists( 'block_version' ) ) {
+			$post_arr['block_version'] = block_version( $post->post_content );
 		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
@@ -504,22 +578,24 @@ class Post_Command extends CommandWithDBObject {
 		$status    = get_post_status( $post_id );
 		$post_type = get_post_type( $post_id );
 
-		if ( ! $assoc_args['force']
-			&& ( 'post' !== $post_type && 'page' !== $post_type ) ) {
-			return [
-				'error',
-				"Posts of type '{$post_type}' do not support being sent to trash.\n"
-				. 'Please use the --force flag to skip trash and delete them permanently.',
-			];
+		$force_delete = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type;
+
+		if ( $force_delete || ! EMPTY_TRASH_DAYS ) {
+			if ( ! wp_delete_post( $post_id, true ) ) {
+				return [ 'error', "Failed deleting post {$post_id}." ];
+			}
+
+			return [ 'success', "Deleted post {$post_id}." ];
 		}
 
-		if ( ! wp_delete_post( $post_id, $assoc_args['force'] ) ) {
-			return [ 'error', "Failed deleting post {$post_id}." ];
+		// Use wp_trash_post() directly because wp_delete_post() only auto-trashes
+		// 'post' and 'page' types, permanently deleting all other post types even
+		// when $force_delete is false. wp_trash_post() works for all post types.
+		if ( wp_trash_post( $post_id ) ) {
+			return [ 'success', "Trashed post {$post_id}." ];
 		}
 
-		$action = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type ? 'Deleted' : 'Trashed';
-
-		return [ 'success', "{$action} post {$post_id}." ];
+		return [ 'error', "Failed trashing post {$post_id}." ];
 	}
 
 	/**
@@ -632,12 +708,14 @@ class Post_Command extends CommandWithDBObject {
 	public function list_( $args, $assoc_args ) {
 		$formatter = $this->get_formatter( $assoc_args );
 
-		$defaults   = [
+		$defaults        = [
 			'posts_per_page' => -1,
 			'post_status'    => 'any',
 		];
-		$query_args = array_merge( $defaults, $assoc_args );
-		$query_args = self::process_csv_arguments_to_arrays( $query_args );
+		$array_arguments = [ 'date_query', 'tax_query', 'meta_query' ];
+		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+		$query_args      = array_merge( $defaults, $assoc_args );
+		$query_args      = self::process_csv_arguments_to_arrays( $query_args );
 		if ( isset( $query_args['post_type'] ) && 'any' !== $query_args['post_type'] ) {
 			$query_args['post_type'] = explode( ',', $query_args['post_type'] );
 		}
@@ -645,6 +723,7 @@ class Post_Command extends CommandWithDBObject {
 		if ( 'ids' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
 			$query                = new WP_Query( $query_args );
+			// @phpstan-ignore argument.type
 			echo implode( ' ', $query->posts );
 		} elseif ( 'count' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
@@ -654,8 +733,13 @@ class Post_Command extends CommandWithDBObject {
 			$query = new WP_Query( $query_args );
 			$posts = array_map(
 				function ( $post ) {
-						$post->url = get_permalink( $post->ID );
-						return $post;
+					/**
+					 * @var \WP_Post $post
+					 */
+
+					// @phpstan-ignore property.notFound
+					$post->url = get_permalink( $post->ID );
+					return $post;
 				},
 				$query->posts
 			);
@@ -742,6 +826,9 @@ class Post_Command extends CommandWithDBObject {
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
 	 *     Success: Added custom field.
+	 *
+	 * @param array<string> $args Positional arguments. Unused.
+	 * @param array{count: string, post_type: string, post_status: string, post_title: string, post_author: string, post_date?: string, post_date_gmt?: string, post_content?: string, max_depth: string, format: string} $assoc_args Associative arguments.
 	 */
 	public function generate( $args, $assoc_args ) {
 		global $wpdb;
@@ -764,7 +851,6 @@ class Post_Command extends CommandWithDBObject {
 		$post_data['post_date_gmt'] = $this->maybe_convert_hyphenated_date_format( $post_data['post_date_gmt'] );
 
 		// Add time if the string is a valid date without time.
-		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
 		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
 		if ( $date && $date->format( 'Y-m-d' ) === $post_data['post_date'] ) {
 			$post_data['post_date'] .= ' 00:00:00';
@@ -798,17 +884,20 @@ class Post_Command extends CommandWithDBObject {
 				WP_CLI::error( 'The parameter `post_content` reads from STDIN.' );
 			}
 
-			$post_data['post_content'] = file_get_contents( 'php://stdin' );
+			$post_data['post_content'] = (string) file_get_contents( 'php://stdin' );
 		}
 
 		// Get the total number of posts.
 		$total = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = %s", $post_data['post_type'] ) );
 
+		/**
+		 * @var \WP_Post_Type $post_type
+		 */
+		$post_type = get_post_type_object( $post_data['post_type'] );
+
 		$label = ! empty( $post_data['post_title'] )
 			? $post_data['post_title']
-			: get_post_type_object( $post_data['post_type'] )->labels->singular_name;
-
-		$hierarchical = get_post_type_object( $post_data['post_type'] )->hierarchical;
+			: $post_type->labels->singular_name;
 
 		$limit = $post_data['count'] + $total;
 
@@ -816,7 +905,7 @@ class Post_Command extends CommandWithDBObject {
 
 		$notify = false;
 		if ( 'progress' === $format ) {
-			$notify = Utils\make_progress_bar( 'Generating posts', $post_data['count'] );
+			$notify = Utils\make_progress_bar( 'Generating posts', (int) $post_data['count'] );
 		}
 
 		$previous_post_id = 0;
@@ -825,7 +914,7 @@ class Post_Command extends CommandWithDBObject {
 
 		for ( $index = $total; $index < $limit; $index++ ) {
 
-			if ( $hierarchical ) {
+			if ( $post_type->hierarchical ) {
 
 				if ( $this->maybe_make_child() && $current_depth < $post_data['max_depth'] ) {
 
@@ -846,7 +935,7 @@ class Post_Command extends CommandWithDBObject {
 					? $label
 					: "{$label} {$index}",
 				'post_status'   => $post_data['post_status'],
-				'post_author'   => $post_data['post_author'],
+				'post_author'   => (int) $post_data['post_author'],
 				'post_parent'   => $current_parent,
 				'post_name'     => ! empty( $post_data['post_title'] )
 					? sanitize_title( $post_data['post_title'] . ( $index === $total ? '' : "-{$index}" ) )
@@ -870,10 +959,12 @@ class Post_Command extends CommandWithDBObject {
 			}
 
 			if ( 'progress' === $format ) {
+				// @phpstan-ignore method.nonObject
 				$notify->tick();
 			}
 		}
 		if ( 'progress' === $format ) {
+			// @phpstan-ignore method.nonObject
 			$notify->finish();
 		}
 	}
@@ -931,7 +1022,7 @@ class Post_Command extends CommandWithDBObject {
 		} else {
 			$readfile = 'php://stdin';
 		}
-		return file_get_contents( $readfile );
+		return (string) file_get_contents( $readfile );
 	}
 
 	/**
@@ -969,6 +1060,9 @@ class Post_Command extends CommandWithDBObject {
 	 * @return array
 	 */
 	private function get_metadata( $post_id ) {
+		/**
+		 * @var array<string, array<string>> $metadata
+		 */
 		$metadata = get_metadata( 'post', $post_id );
 		$items    = [];
 		foreach ( $metadata as $key => $values ) {
@@ -1008,7 +1102,7 @@ class Post_Command extends CommandWithDBObject {
 	private function get_tags( $post_id ) {
 		$tag_data = get_the_tags( $post_id );
 		$tag_arr  = [];
-		if ( $tag_data ) {
+		if ( $tag_data && ! is_wp_error( $tag_data ) ) {
 			foreach ( $tag_data as $tag ) {
 				array_push( $tag_arr, $tag->slug );
 			}
@@ -1045,6 +1139,88 @@ class Post_Command extends CommandWithDBObject {
 			WP_CLI::success( "Post with ID {$args[0]} exists." );
 		} else {
 			WP_CLI::halt( 1 );
+		}
+	}
+
+	/**
+	 * Checks if a post contains any blocks.
+	 *
+	 * Exits with return code 0 if the post contains blocks,
+	 * or return code 1 if it does not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check if post contains blocks.
+	 *     $ wp post has-blocks 123
+	 *     Success: Post 123 contains blocks.
+	 *
+	 *     # Check a classic (non-block) post.
+	 *     $ wp post has-blocks 456
+	 *     Error: Post 456 does not contain blocks.
+	 *
+	 *     # Use in a shell conditional.
+	 *     $ if wp post has-blocks 123 2>/dev/null; then
+	 *     >   echo "Post uses blocks"
+	 *     > fi
+	 *
+	 * @subcommand has-blocks
+	 */
+	public function has_blocks( $args, $assoc_args ) {
+		$post = $this->fetcher->get_check( $args[0] );
+
+		if ( Block_Processor_Helper::has_blocks( $post->post_content ) ) {
+			WP_CLI::success( "Post {$post->ID} contains blocks." );
+		} else {
+			WP_CLI::error( "Post {$post->ID} does not contain blocks." );
+		}
+	}
+
+	/**
+	 * Checks if a post contains a specific block type.
+	 *
+	 * Exits with return code 0 if the post contains the specified block,
+	 * or return code 1 if it does not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * <block-name>
+	 * : The block type name to check for (e.g., 'core/paragraph').
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check if post contains a paragraph block.
+	 *     $ wp post has-block 123 core/paragraph
+	 *     Success: Post 123 contains block 'core/paragraph'.
+	 *
+	 *     # Check for a heading block.
+	 *     $ wp post has-block 123 core/heading
+	 *     Success: Post 123 contains block 'core/heading'.
+	 *
+	 *     # Check for a block that doesn't exist.
+	 *     $ wp post has-block 123 core/gallery
+	 *     Error: Post 123 does not contain block 'core/gallery'.
+	 *
+	 *     # Check for a custom block from a plugin.
+	 *     $ wp post has-block 123 my-plugin/custom-block
+	 *
+	 * @subcommand has-block
+	 */
+	public function has_block( $args, $assoc_args ) {
+		$post       = $this->fetcher->get_check( $args[0] );
+		$block_name = $args[1];
+
+		if ( has_block( $block_name, $post ) ) {
+			WP_CLI::success( "Post {$post->ID} contains block '{$block_name}'." );
+		} else {
+			WP_CLI::error( "Post {$post->ID} does not contain block '{$block_name}'." );
 		}
 	}
 

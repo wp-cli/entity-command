@@ -1,4 +1,4 @@
-Feature: Manage user custom fields
+Feature: Manage user custom meta fields
 
   Scenario: Usermeta CRUD
     Given a WP install
@@ -166,7 +166,6 @@ Feature: Manage user custom fields
       | user_id | meta_key | meta_value     |
       | 1       | foo      | ["1","2"]      |
       | 1       | nickname | admin          |
-
 
   Scenario: Get particular user meta
     Given a WP install

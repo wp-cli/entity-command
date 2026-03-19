@@ -105,6 +105,15 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 
 		$items = wp_get_object_terms( $object_id, $taxonomy_names, $taxonomy_args );
 
+		// This should never happen because of the taxonomy_exists check above.
+		if ( is_wp_error( $items ) ) {
+			WP_CLI::error( $items );
+		}
+
+		/**
+		 * @var \WP_Term[] $items
+		 */
+
 		$formatter = $this->get_formatter( $assoc_args );
 		$formatter->display_items( $items );
 	}
@@ -145,12 +154,15 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 
 		$this->taxonomy_exists( $taxonomy );
 
+		/**
+		 * @var string|null $field
+		 */
 		$field = Utils\get_flag_value( $assoc_args, 'by' );
 		if ( $field ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
 		}
 
-		if ( Utils\get_flag_value( $assoc_args, 'all' ) ) {
+		if ( (bool) Utils\get_flag_value( $assoc_args, 'all' ) ) {
 
 			// No need to specify terms while removing all terms.
 			if ( $terms ) {
@@ -164,7 +176,12 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 			if ( 'category' === $taxonomy ) {
 
 				// Set default category to post.
-				$default_category = (int) get_option( 'default_category' );
+
+				/**
+				 * @var string $default_category
+				 */
+				$default_category = get_option( 'default_category' );
+				$default_category = (int) $default_category;
 				$default_category = ( ! empty( $default_category ) ) ? $default_category : 1;
 				$default_category = wp_set_object_terms( $object_id, [ $default_category ], $taxonomy, true );
 
@@ -235,6 +252,9 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 
 		$this->taxonomy_exists( $taxonomy );
 
+		/**
+		 * @var string|null $field
+		 */
 		$field = Utils\get_flag_value( $assoc_args, 'by' );
 		if ( $field ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
@@ -283,6 +303,9 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 
 		$this->taxonomy_exists( $taxonomy );
 
+		/**
+		 * @var string|null $field
+		 */
 		$field = Utils\get_flag_value( $assoc_args, 'by' );
 		if ( $field ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
