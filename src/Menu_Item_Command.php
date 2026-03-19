@@ -661,6 +661,10 @@ class Menu_Item_Command extends WP_CLI_Command {
 					]
 				);
 
+				// Normalise to integers so that strict comparisons below work regardless of
+				// whether $wpdb->get_col() returned strings or integers.
+				$sorted_item_ids = array_map( 'intval', $sorted_item_ids );
+
 				// Clamp the requested position to the valid range of menu items.
 				$max_position = count( $sorted_item_ids );
 				if ( $max_position > 0 && $new_position > $max_position ) {
@@ -669,7 +673,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 				}
 
 				// Find the 1-indexed normalized rank of the item being moved.
-				$item_idx                = array_search( (string) $menu_item_db_id, $sorted_item_ids, true );
+				$item_idx                = array_search( (int) $menu_item_db_id, $sorted_item_ids, true );
 				$old_position_normalized = ( false !== $item_idx ) ? $item_idx + 1 : 0;
 
 				if ( $old_position_normalized > 0 && $new_position !== $old_position_normalized ) {
@@ -718,7 +722,7 @@ class Menu_Item_Command extends WP_CLI_Command {
 				}
 
 				$ids_sql = implode( ',', $ids_to_update );
-				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $case_clauses and $ids_sql are constructed from prepared/safe values.
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $case_clauses and $ids_sql are constructed from prepared/safe integer values.
 				$wpdb->query( "UPDATE {$wpdb->posts} SET menu_order = CASE ID {$case_clauses} END WHERE ID IN ({$ids_sql})" );
 
 				foreach ( $ids_to_update as $id ) {
