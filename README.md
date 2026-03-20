@@ -5217,17 +5217,18 @@ wp site delete [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
 
 ### wp site empty
 
-Empties a site of its content (posts, comments, terms, and meta).
+Empties a site of its content (posts, comments, terms, links, and meta).
 
 ~~~
 wp site empty [--uploads] [--yes]
 ~~~
 
-Truncates posts, comments, and terms tables to empty a site of its
+Truncates posts, comments, terms, and links tables to empty a site of its
 content. Doesn't affect site configuration (options) or users.
 
-If running a persistent object cache, make sure to flush the cache
-after emptying the site, as the cache values will be invalid otherwise.
+Flushes the object cache after emptying the site to ensure stale data
+is not served. On a Multisite installation, this will flush the cache
+for all sites.
 
 To also empty custom database tables, you'll need to hook into command
 execution:
