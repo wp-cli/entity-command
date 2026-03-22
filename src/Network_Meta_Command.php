@@ -17,7 +17,7 @@ class Network_Meta_Command extends CommandWithMeta {
 	protected $meta_type = 'site';
 
 	/**
-	 * Override add_metadata() to use add_network_option() if available.
+	 * Override add_metadata() to use add_network_option().
 	 *
 	 * @param int    $object_id  ID of the object the metadata is for.
 	 * @param string $meta_key   Metadata key to use.
@@ -29,14 +29,16 @@ class Network_Meta_Command extends CommandWithMeta {
 	 *                           value for the specified metadata key, no change
 	 *                           will be made.
 	 *
-	 * @return int|false The meta ID on success, false on failure.
+	 * @return bool The meta ID on success, false on failure.
+	 * 
+	 * @phpstan-ignore method.childReturnType
 	 */
 	protected function add_metadata( $object_id, $meta_key, $meta_value, $unique = false ) {
 		return add_network_option( $object_id, $meta_key, $meta_value );
 	}
 
 	/**
-	 * Override update_metadata() to use update_network_option() if available.
+	 * Override update_metadata() to use update_network_option().
 	 *
 	 * @param int    $object_id  ID of the object the metadata is for.
 	 * @param string $meta_key   Metadata key to use.
@@ -54,7 +56,7 @@ class Network_Meta_Command extends CommandWithMeta {
 	}
 
 	/**
-	 * Override get_metadata() to use get_network_option() if available.
+	 * Override get_metadata() to use get_network_option().
 	 *
 	 * @param int    $object_id ID of the object the metadata is for.
 	 * @param string $meta_key  Optional. Metadata key. If not specified,
@@ -65,13 +67,15 @@ class Network_Meta_Command extends CommandWithMeta {
 	 *                          specified.
 	 *
 	 * @return mixed Single metadata value, or array of values.
+	 *
+	 * @phpstan-ignore method.childReturnType
 	 */
 	protected function get_metadata( $object_id, $meta_key = '', $single = false ) {
 		return get_network_option( $object_id, $meta_key );
 	}
 
 	/**
-	 * Override delete_metadata() to use delete_network_option() if available.
+	 * Override delete_metadata() to use delete_network_option().
 	 *
 	 * @param int    $object_id  ID of the object metadata is for
 	 * @param string $meta_key   Metadata key
