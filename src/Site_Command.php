@@ -3,7 +3,6 @@
 use WP_CLI\CommandWithDBObject;
 use WP_CLI\ExitException;
 use WP_CLI\Fetchers\Site as SiteFetcher;
-use WP_CLI\Iterators\Query as QueryIterator;
 use WP_CLI\Iterators\Table as TableIterator;
 use WP_CLI\Utils;
 use WP_CLI\Formatter;
@@ -49,12 +48,6 @@ class Site_Command extends CommandWithDBObject {
 	private function empty_comments() {
 		global $wpdb;
 
-		// Empty comments and comment cache
-		$comment_ids = $wpdb->get_col( "SELECT comment_ID FROM $wpdb->comments" );
-		foreach ( $comment_ids as $comment_id ) {
-			wp_cache_delete( $comment_id, 'comment' );
-			wp_cache_delete( $comment_id, 'comment_meta' );
-		}
 		$wpdb->query( "TRUNCATE TABLE $wpdb->comments" );
 		$wpdb->query( "TRUNCATE TABLE $wpdb->commentmeta" );
 	}
@@ -65,29 +58,6 @@ class Site_Command extends CommandWithDBObject {
 	private function empty_posts() {
 		global $wpdb;
 
-		// Empty posts and post cache
-		$posts_query = "SELECT ID FROM $wpdb->posts";
-		$posts       = new QueryIterator( $posts_query, 10000 );
-
-		$taxonomies = get_taxonomies();
-
-		while ( $posts->valid() ) {
-			/**
-			 * @var object{ID: int} $post
-			 */
-			$post = $posts->current();
-
-			$post_id = $post->ID;
-
-			wp_cache_delete( $post_id, 'posts' );
-			wp_cache_delete( $post_id, 'post_meta' );
-			foreach ( $taxonomies as $taxonomy ) {
-				wp_cache_delete( $post_id, "{$taxonomy}_relationships" );
-			}
-			wp_cache_delete( $wpdb->blogid . '-' . $post_id, 'global-posts' );
-
-			$posts->next();
-		}
 		$wpdb->query( "TRUNCATE TABLE $wpdb->posts" );
 		$wpdb->query( "TRUNCATE TABLE $wpdb->postmeta" );
 	}
@@ -101,26 +71,25 @@ class Site_Command extends CommandWithDBObject {
 		 */
 		global $wpdb;
 
-		// Empty taxonomies and terms
-		$terms      = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
-		$taxonomies = [];
-		foreach ( (array) $terms as $term ) {
-			$taxonomies[] = $term->taxonomy;
-			wp_cache_delete( $term->term_id, $term->taxonomy );
-		}
-
-		$taxonomies = array_unique( $taxonomies );
-		$cleaned    = [];
-		foreach ( $taxonomies as $taxonomy ) {
-			if ( isset( $cleaned[ $taxonomy ] ) ) {
-				continue;
+		$taxonomies = $wpdb->get_col( "SELECT DISTINCT taxonomy FROM $wpdb->term_taxonomy" );
+		if ( ! empty( $taxonomies ) ) {
+			$option_names = array_map(
+				static function ( $taxonomy ) {
+					return "{$taxonomy}_children";
+				},
+				$taxonomies
+			);
+			$placeholders = implode( ', ', array_fill( 0, count( $option_names ), '%s' ) );
+			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+			// @phpstan-ignore argument.type
+			$query = $wpdb->prepare( 'DELETE FROM ' . $wpdb->options . ' WHERE option_name IN ( ' . $placeholders . ' )', $option_names );
+			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+			if ( $query ) {
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query is already prepared above.
+				$wpdb->query( $query );
 			}
-			$cleaned[ $taxonomy ] = true;
-
-			wp_cache_delete( 'all_ids', $taxonomy );
-			wp_cache_delete( 'get', $taxonomy );
-			delete_option( "{$taxonomy}_children" );
 		}
+
 		$wpdb->query( "TRUNCATE TABLE $wpdb->terms" );
 		$wpdb->query( "TRUNCATE TABLE $wpdb->term_taxonomy" );
 		$wpdb->query( "TRUNCATE TABLE $wpdb->term_relationships" );
@@ -130,35 +99,11 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Delete all links, link_category terms, and related cache.
+	 * Delete all links by truncating the links table.
 	 */
 	private function empty_links() {
 		global $wpdb;
 
-		// Remove links and related cached data.
-		$links_query = "SELECT link_id FROM {$wpdb->links}";
-		$links       = new QueryIterator( $links_query, 10000 );
-
-		// Remove bookmarks cache group.
-		wp_cache_delete( 'get_bookmarks', 'bookmark' );
-
-		while ( $links->valid() ) {
-			/**
-			 * @var object{link_id: int} $link
-			 */
-			$link = $links->current();
-
-			$link_id = $link->link_id;
-
-			// Remove cache for the link.
-			wp_delete_object_term_relationships( $link_id, 'link_category' );
-			wp_cache_delete( $link_id, 'bookmark' );
-			clean_object_term_cache( $link_id, 'link' );
-
-			$links->next();
-		}
-
-		// Empty the table once link related cache and term is removed.
 		$wpdb->query( "TRUNCATE TABLE {$wpdb->links}" );
 	}
 
@@ -230,13 +175,14 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Empties a site of its content (posts, comments, terms, and meta).
+	 * Empties a site of its content (posts, comments, terms, links, and meta).
 	 *
-	 * Truncates posts, comments, and terms tables to empty a site of its
+	 * Truncates posts, comments, terms, and links tables to empty a site of its
 	 * content. Doesn't affect site configuration (options) or users.
 	 *
-	 * If running a persistent object cache, make sure to flush the cache
-	 * after emptying the site, as the cache values will be invalid otherwise.
+	 * Flushes the object cache after emptying the site to ensure stale data
+	 * is not served. On a Multisite installation, this will flush the cache
+	 * for all sites.
 	 *
 	 * To also empty custom database tables, you'll need to hook into command
 	 * execution:
@@ -282,6 +228,7 @@ class Site_Command extends CommandWithDBObject {
 		$this->empty_taxonomies();
 		$this->insert_default_terms();
 		$this->reset_options();
+		wp_cache_flush();
 
 		if ( ! empty( $upload_message ) ) {
 			$upload_dir = wp_upload_dir();

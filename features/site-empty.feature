@@ -72,7 +72,7 @@ Feature: Empty a WordPress site of its data
     When I run `wp site empty --yes`
     Then STDOUT should be:
       """
-      Success: The site at 'https://example.com' was emptied.
+      Success: The site at 'http://example.com' was emptied.
       """
     And the wp-content/uploads/large-image.jpg file should exist
 
