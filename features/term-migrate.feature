@@ -141,7 +141,7 @@ Feature: Migrate term custom fields
     When I run `wp post update {POST_ID} --post_type=page`
     Then STDOUT should not be empty
 
-    When I run `wp term migrate grape --by=slug --from=category --to=post_tag`
+    When I try `wp term migrate grape --by=slug --from=category --to=post_tag`
     Then STDERR should contain:
       """
       Warning: Term 'grape' not assigned to post {POST_ID}. Post type 'page' is not registered with taxonomy 'post_tag'.
