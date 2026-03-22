@@ -833,6 +833,12 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "Taxonomy '{$original_taxonomy}' doesn't exist." );
 		}
 
+		$dest_tax = get_taxonomy( $destination_taxonomy );
+
+		if ( ! $dest_tax ) {
+			WP_CLI::error( "Taxonomy '{$destination_taxonomy}' doesn't exist." );
+		}
+
 		$id = wp_insert_term(
 			$term->name,
 			$destination_taxonomy,
@@ -850,11 +856,12 @@ class Term_Command extends WP_CLI_Command {
 		/**
 		 * @var string[] $post_ids
 		 */
-		$post_ids = get_objects_in_term( $term->term_id, $tax->name );
+		$post_ids   = get_objects_in_term( $term->term_id, $tax->name );
+		$post_count = 0;
 
 		foreach ( $post_ids as $post_id ) {
 			$type = get_post_type( (int) $post_id );
-			if ( in_array( $type, $tax->object_type, true ) ) {
+			if ( in_array( $type, $dest_tax->object_type, true ) ) {
 				$term_taxonomy_id = wp_set_object_terms( (int) $post_id, $id['term_id'], $destination_taxonomy, true );
 
 				if ( is_wp_error( $term_taxonomy_id ) ) {
@@ -862,6 +869,9 @@ class Term_Command extends WP_CLI_Command {
 				}
 
 				WP_CLI::log( "Term '{$term->slug}' assigned to post {$post_id}." );
+				++$post_count;
+			} else {
+				WP_CLI::warning( "Term '{$term->slug}' not assigned to post {$post_id}. Post type '{$type}' is not registered with taxonomy '{$destination_taxonomy}'." );
 			}
 
 			clean_post_cache( (int) $post_id );
@@ -878,7 +888,6 @@ class Term_Command extends WP_CLI_Command {
 		}
 
 		WP_CLI::log( "Old instance of term '{$term->slug}' removed from its original taxonomy." );
-		$post_count  = count( $post_ids );
 		$post_plural = Utils\pluralize( 'post', $post_count );
 		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{$tax->name}' to taxonomy '{$destination_taxonomy}' for {$post_count} {$post_plural}." );
 	}
