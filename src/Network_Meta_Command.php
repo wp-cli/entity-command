@@ -30,7 +30,7 @@ class Network_Meta_Command extends CommandWithMeta {
 	 *                           will be made.
 	 *
 	 * @return bool The meta ID on success, false on failure.
-	 * 
+	 *
 	 * @phpstan-ignore method.childReturnType
 	 */
 	protected function add_metadata( $object_id, $meta_key, $meta_value, $unique = false ) {
