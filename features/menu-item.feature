@@ -103,6 +103,7 @@ Feature: Manage WordPress menu items
       | Child       | {CHILD_ID}       | {PARENT_ID}      |
 
     When I run `wp menu item delete {PARENT_ID}`
+    And I run `wp cache flush`
     And I run `wp menu item list grandparent-test --fields=title,db_id,menu_item_parent`
     Then STDOUT should be a table containing rows:
       | title       | db_id            | menu_item_parent |
@@ -194,6 +195,52 @@ Feature: Manage WordPress menu items
       | type   | title  | position | link               |
       | custom | First  | 1        | https://first.com  |
       | custom | Third  | 2        | https://third.com  |
+
+  Scenario: Menu order is recalculated on update
+    When I run `wp menu create "Sidebar Menu"`
+    Then STDOUT should not be empty
+
+    When I run `wp menu item add-custom sidebar-menu Alpha https://alpha.com --porcelain`
+    Then save STDOUT as {ITEM_ID_1}
+
+    When I run `wp menu item add-custom sidebar-menu Beta https://beta.com --porcelain`
+    Then save STDOUT as {ITEM_ID_2}
+
+    When I run `wp menu item add-custom sidebar-menu Gamma https://gamma.com --porcelain`
+    Then save STDOUT as {ITEM_ID_3}
+
+    When I run `wp menu item list sidebar-menu --fields=type,title,position,link`
+    Then STDOUT should be a table containing rows:
+      | type   | title | position | link               |
+      | custom | Alpha | 1        | https://alpha.com  |
+      | custom | Beta  | 2        | https://beta.com   |
+      | custom | Gamma | 3        | https://gamma.com  |
+
+    When I run `wp menu item update {ITEM_ID_3} --position=1`
+    Then STDOUT should be:
+      """
+      Success: Menu item updated.
+      """
+
+    When I run `wp menu item list sidebar-menu --fields=type,title,position,link`
+    Then STDOUT should be a table containing rows:
+      | type   | title | position | link               |
+      | custom | Gamma | 1        | https://gamma.com  |
+      | custom | Alpha | 2        | https://alpha.com  |
+      | custom | Beta  | 3        | https://beta.com   |
+
+    When I run `wp menu item update {ITEM_ID_1} --position=3`
+    Then STDOUT should be:
+      """
+      Success: Menu item updated.
+      """
+
+    When I run `wp menu item list sidebar-menu --fields=type,title,position,link`
+    Then STDOUT should be a table containing rows:
+      | type   | title | position | link               |
+      | custom | Gamma | 1        | https://gamma.com  |
+      | custom | Beta  | 2        | https://beta.com   |
+      | custom | Alpha | 3        | https://alpha.com  |
 
   Scenario: Get menu item details
     When I run `wp menu create "Sidebar Menu"`

@@ -2781,7 +2781,7 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
 	[--tax_input=<tax_input>]
 		Array of taxonomy terms keyed by their taxonomy name. Default empty.
 
-  Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
+		Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
 
 	[--meta_input=<meta_input>]
 		Array in JSON format of post meta values keyed by their post meta key. Default empty.
@@ -2790,8 +2790,8 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
 		Read post content from <file>. If this value is present, the
 		    `--post_content` argument will be ignored.
 
-  Passing `-` as the filename will cause post content to
-  be read from STDIN.
+		Passing `-` as the filename will cause post content to
+		be read from STDIN.
 
 	[--<field>=<value>]
 		Associative args for the new post. See wp_insert_post().
@@ -2799,12 +2799,11 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
 	[--edit]
 		Immediately open system's editor to write or edit post content.
 
-  If content is read from a file, from STDIN, or from the `--post_content`
-  argument, that text will be loaded into the editor.
+		If content is read from a file, from STDIN, or from the `--post_content`
+		argument, that text will be loaded into the editor.
 
 	[--porcelain]
 		Output just the new post id.
-
 
 **EXAMPLES**
 
@@ -3839,7 +3838,7 @@ wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [
 	[--tax_input=<tax_input>]
 		Array of taxonomy terms keyed by their taxonomy name. Default empty.
 
-  Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
+		Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
 
 	[--meta_input=<meta_input>]
 		Array in JSON format of post meta values keyed by their post meta key. Default empty.
@@ -3848,8 +3847,8 @@ wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [
 		Read post content from <file>. If this value is present, the
 		    `--post_content` argument will be ignored.
 
-  Passing `-` as the filename will cause post content to
-  be read from STDIN.
+		Passing `-` as the filename will cause post content to
+		be read from STDIN.
 
 	--<field>=<value>
 		One or more fields to update. See wp_insert_post().
@@ -5218,17 +5217,18 @@ wp site delete [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
 
 ### wp site empty
 
-Empties a site of its content (posts, comments, terms, and meta).
+Empties a site of its content (posts, comments, terms, links, and meta).
 
 ~~~
 wp site empty [--uploads] [--yes]
 ~~~
 
-Truncates posts, comments, and terms tables to empty a site of its
+Truncates posts, comments, terms, and links tables to empty a site of its
 content. Doesn't affect site configuration (options) or users.
 
-If running a persistent object cache, make sure to flush the cache
-after emptying the site, as the cache values will be invalid otherwise.
+Flushes the object cache after emptying the site to ensure stale data
+is not served. On a Multisite installation, this will flush the cache
+for all sites.
 
 To also empty custom database tables, you'll need to hook into command
 execution:
@@ -8966,6 +8966,10 @@ Once you’ve done a bit of searching and discovered there isn’t an open or fi
 Want to contribute a new feature? Please first [open a new issue](https://github.com/wp-cli/entity-command/issues/new) to discuss whether the feature is a good fit for the project.
 
 Once you've decided to commit the time to seeing your pull request through, [please follow our guidelines for creating a pull request](https://make.wordpress.org/cli/handbook/pull-requests/) to make sure it's a pleasant experience. See "[Setting up](https://make.wordpress.org/cli/handbook/pull-requests/#setting-up)" for details specific to working on this package locally.
+
+### License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Support
 
