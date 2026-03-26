@@ -1,5 +1,6 @@
 Feature: List WordPress options
 
+  @skip-object-cache
   Scenario: Using the `--transients` flag
     Given a WP install
     And I run `wp transient set wp_transient_flag wp_transient_flag`
