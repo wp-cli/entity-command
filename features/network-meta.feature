@@ -51,7 +51,7 @@ Feature: Manage network-wide custom fields.
 
     When I run `wp eval 'update_network_option( 1, "objkey", "123" );'`
 
-    When I run `wp network meta get 1 objkey`
+    And I run `wp network meta get 1 objkey`
     Then STDOUT should be:
       """
       123
@@ -59,7 +59,7 @@ Feature: Manage network-wide custom fields.
 
     When I run `wp eval 'update_network_option( 1, "objkey", "456" );'`
 
-    When I run `wp network meta get 1 objkey`
+    And I run `wp network meta get 1 objkey`
     Then STDOUT should be:
       """
       456
