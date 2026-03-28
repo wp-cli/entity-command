@@ -3,7 +3,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Check if a post has blocks
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Hello</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post has-blocks {POST_ID}`
@@ -12,7 +12,7 @@ Feature: Manage blocks in post content
       Success: Post {POST_ID} contains blocks.
       """
 
-    When I run `wp post create --post_title='Classic Post' --post_content='<p>Hello classic</p>' --porcelain`
+    When I run `wp post create --post_title="Classic Post" --post_content="<p>Hello classic</p>" --porcelain`
     Then save STDOUT as {CLASSIC_ID}
 
     When I try `wp post has-blocks {CLASSIC_ID}`
@@ -25,7 +25,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Check if a post has a specific block
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Hello</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post has-block {POST_ID} core/paragraph`
@@ -78,7 +78,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: List blocks in a post
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>One</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Two</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>One</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Two</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block list {POST_ID}`
@@ -102,7 +102,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: List nested blocks
     Given a WP install
-    When I run `wp post create --post_title='Nested Blocks' --post_content='<!-- wp:group --><!-- wp:paragraph --><p>Nested</p><!-- /wp:paragraph --><!-- /wp:group -->' --porcelain`
+    When I run `wp post create --post_title="Nested Blocks" --post_content="<!-- wp:group --><!-- wp:paragraph --><p>Nested</p><!-- /wp:paragraph --><!-- /wp:group -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block list {POST_ID}`
@@ -123,7 +123,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Render blocks to HTML
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block render {POST_ID}`
@@ -163,7 +163,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Insert a block into a post
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block insert {POST_ID} core/paragraph --content="Added at end"`
@@ -193,7 +193,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Insert a block with attributes
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block insert {POST_ID} core/heading --content="Title" --attrs='{"level":3}'`
@@ -211,7 +211,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Remove a block by index
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block remove {POST_ID} --index=1`
@@ -237,7 +237,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Remove multiple blocks by indices
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block remove {POST_ID} --index=0,2`
@@ -263,7 +263,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Remove blocks by name
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Para 1</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Heading</h2><!-- /wp:heading --><!-- wp:paragraph --><p>Para 2</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Para 1</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Heading</h2><!-- /wp:heading --><!-- wp:paragraph --><p>Para 2</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block remove {POST_ID} core/paragraph`
@@ -281,7 +281,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Remove all blocks of a type
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Para 1</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Heading</h2><!-- /wp:heading --><!-- wp:paragraph --><p>Para 2</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Para 1</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Heading</h2><!-- /wp:heading --><!-- wp:paragraph --><p>Para 2</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block remove {POST_ID} core/paragraph --all`
@@ -302,7 +302,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Replace blocks
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Content</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Content</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block replace {POST_ID} core/paragraph core/heading`
@@ -323,7 +323,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Replace all blocks of a type
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Para 1</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Para 2</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Para 1</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Para 2</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block replace {POST_ID} core/paragraph core/verse --all`
@@ -380,7 +380,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Error handling for remove without block name or index
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block remove {POST_ID}`
@@ -393,7 +393,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Porcelain output for insert
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block insert {POST_ID} core/paragraph --content="New" --porcelain`
@@ -405,7 +405,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Porcelain output for remove
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block remove {POST_ID} --index=0 --porcelain`
@@ -417,7 +417,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Porcelain output for replace
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block replace {POST_ID} core/paragraph core/heading --porcelain`
@@ -467,7 +467,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Error on invalid block index
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block get {POST_ID} 5`
@@ -535,7 +535,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Update list ordered attribute syncs HTML tag
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:list --><ul><li>Item 1</li><li>Item 2</li></ul><!-- /wp:list -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:list --><ul><li>Item 1</li><li>Item 2</li></ul><!-- /wp:list -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block update {POST_ID} 0 --attrs='{"ordered":true}'`
@@ -577,7 +577,7 @@ Feature: Manage blocks in post content
           return $block;
       }, 10, 3 );
       """
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block update {POST_ID} 0 --attrs='{"customClass":"my-custom-class"}' --require=custom-sync-filter.php`
@@ -595,7 +595,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Update block content
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Old text</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Old text</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block update {POST_ID} 0 --content="<p>New text</p>"`
@@ -639,7 +639,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Error when no attrs or content provided for update
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block update {POST_ID} 0`
@@ -652,7 +652,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Porcelain output for update
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block update {POST_ID} 0 --content="<p>New</p>" --porcelain`
@@ -664,7 +664,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Move block forward
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block move {POST_ID} 0 2`
@@ -679,7 +679,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Move block backward
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block move {POST_ID} 2 0`
@@ -694,7 +694,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Move block same index warning
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block move {POST_ID} 0 0`
@@ -707,7 +707,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Error on invalid move indices
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block move {POST_ID} 5 0`
@@ -727,7 +727,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Porcelain output for move
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block move {POST_ID} 0 1 --porcelain`
@@ -739,7 +739,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Export blocks to STDOUT as JSON
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block export {POST_ID}`
@@ -759,7 +759,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Export blocks as YAML
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block export {POST_ID} --format=yaml`
@@ -779,7 +779,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Export blocks as HTML
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block export {POST_ID} --format=html`
@@ -797,7 +797,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Export blocks to file
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block export {POST_ID} --file=blocks-export.json`
@@ -822,7 +822,7 @@ Feature: Manage blocks in post content
         ]
       }
       """
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:heading --><h2>Original</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:heading --><h2>Original</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block import {POST_ID} --file=blocks-import.json`
@@ -848,7 +848,7 @@ Feature: Manage blocks in post content
         ]
       }
       """
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block import {POST_ID} --file=blocks-import.json --position=start`
@@ -871,7 +871,7 @@ Feature: Manage blocks in post content
         ]
       }
       """
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Old</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Old</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block import {POST_ID} --file=blocks-import.json --replace`
@@ -892,7 +892,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Import error on missing file
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block import {POST_ID} --file=nonexistent.json`
@@ -914,7 +914,7 @@ Feature: Manage blocks in post content
         ]
       }
       """
-    When I run `wp post create --post_title='Block Post' --post_content='' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block import {POST_ID} --file=blocks-import.json --porcelain`
@@ -926,10 +926,10 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Count blocks across posts
     Given a WP install
-    When I run `wp post create --post_title='Post 1' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Test2</p><!-- /wp:paragraph -->' --post_status=publish --porcelain`
+    When I run `wp post create --post_title="Post 1" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Test2</p><!-- /wp:paragraph -->" --post_status=publish --porcelain`
     Then save STDOUT as {POST_1}
 
-    When I run `wp post create --post_title='Post 2' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --post_status=publish --porcelain`
+    When I run `wp post create --post_title="Post 2" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->" --post_status=publish --porcelain`
     Then save STDOUT as {POST_2}
 
     When I run `wp post block count {POST_1} {POST_2}`
@@ -941,7 +941,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Count specific block type
     Given a WP install
-    When I run `wp post create --post_title='Post 1' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Test2</p><!-- /wp:paragraph -->' --post_status=publish --porcelain`
+    When I run `wp post create --post_title="Post 1" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Test2</p><!-- /wp:paragraph -->" --post_status=publish --porcelain`
     Then save STDOUT as {POST_1}
 
     When I run `wp post block count {POST_1} --block=core/paragraph --format=count`
@@ -953,7 +953,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Count unique block types
     Given a WP install
-    When I run `wp post create --post_title='Post 1' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --post_status=publish --porcelain`
+    When I run `wp post create --post_title="Post 1" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->" --post_status=publish --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block count {POST_ID} --format=count`
@@ -965,7 +965,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Clone block with default position (after)
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block clone {POST_ID} 0`
@@ -982,7 +982,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Clone block to end
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block clone {POST_ID} 0 --position=end`
@@ -997,7 +997,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Clone block to start
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block clone {POST_ID} 1 --position=start`
@@ -1012,7 +1012,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Porcelain output for clone
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block clone {POST_ID} 0 --porcelain`
@@ -1024,7 +1024,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Error on invalid clone index
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block clone {POST_ID} 5`
@@ -1150,7 +1150,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Insert block at specific numeric position
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block insert {POST_ID} core/paragraph --content="Second" --position=1`
@@ -1165,7 +1165,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Remove all blocks from post
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Only block</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Only block</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block remove {POST_ID} --index=0`
@@ -1183,7 +1183,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Replace when no matches found
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block replace {POST_ID} core/image core/heading`
@@ -1196,7 +1196,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Update with invalid attrs JSON
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block update {POST_ID} 0 --attrs='{not valid json'`
@@ -1213,7 +1213,7 @@ Feature: Manage blocks in post content
       """
       {not valid json
       """
-    When I run `wp post create --post_title='Test' --post_content='' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block import {POST_ID} --file=bad-import.json`
@@ -1226,7 +1226,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Count blocks filtered by post type
     Given a WP install
-    When I run `wp post create --post_title='Post' --post_type=post --post_content='<!-- wp:paragraph --><p>Post</p><!-- /wp:paragraph -->' --post_status=publish --porcelain`
+    When I run `wp post create --post_title="Post" --post_type=post --post_content="<!-- wp:paragraph --><p>Post</p><!-- /wp:paragraph -->" --post_status=publish --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post create --post_title='Page' --post_type=page --post_content='<!-- wp:heading --><h2>Page</h2><!-- /wp:heading -->' --post_status=publish --porcelain`
@@ -1248,7 +1248,7 @@ Feature: Manage blocks in post content
     When I run `wp post create --post_title='Published' --post_content='<!-- wp:paragraph --><p>Pub</p><!-- /wp:paragraph -->' --post_status=publish --porcelain`
     Then save STDOUT as {PUB_ID}
 
-    When I run `wp post create --post_title='Draft' --post_content='<!-- wp:heading --><h2>Draft</h2><!-- /wp:heading -->' --post_status=draft --porcelain`
+    When I run `wp post create --post_title="Draft" --post_content="<!-- wp:heading --><h2>Draft</h2><!-- /wp:heading -->" --post_status=draft --porcelain`
     Then save STDOUT as {DRAFT_ID}
 
     When I run `wp post block count {DRAFT_ID} --post-status=draft`
@@ -1264,7 +1264,7 @@ Feature: Manage blocks in post content
   Scenario: Post with mixed block and freeform content
     Given a WP install
     # Content with blocks and freeform text in between
-    When I run `wp post create --post_title='Mixed' --post_content='<!-- wp:paragraph --><p>Block</p><!-- /wp:paragraph --><p>Some freeform text</p><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Mixed" --post_content="<!-- wp:paragraph --><p>Block</p><!-- /wp:paragraph --><p>Some freeform text</p><!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post has-blocks {POST_ID}`
@@ -1276,7 +1276,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Empty post has no blocks
     Given a WP install
-    When I run `wp post create --post_title='Empty' --post_content='' --porcelain`
+    When I run `wp post create --post_title="Empty" --post_content="" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post has-blocks {POST_ID}`
@@ -1309,7 +1309,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: List blocks on post with no blocks
     Given a WP install
-    When I run `wp post create --post_title='Classic' --post_content='<p>No blocks</p>' --porcelain`
+    When I run `wp post create --post_title="Classic" --post_content="<p>No blocks</p>" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block list {POST_ID} --format=count`
@@ -1333,7 +1333,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Insert self-closing block
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Before</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Before</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block insert {POST_ID} core/separator`
@@ -1351,7 +1351,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Insert block into empty post
     Given a WP install
-    When I run `wp post create --post_title='Empty' --post_content='' --porcelain`
+    When I run `wp post create --post_title="Empty" --post_content="" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block insert {POST_ID} core/paragraph --content="First block"`
@@ -1369,7 +1369,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Remove with out of bounds index
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block remove {POST_ID} --index=100`
@@ -1382,7 +1382,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Remove with negative index
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block remove {POST_ID} --index=-1`
@@ -1395,7 +1395,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Remove container block removes children
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:group --><!-- wp:paragraph --><p>Nested</p><!-- /wp:paragraph --><!-- /wp:group -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:group --><!-- wp:paragraph --><p>Nested</p><!-- /wp:paragraph --><!-- /wp:group -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block remove {POST_ID} --index=0`
@@ -1413,7 +1413,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Remove block by index
     Given a WP install
-    When I run `wp post create --post_title='Three Blocks' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Three Blocks" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     # Index 1 should be "Second" block
@@ -1440,7 +1440,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Remove multiple blocks by indices
     Given a WP install
-    When I run `wp post create --post_title='Three Blocks' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Three Blocks" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     # Indices 0 and 2 should be "First" and "Third"
@@ -1525,7 +1525,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Move in single block post
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Only</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Only</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block move {POST_ID} 0 1`
@@ -1538,7 +1538,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Export with --raw includes innerHTML
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test content</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Test content</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block export {POST_ID} --raw`
@@ -1554,7 +1554,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Export post with no blocks
     Given a WP install
-    When I run `wp post create --post_title='Classic' --post_content='<p>No blocks</p>' --porcelain`
+    When I run `wp post create --post_title="Classic" --post_content="<p>No blocks</p>" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block export {POST_ID}`
@@ -1570,7 +1570,7 @@ Feature: Manage blocks in post content
       """
       {"blocks":[{"blockName":"core/heading","attrs":{"level":2},"innerBlocks":[],"innerHTML":"<h2>Middle</h2>","innerContent":["<h2>Middle</h2>"]}]}
       """
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Last</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Last</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block import {POST_ID} --file=blocks-import-pos.json --position=1`
@@ -1585,7 +1585,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Clone block to specific numeric position
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Third</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     # Clone first block to position 2 (between Second and Third)
@@ -1619,7 +1619,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Extract non-existent attribute
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block extract {POST_ID} --block=core/paragraph --attr=nonexistent --format=ids`
@@ -1631,7 +1631,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Extract from non-existent block type
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block extract {POST_ID} --block=core/image --attr=id --format=ids`
@@ -1647,7 +1647,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Parse empty post content
     Given a WP install
-    When I run `wp post create --post_title='Empty' --post_content='' --porcelain`
+    When I run `wp post create --post_title="Empty" --post_content="" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block parse {POST_ID}`
@@ -1659,7 +1659,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: List blocks in CSV and YAML formats
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block list {POST_ID} --format=csv`
@@ -1693,7 +1693,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Render unknown block type
     Given a WP install
-    When I run `wp post create --post_title='Unknown' --post_content='<!-- wp:fake/nonexistent --><p>Content</p><!-- /wp:fake/nonexistent -->' --porcelain`
+    When I run `wp post create --post_title="Unknown" --post_content="<!-- wp:fake/nonexistent --><p>Content</p><!-- /wp:fake/nonexistent -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block render {POST_ID}`
@@ -1706,7 +1706,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Insert with invalid attrs JSON
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block insert {POST_ID} core/heading --attrs='{invalid json'`
@@ -1719,7 +1719,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Replace with invalid attrs JSON
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block replace {POST_ID} core/paragraph core/heading --attrs='{broken'`
@@ -1732,7 +1732,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Move with negative indices
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>First</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>Second</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block move {POST_ID} -1 0`
@@ -1745,7 +1745,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Count blocks in various formats
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --post_status=publish --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->" --post_status=publish --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block count {POST_ID} --format=json`
@@ -1773,7 +1773,7 @@ Feature: Manage blocks in post content
       """
       {"version":"1.0","blocks":[]}
       """
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Existing</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Test" --post_content="<!-- wp:paragraph --><p>Existing</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block import {POST_ID} --file=empty-blocks.json`
@@ -1824,7 +1824,7 @@ Feature: Manage blocks in post content
       """
       {"blocks":[{"blockName":"core/paragraph","attrs":{},"innerBlocks":[],"innerHTML":"<p>From STDIN</p>","innerContent":["<p>From STDIN</p>"]}]}
       """
-    When I run `wp post create --post_title='STDIN Test' --post_content='' --porcelain`
+    When I run `wp post create --post_title="STDIN Test" --post_content="" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block import {POST_ID}` with STDIN from 'blocks-stdin.json'

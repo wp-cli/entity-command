@@ -40,7 +40,14 @@ Feature: Recount terms on a taxonomy
       """
       1
       """
-    When I run `wp eval 'global $wpdb; $wpdb->update( $wpdb->term_taxonomy, array( "count" => 3 ), array( "term_id" => {TERM_ID} ) ); clean_term_cache( {TERM_ID}, "category" );'`
+    Given a recount-terms.php file:
+      """
+      <?php
+      global $wpdb;
+      $wpdb->update( $wpdb->term_taxonomy, array( "count" => 3 ), array( "term_id" => {TERM_ID} ) );
+      clean_term_cache( {TERM_ID}, "category" );
+      """
+    When I run `wp eval-file recount-terms.php`
     And I run `wp term get category {TERM_ID} --field=count`
     Then STDOUT should be:
       """

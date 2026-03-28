@@ -11,7 +11,14 @@ Feature: Recount comments on a post
       3
       """
 
-    When I run `wp eval 'global $wpdb; $wpdb->update( $wpdb->posts, array( "comment_count" => 1 ), array( "ID" => 1 ) ); clean_post_cache( 1 );'`
+    Given a recount-comments.php file:
+      """
+      <?php
+      global $wpdb;
+      $wpdb->update( $wpdb->posts, array( "comment_count" => 1 ), array( "ID" => 1 ) );
+      clean_post_cache( 1 );
+      """
+    When I run `wp eval-file recount-comments.php`
     And I run `wp post get 1 --field=comment_count`
     Then STDOUT should be:
       """
