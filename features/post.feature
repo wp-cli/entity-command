@@ -569,7 +569,11 @@ Feature: Manage WordPress posts
 
   @require-wp-5.0
   Scenario: Get block_version field for post with blocks
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello block world</p><!-- /wp:paragraph -->' --porcelain`
+    Given a block-post.html file:
+      """
+      <!-- wp:paragraph --><p>Hello block world</p><!-- /wp:paragraph -->
+      """
+    When I run `wp post create block-post.html --post_title='Block Post' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
@@ -581,7 +585,11 @@ Feature: Manage WordPress posts
 
   @require-wp-5.0
   Scenario: Get block_version field for post without blocks
-    When I run `wp post create --post_title='Classic Post' --post_content='<p>Just plain HTML</p>' --porcelain`
+    Given a classic-post.html file:
+      """
+      <p>Just plain HTML</p>
+      """
+    When I run `wp post create classic-post.html --post_title='Classic Post' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
@@ -593,7 +601,11 @@ Feature: Manage WordPress posts
 
   @require-wp-5.0
   Scenario: Get block_version field included in default output
-    When I run `wp post create --post_title='Test Post' --post_content='<!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    Given a heading-post.html file:
+      """
+      <!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->
+      """
+    When I run `wp post create heading-post.html --post_title='Test Post' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
