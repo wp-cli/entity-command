@@ -282,6 +282,31 @@ class User_Command extends CommandWithDBObject {
 	 *     $ wp user delete $(wp user list --role=contributor --field=ID | head -n 100)
 	 */
 	public function delete( $args, $assoc_args ) {
+		// Only expand arguments that look like numeric ID ranges, and only if no user
+		// exists with that exact login or email. This avoids misinterpreting a valid
+		// user_login like "12-24" as an ID range.
+		$expanded_args = [];
+
+		foreach ( $args as $arg ) {
+			if ( is_string( $arg ) && preg_match( '/^\d+-\d+$/', $arg ) ) {
+				$user_by_login = get_user_by( 'login', $arg );
+				$user_by_email = get_user_by( 'email', $arg );
+
+				if ( $user_by_login || $user_by_email ) {
+					// Treat as login/email, do not expand as an ID range.
+					$expanded_args[] = $arg;
+				} else {
+					$range_expanded = self::expand_id_ranges( [ $arg ], [ $this, 'get_user_ids_in_range' ] );
+					foreach ( $range_expanded as $expanded_arg ) {
+						$expanded_args[] = $expanded_arg;
+					}
+				}
+			} else {
+				$expanded_args[] = $arg;
+			}
+		}
+
+		$args    = $expanded_args;
 		$network = Utils\get_flag_value( $assoc_args, 'network' ) && is_multisite();
 
 		/**
@@ -560,6 +585,8 @@ class User_Command extends CommandWithDBObject {
 	 * @param array $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
+		$args = self::expand_id_ranges( $args, [ $this, 'get_user_ids_in_range' ] );
+
 		if ( isset( $assoc_args['user_login'] ) ) {
 			WP_CLI::warning( "User logins can't be changed." );
 			unset( $assoc_args['user_login'] );
@@ -1328,6 +1355,7 @@ class User_Command extends CommandWithDBObject {
 	 * @subcommand reset-password
 	 */
 	public function reset_password( $args, $assoc_args ) {
+		$args          = self::expand_id_ranges( $args, [ $this, 'get_user_ids_in_range' ] );
 		$porcelain     = Utils\get_flag_value( $assoc_args, 'porcelain' );
 		$skip_email    = (bool) Utils\get_flag_value( $assoc_args, 'skip-email' );
 		$show_new_pass = Utils\get_flag_value( $assoc_args, 'show-password' );
@@ -1411,6 +1439,7 @@ class User_Command extends CommandWithDBObject {
 	 *     Success: Spammed 1 of 1 users.
 	 */
 	public function spam( $args ) {
+		$args = self::expand_id_ranges( $args, [ $this, 'get_user_ids_in_range' ] );
 		$this->update_msuser_status( $args, 'spam', '1' );
 	}
 
@@ -1430,6 +1459,7 @@ class User_Command extends CommandWithDBObject {
 	 *     Success: Unspamed 1 of 1 users.
 	 */
 	public function unspam( $args ) {
+		$args = self::expand_id_ranges( $args, [ $this, 'get_user_ids_in_range' ] );
 		$this->update_msuser_status( $args, 'spam', '0' );
 	}
 
@@ -1548,5 +1578,28 @@ class User_Command extends CommandWithDBObject {
 		} else {
 			WP_CLI::halt( 1 );
 		}
+	}
+
+	/**
+	 * Returns existing user IDs within the given range.
+	 *
+	 * @param int      $start Start of the ID range (inclusive).
+	 * @param int|null $end   End of the ID range (inclusive), or null for no upper bound.
+	 * @return int[] List of existing user IDs.
+	 */
+	protected function get_user_ids_in_range( int $start, ?int $end ): array {
+		global $wpdb;
+
+		if ( null === $end ) {
+			return array_map(
+				'intval',
+				$wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->users} WHERE ID >= %d ORDER BY ID ASC", $start ) )
+			);
+		}
+
+		return array_map(
+			'intval',
+			$wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->users} WHERE ID BETWEEN %d AND %d ORDER BY ID ASC", $start, $end ) )
+		);
 	}
 }

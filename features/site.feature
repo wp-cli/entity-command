@@ -897,3 +897,26 @@ Feature: Manage sites in a multisite installation
       """
       1
       """
+
+  Scenario: Archive sites using ID ranges
+    Given a WP multisite install
+    And I run `wp site create --slug=rangesite1 --porcelain`
+    And save STDOUT as {SITE_ID_1}
+    And I run `wp site create --slug=rangesite2 --porcelain`
+    And save STDOUT as {SITE_ID_2}
+    And I run `wp site create --slug=rangesite3 --porcelain`
+    And save STDOUT as {SITE_ID_3}
+
+    When I run `wp site archive {SITE_ID_1}-{SITE_ID_3}`
+    Then STDOUT should contain:
+      """
+      Success: Site {SITE_ID_1} archived.
+      """
+    And STDOUT should contain:
+      """
+      Success: Site {SITE_ID_2} archived.
+      """
+    And STDOUT should contain:
+      """
+      Success: Site {SITE_ID_3} archived.
+      """
