@@ -55,6 +55,7 @@ Feature: Manage WordPress comments
       """
       Success: Trashed comment 3.
       Success: Trashed comment 4.
+      Success: Deleted 2 comments.
       """
 
     When I run `wp comment delete 3`
@@ -472,3 +473,148 @@ Feature: Manage WordPress comments
     And I run `wp comment unspam {COMMENT_ID} --url=www.example.com`
     And I run `wp comment trash {COMMENT_ID} --url=www.example.com`
     And I run `wp comment untrash {COMMENT_ID} --url=www.example.com`
+
+  Scenario: Delete all comments with --all flag
+    Given a WP install
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 1' --porcelain`
+    And save STDOUT as {COMMENT_ID_1}
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 2' --porcelain`
+    And save STDOUT as {COMMENT_ID_2}
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 3' --porcelain`
+    And save STDOUT as {COMMENT_ID_3}
+
+    When I run `wp comment list --format=count`
+    Then STDOUT should be:
+      """
+      4
+      """
+
+    When I run `wp comment delete --all`
+    Then STDOUT should contain:
+      """
+      Success: Trashed comment 1.
+      """
+    And STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID_1}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID_2}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID_3}.
+      """
+
+    When I run `wp comment list --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+  Scenario: Delete all comments with --all flag and --force
+    Given a WP install
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 1' --porcelain`
+    And save STDOUT as {COMMENT_ID_1}
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 2' --porcelain`
+    And save STDOUT as {COMMENT_ID_2}
+
+    When I run `wp comment list --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp comment delete --all --force`
+    Then STDOUT should contain:
+      """
+      Success: Deleted comment 1.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deleted comment {COMMENT_ID_1}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deleted comment {COMMENT_ID_2}.
+      """
+
+    When I run `wp comment list --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+  Scenario: Delete all comments when no comments exist
+    Given a WP install
+    And I run `wp comment delete $(wp comment list --field=ID) --force`
+
+    When I run `wp comment delete --all`
+    Then STDOUT should be:
+      """
+      Success: No comments deleted.
+      """
+
+  Scenario: Delete multiple comments shows summary message
+    Given a WP install
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 1' --porcelain`
+    And save STDOUT as {COMMENT_ID_1}
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 2' --porcelain`
+    And save STDOUT as {COMMENT_ID_2}
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 3' --porcelain`
+    And save STDOUT as {COMMENT_ID_3}
+
+    When I run `wp comment delete {COMMENT_ID_1} {COMMENT_ID_2} {COMMENT_ID_3}`
+    Then STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID_1}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID_2}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID_3}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deleted 3 comments.
+      """
+
+  Scenario: Delete comments with mixed success and failure
+    Given a WP install
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 1' --porcelain`
+    And save STDOUT as {COMMENT_ID_1}
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Comment 2' --porcelain`
+    And save STDOUT as {COMMENT_ID_2}
+
+    When I try `wp comment delete {COMMENT_ID_1} {COMMENT_ID_2} 99999`
+    Then STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID_1}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Trashed comment {COMMENT_ID_2}.
+      """
+    And STDERR should contain:
+      """
+      Warning: Failed deleting comment 99999.
+      """
+    And STDERR should contain:
+      """
+      Error: Failed deleting 1 comments.
+      """
+    And the return code should be 1
+
+  Scenario: Error when no comment IDs and no --all flag provided
+    Given a WP install
+
+    When I try `wp comment delete`
+    Then STDERR should be:
+      """
+      Error: Please specify one or more comment IDs, or use --all.
+      """
+    And the return code should be 1
