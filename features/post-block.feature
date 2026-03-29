@@ -50,7 +50,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Parse blocks in a post
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph {"align":"center"} --><p>Hello</p><!-- /wp:paragraph -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph {\"align\":\"center\"} --><p>Hello</p><!-- /wp:paragraph -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block parse {POST_ID}`
@@ -344,7 +344,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Replace block with new attributes
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:heading {"level":2} --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:heading {\"level\":2} --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block replace {POST_ID} core/heading core/heading --attrs='{"level":4}'`
@@ -429,7 +429,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Get a block by index
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph {"align":"center"} --><p>First</p><!-- /wp:paragraph --><!-- wp:heading {"level":2} --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph {\"align\":\"center\"} --><p>First</p><!-- /wp:paragraph --><!-- wp:heading {\"level\":2} --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block get {POST_ID} 0`
@@ -487,7 +487,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Update block attributes
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:heading {"level":2} --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:heading {\"level\":2} --><h2>Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block update {POST_ID} 0 --attrs='{"level":3}'`
@@ -505,7 +505,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Update heading level syncs HTML tag
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:heading {"level":2} --><h2>Original Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:heading {\"level\":2} --><h2>Original Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block update {POST_ID} 0 --attrs='{"level":4}'`
@@ -617,7 +617,7 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Update block with replace-attrs flag
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:heading {"level":2,"align":"center"} --><h2 class="has-text-align-center">Title</h2><!-- /wp:heading -->' --porcelain`
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:heading {\"level\":2,\"align\":\"center\"} --><h2 class=\"has-text-align-center\">Title</h2><!-- /wp:heading -->" --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block update {POST_ID} 0 --attrs='{"level":4}' --replace-attrs`
