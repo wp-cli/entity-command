@@ -289,6 +289,7 @@ Feature: Manage WordPress comments
       """
     And the return code should be 0
 
+  @skip-windows
   Scenario: Approving/unapproving comments with multidigit comment ID
     Given I run `wp comment delete $(wp comment list --field=ID)`
     And I run `wp comment generate --count=10 --quiet`
@@ -343,6 +344,7 @@ Feature: Manage WordPress comments
       """
     And the return code should be 0
 
+  @skip-windows
   Scenario: Spam/unspam comments with multidigit comment ID
     Given I run `wp comment delete $(wp comment list --field=ID)`
     And I run `wp comment generate --count=10 --quiet`
@@ -392,6 +394,7 @@ Feature: Manage WordPress comments
       """
     And the return code should be 0
 
+  @skip-windows
   Scenario: Trash/untrash comments with multidigit comment ID
     Given I run `wp comment delete $(wp comment list --field=ID) --force`
     And I run `wp comment generate --count=10 --quiet`

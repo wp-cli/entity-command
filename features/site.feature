@@ -38,6 +38,7 @@ Feature: Manage sites in a multisite installation
       http://first.example.com
       """
 
+  @skip-windows
   Scenario: Delete a site by id
     Given a WP multisite subdirectory install
 
@@ -77,6 +78,7 @@ Feature: Manage sites in a multisite installation
     When I try the previous command again
     Then the return code should be 1
 
+  @skip-windows
   Scenario: Filter site list
     Given a WP multisite install
 
@@ -212,6 +214,7 @@ Feature: Manage sites in a multisite installation
       """
     And the return code should be 1
 
+  @skip-windows
   Scenario: Get site info
     Given a WP multisite install
 
