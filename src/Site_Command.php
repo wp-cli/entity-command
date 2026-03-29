@@ -247,7 +247,8 @@ class Site_Command extends CommandWithDBObject {
 			foreach ( $files as $fileinfo ) {
 				$realpath = $fileinfo->getRealPath();
 				// Don't clobber subsites when operating on the main site
-				if ( $is_main_site && false !== stripos( $realpath, '/sites/' ) ) {
+				$normalized_realpath = str_replace( '\\', '/', $realpath );
+				if ( $is_main_site && false !== stripos( $normalized_realpath, '/sites/' ) ) {
 					continue;
 				}
 				if ( $fileinfo->isDir() ) {
