@@ -265,7 +265,7 @@ Feature: Manage WordPress posts
       }
       """
 
-    When I try `EDITOR='ex -i NONE -c q!' wp post edit {POST_ID}`
+    When I try `EDITOR="ex -i NONE -c q!" wp post edit {POST_ID}`
     Then STDERR should contain:
       """
       No change made to post content.
@@ -473,7 +473,7 @@ Feature: Manage WordPress posts
       My\Post
       """
 
-    When I run `wp post update {POST_ID} --post_content='var isEmailValid = /^\S+@\S+.\S+$/.test(email);'`
+    When I run `wp post update {POST_ID} --post_content="var isEmailValid = /^\S+@\S+.\S+$/.test(email);"`
     Then STDOUT should not be empty
 
     When I run `wp post get {POST_ID} --field=content`

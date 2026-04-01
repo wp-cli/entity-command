@@ -1037,7 +1037,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Extract attribute values
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:heading {"level":2} --><h2>Title 1</h2><!-- /wp:heading --><!-- wp:heading {"level":3} --><h3>Title 2</h3><!-- /wp:heading -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:heading {"level":2} --><h2>Title 1</h2><!-- /wp:heading --><!-- wp:heading {"level":3} --><h3>Title 2</h3><!-- /wp:heading -->
+      """
+    When I run `wp post create block-content.txt --post_title='Block Post' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block extract {POST_ID} --block=core/heading --attr=level --format=ids`
@@ -1053,7 +1057,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Extract attribute from specific index
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:heading {"level":2} --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:heading {"level":2} --><h2>Title</h2><!-- /wp:heading -->
+      """
+    When I run `wp post create block-content.txt --post_title='Block Post' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block extract {POST_ID} --index=0 --attr=level --format=ids`
@@ -1065,7 +1073,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Extract content from blocks
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph -->
+      """
+    When I run `wp post create block-content.txt --post_title='Block Post' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block extract {POST_ID} --block=core/paragraph --content --format=ids`
@@ -1077,7 +1089,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Extract error when no attr or content specified
     Given a WP install
-    When I run `wp post create --post_title='Block Post' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->
+      """
+    When I run `wp post create block-content.txt --post_title='Block Post' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I try `wp post block extract {POST_ID}`
@@ -1094,7 +1110,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Check for nested block inside group
     Given a WP install
-    When I run `wp post create --post_title='Nested' --post_content='<!-- wp:group --><!-- wp:paragraph --><p>Nested para</p><!-- /wp:paragraph --><!-- /wp:group -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:group --><!-- wp:paragraph --><p>Nested para</p><!-- /wp:paragraph --><!-- /wp:group -->
+      """
+    When I run `wp post create block-content.txt --post_title='Nested' --porcelain`
     Then save STDOUT as {POST_ID}
 
     # Should find the nested paragraph
@@ -1114,7 +1134,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Partial block name does not match
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:paragraph --><p>Test</p><!-- /wp:paragraph -->
+      """
+    When I run `wp post create block-content.txt --post_title='Test' --porcelain`
     Then save STDOUT as {POST_ID}
 
     # "core/para" should NOT match "core/paragraph"
@@ -1226,10 +1250,18 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Count blocks filtered by post type
     Given a WP install
-    When I run `wp post create --post_title="Post" --post_type=post --post_content="<!-- wp:paragraph --><p>Post</p><!-- /wp:paragraph -->" --post_status=publish --porcelain`
+    And a block-content-1.txt file:
+      """
+      <!-- wp:paragraph --><p>Post</p><!-- /wp:paragraph -->
+      """
+    When I run `wp post create block-content-1.txt --post_title='Post' --post_type=post --post_status=publish --porcelain`
     Then save STDOUT as {POST_ID}
 
-    When I run `wp post create --post_title='Page' --post_type=page --post_content='<!-- wp:heading --><h2>Page</h2><!-- /wp:heading -->' --post_status=publish --porcelain`
+    And a block-content-2.txt file:
+      """
+      <!-- wp:heading --><h2>Page</h2><!-- /wp:heading -->
+      """
+    When I run `wp post create block-content-2.txt --post_title='Page' --post_type=page --post_status=publish --porcelain`
     Then save STDOUT as {PAGE_ID}
 
     When I run `wp post block count {POST_ID} --post-type=post`
@@ -1245,7 +1277,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Count blocks filtered by post status
     Given a WP install
-    When I run `wp post create --post_title='Published' --post_content='<!-- wp:paragraph --><p>Pub</p><!-- /wp:paragraph -->' --post_status=publish --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:paragraph --><p>Pub</p><!-- /wp:paragraph -->
+      """
+    When I run `wp post create block-content.txt --post_title='Published' --post_status=publish --porcelain`
     Then save STDOUT as {PUB_ID}
 
     When I run `wp post create --post_title="Draft" --post_content="<!-- wp:heading --><h2>Draft</h2><!-- /wp:heading -->" --post_status=draft --porcelain`
@@ -1601,7 +1637,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Clone nested block preserves children
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:group --><!-- wp:paragraph --><p>Inner</p><!-- /wp:paragraph --><!-- /wp:group -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:group --><!-- wp:paragraph --><p>Inner</p><!-- /wp:paragraph --><!-- /wp:group -->
+      """
+    When I run `wp post create block-content.txt --post_title='Test' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block clone {POST_ID} 0`
@@ -1681,7 +1721,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: List with --nested counts all nesting levels
     Given a WP install
-    When I run `wp post create --post_title='Deep' --post_content='<!-- wp:group --><!-- wp:group --><!-- wp:paragraph --><p>Deep</p><!-- /wp:paragraph --><!-- /wp:group --><!-- /wp:group -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:group --><!-- wp:group --><!-- wp:paragraph --><p>Deep</p><!-- /wp:paragraph --><!-- /wp:group --><!-- /wp:group -->
+      """
+    When I run `wp post create block-content.txt --post_title='Deep' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block list {POST_ID} --nested`
@@ -1785,7 +1829,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Extract attribute in various formats
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:heading {"level":2} --><h2>One</h2><!-- /wp:heading --><!-- wp:heading {"level":3} --><h3>Two</h3><!-- /wp:heading -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:heading {"level":2} --><h2>One</h2><!-- /wp:heading --><!-- wp:heading {"level":3} --><h3>Two</h3><!-- /wp:heading -->
+      """
+    When I run `wp post create block-content.txt --post_title='Test' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block extract {POST_ID} --block=core/heading --attr=level --format=json`
@@ -1803,7 +1851,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Extract with both block and index filters
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Para</p><!-- /wp:paragraph --><!-- wp:heading {"level":2} --><h2>Title</h2><!-- /wp:heading -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:paragraph --><p>Para</p><!-- /wp:paragraph --><!-- wp:heading {"level":2} --><h2>Title</h2><!-- /wp:heading -->
+      """
+    When I run `wp post create block-content.txt --post_title='Test' --porcelain`
     Then save STDOUT as {POST_ID}
 
     # --index=1 is the heading, --block filter should match
