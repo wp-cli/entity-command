@@ -224,7 +224,7 @@ Feature: Manage WordPress posts
       """
     And a create-post.sh file:
       """
-      cat content.html | wp post create --post_title='Test post' --post_excerpt="A multiline
+      cat content.html | wp post create --post_title="Test post" --post_excerpt="A multiline
       excerpt" --porcelain -
       """
 
@@ -272,7 +272,7 @@ Feature: Manage WordPress posts
       """
     And the return code should be 0
 
-    When I run `EDITOR='ex -i NONE -c %s/content/bunkum -c wq' wp post edit {POST_ID}`
+    When I run `EDITOR="ex -i NONE -c %s/content/bunkum -c wq" wp post edit {POST_ID}`
     Then STDERR should be empty
     And STDOUT should contain:
       """

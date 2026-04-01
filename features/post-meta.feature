@@ -1,5 +1,7 @@
 Feature: Manage post custom fields
 
+  # Windos likes to include the quotes of the `"via STDIN"` string.
+  @skip-windows
   Scenario: Postmeta CRUD
     Given a WP install
 

@@ -1152,7 +1152,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Parse post with classic content (no blocks)
     Given a WP install
-    When I run `wp post create --post_title='Classic' --post_content='<p>Just HTML, no blocks</p>' --porcelain`
+    And a block-content.txt file:
+      """
+      <p>Just HTML, no blocks</p>
+      """
+    When I run `wp post create block-content.txt --post_title='Classic' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block parse {POST_ID}`
@@ -1164,7 +1168,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Render dynamic block
     Given a WP install
-    When I run `wp post create --post_title='Dynamic' --post_content='<!-- wp:archives /-->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:archives /-->
+      """
+    When I run `wp post create block-content.txt --post_title='Dynamic' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block render {POST_ID}`
@@ -1325,7 +1333,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Parse deeply nested blocks
     Given a WP install
-    When I run `wp post create --post_title='Deep' --post_content='<!-- wp:group --><!-- wp:columns --><!-- wp:column --><!-- wp:group --><!-- wp:paragraph --><p>Deep</p><!-- /wp:paragraph --><!-- /wp:group --><!-- /wp:column --><!-- /wp:columns --><!-- /wp:group -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:group --><!-- wp:columns --><!-- wp:column --><!-- wp:group --><!-- wp:paragraph --><p>Deep</p><!-- /wp:paragraph --><!-- /wp:group --><!-- /wp:column --><!-- /wp:columns --><!-- /wp:group -->
+      """
+    When I run `wp post create block-content.txt --post_title='Deep' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block parse {POST_ID}`
@@ -1357,7 +1369,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Render nested blocks
     Given a WP install
-    When I run `wp post create --post_title='Nested' --post_content='<!-- wp:group {"className":"test-group"} --><!-- wp:paragraph --><p>Inner</p><!-- /wp:paragraph --><!-- /wp:group -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:group {"className":"test-group"} --><!-- wp:paragraph --><p>Inner</p><!-- /wp:paragraph --><!-- /wp:group -->
+      """
+    When I run `wp post create block-content.txt --post_title='Nested' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block render {POST_ID}`
@@ -1503,7 +1519,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Replace block preserves content
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:paragraph --><p>Keep this text</p><!-- /wp:paragraph -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:paragraph --><p>Keep this text</p><!-- /wp:paragraph -->
+      """
+    When I run `wp post create block-content.txt --post_title='Test' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block replace {POST_ID} core/paragraph core/verse`
@@ -1521,7 +1541,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Get nested block shows inner blocks
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:group --><!-- wp:paragraph --><p>Inner</p><!-- /wp:paragraph --><!-- /wp:group -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:group --><!-- wp:paragraph --><p>Inner</p><!-- /wp:paragraph --><!-- /wp:group -->
+      """
+    When I run `wp post create block-content.txt --post_title='Test' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block get {POST_ID} 0`
@@ -1537,7 +1561,11 @@ Feature: Manage blocks in post content
   @require-wp-5.0
   Scenario: Update both attrs and content
     Given a WP install
-    When I run `wp post create --post_title='Test' --post_content='<!-- wp:heading {"level":2} --><h2>Old Title</h2><!-- /wp:heading -->' --porcelain`
+    And a block-content.txt file:
+      """
+      <!-- wp:heading {"level":2} --><h2>Old Title</h2><!-- /wp:heading -->
+      """
+    When I run `wp post create block-content.txt --post_title='Test' --porcelain`
     Then save STDOUT as {POST_ID}
 
     When I run `wp post block update {POST_ID} 0 --attrs='{"level":3}' --content="<h3>New Title</h3>"`
