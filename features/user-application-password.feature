@@ -271,10 +271,15 @@ Feature: Manage user custom fields
     When I run `wp user application-password list {USER_ID} --name=someapp --field=uuid`
     Then save STDOUT as {UUID}
 
-    When I run `wp user application-password get {USER_ID} {UUID} --field=password | sed 's/\$/\\\$/g'`
+    When I run `wp user application-password get {USER_ID} {UUID} --field=password`
     Then save STDOUT as {HASH}
 
-    When I run `wp eval "var_export( wp_check_password( '{PASSWORD}', '{HASH}', {USER_ID} ) );"`
+    Given a check-password.php file:
+      """
+      <?php
+      var_export( wp_check_password( '{PASSWORD}', '{HASH}', {USER_ID} ) );
+      """
+    When I run `wp eval-file check-password.php`
     Then STDOUT should contain:
       """
       true
@@ -297,10 +302,15 @@ Feature: Manage user custom fields
     When I run `wp user application-password list {USER_ID} --name=someapp --field=uuid`
     Then save STDOUT as {UUID}
 
-    When I run `wp user application-password get {USER_ID} {UUID} --field=password | sed 's/\$/\\\$/g'`
+    When I run `wp user application-password get {USER_ID} {UUID} --field=password`
     Then save STDOUT as {HASH}
 
-    When I run `wp eval "var_export( wp_verify_fast_hash( '{PASSWORD}', '{HASH}', {USER_ID} ) );"`
+    Given a verify-fast-hash.php file:
+      """
+      <?php
+      var_export( wp_verify_fast_hash( '{PASSWORD}', '{HASH}', {USER_ID} ) );
+      """
+    When I run `wp eval-file verify-fast-hash.php`
     Then STDOUT should contain:
       """
       true

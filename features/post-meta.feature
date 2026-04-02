@@ -1,5 +1,7 @@
 Feature: Manage post custom fields
 
+  # Windows likes to include the quotes of the `"via STDIN"` string.
+  @skip-windows
   Scenario: Postmeta CRUD
     Given a WP install
 
@@ -34,7 +36,7 @@ Feature: Manage post custom fields
       ["1","2"]
       """
 
-    When I run `echo 'via STDIN' | wp post-meta set 1 foo`
+    When I run `echo "via STDIN" | wp post-meta set 1 foo`
     And I run `wp post-meta get 1 foo`
     Then STDOUT should be:
       """

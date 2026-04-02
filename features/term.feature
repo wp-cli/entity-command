@@ -181,7 +181,7 @@ Feature: Manage WordPress terms
       My\Term\Description
       """
 
-    When I run `wp term update category {TERM_ID} --name='My\New\Term' --description='var isEmailValid = /^\S+@\S+.\S+$/.test(email);'`
+    When I run `wp term update category {TERM_ID} --name="My\New\Term" --description="var isEmailValid = /^\S+@\S+.\S+$/.test(email);"`
     Then STDOUT should not be empty
 
     When I run `wp term get category {TERM_ID} --field=name`
