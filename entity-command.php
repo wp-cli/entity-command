@@ -95,6 +95,7 @@ WP_CLI::add_command(
 	)
 );
 WP_CLI::add_command( 'user meta', 'User_Meta_Command' );
+WP_CLI::add_command( 'user privacy-request', 'User_Privacy_Request_Command' );
 WP_CLI::add_command( 'user session', 'User_Session_Command' );
 WP_CLI::add_command( 'user term', 'User_Term_Command' );
 
