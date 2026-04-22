@@ -133,8 +133,8 @@ final class User_Privacy_Request_Command {
 	 *
 	 * @subcommand list
 	 *
-	 * @param array $args       Indexed array of positional arguments.
-	 * @param array $assoc_args Associative array of associative arguments.
+	 * @param list<string> $args Positional arguments.
+	 * @param array{action-type?: string, status?: string, field?: string, fields?: string, format?: string} $assoc_args Associative arguments.
 	 */
 	public function list_( $args, $assoc_args ) {
 		$query_args = [
@@ -147,7 +147,7 @@ final class User_Privacy_Request_Command {
 
 		$action_type = Utils\get_flag_value( $assoc_args, 'action-type' );
 		if ( $action_type ) {
-			$query_args['name'] = sanitize_key( $action_type );
+			$query_args['post_name__in'] = [ sanitize_key( $action_type ) ];
 		}
 
 		$status = Utils\get_flag_value( $assoc_args, 'status' );
@@ -219,22 +219,13 @@ final class User_Privacy_Request_Command {
 	 *     $ wp user privacy-request create bob@example.com export_personal_data --porcelain
 	 *     3
 	 *
-	 * @param array $args       Indexed array of positional arguments.
-	 * @param array $assoc_args Associative array of associative arguments.
+	 * @param array{string, string} $args Positional arguments.
+	 * @param array{status?: string, send-email?: bool, porcelain?: bool} $assoc_args Associative arguments.
 	 */
 	public function create( $args, $assoc_args ) {
 		list( $email_address, $action_name ) = $args;
 
-		$valid_actions = [ 'export_personal_data', 'remove_personal_data' ];
-		if ( ! in_array( $action_name, $valid_actions, true ) ) {
-			WP_CLI::error( "Invalid action type '{$action_name}'. Use 'export_personal_data' or 'remove_personal_data'." );
-		}
-
-		$status         = Utils\get_flag_value( $assoc_args, 'status', 'pending' );
-		$valid_statuses = [ 'pending', 'confirmed' ];
-		if ( ! in_array( $status, $valid_statuses, true ) ) {
-			WP_CLI::error( "Invalid status '{$status}'. Use 'pending' or 'confirmed'." );
-		}
+		$status = Utils\get_flag_value( $assoc_args, 'status', 'pending' );
 
 		$request_id = wp_create_user_request( $email_address, $action_name, [], $status );
 
@@ -276,8 +267,8 @@ final class User_Privacy_Request_Command {
 	 *     Privacy request 3 deleted.
 	 *     Success: Deleted 3 of 3 privacy requests.
 	 *
-	 * @param array $args       Indexed array of positional arguments.
-	 * @param array $assoc_args Associative array of associative arguments.
+	 * @param list<string> $args Positional arguments.
+	 * @param array{} $assoc_args Associative arguments.
 	 */
 	public function delete( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$successes = 0;
@@ -293,8 +284,7 @@ final class User_Privacy_Request_Command {
 				continue;
 			}
 
-			// Function exists since WP 4.9.6 but is absent from the wordpress-stubs library.
-			$result = wp_delete_user_request( $request_id ); // @phpstan-ignore function.notFound
+			$result = wp_delete_post( $request_id, true );
 
 			if ( is_wp_error( $result ) ) {
 				WP_CLI::warning( "Failed deleting privacy request {$request_id}: " . $result->get_error_message() );
@@ -326,8 +316,8 @@ final class User_Privacy_Request_Command {
 	 *     $ wp user privacy-request erase 1
 	 *     Success: Erased personal data for request 1.
 	 *
-	 * @param array $args       Indexed array of positional arguments.
-	 * @param array $assoc_args Associative array of associative arguments.
+	 * @param array{string} $args Positional arguments.
+	 * @param array{} $assoc_args Associative arguments.
 	 */
 	public function erase( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		list( $request_id ) = $args;
@@ -402,8 +392,8 @@ final class User_Privacy_Request_Command {
 	 *     $ wp user privacy-request export 1
 	 *     Success: Exported personal data to: /var/www/html/wp-content/uploads/wp-personal-data-exports/wp-personal-data-export-bob-example-com-1.zip
 	 *
-	 * @param array $args       Indexed array of positional arguments.
-	 * @param array $assoc_args Associative array of associative arguments.
+	 * @param array{string} $args Positional arguments.
+	 * @param array{} $assoc_args Associative arguments.
 	 */
 	public function export( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		list( $request_id ) = $args;
@@ -417,7 +407,7 @@ final class User_Privacy_Request_Command {
 
 		$email_address = $request->email;
 		$exporters     = apply_filters( 'wp_privacy_personal_data_exporters', [] ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-		$export_data   = [];
+		$groups        = [];
 
 		foreach ( $exporters as $exporter_key => $exporter ) {
 			if ( ! isset( $exporter['callback'] ) || ! is_callable( $exporter['callback'] ) ) {
@@ -434,11 +424,34 @@ final class User_Privacy_Request_Command {
 					break;
 				}
 
-				if ( ! empty( $response['data'] ) ) {
-					if ( ! isset( $export_data[ $exporter_key ] ) ) {
-						$export_data[ $exporter_key ] = [];
+				if ( ! empty( $response['data'] ) && is_array( $response['data'] ) ) {
+					foreach ( $response['data'] as $export_datum ) {
+						if ( ! is_array( $export_datum ) ) {
+							continue;
+						}
+						if ( ! isset( $export_datum['group_id'], $export_datum['item_id'] ) ) {
+							continue;
+						}
+						if ( ! is_scalar( $export_datum['group_id'] ) || ! is_scalar( $export_datum['item_id'] ) ) {
+							continue;
+						}
+						$group_id = (string) $export_datum['group_id'];
+						$item_id  = (string) $export_datum['item_id'];
+
+						if ( ! isset( $groups[ $group_id ] ) ) {
+							$groups[ $group_id ] = [
+								'group_label'       => isset( $export_datum['group_label'] ) && is_scalar( $export_datum['group_label'] ) ? (string) $export_datum['group_label'] : '',
+								'group_description' => isset( $export_datum['group_description'] ) && is_scalar( $export_datum['group_description'] ) ? (string) $export_datum['group_description'] : '',
+								'items'             => [],
+							];
+						}
+						if ( ! isset( $groups[ $group_id ]['items'][ $item_id ] ) ) {
+							$groups[ $group_id ]['items'][ $item_id ] = [];
+						}
+						if ( isset( $export_datum['data'] ) && is_array( $export_datum['data'] ) ) {
+							$groups[ $group_id ]['items'][ $item_id ] = array_merge( $groups[ $group_id ]['items'][ $item_id ], $export_datum['data'] );
+						}
 					}
-					$export_data[ $exporter_key ] = array_merge( $export_data[ $exporter_key ], (array) $response['data'] );
 				}
 
 				$done = ! empty( $response['done'] );
@@ -446,14 +459,19 @@ final class User_Privacy_Request_Command {
 			} while ( ! $done );
 		}
 
-		update_post_meta( $request_id, '_export_data_grouped', $export_data );
+		update_post_meta( $request_id, '_export_data_grouped', $groups );
+
+		require_once ABSPATH . 'wp-admin/includes/privacy-tools.php';
 		wp_privacy_generate_personal_data_export_file( $request_id );
 
-		$file_path = get_post_meta( $request_id, '_export_file_path', true );
+		$file_name = get_post_meta( $request_id, '_export_file_name', true );
 
-		if ( ! is_string( $file_path ) || '' === $file_path ) {
+		if ( ! is_string( $file_name ) || '' === $file_name ) {
 			WP_CLI::error( 'Failed to generate the personal data export file.' );
 		}
+
+		$exports_dir = wp_privacy_exports_dir();
+		$file_path   = $exports_dir . $file_name;
 
 		wp_update_post(
 			[
@@ -487,8 +505,8 @@ final class User_Privacy_Request_Command {
 	 *     Privacy request 2 completed.
 	 *     Success: Completed 2 of 2 privacy requests.
 	 *
-	 * @param array $args       Indexed array of positional arguments.
-	 * @param array $assoc_args Associative array of associative arguments.
+	 * @param list<string> $args Positional arguments.
+	 * @param array{} $assoc_args Associative arguments.
 	 */
 	public function complete( $args, $assoc_args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		$successes = 0;

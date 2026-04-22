@@ -225,7 +225,7 @@ Feature: Manage user privacy requests
     When I try `wp user privacy-request create admin@example.com invalid_action`
     Then STDERR should contain:
       """
-      Error: Invalid action type 'invalid_action'.
+      Error: Invalid value specified for positional arg.
       """
 
   @require-wp-4.9
@@ -235,5 +235,6 @@ Feature: Manage user privacy requests
     When I try `wp user privacy-request create admin@example.com export_personal_data --status=invalid`
     Then STDERR should contain:
       """
-      Error: Invalid status 'invalid'.
+      Error: Parameter errors:
+       Invalid value specified for 'status' (The initial status of the request.)
       """
