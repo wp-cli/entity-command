@@ -551,7 +551,11 @@ final class User_Privacy_Request_Command {
 	 * @return WP_User_Request|false The request if found; false otherwise.
 	 */
 	private function get_request( $request_id ) {
-		return wp_get_user_request( $request_id );
+		if ( function_exists( 'wp_get_user_request' ) ) {
+			return wp_get_user_request( $request_id );
+		}
+
+		return wp_get_user_request_data( $request_id ); // phpcs:ignore WordPress.WP.DeprecatedFunctions.wp_get_user_request_dataFound -- Fallback for WP < 5.4. // @phpstan-ignore function.deprecated
 	}
 
 	/**
@@ -577,7 +581,11 @@ final class User_Privacy_Request_Command {
 	 * @return array<string, mixed>|false Array of request data, or false on failure.
 	 */
 	private function get_request_data( $post ) {
-		$request = wp_get_user_request( $post->ID );
+		if ( function_exists( 'wp_get_user_request' ) ) {
+			$request = wp_get_user_request( $post->ID );
+		} else {
+			$request = wp_get_user_request_data( $post->ID ); // phpcs:ignore WordPress.WP.DeprecatedFunctions.wp_get_user_request_dataFound -- Fallback for WP < 5.4. // @phpstan-ignore function.deprecated
+		}
 
 		if ( ! $request ) {
 			return false;
