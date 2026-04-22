@@ -1,6 +1,6 @@
 Feature: Manage user privacy requests
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Create and list privacy requests
     Given a WP install
 
@@ -26,7 +26,7 @@ Feature: Manage user privacy requests
       1
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Create requests with confirmed status
     Given a WP install
 
@@ -40,7 +40,7 @@ Feature: Manage user privacy requests
       {REQUEST_ID},request-confirmed
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Filter privacy request list by action type
     Given a WP install
 
@@ -70,7 +70,7 @@ Feature: Manage user privacy requests
       {EXPORT_ID}
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Filter privacy request list by status
     Given a WP install
 
@@ -100,7 +100,7 @@ Feature: Manage user privacy requests
       {CONFIRMED_ID}
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Delete privacy requests
     Given a WP install
 
@@ -125,7 +125,7 @@ Feature: Manage user privacy requests
       Warning: Could not find privacy request with ID 9999.
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Complete privacy requests
     Given a WP install
 
@@ -150,7 +150,7 @@ Feature: Manage user privacy requests
       Warning: Could not find privacy request with ID 9999.
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Erase personal data for a request
     Given a WP install
 
@@ -169,7 +169,7 @@ Feature: Manage user privacy requests
       {REQUEST_ID}
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Erase command fails for non-erasure requests
     Given a WP install
 
@@ -182,7 +182,7 @@ Feature: Manage user privacy requests
       Error: Request {REQUEST_ID} is not a 'remove_personal_data' request.
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Export personal data for a request
     Given a WP install
 
@@ -205,7 +205,7 @@ Feature: Manage user privacy requests
       {REQUEST_ID}
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Export command fails for non-export requests
     Given a WP install
 
@@ -218,7 +218,7 @@ Feature: Manage user privacy requests
       Error: Request {REQUEST_ID} is not an 'export_personal_data' request.
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Create request with invalid action type
     Given a WP install
 
@@ -228,7 +228,7 @@ Feature: Manage user privacy requests
       Error: Invalid value specified for positional arg.
       """
 
-  @require-wp-4.9
+  @require-wp-4.9.6
   Scenario: Create request with invalid status
     Given a WP install
 
