@@ -293,6 +293,7 @@ final class User_Privacy_Request_Command {
 				continue;
 			}
 
+			// Function exists since WP 4.9.6 but is absent from the wordpress-stubs library.
 			$result = wp_delete_user_request( $request_id ); // @phpstan-ignore function.notFound
 
 			if ( is_wp_error( $result ) ) {
@@ -375,7 +376,9 @@ final class User_Privacy_Request_Command {
 		update_post_meta( $request_id, '_wp_user_request_completed_timestamp', time() );
 
 		foreach ( $messages as $message ) {
-			WP_CLI::log( (string) $message ); // @phpstan-ignore cast.string
+			if ( is_scalar( $message ) ) {
+				WP_CLI::log( (string) $message );
+			}
 		}
 
 		WP_CLI::success( "Erased personal data for request {$request_id}." );
@@ -448,6 +451,10 @@ final class User_Privacy_Request_Command {
 
 		$file_path = get_post_meta( $request_id, '_export_file_path', true );
 
+		if ( ! is_string( $file_path ) || '' === $file_path ) {
+			WP_CLI::error( 'Failed to generate the personal data export file.' );
+		}
+
 		wp_update_post(
 			[
 				'ID'          => $request_id,
@@ -456,7 +463,7 @@ final class User_Privacy_Request_Command {
 		);
 		update_post_meta( $request_id, '_wp_user_request_completed_timestamp', time() );
 
-		WP_CLI::success( 'Exported personal data to: ' . (string) $file_path ); // @phpstan-ignore cast.string
+		WP_CLI::success( "Exported personal data to: {$file_path}" );
 	}
 
 	/**
