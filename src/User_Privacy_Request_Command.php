@@ -233,6 +233,17 @@ final class User_Privacy_Request_Command {
 			WP_CLI::error( $request_id );
 		}
 
+		// The $status parameter for wp_create_user_request() was added in WP 5.7.0.
+		// For older versions, manually update the post status when 'confirmed' was requested.
+		if ( 'confirmed' === $status ) {
+			wp_update_post(
+				[
+					'ID'          => $request_id,
+					'post_status' => 'request-confirmed',
+				]
+			);
+		}
+
 		if ( Utils\get_flag_value( $assoc_args, 'send-email', false ) ) {
 			wp_send_user_request( $request_id );
 		}
