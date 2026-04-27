@@ -461,7 +461,13 @@ final class User_Privacy_Request_Command {
 
 		update_post_meta( $request_id, '_export_data_grouped', $groups );
 
-		require_once ABSPATH . 'wp-admin/includes/privacy-tools.php';
+		// Files were moved in WP 5.3.0, see https://core.trac.wordpress.org/ticket/43895.
+		if ( file_exists( ABSPATH . 'wp-admin/includes/privacy-tools.php' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/privacy-tools.php';
+		} else {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
 		wp_privacy_generate_personal_data_export_file( $request_id );
 
 		$file_name = get_post_meta( $request_id, '_export_file_name', true );
