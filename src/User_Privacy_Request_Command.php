@@ -481,14 +481,22 @@ final class User_Privacy_Request_Command {
 
 		wp_privacy_generate_personal_data_export_file( $request_id );
 
-		$file_name = get_post_meta( $request_id, '_export_file_name', true );
+		// WP 5.5+ stores only the basename in '_export_file_name'; older versions
+		// store the full absolute path in '_export_file_path'.
+		$raw_path  = get_post_meta( $request_id, '_export_file_path', true );
+		$file_path = is_string( $raw_path ) ? $raw_path : '';
 
-		if ( ! is_string( $file_name ) || '' === $file_name ) {
-			WP_CLI::error( 'Failed to generate the personal data export file.' );
+		if ( '' === $file_path ) {
+			$raw_name  = get_post_meta( $request_id, '_export_file_name', true );
+			$file_name = is_string( $raw_name ) ? $raw_name : '';
+			if ( '' !== $file_name ) {
+				$file_path = wp_privacy_exports_dir() . $file_name;
+			}
 		}
 
-		$exports_dir = wp_privacy_exports_dir();
-		$file_path   = $exports_dir . $file_name;
+		if ( '' === $file_path ) {
+			WP_CLI::error( 'Failed to generate the personal data export file.' );
+		}
 
 		wp_update_post(
 			[
@@ -498,7 +506,7 @@ final class User_Privacy_Request_Command {
 		);
 		update_post_meta( $request_id, '_wp_user_request_completed_timestamp', time() );
 
-		WP_CLI::success( "Exported personal data to: {$file_path}" );
+		WP_CLI::success( 'Exported personal data to: ' . $file_path );
 	}
 
 	/**
