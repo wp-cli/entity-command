@@ -95,7 +95,17 @@ WP_CLI::add_command(
 	)
 );
 WP_CLI::add_command( 'user meta', 'User_Meta_Command' );
-WP_CLI::add_command( 'user privacy-request', 'User_Privacy_Request_Command' );
+WP_CLI::add_command(
+	'user privacy-request',
+	'User_Privacy_Request_Command',
+	array(
+		'before_invoke' => function () {
+			if ( Utils\wp_version_compare( '4.9.6', '<' ) ) {
+				WP_CLI::error( 'Requires WordPress 4.9.6 or greater.' );
+			}
+		},
+	)
+);
 WP_CLI::add_command( 'user session', 'User_Session_Command' );
 WP_CLI::add_command( 'user term', 'User_Term_Command' );
 

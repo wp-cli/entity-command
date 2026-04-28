@@ -168,7 +168,10 @@ final class User_Privacy_Request_Command {
 		$formatter = new Formatter( $assoc_args, self::REQUEST_FIELDS );
 
 		if ( 'ids' === $format ) {
-			WP_CLI::line( implode( ' ', wp_list_pluck( $requests, 'ID' ) ) );
+			$ids = wp_list_pluck( $requests, 'ID' );
+			if ( ! empty( $ids ) ) {
+				WP_CLI::line( implode( ' ', $ids ) );
+			}
 		} else {
 			$formatter->display_items( $requests );
 		}
@@ -245,7 +248,10 @@ final class User_Privacy_Request_Command {
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'send-email', false ) ) {
-			wp_send_user_request( $request_id );
+			$send_result = wp_send_user_request( $request_id );
+			if ( is_wp_error( $send_result ) ) {
+				WP_CLI::error( $send_result );
+			}
 		}
 
 		if ( Utils\get_flag_value( $assoc_args, 'porcelain', false ) ) {
@@ -297,8 +303,8 @@ final class User_Privacy_Request_Command {
 
 			$result = wp_delete_post( $request_id, true );
 
-			if ( is_wp_error( $result ) ) {
-				WP_CLI::warning( "Failed deleting privacy request {$request_id}: " . $result->get_error_message() );
+			if ( ! $result ) {
+				WP_CLI::warning( "Failed deleting privacy request {$request_id}." );
 				++$errors;
 			} else {
 				WP_CLI::log( "Privacy request {$request_id} deleted." );
@@ -355,26 +361,43 @@ final class User_Privacy_Request_Command {
 				$response = call_user_func( $eraser['callback'], $email_address, $page );
 
 				if ( ! is_array( $response ) ) {
-					WP_CLI::warning( "Eraser '{$eraser_key}' returned an invalid response." );
-					break;
+					WP_CLI::error( "Eraser '{$eraser_key}' did not return an array." );
+				}
+
+				if ( ! array_key_exists( 'items_removed', $response ) ) {
+					WP_CLI::error( "Expected items_removed key in response array from '{$eraser_key}' eraser." );
+				}
+
+				if ( ! array_key_exists( 'items_retained', $response ) ) {
+					WP_CLI::error( "Expected items_retained key in response array from '{$eraser_key}' eraser." );
+				}
+
+				if ( ! array_key_exists( 'messages', $response ) ) {
+					WP_CLI::error( "Expected messages key in response array from '{$eraser_key}' eraser." );
+				}
+
+				if ( ! is_array( $response['messages'] ) ) {
+					WP_CLI::error( "Expected messages key to reference an array in response array from '{$eraser_key}' eraser." );
+				}
+
+				if ( ! array_key_exists( 'done', $response ) ) {
+					WP_CLI::error( "Expected done flag in response array from '{$eraser_key}' eraser." );
 				}
 
 				if ( ! empty( $response['messages'] ) ) {
-					$messages = array_merge( $messages, (array) $response['messages'] );
+					$messages = array_merge( $messages, $response['messages'] );
 				}
 
-				$done = ! empty( $response['done'] );
+				$done = (bool) $response['done'];
 				++$page;
 			} while ( ! $done );
 		}
 
-		wp_update_post(
-			[
-				'ID'          => $request_id,
-				'post_status' => 'request-completed',
-			]
-		);
-		update_post_meta( $request_id, '_wp_user_request_completed_timestamp', time() );
+		$result = _wp_privacy_completed_request( $request_id );
+
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( "Failed completing privacy request {$request_id}: " . $result->get_error_message() );
+		}
 
 		foreach ( $messages as $message ) {
 			if ( is_scalar( $message ) ) {
@@ -431,8 +454,19 @@ final class User_Privacy_Request_Command {
 				$response = call_user_func( $exporter['callback'], $email_address, $page );
 
 				if ( ! is_array( $response ) ) {
-					WP_CLI::warning( "Exporter '{$exporter_key}' returned an invalid response." );
-					break;
+					WP_CLI::error( "Exporter '{$exporter_key}' did not return an array." );
+				}
+
+				if ( ! array_key_exists( 'data', $response ) ) {
+					WP_CLI::error( "Expected data in response array from exporter '{$exporter_key}'." );
+				}
+
+				if ( ! is_array( $response['data'] ) ) {
+					WP_CLI::error( "Expected data array in response array from exporter '{$exporter_key}'." );
+				}
+
+				if ( ! array_key_exists( 'done', $response ) ) {
+					WP_CLI::error( "Expected done (boolean) in response array from exporter '{$exporter_key}'." );
 				}
 
 				if ( ! empty( $response['data'] ) && is_array( $response['data'] ) ) {
@@ -465,7 +499,7 @@ final class User_Privacy_Request_Command {
 					}
 				}
 
-				$done = ! empty( $response['done'] );
+				$done = (bool) $response['done'];
 				++$page;
 			} while ( ! $done );
 		}
@@ -498,13 +532,11 @@ final class User_Privacy_Request_Command {
 			WP_CLI::error( 'Failed to generate the personal data export file.' );
 		}
 
-		wp_update_post(
-			[
-				'ID'          => $request_id,
-				'post_status' => 'request-completed',
-			]
-		);
-		update_post_meta( $request_id, '_wp_user_request_completed_timestamp', time() );
+		$result = _wp_privacy_completed_request( $request_id );
+
+		if ( is_wp_error( $result ) ) {
+			WP_CLI::error( "Failed completing privacy request {$request_id}: " . $result->get_error_message() );
+		}
 
 		WP_CLI::success( 'Exported personal data to: ' . $file_path );
 	}
@@ -547,13 +579,7 @@ final class User_Privacy_Request_Command {
 				continue;
 			}
 
-			$result = wp_update_post(
-				[
-					'ID'          => $request_id,
-					'post_status' => 'request-completed',
-				],
-				true
-			);
+			$result = _wp_privacy_completed_request( $request_id );
 
 			if ( is_wp_error( $result ) ) {
 				WP_CLI::warning( "Failed completing privacy request {$request_id}: " . $result->get_error_message() );
