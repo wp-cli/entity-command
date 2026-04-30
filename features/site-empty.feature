@@ -6,7 +6,7 @@ Feature: Empty a WordPress site of its data
     And I run `wp option update uploads_use_yearmonth_folders 0`
     And download:
       | path                        | url                                              |
-      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.github.io/behat-data/large-image.jpg     |
     And a insert_link_data.sql file:
       """
       INSERT INTO `wp_links` (`link_url`, `link_name`, `link_image`, `link_target`, `link_description`, `link_visible`, `link_owner`, `link_rating`, `link_rel`, `link_notes`, `link_rss`)
@@ -107,7 +107,7 @@ Feature: Empty a WordPress site of its data
     And I run `wp --url=example.com/foo option update uploads_use_yearmonth_folders 0`
     And download:
       | path                        | url                                              |
-      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.github.io/behat-data/large-image.jpg     |
 
     When I run `wp --url=example.com/foo media import {CACHE_DIR}/large-image.jpg --post_id=1`
     Then the wp-content/uploads/sites/2/large-image.jpg file should exist
