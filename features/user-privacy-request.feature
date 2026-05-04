@@ -235,7 +235,7 @@ Feature: Manage user privacy requests
     When I try `wp user privacy-request create not-an-email export_personal_data`
     Then STDERR should contain:
       """
-      Error:
+      Error: Invalid email address.
       """
 
   @require-wp-4.9.6
