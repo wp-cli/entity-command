@@ -219,6 +219,26 @@ Feature: Manage user privacy requests
       """
 
   @require-wp-4.9.6
+  Scenario: Create request without porcelain flag
+    Given a WP install
+
+    When I run `wp user privacy-request create admin@example.com export_personal_data`
+    Then STDOUT should contain:
+      """
+      Created privacy request
+      """
+
+  @require-wp-4.9.6
+  Scenario: Create request with invalid email address
+    Given a WP install
+
+    When I try `wp user privacy-request create not-an-email export_personal_data`
+    Then STDERR should contain:
+      """
+      Error:
+      """
+
+  @require-wp-4.9.6
   Scenario: Create request with invalid action type
     Given a WP install
 
