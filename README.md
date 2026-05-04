@@ -8202,6 +8202,291 @@ wp user meta update <user> <key> <value> [--format=<format>]
 
 
 
+### wp user privacy-request
+
+Manages user privacy requests (GDPR personal data export and erasure).
+
+~~~
+wp user privacy-request
+~~~
+
+**EXAMPLES**
+
+    # List all privacy requests.
+    $ wp user privacy-request list
+    +----+-------------------+----------------------+-------------------+--------------------+
+    | ID | user_email        | action_name          | status            | created_timestamp  |
+    +----+-------------------+----------------------+-------------------+--------------------+
+    | 1  | bob@example.com   | export_personal_data | request-pending   | 1713779524         |
+    +----+-------------------+----------------------+-------------------+--------------------+
+
+    # Create a new data export request.
+    $ wp user privacy-request create bob@example.com export_personal_data
+    Success: Created privacy request 1.
+
+    # Erase personal data for request 1.
+    $ wp user privacy-request erase 1
+    Success: Erased personal data for request 1.
+
+    # Export personal data for request 1.
+    $ wp user privacy-request export 1
+    Success: Exported personal data to: /var/www/html/wp-content/uploads/wp-personal-data-exports/wp-personal-data-export-bob-example-com-1.zip
+
+    # Mark request 1 as complete.
+    $ wp user privacy-request complete 1
+    Success: Completed 1 of 1 privacy requests.
+
+    # Delete request 1.
+    $ wp user privacy-request delete 1
+    Success: Deleted 1 of 1 privacy requests.
+
+
+
+
+
+### wp user privacy-request complete
+
+Marks one or more privacy requests as completed.
+
+~~~
+wp user privacy-request complete <request-id>...
+~~~
+
+**OPTIONS**
+
+	<request-id>...
+		One or more IDs of the privacy requests to complete.
+
+**EXAMPLES**
+
+    # Mark request 1 as completed.
+    $ wp user privacy-request complete 1
+    Privacy request 1 completed.
+    Success: Completed 1 of 1 privacy requests.
+
+    # Mark multiple requests as completed.
+    $ wp user privacy-request complete 1 2
+    Privacy request 1 completed.
+    Privacy request 2 completed.
+    Success: Completed 2 of 2 privacy requests.
+
+
+
+### wp user privacy-request create
+
+Creates a privacy request for a user.
+
+~~~
+wp user privacy-request create <email> <action-type> [--status=<status>] [--send-email] [--porcelain]
+~~~
+
+**OPTIONS**
+
+	<email>
+		The email address of the user to create the request for.
+
+	<action-type>
+		The type of personal data request.
+		---
+		options:
+		  - export_personal_data
+		  - remove_personal_data
+		---
+
+	[--status=<status>]
+		The initial status of the request.
+		---
+		default: pending
+		options:
+		  - pending
+		  - confirmed
+		---
+
+	[--send-email]
+		If set, sends a confirmation email to the user.
+
+	[--porcelain]
+		Output just the new request ID.
+
+**EXAMPLES**
+
+    # Create a new data export request with pending status.
+    $ wp user privacy-request create bob@example.com export_personal_data
+    Success: Created privacy request 1.
+
+    # Create a confirmed data erasure request.
+    $ wp user privacy-request create bob@example.com remove_personal_data --status=confirmed
+    Success: Created privacy request 2.
+
+    # Get just the new request ID.
+    $ wp user privacy-request create bob@example.com export_personal_data --porcelain
+    3
+
+
+
+### wp user privacy-request delete
+
+Deletes one or more privacy requests.
+
+~~~
+wp user privacy-request delete <request-id>...
+~~~
+
+**OPTIONS**
+
+	<request-id>...
+		One or more IDs of the privacy requests to delete.
+
+**EXAMPLES**
+
+    # Delete privacy request 1.
+    $ wp user privacy-request delete 1
+    Privacy request 1 deleted.
+    Success: Deleted 1 of 1 privacy requests.
+
+    # Delete multiple privacy requests.
+    $ wp user privacy-request delete 1 2 3
+    Privacy request 1 deleted.
+    Privacy request 2 deleted.
+    Privacy request 3 deleted.
+    Success: Deleted 3 of 3 privacy requests.
+
+
+
+### wp user privacy-request erase
+
+Erases personal data for a given privacy request.
+
+~~~
+wp user privacy-request erase <request-id>
+~~~
+
+Runs all registered data erasers for the email address associated with the
+request, then marks the request as completed.
+
+**OPTIONS**
+
+	<request-id>
+		The ID of the remove_personal_data privacy request to process.
+
+**EXAMPLES**
+
+    # Erase personal data for request 1.
+    $ wp user privacy-request erase 1
+    Success: Erased personal data for request 1.
+
+
+
+### wp user privacy-request export
+
+Exports personal data for a given privacy request.
+
+~~~
+wp user privacy-request export <request-id>
+~~~
+
+Runs all registered data exporters for the email address associated with
+the request, generates a ZIP file containing the data, then marks the
+request as completed.
+
+**OPTIONS**
+
+	<request-id>
+		The ID of the export_personal_data privacy request to process.
+
+**EXAMPLES**
+
+    # Export personal data for request 1.
+    $ wp user privacy-request export 1
+    Success: Exported personal data to: /var/www/html/wp-content/uploads/wp-personal-data-exports/wp-personal-data-export-bob-example-com-1.zip
+
+
+
+### wp user privacy-request list
+
+Lists privacy requests.
+
+~~~
+wp user privacy-request list [--action-type=<action-type>] [--status=<status>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--action-type=<action-type>]
+		Filter the list by action type.
+		---
+		options:
+		  - export_personal_data
+		  - remove_personal_data
+		---
+
+	[--status=<status>]
+		Filter the list by request status.
+		---
+		options:
+		  - request-pending
+		  - request-confirmed
+		  - request-failed
+		  - request-completed
+		---
+
+	[--field=<field>]
+		Prints the value of a single field for each request.
+
+	[--fields=<fields>]
+		Limit the output to specific object fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - ids
+		  - json
+		  - count
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each request:
+
+* ID
+* user_email
+* action_name
+* status
+* created_timestamp
+
+These fields are optionally available:
+
+* user_id
+* confirmed_timestamp
+* completed_timestamp
+
+**EXAMPLES**
+
+    # List all privacy requests.
+    $ wp user privacy-request list
+    +----+-------------------+----------------------+-------------------+--------------------+
+    | ID | user_email        | action_name          | status            | created_timestamp  |
+    +----+-------------------+----------------------+-------------------+--------------------+
+    | 1  | bob@example.com   | export_personal_data | request-pending   | 1713779524         |
+    +----+-------------------+----------------------+-------------------+--------------------+
+
+    # List only export requests.
+    $ wp user privacy-request list --action-type=export_personal_data
+
+    # List only completed requests.
+    $ wp user privacy-request list --status=request-completed
+
+    # List request IDs only.
+    $ wp user privacy-request list --format=ids
+    1 2
+
+
+
 ### wp user remove-cap
 
 Removes a user's capability.
