@@ -371,6 +371,7 @@ class Post_Command extends CommandWithDBObject {
 	 *     Success: Updated post 456.
 	 */
 	public function update( $args, $assoc_args ) {
+		$args = self::expand_id_ranges( $args, [ $this, 'get_post_ids_in_range' ] );
 
 		foreach ( $args as $key => $arg ) {
 			if ( is_numeric( $arg ) ) {
@@ -561,6 +562,7 @@ class Post_Command extends CommandWithDBObject {
 	 *     Success: Deleted post 1294.
 	 */
 	public function delete( $args, $assoc_args ) {
+		$args       = self::expand_id_ranges( $args, [ $this, 'get_post_ids_in_range' ] );
 		$defaults   = [ 'force' => false ];
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
@@ -1240,5 +1242,28 @@ class Post_Command extends CommandWithDBObject {
 			return $matches[1] . ' ' . $matches[2];
 		}
 		return $date_string;
+	}
+
+	/**
+	 * Returns existing post IDs within the given range.
+	 *
+	 * @param int      $start Start of the ID range (inclusive).
+	 * @param int|null $end   End of the ID range (inclusive), or null for no upper bound.
+	 * @return int[] List of existing post IDs.
+	 */
+	protected function get_post_ids_in_range( int $start, ?int $end ): array {
+		global $wpdb;
+
+		if ( null === $end ) {
+			return array_map(
+				'intval',
+				$wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE ID >= %d ORDER BY ID ASC", $start ) )
+			);
+		}
+
+		return array_map(
+			'intval',
+			$wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE ID BETWEEN %d AND %d ORDER BY ID ASC", $start, $end ) )
+		);
 	}
 }
