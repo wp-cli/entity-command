@@ -79,6 +79,41 @@ Feature: Manage sites in a multisite installation
     Then the return code should be 1
 
   @skip-windows
+  Scenario: Delete a site by id and remove all prefixed tables
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --slug=first --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+    And I run `wp db query "CREATE TABLE wp_{SITE_ID}_custom_data (id INTEGER PRIMARY KEY);"`
+    And I run `wp site delete {SITE_ID} --yes --delete-tables-with-prefix`
+    Then STDOUT should contain:
+      """
+      Success: The site at '
+      """
+
+    When I run `wp db query "CREATE TABLE wp_{SITE_ID}_custom_data (id INTEGER PRIMARY KEY);"`
+    Then STDOUT should be empty
+    And the return code should be 0
+    And I run `wp db query "DROP TABLE wp_{SITE_ID}_custom_data;"`
+
+  @skip-windows
+  Scenario: Deleting a site cannot combine keep-tables with delete-tables-with-prefix
+    Given a WP multisite subdirectory install
+
+    When I run `wp site create --slug=first --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SITE_ID}
+
+    When I try `wp site delete {SITE_ID} --yes --keep-tables --delete-tables-with-prefix`
+    Then STDERR should be:
+      """
+      Error: The '--keep-tables' and '--delete-tables-with-prefix' flags cannot be used together.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+  @skip-windows
   Scenario: Filter site list
     Given a WP multisite install
 

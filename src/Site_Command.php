@@ -288,6 +288,9 @@ class Site_Command extends CommandWithDBObject {
 	 * [--keep-tables]
 	 * : Delete the blog from the list, but don't drop its tables.
 	 *
+	 * [--delete-tables-with-prefix]
+	 * : Delete all tables with the site's database table prefix after deleting the site.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site delete 123
@@ -297,6 +300,10 @@ class Site_Command extends CommandWithDBObject {
 	public function delete( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite installation.' );
+		}
+
+		if ( Utils\get_flag_value( $assoc_args, 'keep-tables' ) && Utils\get_flag_value( $assoc_args, 'delete-tables-with-prefix' ) ) {
+			WP_CLI::error( "The '--keep-tables' and '--delete-tables-with-prefix' flags cannot be used together." );
 		}
 
 		if ( isset( $assoc_args['slug'] ) ) {
@@ -329,7 +336,37 @@ class Site_Command extends CommandWithDBObject {
 
 		wpmu_delete_blog( (int) $blog->blog_id, ! Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
 
+		if ( Utils\get_flag_value( $assoc_args, 'delete-tables-with-prefix' ) ) {
+			$this->drop_tables_with_prefix( (int) $blog->blog_id );
+		}
+
 		WP_CLI::success( "The site at '{$site_url}' was deleted." );
+	}
+
+	/**
+	 * Drops all database tables for a site prefix.
+	 *
+	 * @param int $blog_id Site ID.
+	 */
+	private function drop_tables_with_prefix( $blog_id ) {
+		global $wpdb;
+
+		$prefix_like = $wpdb->esc_like( $wpdb->get_blog_prefix( $blog_id ) ) . '%';
+		$tables      = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $prefix_like ) );
+
+		if ( empty( $tables ) ) {
+			return;
+		}
+
+		$tables = array_map(
+			static function ( $table ) {
+				return '`' . str_replace( '`', '``', $table ) . '`';
+			},
+			$tables
+		);
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table identifiers are escaped and cannot be passed as placeholders.
+		$wpdb->query( 'DROP TABLE IF EXISTS ' . implode( ', ', $tables ) );
 	}
 
 	/**
