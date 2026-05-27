@@ -87,7 +87,7 @@ Feature: Manage sites in a multisite installation
     And save STDOUT as {SITE_ID}
     And I run `wp db query "CREATE TABLE wp_{SITE_ID}_custom_data (id INTEGER PRIMARY KEY);"`
     And I run `wp site delete {SITE_ID} --yes --delete-tables-with-prefix`
-    Then STDOUT should contain:
+    And STDOUT should contain:
       """
       Success: The site at '
       """
