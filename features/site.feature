@@ -96,7 +96,7 @@ Feature: Manage sites in a multisite installation
     Then STDOUT should be empty
     And the return code should be 0
     And I try `wp db query "DROP TABLE wp_{SITE_ID}_custom_data;"`
-    Then the return code should be 0
+    And the return code should be 0
 
   @skip-windows
   Scenario: Deleting a site cannot combine keep-tables with delete-tables-with-prefix
