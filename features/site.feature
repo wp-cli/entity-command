@@ -85,17 +85,18 @@ Feature: Manage sites in a multisite installation
     When I run `wp site create --slug=first --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {SITE_ID}
-    And I run `wp db query "CREATE TABLE wp_{SITE_ID}_custom_data (id INTEGER PRIMARY KEY);"`
+    And I try `wp db query "CREATE TABLE wp_{SITE_ID}_custom_data (id INTEGER PRIMARY KEY);"`
     And I run `wp site delete {SITE_ID} --yes --delete-tables-with-prefix`
     And STDOUT should contain:
       """
       Success: The site at '
       """
 
-    When I run `wp db query "CREATE TABLE wp_{SITE_ID}_custom_data (id INTEGER PRIMARY KEY);"`
+    When I try `wp db query "CREATE TABLE wp_{SITE_ID}_custom_data (id INTEGER PRIMARY KEY);"`
     Then STDOUT should be empty
     And the return code should be 0
-    And I run `wp db query "DROP TABLE wp_{SITE_ID}_custom_data;"`
+    And I try `wp db query "DROP TABLE wp_{SITE_ID}_custom_data;"`
+    Then the return code should be 0
 
   @skip-windows
   Scenario: Deleting a site cannot combine keep-tables with delete-tables-with-prefix
