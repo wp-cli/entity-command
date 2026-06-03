@@ -1150,6 +1150,10 @@ class User_Command extends CommandWithDBObject {
 
 				$csv_data[] = $data;
 			}
+
+			if ( empty( $indexes ) || empty( $csv_data ) ) {
+				WP_CLI::error( 'Unable to read content from STDIN.' );
+			}
 		} else {
 			$csv_data = new CsvIterator( $filename );
 		}
