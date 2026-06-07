@@ -33,6 +33,32 @@ Feature: List WordPress options
       siteurl
       """
 
+  @skip-object-cache
+  Scenario: Using the `--autoload=on` flag excludes transients by default
+    Given a WP install
+    And I run `wp option add sample_autoload_option 'sample_autoload_option' --autoload=yes`
+    And I run `wp transient set sample_autoload_transient 'sample_autoload_transient'`
+
+    When I run `wp option list --autoload=on`
+    Then STDOUT should contain:
+      """
+      sample_autoload_option
+      """
+    And STDOUT should not contain:
+      """
+      sample_autoload_transient
+      """
+
+    When I run `wp option list --transients --autoload=on`
+    Then STDOUT should contain:
+      """
+      sample_autoload_transient
+      """
+    And STDOUT should not contain:
+      """
+      sample_autoload_option
+      """
+
   Scenario: List option with exclude pattern
     Given a WP install
 
