@@ -5190,7 +5190,7 @@ wp site deactivate [<id>...] [--slug=<slug>]
 Deletes a site in a multisite installation.
 
 ~~~
-wp site delete [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
+wp site delete [<site-id>] [--slug=<slug>] [--yes] [--keep-tables] [--delete-tables-with-prefix]
 ~~~
 
 **OPTIONS**
@@ -5206,6 +5206,9 @@ wp site delete [<site-id>] [--slug=<slug>] [--yes] [--keep-tables]
 
 	[--keep-tables]
 		Delete the blog from the list, but don't drop its tables.
+
+	[--delete-tables-with-prefix]
+		Delete all tables with the site's database table prefix after deleting the site.
 
 **EXAMPLES**
 
