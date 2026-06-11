@@ -288,6 +288,9 @@ class Site_Command extends CommandWithDBObject {
 	 * [--keep-tables]
 	 * : Delete the blog from the list, but don't drop its tables.
 	 *
+	 * [--delete-tables-with-prefix]
+	 * : Delete all tables with the site's database table prefix after deleting the site.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site delete 123
@@ -299,10 +302,17 @@ class Site_Command extends CommandWithDBObject {
 			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 
+		if ( Utils\get_flag_value( $assoc_args, 'keep-tables' ) && Utils\get_flag_value( $assoc_args, 'delete-tables-with-prefix' ) ) {
+			WP_CLI::error( "The '--keep-tables' and '--delete-tables-with-prefix' flags cannot be used together." );
+		}
+
 		if ( isset( $assoc_args['slug'] ) ) {
 			$blog_id = get_id_from_blogname( $assoc_args['slug'] );
 			if ( null === $blog_id ) {
 				WP_CLI::error( sprintf( 'Could not find site with slug \'%s\'.', $assoc_args['slug'] ) );
+			}
+			if ( is_main_site( $blog_id ) ) {
+				WP_CLI::error( 'You cannot delete the root site.' );
 			}
 			$blog = get_blog_details( $blog_id );
 		} else {
@@ -327,9 +337,47 @@ class Site_Command extends CommandWithDBObject {
 
 		WP_CLI::confirm( "Are you sure you want to delete the '{$site_url}' site?", $assoc_args );
 
-		wpmu_delete_blog( (int) $blog->blog_id, ! Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
+		$did_delete = wpmu_delete_blog( (int) $blog->blog_id, ! Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
+		if ( false === $did_delete ) {
+			WP_CLI::error( "The site at '{$site_url}' could not be deleted." );
+		}
+
+		if ( Utils\get_flag_value( $assoc_args, 'delete-tables-with-prefix' ) ) {
+			$this->drop_tables_with_prefix( (int) $blog->blog_id );
+		}
 
 		WP_CLI::success( "The site at '{$site_url}' was deleted." );
+	}
+
+	/**
+	 * Drops all database tables for a site prefix.
+	 *
+	 * @param int $blog_id Site ID.
+	 */
+	private function drop_tables_with_prefix( $blog_id ) {
+		global $wpdb;
+
+		$blog_prefix = $wpdb->get_blog_prefix( $blog_id );
+		if ( is_main_site( $blog_id ) || $blog_prefix === $wpdb->base_prefix ) {
+			WP_CLI::error( 'You cannot drop tables for the root site.' );
+		}
+
+		$prefix_like = $wpdb->esc_like( $blog_prefix ) . '%';
+		$tables      = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $prefix_like ) );
+
+		if ( empty( $tables ) ) {
+			return;
+		}
+
+		$tables = array_map(
+			static function ( $table ) {
+				return '`' . str_replace( '`', '``', $table ) . '`';
+			},
+			$tables
+		);
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table identifiers are escaped and cannot be passed as placeholders.
+		$wpdb->query( 'DROP TABLE IF EXISTS ' . implode( ', ', $tables ) );
 	}
 
 	/**
