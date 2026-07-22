@@ -37,6 +37,47 @@ use WP_CLI\Utils;
  */
 class User_Command extends CommandWithDBObject {
 
+	/**
+	 * Known user fields accepted by wp_update_user().
+	 *
+	 * @var array
+	 */
+	const KNOWN_USER_FIELDS = [
+		'user_pass',
+		'user_nicename',
+		'user_url',
+		'user_email',
+		'display_name',
+		'nickname',
+		'first_name',
+		'last_name',
+		'description',
+		'rich_editing',
+		'syntax_highlighting',
+		'comment_shortcuts',
+		'admin_color',
+		'use_ssl',
+		'show_admin_bar_front',
+		'user_registered',
+		'locale',
+		'role',
+		'meta_input',
+	];
+
+	/**
+	 * Command flags that are not user fields.
+	 *
+	 * @var array
+	 */
+	const COMMAND_FLAGS = [
+		'skip-email',
+		'defer-term-counting',
+		'porcelain',
+		'format',
+		'fields',
+		'user_login',
+	];
+
 	protected $obj_type   = 'user';
 	protected $obj_fields = [
 		'ID',
@@ -582,6 +623,27 @@ class User_Command extends CommandWithDBObject {
 		if ( $skip_email ) {
 			add_filter( 'send_email_change_email', '__return_false' );
 			add_filter( 'send_password_change_email', '__return_false' );
+		}
+
+		// Check for potentially misspelled parameters.
+		foreach ( $assoc_args as $key => $value ) {
+			if ( in_array( $key, self::COMMAND_FLAGS, true ) ) {
+				continue;
+			}
+			if ( in_array( $key, self::KNOWN_USER_FIELDS, true ) ) {
+				continue;
+			}
+			$suggestion = Utils\get_suggestion( $key, self::KNOWN_USER_FIELDS );
+			if ( ! empty( $suggestion ) ) {
+				$assoc_args = array_diff_key( $assoc_args, [ $key => $value ] );
+				WP_CLI::warning(
+					sprintf(
+						"unknown --%s parameter (did you mean '--%s'?)",
+						$key,
+						$suggestion
+					)
+				);
+			}
 		}
 
 		$assoc_args = wp_slash( $assoc_args );
