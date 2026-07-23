@@ -260,7 +260,7 @@ Feature: Manage sites in a multisite installation
     And I run `wp site list --site__in={SITE_ID} --field=url | sed -e's,^\(.*\)://.*,\1,g'`
     And save STDOUT as {SCHEME}
 
-    When I run `wp site url {SITE_ID}`
+    When I run `wp site list --site__in={SITE_ID} --field=url`
     Then STDOUT should be:
       """
       {SCHEME}://example.com/first/
@@ -272,7 +272,7 @@ Feature: Manage sites in a multisite installation
     And I run `wp site list --site__in={SECOND_ID} --field=url | sed -e's,^\(.*\)://.*,\1,g'`
     And save STDOUT as {SECOND_SCHEME}
 
-    When I run `wp site url {SECOND_ID} {SITE_ID}`
+    When I run `wp site list --site__in={SECOND_ID},{SITE_ID} --field=url`
     Then STDOUT should be:
       """
       {SECOND_SCHEME}://example.com/second/

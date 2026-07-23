@@ -9,14 +9,14 @@ Feature: Manage WordPress menu items
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
-    When I run `wp post url {POST_ID}`
+    When I run `wp post list --post__in={POST_ID} --post_type=any --orderby=post__in --field=url`
     Then save STDOUT as {POST_LINK}
 
     When I run `wp term create post_tag 'Test term' --slug=test --description='This is a test term' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {TERM_ID}
 
-    When I run `wp term url post_tag {TERM_ID}`
+    When I run `wp term list post_tag --include={TERM_ID} --orderby=include --field=url`
     Then save STDOUT as {TERM_LINK}
 
     When I run `wp menu create "Sidebar Menu"`

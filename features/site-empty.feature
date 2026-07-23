@@ -26,7 +26,7 @@ Feature: Empty a WordPress site of its data
     When I run `wp media import {CACHE_DIR}/large-image.jpg --post_id=1`
     Then the wp-content/uploads/large-image.jpg file should exist
 
-    When I try `wp site url 1`
+    When I try `wp site list --site__in=1 --field=url`
     Then STDERR should be:
       """
       Error: This is not a multisite installation.

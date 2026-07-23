@@ -139,20 +139,20 @@ Feature: Manage WordPress terms
     When I run `wp term create category "Second Category" --porcelain`
     Then save STDOUT as {SECOND_TERM_ID}
 
-    When I run `wp term url category {TERM_ID}`
+    When I run `wp term list category --include={TERM_ID} --orderby=include --field=url`
     Then STDOUT should be:
       """
       https://example.com/?cat=2
       """
 
-    When I run `wp term url category {TERM_ID} {SECOND_TERM_ID}`
+    When I run `wp term list category --include={TERM_ID},{SECOND_TERM_ID} --orderby=include --field=url`
     Then STDOUT should be:
       """
       https://example.com/?cat=2
       https://example.com/?cat=3
       """
 
-    When I run `wp term url category {SECOND_TERM_ID} {TERM_ID}`
+    When I run `wp term list category --include={SECOND_TERM_ID},{TERM_ID} --orderby=include --field=url`
     Then STDOUT should be:
       """
       https://example.com/?cat=3
