@@ -379,7 +379,7 @@ class Option_Command extends WP_CLI_Command {
 	 * : The new value. If omitted, the value is read from STDIN.
 	 *
 	 * [--autoload=<autoload>]
-	 * : Requires WP 4.2. Should this option be automatically loaded.
+	 * : Should this option be automatically loaded.
 	 * ---
 	 * options:
 	 *   - 'on'
