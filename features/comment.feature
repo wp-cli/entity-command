@@ -109,7 +109,7 @@ Feature: Manage WordPress comments
       1
       """
 
-    When I run `wp comment url 1`
+    When I run `wp comment list --comment__in=1 --orderby=comment__in --field=url`
     Then STDOUT should contain:
       """
       #comment-1
@@ -125,14 +125,14 @@ Feature: Manage WordPress comments
     When I run `wp comment create --comment_post_ID=1 --porcelain`
     Then save STDOUT as {COMMENT_ID}
 
-    When I run `wp comment url 1 {COMMENT_ID}`
+    When I run `wp comment list --comment__in=1,{COMMENT_ID} --orderby=comment__in --field=url`
     Then STDOUT should be:
       """
       https://example.com/?p=1#comment-1
       https://example.com/?p=1#comment-{COMMENT_ID}
       """
 
-    When I run `wp comment url {COMMENT_ID} 1`
+    When I run `wp comment list --comment__in={COMMENT_ID},1 --orderby=comment__in --field=url`
     Then STDOUT should be:
       """
       https://example.com/?p=1#comment-{COMMENT_ID}

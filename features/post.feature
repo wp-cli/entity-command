@@ -285,7 +285,7 @@ Feature: Manage WordPress posts
       This is some bunkum.
       """
 
-    When I run `wp post url 1 {POST_ID}`
+    When I run `wp post list --post__in=1,{POST_ID} --post_type=any --orderby=post__in --field=url`
     Then STDOUT should be:
       """
       https://example.com/?p=1

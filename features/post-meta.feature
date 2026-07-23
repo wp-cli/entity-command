@@ -5,10 +5,10 @@ Feature: Manage post custom fields
   Scenario: Postmeta CRUD
     Given a WP install
 
-    When I run `wp post-meta add 1 foo 'bar'`
+    When I run `wp post meta add 1 foo 'bar'`
     Then STDOUT should not be empty
 
-    When I run `wp post-meta get 1 foo`
+    When I run `wp post meta get 1 foo`
     Then STDOUT should be:
       """
       bar
@@ -21,7 +21,7 @@ Feature: Manage post custom fields
       """
     And the return code should be 1
 
-    When I run `wp post-meta set 1 foo '[ "1", "2" ]' --format=json`
+    When I run `wp post meta set 1 foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty
 
     When I run the previous command again
@@ -30,23 +30,23 @@ Feature: Manage post custom fields
       Success: Value passed for custom field 'foo' is unchanged.
       """
 
-    When I run `wp post-meta get 1 foo --format=json`
+    When I run `wp post meta get 1 foo --format=json`
     Then STDOUT should be:
       """
       ["1","2"]
       """
 
-    When I run `echo "via STDIN" | wp post-meta set 1 foo`
-    And I run `wp post-meta get 1 foo`
+    When I run `echo "via STDIN" | wp post meta set 1 foo`
+    And I run `wp post meta get 1 foo`
     Then STDOUT should be:
       """
       via STDIN
       """
 
-    When I run `wp post-meta delete 1 foo`
+    When I run `wp post meta delete 1 foo`
     Then STDOUT should not be empty
 
-    When I try `wp post-meta get 1 foo`
+    When I try `wp post meta get 1 foo`
     Then the return code should be 1
 
   Scenario: List post meta
@@ -194,16 +194,16 @@ Feature: Manage post custom fields
   Scenario: Make sure WordPress receives the slashed data it expects in meta fields
     Given a WP install
 
-    When I run `wp post-meta add 1 foo 'My\Meta'`
+    When I run `wp post meta add 1 foo 'My\Meta'`
     Then STDOUT should not be empty
 
-    When I run `wp post-meta get 1 foo`
+    When I run `wp post meta get 1 foo`
     Then STDOUT should be:
       """
       My\Meta
       """
 
-    When I run `wp post-meta update 1 foo 'My\New\Meta'`
+    When I run `wp post meta update 1 foo 'My\New\Meta'`
     Then STDOUT should be:
       """
       Success: Updated custom field 'foo'.
@@ -215,7 +215,7 @@ Feature: Manage post custom fields
       Success: Value passed for custom field 'foo' is unchanged.
       """
 
-    When I run `wp post-meta get 1 foo`
+    When I run `wp post meta get 1 foo`
     Then STDOUT should be:
       """
       My\New\Meta
