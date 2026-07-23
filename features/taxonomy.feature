@@ -54,22 +54,22 @@ Feature: Manage WordPress taxonomies
       """
       <?php
       // Plugin Name: Test Taxonomy Strict/No-Strict Mode
-
-      add_action( 'init', function() {
-        $args = array(
-          'hierarchical'          => true,
-          'show_ui'               => true,
-          'show_admin_column'     => true,
-          'update_count_callback' => '_update_post_term_count',
-          'query_var'             => true,
-          'labels'                => array(
-            'name' => _x( 'Genres', 'taxonomy general name', 'textdomain' ),
-          ),
-
-        );
-
-        register_taxonomy( 'genres', array( 'post','page' ), $args );
-      } );
+      add_action(
+      	'init',
+      	function () {
+      		$args = array(
+      			'hierarchical'          => true,
+      			'show_ui'               => true,
+      			'show_admin_column'     => true,
+      			'update_count_callback' => '_update_post_term_count',
+      			'query_var'             => true,
+      			'labels'                => array(
+      				'name' => _x( 'Genres', 'taxonomy general name', 'textdomain' ),
+      			),
+      		);
+      		register_taxonomy( 'genres', array( 'post', 'page' ), $args );
+      	} 
+      );
       """
 
     When I run `wp taxonomy list --object_type=post --strict`
@@ -94,22 +94,22 @@ Feature: Manage WordPress taxonomies
       """
       <?php
       // Plugin Name: Test Taxonomy Strict/No-Strict Mode
-
-      add_action( 'init', function() {
-        $args = array(
-          'hierarchical'          => true,
-          'show_ui'               => true,
-          'show_admin_column'     => true,
-          'update_count_callback' => '_update_post_term_count',
-          'query_var'             => true,
-          'labels'                => array(
-            'name' => _x( 'Genres', 'taxonomy general name', 'textdomain' ),
-          ),
-
-        );
-
-        register_taxonomy( 'genres', array( 'post','page' ), $args );
-      } );
+      add_action(
+      	'init',
+      	function () {
+      		$args = array(
+      			'hierarchical'          => true,
+      			'show_ui'               => true,
+      			'show_admin_column'     => true,
+      			'update_count_callback' => '_update_post_term_count',
+      			'query_var'             => true,
+      			'labels'                => array(
+      				'name' => _x( 'Genres', 'taxonomy general name', 'textdomain' ),
+      			),
+      		);
+      		register_taxonomy( 'genres', array( 'post', 'page' ), $args );
+      	} 
+      );
       """
 
     When I run `wp taxonomy list --object_type=post --strict`

@@ -6,12 +6,10 @@ Feature: Manage user term
       """
       <?php
       // Plugin Name: Test Add Tax
-
-      function add_cli_tax(){
-        register_taxonomy( 'user_type', 'user' );
+      function add_cli_tax() {
+      	register_taxonomy( 'user_type', 'user' );
       }
-
-      add_action('init','add_cli_tax');
+      add_action( 'init', 'add_cli_tax' );
       """
     And I run `wp plugin activate test-add-tax`
 
@@ -75,12 +73,10 @@ Feature: Manage user term
       """
       <?php
       // Plugin Name: Test Add Tax
-
-      function add_cli_tax(){
-        register_taxonomy( 'user_type', 'user' );
+      function add_cli_tax() {
+      	register_taxonomy( 'user_type', 'user' );
       }
-
-      add_action('init','add_cli_tax');
+      add_action( 'init', 'add_cli_tax' );
       """
     And I run `wp plugin activate test-add-tax`
 
