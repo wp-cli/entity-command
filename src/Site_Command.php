@@ -592,6 +592,14 @@ class Site_Command extends CommandWithDBObject {
 			$custom_domain = sanitize_text_field( $parsed_url['host'] );
 			$custom_path   = isset( $parsed_url['path'] ) ? sanitize_text_field( '/' . ltrim( $parsed_url['path'], '/' ) ) : '/';
 
+			if ( ! preg_match( '|^[a-zA-Z0-9.-]+$|', $custom_domain ) ) {
+				WP_CLI::error( 'Invalid domain format in --site-url.' );
+			}
+
+			if ( ! preg_match( '|^[a-zA-Z0-9/_.-]+$|', $custom_path ) ) {
+				WP_CLI::error( 'Invalid path format in --site-url.' );
+			}
+
 			// Ensure path ends with /
 			if ( '/' !== substr( $custom_path, -1 ) ) {
 				$custom_path .= '/';
@@ -651,9 +659,10 @@ class Site_Command extends CommandWithDBObject {
 		$public = ! Utils\get_flag_value( $assoc_args, 'private' );
 
 		// Sanitize
-		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
-			$base = strtolower( $base );
+		if ( ! preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
+			WP_CLI::error( 'Slug may only contain letters, numbers, and dashes.' );
 		}
+		$base = strtolower( $base );
 
 		// If not a subdomain install, make sure the domain isn't a reserved word
 		if ( ! is_subdomain_install() ) {
@@ -792,9 +801,10 @@ class Site_Command extends CommandWithDBObject {
 
 		// Base.
 		$base = $assoc_args['slug'];
-		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
-			$base = strtolower( $base );
+		if ( ! preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
+			WP_CLI::error( 'Slug may only contain letters, numbers, and dashes.' );
 		}
+		$base = strtolower( $base );
 
 		$is_subdomain_install = is_subdomain_install();
 		// If not a subdomain install, make sure the domain isn't a reserved word
