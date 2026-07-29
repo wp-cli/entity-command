@@ -246,3 +246,19 @@ Feature: Manage signups in a multisite installation
       228
       """
 
+  Scenario: Filter signups by metadata with per_page pagination
+    Given a WP multisite install
+    And I run `wp eval "wpmu_signup_user( 'plainuser', 'plainuser@example.com' );"`
+    And I run `wp eval "wpmu_signup_user( 'adminuser', 'adminuser@example.com', array( 'add_to_blog' => 228, 'new_role' => 'administrator' ) );"`
+    And I run `wp eval "wpmu_signup_user( 'editoruser', 'editoruser@example.com', array( 'add_to_blog' => 228, 'new_role' => 'editor' ) );"`
+    And I run `wp eval "wpmu_signup_user( 'otherbloguser', 'otherbloguser@example.com', array( 'add_to_blog' => 300, 'new_role' => 'administrator' ) );"`
+
+    When I run `wp user signup list --blog_id=228 --per_page=2 --fields=user_login,blog_id --format=csv`
+    Then STDOUT should be:
+      """
+      user_login,blog_id
+      adminuser,228
+      editoruser,228
+      """
+
+

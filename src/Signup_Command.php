@@ -138,7 +138,12 @@ class Signup_Command extends CommandWithDBObject {
 		 */
 		$per_page = Utils\get_flag_value( $assoc_args, 'per_page' );
 
-		$limit = $per_page ? $wpdb->prepare( 'LIMIT %d', (int) $per_page ) : '';
+		$filter_args = array_diff_key(
+			$assoc_args,
+			array_flip( array( 'fields', 'field', 'format', 'per_page' ) )
+		);
+
+		$limit = ( $per_page && empty( $filter_args ) ) ? $wpdb->prepare( 'LIMIT %d', (int) $per_page ) : '';
 
 		$query = "SELECT * FROM $wpdb->signups {$limit}";
 
@@ -146,11 +151,6 @@ class Signup_Command extends CommandWithDBObject {
 		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		if ( $results ) {
-			$filter_args = array_diff_key(
-				$assoc_args,
-				array_flip( array( 'fields', 'field', 'format', 'per_page' ) )
-			);
-
 			foreach ( $results as $item ) {
 				$item = $this->prepare_signup_array( $item );
 
@@ -165,6 +165,10 @@ class Signup_Command extends CommandWithDBObject {
 
 				$signups[] = $item;
 			}
+		}
+
+		if ( $per_page ) {
+			$signups = array_slice( $signups, 0, (int) $per_page );
 		}
 
 		$format = Utils\get_flag_value( $assoc_args, 'format', 'table' );
