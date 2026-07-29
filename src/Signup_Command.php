@@ -99,6 +99,9 @@ class Signup_Command extends CommandWithDBObject {
 	 * * title
 	 * * activated
 	 * * meta
+	 * * add_to_blog
+	 * * new_role
+	 * * blog_id
 	 *
 	 * ## EXAMPLES
 	 *
@@ -143,10 +146,19 @@ class Signup_Command extends CommandWithDBObject {
 		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		if ( $results ) {
+			$filter_args = array_diff_key(
+				$assoc_args,
+				array_flip( array( 'fields', 'field', 'format', 'per_page' ) )
+			);
+
 			foreach ( $results as $item ) {
-				// Support features like --active=0.
-				foreach ( array_keys( $item ) as $field ) {
-					if ( isset( $assoc_args[ $field ] ) && $assoc_args[ $field ] !== $item[ $field ] ) {
+				$item = $this->prepare_signup_array( $item );
+
+				// Support features like --active=0, --new_role=administrator, --blog_id=228.
+				foreach ( $filter_args as $field => $value ) {
+					$item_val   = is_scalar( $item[ $field ] ?? null ) ? (string) $item[ $field ] : '';
+					$filter_val = is_scalar( $value ) ? (string) $value : '';
+					if ( ! isset( $item[ $field ] ) || $item_val !== $filter_val ) {
 						continue 2;
 					}
 				}
@@ -204,6 +216,7 @@ class Signup_Command extends CommandWithDBObject {
 	 */
 	public function get( $args, $assoc_args ) {
 		$signup = $this->fetcher->get_check( $args[0] );
+		$signup = (object) $this->prepare_signup_array( (array) $signup );
 
 		if ( empty( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = array_keys( (array) $signup );
@@ -335,5 +348,32 @@ class Signup_Command extends CommandWithDBObject {
 		$results = $wpdb->query( 'DELETE FROM ' . $wpdb->signups );
 
 		return $results ? true : false;
+	}
+
+	/**
+	 * Prepare a signup item by extracting meta properties.
+	 *
+	 * @param array<string, mixed> $item Signup array item.
+	 * @return array<string, mixed> Prepared signup array item.
+	 */
+	private function prepare_signup_array( array $item ) {
+		if ( ! empty( $item['meta'] ) && is_string( $item['meta'] ) ) {
+			$meta_data = maybe_unserialize( $item['meta'] );
+			if ( is_array( $meta_data ) ) {
+				foreach ( $meta_data as $meta_key => $meta_value ) {
+					if ( ! isset( $item[ $meta_key ] ) ) {
+						$item[ $meta_key ] = $meta_value;
+					}
+				}
+
+				if ( isset( $meta_data['add_to_blog'] ) && ! isset( $item['blog_id'] ) ) {
+					$item['blog_id'] = $meta_data['add_to_blog'];
+				} elseif ( isset( $meta_data['blog_id'] ) && ! isset( $item['add_to_blog'] ) ) {
+					$item['add_to_blog'] = $meta_data['blog_id'];
+				}
+			}
+		}
+
+		return $item;
 	}
 }
