@@ -8933,6 +8933,9 @@ These fields are optionally available:
 * title
 * activated
 * meta
+* add_to_blog
+* new_role
+* blog_id
 
 **EXAMPLES**
 
