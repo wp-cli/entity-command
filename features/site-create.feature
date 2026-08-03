@@ -250,3 +250,67 @@ Feature: Create a new site on a WP multisite
       | blog_id | url                          |
       | 1       | https://example.com/         |
       | 2       | http://testsite.example.com/ |
+
+  Scenario: Error when invalid slug containing special characters is provided
+    Given a WP multisite install
+
+    When I try `wp site create --slug='x$(touch /tmp/wpcli_poc)'`
+    Then STDERR should be:
+      """
+      Error: Slug may only contain letters, numbers, and dashes.
+      """
+    And the return code should be 1
+
+  Scenario: Error when invalid domain format is provided in site-url
+    Given a WP multisite install
+
+    When I try `wp site create --site-url='http://invalid$domain.com/site'`
+    Then STDERR should be:
+      """
+      Error: Invalid domain format in --site-url.
+      """
+    And the return code should be 1
+
+  Scenario: Error when malformed domain with double dots is provided in site-url
+    Given a WP multisite install
+
+    When I try `wp site create --site-url='http://example..com/site'`
+    Then STDERR should be:
+      """
+      Error: Invalid domain format in --site-url.
+      """
+    And the return code should be 1
+
+  Scenario: Error when invalid path format is provided in site-url
+    Given a WP multisite install
+
+    When I try `wp site create --site-url='http://example.com/invalid_path'`
+    Then STDERR should be:
+      """
+      Error: Invalid path format in --site-url.
+      """
+    And the return code should be 1
+
+  Scenario: Error when duplicate slashes are provided in site-url path
+    Given a WP multisite install
+
+    When I try `wp site create --site-url='http://example.com//foo'`
+    Then STDERR should be:
+      """
+      Error: Invalid path format in --site-url.
+      """
+    And the return code should be 1
+
+  Scenario: Error when unsupported components are provided in site-url
+    Given a WP multisite install
+
+    When I try `wp site create --site-url='http://example.com:8080/site'`
+    Then STDERR should be:
+      """
+      Error: Invalid URL format. User credentials, ports, query parameters, and fragments are not supported in --site-url.
+      """
+    And the return code should be 1
+
+
+
+

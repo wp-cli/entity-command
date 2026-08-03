@@ -105,3 +105,14 @@ Feature: Generate new WordPress sites
       """
     And STDOUT should be empty
     And the return code should be 1
+
+  Scenario: Error when invalid slug containing special characters is provided
+    Given a WP multisite install
+
+    When I try `wp site generate --slug='x$(touch /tmp/wpcli_poc)'`
+    Then STDERR should be:
+      """
+      Error: Slug may only contain letters, numbers, and dashes.
+      """
+    And the return code should be 1
+

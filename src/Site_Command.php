@@ -579,7 +579,7 @@ class Site_Command extends CommandWithDBObject {
 
 		if ( $has_site_url ) {
 			$parsed_url = wp_parse_url( $assoc_args['site-url'] );
-			if ( ! isset( $parsed_url['host'] ) ) {
+			if ( ! is_array( $parsed_url ) || ! isset( $parsed_url['host'] ) || ! is_string( $parsed_url['host'] ) ) {
 				WP_CLI::error( 'Invalid URL format. Please provide a valid URL (e.g., http://site.example.com).' );
 			}
 
@@ -588,9 +588,33 @@ class Site_Command extends CommandWithDBObject {
 				WP_CLI::error( 'Invalid URL scheme. Only http and https schemes are supported.' );
 			}
 
+			// Reject unsupported URL components (user, pass, port, query, fragment)
+			$unsupported = array_intersect_key( $parsed_url, array_flip( [ 'user', 'pass', 'port', 'query', 'fragment' ] ) );
+			if ( ! empty( $unsupported ) ) {
+				WP_CLI::error( 'Invalid URL format. User credentials, ports, query parameters, and fragments are not supported in --site-url.' );
+			}
+
 			// Sanitize domain and path
+			$raw_path      = isset( $parsed_url['path'] ) && is_string( $parsed_url['path'] ) ? $parsed_url['path'] : '/';
 			$custom_domain = sanitize_text_field( $parsed_url['host'] );
-			$custom_path   = isset( $parsed_url['path'] ) ? sanitize_text_field( '/' . ltrim( $parsed_url['path'], '/' ) ) : '/';
+			$custom_path   = sanitize_text_field( '/' . ltrim( $raw_path, '/' ) );
+
+			$domain_parts = explode( '.', $custom_domain );
+			$valid_domain = true;
+			foreach ( $domain_parts as $part ) {
+				if ( '' === $part || ! preg_match( '/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/', $part ) ) {
+					$valid_domain = false;
+					break;
+				}
+			}
+
+			if ( ! $valid_domain ) {
+				WP_CLI::error( 'Invalid domain format in --site-url.' );
+			}
+
+			if ( ! preg_match( '|^[a-zA-Z0-9/-]+$|', $custom_path ) || false !== strpos( $raw_path, '//' ) ) {
+				WP_CLI::error( 'Invalid path format in --site-url.' );
+			}
 
 			// Ensure path ends with /
 			if ( '/' !== substr( $custom_path, -1 ) ) {
@@ -613,7 +637,12 @@ class Site_Command extends CommandWithDBObject {
 					$base = strtolower( $base );
 				} else {
 					// For subdirectory installs, derive slug from the last part of the path.
-					$path_parts = array_filter( explode( '/', trim( $custom_path, '/' ) ) );
+					$path_parts = array_filter(
+						explode( '/', trim( $custom_path, '/' ) ),
+						function ( $part ) {
+							return '' !== $part;
+						}
+					);
 					$base       = (string) array_pop( $path_parts );
 
 					// If base is empty (root path), require explicit slug.
@@ -651,9 +680,10 @@ class Site_Command extends CommandWithDBObject {
 		$public = ! Utils\get_flag_value( $assoc_args, 'private' );
 
 		// Sanitize
-		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
-			$base = strtolower( $base );
+		if ( ! preg_match( '|^([a-zA-Z0-9-])+$|D', $base ) ) {
+			WP_CLI::error( 'Slug may only contain letters, numbers, and dashes.' );
 		}
+		$base = strtolower( $base );
 
 		// If not a subdomain install, make sure the domain isn't a reserved word
 		if ( ! is_subdomain_install() ) {
@@ -792,9 +822,10 @@ class Site_Command extends CommandWithDBObject {
 
 		// Base.
 		$base = $assoc_args['slug'];
-		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
-			$base = strtolower( $base );
+		if ( ! preg_match( '|^([a-zA-Z0-9-])+$|D', $base ) ) {
+			WP_CLI::error( 'Slug may only contain letters, numbers, and dashes.' );
 		}
+		$base = strtolower( $base );
 
 		$is_subdomain_install = is_subdomain_install();
 		// If not a subdomain install, make sure the domain isn't a reserved word
