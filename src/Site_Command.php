@@ -579,7 +579,7 @@ class Site_Command extends CommandWithDBObject {
 
 		if ( $has_site_url ) {
 			$parsed_url = wp_parse_url( $assoc_args['site-url'] );
-			if ( ! is_array( $parsed_url ) || ! isset( $parsed_url['host'] ) ) {
+			if ( ! is_array( $parsed_url ) || ! isset( $parsed_url['host'] ) || ! is_string( $parsed_url['host'] ) ) {
 				WP_CLI::error( 'Invalid URL format. Please provide a valid URL (e.g., http://site.example.com).' );
 			}
 
@@ -588,8 +588,14 @@ class Site_Command extends CommandWithDBObject {
 				WP_CLI::error( 'Invalid URL scheme. Only http and https schemes are supported.' );
 			}
 
+			// Reject unsupported URL components (user, pass, port, query, fragment)
+			$unsupported = array_intersect_key( $parsed_url, array_flip( [ 'user', 'pass', 'port', 'query', 'fragment' ] ) );
+			if ( ! empty( $unsupported ) ) {
+				WP_CLI::error( 'Invalid URL format. User credentials, ports, query parameters, and fragments are not supported in --site-url.' );
+			}
+
 			// Sanitize domain and path
-			$raw_path      = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '/';
+			$raw_path      = isset( $parsed_url['path'] ) && is_string( $parsed_url['path'] ) ? $parsed_url['path'] : '/';
 			$custom_domain = sanitize_text_field( $parsed_url['host'] );
 			$custom_path   = sanitize_text_field( '/' . ltrim( $raw_path, '/' ) );
 
@@ -674,7 +680,7 @@ class Site_Command extends CommandWithDBObject {
 		$public = ! Utils\get_flag_value( $assoc_args, 'private' );
 
 		// Sanitize
-		if ( ! preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
+		if ( ! preg_match( '|^([a-zA-Z0-9-])+$|D', $base ) ) {
 			WP_CLI::error( 'Slug may only contain letters, numbers, and dashes.' );
 		}
 		$base = strtolower( $base );
@@ -816,7 +822,7 @@ class Site_Command extends CommandWithDBObject {
 
 		// Base.
 		$base = $assoc_args['slug'];
-		if ( ! preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
+		if ( ! preg_match( '|^([a-zA-Z0-9-])+$|D', $base ) ) {
 			WP_CLI::error( 'Slug may only contain letters, numbers, and dashes.' );
 		}
 		$base = strtolower( $base );

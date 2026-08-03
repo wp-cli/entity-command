@@ -301,5 +301,16 @@ Feature: Create a new site on a WP multisite
       """
     And the return code should be 1
 
+  Scenario: Error when unsupported components are provided in site-url
+    Given a WP multisite install
+
+    When I try `wp site create --site-url='http://example.com:8080/site'`
+    Then STDERR should be:
+      """
+      Error: Invalid URL format. User credentials, ports, query parameters, and fragments are not supported in --site-url.
+      """
+    And the return code should be 1
+
+
 
 
