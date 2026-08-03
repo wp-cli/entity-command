@@ -579,7 +579,7 @@ class Site_Command extends CommandWithDBObject {
 
 		if ( $has_site_url ) {
 			$parsed_url = wp_parse_url( $assoc_args['site-url'] );
-			if ( ! isset( $parsed_url['host'] ) ) {
+			if ( false === $parsed_url || ! isset( $parsed_url['host'] ) ) {
 				WP_CLI::error( 'Invalid URL format. Please provide a valid URL (e.g., http://site.example.com).' );
 			}
 
@@ -592,11 +592,20 @@ class Site_Command extends CommandWithDBObject {
 			$custom_domain = sanitize_text_field( $parsed_url['host'] );
 			$custom_path   = isset( $parsed_url['path'] ) ? sanitize_text_field( '/' . ltrim( $parsed_url['path'], '/' ) ) : '/';
 
-			if ( ! preg_match( '|^[a-zA-Z0-9.-]+$|', $custom_domain ) ) {
+			$domain_parts = explode( '.', $custom_domain );
+			$valid_domain = true;
+			foreach ( $domain_parts as $part ) {
+				if ( '' === $part || ! preg_match( '/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/', $part ) ) {
+					$valid_domain = false;
+					break;
+				}
+			}
+
+			if ( ! $valid_domain ) {
 				WP_CLI::error( 'Invalid domain format in --site-url.' );
 			}
 
-			if ( ! preg_match( '|^[a-zA-Z0-9/_.-]+$|', $custom_path ) ) {
+			if ( ! preg_match( '|^[a-zA-Z0-9/-]+$|', $custom_path ) || false !== strpos( $custom_path, '//' ) ) {
 				WP_CLI::error( 'Invalid path format in --site-url.' );
 			}
 

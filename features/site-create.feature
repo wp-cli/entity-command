@@ -271,3 +271,24 @@ Feature: Create a new site on a WP multisite
       """
     And the return code should be 1
 
+  Scenario: Error when malformed domain with double dots is provided in site-url
+    Given a WP multisite install
+
+    When I try `wp site create --site-url='http://example..com/site'`
+    Then STDERR should be:
+      """
+      Error: Invalid domain format in --site-url.
+      """
+    And the return code should be 1
+
+  Scenario: Error when invalid path format is provided in site-url
+    Given a WP multisite install
+
+    When I try `wp site create --site-url='http://example.com/invalid_path'`
+    Then STDERR should be:
+      """
+      Error: Invalid path format in --site-url.
+      """
+    And the return code should be 1
+
+
