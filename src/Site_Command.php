@@ -579,7 +579,7 @@ class Site_Command extends CommandWithDBObject {
 
 		if ( $has_site_url ) {
 			$parsed_url = wp_parse_url( $assoc_args['site-url'] );
-			if ( false === $parsed_url || ! isset( $parsed_url['host'] ) ) {
+			if ( ! is_array( $parsed_url ) || ! isset( $parsed_url['host'] ) ) {
 				WP_CLI::error( 'Invalid URL format. Please provide a valid URL (e.g., http://site.example.com).' );
 			}
 
@@ -589,8 +589,9 @@ class Site_Command extends CommandWithDBObject {
 			}
 
 			// Sanitize domain and path
+			$raw_path      = isset( $parsed_url['path'] ) ? $parsed_url['path'] : '/';
 			$custom_domain = sanitize_text_field( $parsed_url['host'] );
-			$custom_path   = isset( $parsed_url['path'] ) ? sanitize_text_field( '/' . ltrim( $parsed_url['path'], '/' ) ) : '/';
+			$custom_path   = sanitize_text_field( '/' . ltrim( $raw_path, '/' ) );
 
 			$domain_parts = explode( '.', $custom_domain );
 			$valid_domain = true;
@@ -605,7 +606,7 @@ class Site_Command extends CommandWithDBObject {
 				WP_CLI::error( 'Invalid domain format in --site-url.' );
 			}
 
-			if ( ! preg_match( '|^[a-zA-Z0-9/-]+$|', $custom_path ) || false !== strpos( $custom_path, '//' ) ) {
+			if ( ! preg_match( '|^[a-zA-Z0-9/-]+$|', $custom_path ) || false !== strpos( $raw_path, '//' ) ) {
 				WP_CLI::error( 'Invalid path format in --site-url.' );
 			}
 
@@ -630,7 +631,12 @@ class Site_Command extends CommandWithDBObject {
 					$base = strtolower( $base );
 				} else {
 					// For subdirectory installs, derive slug from the last part of the path.
-					$path_parts = array_filter( explode( '/', trim( $custom_path, '/' ) ) );
+					$path_parts = array_filter(
+						explode( '/', trim( $custom_path, '/' ) ),
+						function ( $part ) {
+							return '' !== $part;
+						}
+					);
 					$base       = (string) array_pop( $path_parts );
 
 					// If base is empty (root path), require explicit slug.

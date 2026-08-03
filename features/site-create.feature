@@ -291,4 +291,15 @@ Feature: Create a new site on a WP multisite
       """
     And the return code should be 1
 
+  Scenario: Error when duplicate slashes are provided in site-url path
+    Given a WP multisite install
+
+    When I try `wp site create --site-url='http://example.com//foo'`
+    Then STDERR should be:
+      """
+      Error: Invalid path format in --site-url.
+      """
+    And the return code should be 1
+
+
 
