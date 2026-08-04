@@ -34,7 +34,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.x-dev"
+            "dev-main": "3.x-dev"
         },
         "bundled": true,
         "commands": [
