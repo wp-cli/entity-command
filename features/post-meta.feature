@@ -182,7 +182,7 @@ Feature: Manage post custom fields
     And a setup.php file:
       """
       <?php
-      update_post_meta( 1, 'foo', NULL );
+      update_post_meta( 1, 'foo', null );
       """
     And I run `wp eval-file setup.php`
 

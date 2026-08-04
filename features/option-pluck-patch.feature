@@ -276,9 +276,9 @@ Feature: Option commands have pluck and patch.
     And a setup.php file:
       """
       <?php
-      $option = new stdClass;
+      $option            = new stdClass();
       $option->test_mode = 0;
-      $ret = update_option( 'wp_cli_test', $option );
+      $ret               = update_option( 'wp_cli_test', $option );
       """
     And I run `wp eval-file setup.php`
 
