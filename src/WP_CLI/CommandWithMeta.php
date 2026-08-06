@@ -264,6 +264,7 @@ abstract class CommandWithMeta extends WP_CLI_Command {
 		list( $object_id, $meta_key ) = $args;
 
 		$meta_value = WP_CLI::get_value_from_arg_or_stdin( $args, 2 );
+		/** @var array|string $meta_value */
 		$meta_value = WP_CLI::read_value( $meta_value, $assoc_args );
 
 		$object_id = $this->check_object_id( $object_id );

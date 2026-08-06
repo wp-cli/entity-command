@@ -394,6 +394,7 @@ class Font_Collection_Command extends WP_CLI_Command {
 
 		$fields    = [ 'slug', 'name' ];
 		$formatter = new Formatter( $assoc_args, $fields, 'category' );
+		/** @var FontCategory[] $categories */
 		$formatter->display_items( $categories );
 	}
 
