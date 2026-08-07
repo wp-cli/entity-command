@@ -14,6 +14,8 @@ use WP_Error;
  */
 abstract class CommandWithDBObject extends WP_CLI_Command {
 
+	use ExpandsIdRanges;
+
 	/**
 	 * @var string $object_type WordPress' expected name for the object.
 	 */
