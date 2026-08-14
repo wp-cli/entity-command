@@ -1,5 +1,12 @@
 Feature: Create a new site on a WP multisite
 
+  # Skipped on SQLite because of a bug in the SQLite plugin (as of v3.0.0):
+  # when `MULTISITE` is defined in wp-config.php but the database is still
+  # empty, the information schema reconstructor queries the `wp_blogs` table
+  # while establishing the connection. That table does not exist yet, so the
+  # connection fails with "One or more database tables are unavailable."
+  # Once the bug is resolved, this tag can be removed again.
+  @skip-sqlite
   Scenario: Respect defined `$base` in wp-config
     Given an empty directory
     And WP files
@@ -47,6 +54,8 @@ Feature: Create a new site on a WP multisite
       | 1       | http://localhost/dev/         |
       | 2       | http://localhost/dev/newsite/ |
 
+  # See the note on the scenario above for why this is skipped on SQLite.
+  @skip-sqlite
   Scenario: Create new site with custom `$super_admins` global
     Given an empty directory
     And WP files
