@@ -5,6 +5,7 @@ Feature: Create a new site on a WP multisite
   # empty, the information schema reconstructor queries the `wp_blogs` table
   # while establishing the connection. That table does not exist yet, so the
   # connection fails with "One or more database tables are unavailable."
+  # See https://github.com/WordPress/sqlite-database-integration/issues/490.
   # Once the bug is resolved, this tag can be removed again.
   @skip-sqlite
   Scenario: Respect defined `$base` in wp-config
