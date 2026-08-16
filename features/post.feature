@@ -591,3 +591,51 @@ Feature: Manage WordPress posts
       """
       {"block_version":1}
       """
+
+  Scenario: Set a post's modification date on update
+    Given a WP install
+
+    When I run `wp post create --post_title='A post' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_modified='2020-01-01 12:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+  Scenario: Set a post's modification date on create
+    Given a WP install
+
+    When I run `wp post create --post_title='Another post' --post_date='2019-05-05 10:00:00' --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+  Scenario: A post's modification date defaults to the current time
+    Given a WP install
+
+    When I run `wp post create --post_title='Undated post' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_title='Retitled'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should not be empty

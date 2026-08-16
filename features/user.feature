@@ -811,3 +811,41 @@ Feature: Manage WordPress users
       """
       newtestuser
       """
+
+  Scenario: Create a user with a nicename and rich editing preference
+    Given a WP install
+
+    When I run `wp user create bob bob@example.com --user_nicename=bobby --rich_editing=false --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=user_nicename`
+    Then STDOUT should be:
+      """
+      bobby
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+  Scenario: Creating a user without a nicename falls back to the login
+    Given a WP install
+
+    When I run `wp user create carol carol@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=user_nicename`
+    Then STDOUT should be:
+      """
+      carol
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      true
+      """
