@@ -81,6 +81,29 @@ final class User_Application_Password_Command {
 	 * [--<field>=<value>]
 	 * : Filter the list by a specific field.
 	 *
+	 * [--uuid=<uuid>]
+	 * : Filter by the universally unique ID of the application password.
+	 *
+	 * [--app_id=<app_id>]
+	 * : Filter by the application ID. `--app-id` is also accepted.
+	 *
+	 * [--name=<name>]
+	 * : Filter by the name of the application password.
+	 *
+	 * [--password=<password>]
+	 * : Filter by the hashed password.
+	 *
+	 * [--created=<created>]
+	 * : Filter by the Unix timestamp the application password was created at.
+	 *
+	 * [--last_used=<last_used>]
+	 * : Filter by the Unix timestamp the application password was last used at.
+	 * `--last-used` is also accepted.
+	 *
+	 * [--last_ip=<last_ip>]
+	 * : Filter by the IP address the application password was last used from.
+	 * `--last-ip` is also accepted.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each application password.
 	 *

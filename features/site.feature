@@ -936,3 +936,58 @@ Feature: Manage sites in a multisite installation
       """
       1
       """
+
+  Scenario: Filter the site list by columns of the sites table
+    Given a WP multisite install
+
+    When I run `wp site create --slug=first --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp site list --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    # site_id is the ID of the network the site belongs to, not the site's own ID.
+    When I run `wp site list --site_id=1 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp site list --site_id=2 --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp site list --blog_id=2 --field=blog_id`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp site list --public=1 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp site list --archived=0 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp site list --deleted=1 --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp site list --spam=0 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """

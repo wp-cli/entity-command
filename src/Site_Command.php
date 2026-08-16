@@ -1001,6 +1001,40 @@ class Site_Command extends CommandWithDBObject {
 	 * [--site-path=<path>]
 	 * : Filter by path. Avoids conflict with the global `--path` parameter.
 	 *
+	 * [--blog_id=<blog_id>]
+	 * : Filter by site ID.
+	 *
+	 * [--site_id=<site_id>]
+	 * : Filter by the ID of the network the site belongs to. `--network` is an
+	 * alias for this, and takes precedence when both are given.
+	 *
+	 * [--domain=<domain>]
+	 * : Filter by domain.
+	 *
+	 * [--registered=<yyyy-mm-dd-hh-ii-ss>]
+	 * : Filter by the date the site was registered.
+	 *
+	 * [--last_updated=<yyyy-mm-dd-hh-ii-ss>]
+	 * : Filter by the date the site was last updated.
+	 *
+	 * [--public=<public>]
+	 * : Filter by whether the site is public. Accepts 1 or 0.
+	 *
+	 * [--archived=<archived>]
+	 * : Filter by whether the site is archived. Accepts 1 or 0.
+	 *
+	 * [--mature=<mature>]
+	 * : Filter by whether the site is flagged as mature. Accepts 1 or 0.
+	 *
+	 * [--spam=<spam>]
+	 * : Filter by whether the site is flagged as spam. Accepts 1 or 0.
+	 *
+	 * [--deleted=<deleted>]
+	 * : Filter by whether the site is flagged as deleted. Accepts 1 or 0.
+	 *
+	 * [--lang_id=<lang_id>]
+	 * : Filter by language ID.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
 	 *

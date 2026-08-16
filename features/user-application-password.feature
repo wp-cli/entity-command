@@ -315,3 +315,52 @@ Feature: Manage user custom fields
       """
       true
       """
+
+  Scenario: Filter application passwords by field
+    Given a WP install
+
+    When I run `wp user application-password create 1 myapp --app-id=abc123 --porcelain`
+    Then STDOUT should not be empty
+
+    When I run `wp user application-password create 1 otherapp --porcelain`
+    Then STDOUT should not be empty
+
+    When I run `wp user application-password list 1 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp user application-password list 1 --app_id=abc123 --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --app-id=abc123 --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --name=otherapp --field=name`
+    Then STDOUT should be:
+      """
+      otherapp
+      """
+
+    When I run `wp user application-password list 1 --name=myapp --field=uuid`
+    Then STDOUT should not be empty
+    And save STDOUT as {UUID}
+
+    When I run `wp user application-password list 1 --uuid={UUID} --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --app_id=nosuchapp --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
