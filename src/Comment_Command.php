@@ -76,32 +76,6 @@ class Comment_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Decodes the `--comment_meta` argument from its JSON representation.
-	 *
-	 * Utils\parse_shell_arrays() is typed for string values throughout, while
-	 * comment arguments are not, so narrow to the single key it needs to see.
-	 * It only ever acts on strings anyway, since is_json() rejects everything
-	 * else.
-	 *
-	 * @param array<string, mixed> $assoc_args Associative arguments.
-	 * @return array<string, mixed> Associative arguments, with comment_meta decoded.
-	 */
-	private static function parse_comment_meta( $assoc_args ) {
-		if ( ! isset( $assoc_args['comment_meta'] ) || ! is_string( $assoc_args['comment_meta'] ) ) {
-			return $assoc_args;
-		}
-
-		$parsed = Utils\parse_shell_arrays(
-			[ 'comment_meta' => $assoc_args['comment_meta'] ],
-			[ 'comment_meta' ]
-		);
-
-		$assoc_args['comment_meta'] = $parsed['comment_meta'];
-
-		return $assoc_args;
-	}
-
-	/**
 	 * Creates a new comment.
 	 *
 	 * ## OPTIONS
@@ -171,7 +145,7 @@ class Comment_Command extends CommandWithDBObject {
 	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function create( $args, $assoc_args ) {
-		$assoc_args = self::parse_comment_meta( $assoc_args );
+		$assoc_args = Utils\parse_shell_arrays( $assoc_args, [ 'comment_meta' ] );
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create(
@@ -269,7 +243,7 @@ class Comment_Command extends CommandWithDBObject {
 	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
-		$assoc_args = self::parse_comment_meta( $assoc_args );
+		$assoc_args = Utils\parse_shell_arrays( $assoc_args, [ 'comment_meta' ] );
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update(
