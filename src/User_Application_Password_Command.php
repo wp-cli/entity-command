@@ -357,8 +357,8 @@ final class User_Application_Password_Command {
 	 * <uuid>
 	 * : The universally unique ID of the application password.
 	 *
-	 * [--<field>=<value>]
-	 * : Update the <field> with a new <value>. Currently supported fields: name.
+	 * [--name=<name>]
+	 * : The new name of the application password.
 	 *
 	 * ## EXAMPLES
 	 *
