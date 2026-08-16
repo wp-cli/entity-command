@@ -194,6 +194,8 @@ class Post_Command extends CommandWithDBObject {
 			$post_id  = $post_arr['ID'];
 			unset( $post_arr['post_date'] );
 			unset( $post_arr['post_date_gmt'] );
+			unset( $post_arr['post_modified'] );
+			unset( $post_arr['post_modified_gmt'] );
 			unset( $post_arr['guid'] );
 			unset( $post_arr['ID'] );
 
@@ -242,7 +244,13 @@ class Post_Command extends CommandWithDBObject {
 					}
 				}
 
+				$modified_callback = self::add_post_modified_filter( $params );
+
 				$result = wp_insert_post( $params, true );
+
+				if ( $modified_callback ) {
+					remove_filter( 'wp_insert_post_data', $modified_callback );
+				}
 
 				if ( $filter_callback ) {
 					remove_filter( 'user_has_cap', $filter_callback );
@@ -251,6 +259,47 @@ class Post_Command extends CommandWithDBObject {
 				return $result;
 			}
 		);
+	}
+
+	/**
+	 * Applies an explicitly requested modification date.
+	 *
+	 * wp_insert_post() derives post_modified and post_modified_gmt itself and
+	 * never reads them back from $postarr — on update they are unconditionally
+	 * the current time — so the documented parameters have to be applied to the
+	 * post data on its way to the database.
+	 *
+	 * @param array<string, mixed> $params Parameters passed to wp_insert_post() or wp_update_post().
+	 * @return callable|null The registered callback, for the caller to remove, or null when
+	 *                       no modification date was requested.
+	 */
+	private static function add_post_modified_filter( $params ) {
+		$modified = [];
+
+		foreach ( [ 'post_modified', 'post_modified_gmt' ] as $key ) {
+			if ( ! empty( $params[ $key ] ) ) {
+				$modified[ $key ] = $params[ $key ];
+			}
+		}
+
+		if ( empty( $modified ) ) {
+			return null;
+		}
+
+		// Keep the pair consistent when only one of the two was given.
+		if ( ! isset( $modified['post_modified_gmt'] ) ) {
+			$modified['post_modified_gmt'] = get_gmt_from_date( $modified['post_modified'] );
+		} elseif ( ! isset( $modified['post_modified'] ) ) {
+			$modified['post_modified'] = get_date_from_gmt( $modified['post_modified_gmt'] );
+		}
+
+		$callback = static function ( $data ) use ( $modified ) {
+			return array_merge( $data, $modified );
+		};
+
+		add_filter( 'wp_insert_post_data', $callback );
+
+		return $callback;
 	}
 
 	/**
@@ -422,7 +471,13 @@ class Post_Command extends CommandWithDBObject {
 					}
 				}
 
+				$modified_callback = self::add_post_modified_filter( $params );
+
 				$result = wp_update_post( $params, true );
+
+				if ( $modified_callback ) {
+					remove_filter( 'wp_insert_post_data', $modified_callback );
+				}
 
 				if ( $filter_callback ) {
 					remove_filter( 'user_has_cap', $filter_callback );
