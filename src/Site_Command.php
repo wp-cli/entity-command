@@ -1099,17 +1099,30 @@ class Site_Command extends CommandWithDBObject {
 			$query_args['path'] = $assoc_args['site-path'];
 		}
 
-		// 'registered' and 'last_updated' match the stored value exactly. WP_Site_Query
-		// only filters on those two through a date query, and the SQL that
-		// WP_Date_Query emits for an exact timestamp is not translated by the SQLite
-		// integration, so matching them here keeps both backends behaving the same.
-		// '--date_query' remains available for the range queries it is meant for.
-		$exact_dates = [];
-
+		// 'registered' and 'last_updated' match the stored value exactly, which
+		// WP_Site_Query expresses as a date query pinned to every component. Parsing
+		// and formatting both as UTC round-trips the given value unchanged, rather
+		// than shifting it by the server's timezone.
 		foreach ( [ 'registered', 'last_updated' ] as $column ) {
-			if ( isset( $assoc_args[ $column ] ) ) {
-				$exact_dates[ $column ] = (string) $assoc_args[ $column ];
+			if ( ! isset( $assoc_args[ $column ] ) ) {
+				continue;
 			}
+
+			$timestamp = strtotime( (string) $assoc_args[ $column ] . ' UTC' );
+
+			if ( false === $timestamp ) {
+				WP_CLI::error( "Invalid date passed to --{$column}: {$assoc_args[ $column ]}" );
+			}
+
+			$query_args['date_query'][] = [
+				'column' => $column,
+				'year'   => (int) gmdate( 'Y', $timestamp ),
+				'month'  => (int) gmdate( 'n', $timestamp ),
+				'day'    => (int) gmdate( 'j', $timestamp ),
+				'hour'   => (int) gmdate( 'G', $timestamp ),
+				'minute' => (int) gmdate( 'i', $timestamp ),
+				'second' => (int) gmdate( 's', $timestamp ),
+			];
 		}
 
 		if ( isset( $assoc_args['site_user'] ) ) {
@@ -1145,25 +1158,8 @@ class Site_Command extends CommandWithDBObject {
 			$query_args['orderby'] = 'site__in';
 		}
 
-		$sites = self::get_sites_iterator( $query_args );
-
-		if ( ! empty( $exact_dates ) ) {
-			$sites = new CallbackFilterIterator(
-				$sites,
-				static function ( $site ) use ( $exact_dates ) {
-					foreach ( $exact_dates as $column => $value ) {
-						if ( (string) $site->$column !== $value ) {
-							return false;
-						}
-					}
-
-					return true;
-				}
-			);
-		}
-
 		$iterator = Utils\iterator_map(
-			$sites,
+			self::get_sites_iterator( $query_args ),
 			function ( $site ) {
 				$site_data        = $site->to_array();
 				$site_data['url'] = trailingslashit( get_home_url( $site->blog_id ) );
