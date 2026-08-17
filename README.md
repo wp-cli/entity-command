@@ -131,10 +131,55 @@ wp comment count [<post-id>]
 Creates a new comment.
 
 ~~~
-wp comment create [--<field>=<value>] [--porcelain]
+wp comment create [--comment_agent=<comment_agent>] [--comment_approved=<comment_approved>] [--comment_author=<comment_author>] [--comment_author_email=<comment_author_email>] [--comment_author_IP=<comment_author_IP>] [--comment_author_url=<comment_author_url>] [--comment_content=<comment_content>] [--comment_date=<yyyy-mm-dd-hh-ii-ss>] [--comment_date_gmt=<yyyy-mm-dd-hh-ii-ss>] [--comment_karma=<comment_karma>] [--comment_parent=<comment_parent>] [--comment_post_ID=<comment_post_ID>] [--comment_type=<comment_type>] [--comment_meta=<comment_meta>] [--user_id=<user_id>] [--<field>=<value>] [--porcelain]
 ~~~
 
 **OPTIONS**
+
+	[--comment_agent=<comment_agent>]
+		The HTTP user agent of the comment author.
+
+	[--comment_approved=<comment_approved>]
+		Whether the comment has been approved. Default 1.
+
+	[--comment_author=<comment_author>]
+		The name of the author of the comment.
+
+	[--comment_author_email=<comment_author_email>]
+		The email address of the comment author.
+
+	[--comment_author_IP=<comment_author_IP>]
+		The IP address of the comment author.
+
+	[--comment_author_url=<comment_author_url>]
+		The URL address of the comment author.
+
+	[--comment_content=<comment_content>]
+		The content of the comment.
+
+	[--comment_date=<yyyy-mm-dd-hh-ii-ss>]
+		The date the comment was submitted.
+
+	[--comment_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
+		The date the comment was submitted in the GMT timezone.
+
+	[--comment_karma=<comment_karma>]
+		The karma of the comment. Default 0.
+
+	[--comment_parent=<comment_parent>]
+		ID of this comment's parent, if any. Default 0.
+
+	[--comment_post_ID=<comment_post_ID>]
+		ID of the post that relates to the comment, if any.
+
+	[--comment_type=<comment_type>]
+		Comment type. Default 'comment'.
+
+	[--comment_meta=<comment_meta>]
+		Array in JSON format of comment meta values keyed by their comment meta key.
+
+	[--user_id=<user_id>]
+		ID of the user who submitted the comment. Default 0.
 
 	[--<field>=<value>]
 		Associative args for the new comment. See wp_insert_comment().
@@ -836,13 +881,59 @@ wp comment untrash <id>...
 Updates one or more comments.
 
 ~~~
-wp comment update <id>... --<field>=<value>
+wp comment update <id>... [--comment_agent=<comment_agent>] [--comment_approved=<comment_approved>] [--comment_author=<comment_author>] [--comment_author_email=<comment_author_email>] [--comment_author_IP=<comment_author_IP>] [--comment_author_url=<comment_author_url>] [--comment_content=<comment_content>] [--comment_date=<yyyy-mm-dd-hh-ii-ss>] [--comment_date_gmt=<yyyy-mm-dd-hh-ii-ss>] [--comment_karma=<comment_karma>] [--comment_parent=<comment_parent>] [--comment_post_ID=<comment_post_ID>] [--comment_type=<comment_type>] [--comment_meta=<comment_meta>] [--user_id=<user_id>] --<field>=<value>
 ~~~
 
 **OPTIONS**
 
 	<id>...
 		One or more IDs of comments to update.
+
+	[--comment_agent=<comment_agent>]
+		The HTTP user agent of the comment author.
+
+	[--comment_approved=<comment_approved>]
+		Whether the comment has been approved.
+
+	[--comment_author=<comment_author>]
+		The name of the author of the comment.
+
+	[--comment_author_email=<comment_author_email>]
+		The email address of the comment author.
+
+	[--comment_author_IP=<comment_author_IP>]
+		The IP address of the comment author.
+
+	[--comment_author_url=<comment_author_url>]
+		The URL address of the comment author.
+
+	[--comment_content=<comment_content>]
+		The content of the comment.
+
+	[--comment_date=<yyyy-mm-dd-hh-ii-ss>]
+		The date the comment was submitted.
+
+	[--comment_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
+		The date the comment was submitted in the GMT timezone. Note that
+		wp_update_comment() always recalculates this from 'comment_date'.
+
+	[--comment_karma=<comment_karma>]
+		The karma of the comment.
+
+	[--comment_parent=<comment_parent>]
+		ID of this comment's parent, if any.
+
+	[--comment_post_ID=<comment_post_ID>]
+		ID of the post that relates to the comment, if any.
+
+	[--comment_type=<comment_type>]
+		Comment type.
+
+	[--comment_meta=<comment_meta>]
+		Array in JSON format of comment meta values keyed by their comment meta key.
+
+	[--user_id=<user_id>]
+		ID of the user who submitted the comment.
 
 	--<field>=<value>
 		One or more fields to update. See wp_update_comment().
@@ -2701,7 +2792,7 @@ wp post
 Creates a new post.
 
 ~~~
-wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_date_gmt=<post_date_gmt>] [--post_content=<post_content>] [--post_content_filtered=<post_content_filtered>] [--post_title=<post_title>] [--post_excerpt=<post_excerpt>] [--post_status=<post_status>] [--post_type=<post_type>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--post_password=<post_password>] [--post_name=<post_name>] [--from-post=<post_id>] [--to_ping=<to_ping>] [--pinged=<pinged>] [--post_modified=<post_modified>] [--post_modified_gmt=<post_modified_gmt>] [--post_parent=<post_parent>] [--menu_order=<menu_order>] [--post_mime_type=<post_mime_type>] [--guid=<guid>] [--post_category=<post_category>] [--tags_input=<tags_input>] [--tax_input=<tax_input>] [--meta_input=<meta_input>] [<file>] [--<field>=<value>] [--edit] [--porcelain]
+wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_date_gmt=<post_date_gmt>] [--post_content=<post_content>] [--post_content_filtered=<post_content_filtered>] [--post_title=<post_title>] [--post_excerpt=<post_excerpt>] [--post_status=<post_status>] [--post_type=<post_type>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--post_password=<post_password>] [--post_name=<post_name>] [--from-post=<post_id>] [--to_ping=<to_ping>] [--pinged=<pinged>] [--post_modified=<post_modified>] [--post_modified_gmt=<post_modified_gmt>] [--post_parent=<post_parent>] [--menu_order=<menu_order>] [--post_mime_type=<post_mime_type>] [--guid=<guid>] [--post_category=<post_category>] [--tags_input=<tags_input>] [--tax_input=<tax_input>] [--meta_input=<meta_input>] [--page_template=<page_template>] [--import_id=<import_id>] [<file>] [--<field>=<value>] [--edit] [--porcelain]
 ~~~
 
 **OPTIONS**
@@ -2785,6 +2876,13 @@ wp post create [--post_author=<post_author>] [--post_date=<post_date>] [--post_d
 
 	[--meta_input=<meta_input>]
 		Array in JSON format of post meta values keyed by their post meta key. Default empty.
+
+	[--page_template=<page_template>]
+		Page template to use.
+
+	[--import_id=<import_id>]
+		The post ID to be used when inserting a new post. If specified, must not
+		match any existing post ID.
 
 	[<file>]
 		Read post content from <file>. If this value is present, the
@@ -3758,7 +3856,7 @@ Replaces existing terms on the object.
 Updates one or more existing posts.
 
 ~~~
-wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [--post_date_gmt=<post_date_gmt>] [--post_content=<post_content>] [--post_content_filtered=<post_content_filtered>] [--post_title=<post_title>] [--post_excerpt=<post_excerpt>] [--post_status=<post_status>] [--post_type=<post_type>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--post_password=<post_password>] [--post_name=<post_name>] [--to_ping=<to_ping>] [--pinged=<pinged>] [--post_modified=<post_modified>] [--post_modified_gmt=<post_modified_gmt>] [--post_parent=<post_parent>] [--menu_order=<menu_order>] [--post_mime_type=<post_mime_type>] [--guid=<guid>] [--post_category=<post_category>] [--tags_input=<tags_input>] [--tax_input=<tax_input>] [--meta_input=<meta_input>] [<file>] --<field>=<value> [--defer-term-counting]
+wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [--post_date_gmt=<post_date_gmt>] [--post_content=<post_content>] [--post_content_filtered=<post_content_filtered>] [--post_title=<post_title>] [--post_excerpt=<post_excerpt>] [--post_status=<post_status>] [--post_type=<post_type>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--post_password=<post_password>] [--post_name=<post_name>] [--to_ping=<to_ping>] [--pinged=<pinged>] [--post_modified=<post_modified>] [--post_modified_gmt=<post_modified_gmt>] [--post_parent=<post_parent>] [--menu_order=<menu_order>] [--post_mime_type=<post_mime_type>] [--guid=<guid>] [--post_category=<post_category>] [--tags_input=<tags_input>] [--tax_input=<tax_input>] [--meta_input=<meta_input>] [--page_template=<page_template>] [<file>] --<field>=<value> [--defer-term-counting]
 ~~~
 
 **OPTIONS**
@@ -3842,6 +3940,9 @@ wp post update <id>... [--post_author=<post_author>] [--post_date=<post_date>] [
 
 	[--meta_input=<meta_input>]
 		Array in JSON format of post meta values keyed by their post meta key. Default empty.
+
+	[--page_template=<page_template>]
+		Page template to use.
 
 	[<file>]
 		Read post content from <file>. If this value is present, the
@@ -7494,7 +7595,7 @@ wp user application-password record-usage <user> <uuid>
 Updates an existing application password.
 
 ~~~
-wp user application-password update <user> <uuid> [--<field>=<value>]
+wp user application-password update <user> <uuid> [--name=<name>]
 ~~~
 
 **OPTIONS**
@@ -7505,8 +7606,8 @@ wp user application-password update <user> <uuid> [--<field>=<value>]
 	<uuid>
 		The universally unique ID of the application password.
 
-	[--<field>=<value>]
-		Update the <field> with a new <value>. Currently supported fields: name.
+	[--name=<name>]
+		The new name of the application password.
 
 **EXAMPLES**
 
@@ -9229,7 +9330,7 @@ wp user unspam <user>...
 Updates an existing user.
 
 ~~~
-wp user update <user>... [--user_pass=<password>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--display_name=<display_name>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--role=<role>] --<field>=<value> [--skip-email]
+wp user update <user>... [--user_pass=<password>] [--user_nicename=<nice_name>] [--user_url=<url>] [--user_email=<email>] [--display_name=<display_name>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--syntax_highlighting=<syntax_highlighting>] [--comment_shortcuts=<comment_shortcuts>] [--admin_color=<admin_color>] [--use_ssl=<use_ssl>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--user_activation_key=<user_activation_key>] [--spam=<spam>] [--show_admin_bar_front=<show_admin_bar_front>] [--role=<role>] [--locale=<locale>] [--meta_input=<meta_input>] --<field>=<value> [--skip-email]
 ~~~
 
 **OPTIONS**
@@ -9267,11 +9368,41 @@ wp user update <user>... [--user_pass=<password>] [--user_nicename=<nice_name>] 
 	[--rich_editing=<rich_editing>]
 		A string for whether to enable the rich editor or not. False if not empty.
 
+	[--syntax_highlighting=<syntax_highlighting>]
+		Whether to enable the rich code editor for the user. Accepts 'true' or
+		'false' as a string literal, not boolean.
+
+	[--comment_shortcuts=<comment_shortcuts>]
+		Whether to enable comment moderation keyboard shortcuts for the user.
+		Accepts 'true' or 'false' as a string literal, not boolean.
+
+	[--admin_color=<admin_color>]
+		Admin color scheme for the user.
+
+	[--use_ssl=<use_ssl>]
+		Whether the user should always access the admin over https.
+
 	[--user_registered=<yyyy-mm-dd-hh-ii-ss>]
 		The date the user registered.
 
+	[--user_activation_key=<user_activation_key>]
+		Password reset key.
+
+	[--spam=<spam>]
+		Multisite only. Whether the user is marked as spam.
+
+	[--show_admin_bar_front=<show_admin_bar_front>]
+		Whether to display the admin bar for the user on the site's front end.
+		Accepts 'true' or 'false' as a string literal, not boolean.
+
 	[--role=<role>]
 		A string used to set the user's role.
+
+	[--locale=<locale>]
+		The user's locale.
+
+	[--meta_input=<meta_input>]
+		Array in JSON format of user meta values keyed by their user meta key.
 
 	--<field>=<value>
 		One or more fields to update. For accepted fields, see wp_update_user().
