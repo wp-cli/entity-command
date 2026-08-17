@@ -986,8 +986,10 @@ class Site_Command extends CommandWithDBObject {
 	 * : The network to which the sites belong.
 	 *
 	 * [--<field>=<value>]
-	 * : Filter by one or more fields (see "Available Fields" section). However,
-	 * 'url' isn't an available filter, as it comes from 'home' in wp_options.
+	 * : Filter by one or more fields (see "Available Fields" section), or pass any
+	 * other argument accepted by WP_Site_Query, such as 'search', 'site__not_in',
+	 * 'number', 'offset', 'orderby' or 'order'. However, 'url' isn't an available
+	 * filter, as it comes from 'home' in wp_options.
 	 * Note: '--path' conflicts with the global parameter of the same name; use
 	 * '--site-path' to filter by path instead.
 	 *
@@ -1047,6 +1049,15 @@ class Site_Command extends CommandWithDBObject {
 	 *     http://www.example.com/
 	 *     http://www.example.com/subdir/
 	 *
+	 *     # Output site URLs, most recently registered first
+	 *     $ wp site list --orderby=registered --order=desc --field=url
+	 *     http://www.example.com/subdir/
+	 *     http://www.example.com/
+	 *
+	 *     # Search for sites by domain or path
+	 *     $ wp site list --search=subdir --field=url
+	 *     http://www.example.com/subdir/
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -1099,30 +1110,25 @@ class Site_Command extends CommandWithDBObject {
 			$query_args['path'] = $assoc_args['site-path'];
 		}
 
-		// 'registered' and 'last_updated' match the stored value exactly, which
-		// WP_Site_Query expresses as a date query pinned to every component. Parsing
-		// and formatting both as UTC round-trips the given value unchanged, rather
-		// than shifting it by the server's timezone.
+		// WP_Site_Query only reaches the date columns through a date query. Bounding
+		// the range by the given value on both ends matches it as precisely as it was
+		// written: a full timestamp matches that second, a date matches that day.
+		// Interpreting the value is WP_Date_Query's job, so it is passed on as given.
+		$date_query = [];
+
 		foreach ( [ 'registered', 'last_updated' ] as $column ) {
-			if ( ! isset( $assoc_args[ $column ] ) ) {
-				continue;
+			if ( isset( $assoc_args[ $column ] ) ) {
+				$date_query[] = [
+					'column'    => $column,
+					'after'     => $assoc_args[ $column ],
+					'before'    => $assoc_args[ $column ],
+					'inclusive' => true,
+				];
 			}
+		}
 
-			$timestamp = strtotime( (string) $assoc_args[ $column ] . ' UTC' );
-
-			if ( false === $timestamp ) {
-				WP_CLI::error( "Invalid date passed to --{$column}: {$assoc_args[ $column ]}" );
-			}
-
-			$query_args['date_query'][] = [
-				'column' => $column,
-				'year'   => (int) gmdate( 'Y', $timestamp ),
-				'month'  => (int) gmdate( 'n', $timestamp ),
-				'day'    => (int) gmdate( 'j', $timestamp ),
-				'hour'   => (int) gmdate( 'G', $timestamp ),
-				'minute' => (int) gmdate( 'i', $timestamp ),
-				'second' => (int) gmdate( 's', $timestamp ),
-			];
+		if ( ! empty( $date_query ) ) {
+			$query_args['date_query'] = $date_query;
 		}
 
 		if ( isset( $assoc_args['site_user'] ) ) {

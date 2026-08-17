@@ -1042,12 +1042,7 @@ Feature: Manage sites in a multisite installation
       1
       """
 
-
-  # --registered and --last_updated go through WP_Date_Query, whose exact-timestamp
-  # SQL the SQLite integration does not translate. Reported upstream; skipped on
-  # SQLite until that is resolved.
-  @skip-sqlite
-  Scenario: Filter the site list by an exact registration or update date
+  Scenario: Filter the site list by registration or update date
     Given a WP multisite install
 
     When I run `wp site create --slug=alpha --porcelain`
@@ -1057,8 +1052,16 @@ Feature: Manage sites in a multisite installation
     When I run `wp site list --blog_id={ALPHA_ID} --field=registered`
     Then STDOUT should not be empty
     And save STDOUT as {REGISTERED}
+    And save STDOUT '(\d{4}-\d{2}-\d{2})' as {REGISTERED_DAY}
 
     When I run `wp site list --registered='{REGISTERED}' --field=blog_id`
+    Then STDOUT should contain:
+      """
+      {ALPHA_ID}
+      """
+
+    # A value carrying no time of day matches every site registered that day.
+    When I run `wp site list --registered={REGISTERED_DAY} --field=blog_id`
     Then STDOUT should contain:
       """
       {ALPHA_ID}
@@ -1080,9 +1083,10 @@ Feature: Manage sites in a multisite installation
       {ALPHA_ID}
       """
 
-    When I try `wp site list --registered=notadate`
-    Then STDERR should contain:
+    # Interpreting the value is left to WP_Date_Query, which resolves anything it
+    # cannot parse to a date no site can have registered on.
+    When I run `wp site list --registered=notadate --format=count`
+    Then STDOUT should be:
       """
-      Invalid date passed to --registered
+      0
       """
-    And the return code should be 1

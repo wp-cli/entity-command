@@ -5351,8 +5351,10 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_u
 		The network to which the sites belong.
 
 	[--<field>=<value>]
-		Filter by one or more fields (see "Available Fields" section). However,
-		'url' isn't an available filter, as it comes from 'home' in wp_options.
+		Filter by one or more fields (see "Available Fields" section), or pass any
+		other argument accepted by WP_Site_Query, such as 'search', 'site__not_in',
+		'number', 'offset', 'orderby' or 'order'. However, 'url' isn't an available
+		filter, as it comes from 'home' in wp_options.
 		Note: '--path' conflicts with the global parameter of the same name; use
 		'--site-path' to filter by path instead.
 
@@ -5410,6 +5412,15 @@ These fields are optionally available:
     # Output a simple list of site URLs
     $ wp site list --field=url
     http://www.example.com/
+    http://www.example.com/subdir/
+
+    # Output site URLs, most recently registered first
+    $ wp site list --orderby=registered --order=desc --field=url
+    http://www.example.com/subdir/
+    http://www.example.com/
+
+    # Search for sites by domain or path
+    $ wp site list --search=subdir --field=url
     http://www.example.com/subdir/
 
 
