@@ -209,10 +209,18 @@ final class User_Application_Password_Command {
 
 			$value = Utils\get_flag_value( $assoc_args, $field );
 
+			// 'created' and 'last_used' come back from core as integers, while an
+			// argument always arrives as a string, so compare them as strings.
+			$filter_value = is_scalar( $value ) ? (string) $value : '';
+
 			$application_passwords = array_filter(
 				$application_passwords,
-				static function ( $application_password ) use ( $field, $value ) {
-					return $application_password[ $field ] === $value;
+				static function ( $application_password ) use ( $field, $filter_value ) {
+					$item_value = isset( $application_password[ $field ] ) && is_scalar( $application_password[ $field ] )
+						? (string) $application_password[ $field ]
+						: '';
+
+					return $item_value === $filter_value;
 				}
 			);
 		}
