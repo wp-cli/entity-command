@@ -3,7 +3,6 @@
 use WP_CLI\CommandWithDBObject;
 use WP_CLI\ExitException;
 use WP_CLI\Fetchers\Site as SiteFetcher;
-use WP_CLI\Iterators\Table as TableIterator;
 use WP_CLI\Utils;
 use WP_CLI\Formatter;
 use WP_CLI\Fetchers\User as UserFetcher;
@@ -987,8 +986,10 @@ class Site_Command extends CommandWithDBObject {
 	 * : The network to which the sites belong.
 	 *
 	 * [--<field>=<value>]
-	 * : Filter by one or more fields (see "Available Fields" section). However,
-	 * 'url' isn't an available filter, as it comes from 'home' in wp_options.
+	 * : Filter by one or more fields (see "Available Fields" section), or pass any
+	 * other argument accepted by WP_Site_Query, such as 'search', 'site__not_in',
+	 * 'number', 'offset', 'orderby' or 'order'. However, 'url' isn't an available
+	 * filter, as it comes from 'home' in wp_options.
 	 * Note: '--path' conflicts with the global parameter of the same name; use
 	 * '--site-path' to filter by path instead.
 	 *
@@ -1011,11 +1012,13 @@ class Site_Command extends CommandWithDBObject {
 	 * [--domain=<domain>]
 	 * : Filter by domain.
 	 *
-	 * [--registered=<yyyy-mm-dd-hh-ii-ss>]
-	 * : Filter by the date the site was registered.
+	 * [--registered=<date>]
+	 * : Filter by the date the site was registered. Accepts a timestamp or a
+	 * date; a value carrying no time of day matches that whole day.
 	 *
-	 * [--last_updated=<yyyy-mm-dd-hh-ii-ss>]
-	 * : Filter by the date the site was last updated.
+	 * [--last_updated=<date>]
+	 * : Filter by the date the site was last updated. Accepts a timestamp or a
+	 * date; a value carrying no time of day matches that whole day.
 	 *
 	 * [--public=<public>]
 	 * : Filter by whether the site is public. Accepts 1 or 0.
@@ -1082,14 +1085,21 @@ class Site_Command extends CommandWithDBObject {
 	 *     http://www.example.com/
 	 *     http://www.example.com/subdir/
 	 *
+	 *     # Output site URLs, most recently registered first
+	 *     $ wp site list --orderby=registered --order=desc --field=url
+	 *     http://www.example.com/subdir/
+	 *     http://www.example.com/
+	 *
+	 *     # Search for sites by domain or path
+	 *     $ wp site list --search=subdir --field=url
+	 *     http://www.example.com/subdir/
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite installation.' );
 		}
-
-		global $wpdb;
 
 		if ( isset( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = preg_split( '/,[ \t]*/', $assoc_args['fields'] );
@@ -1101,31 +1111,65 @@ class Site_Command extends CommandWithDBObject {
 		];
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$where  = [];
-		$append = '';
+		// Anything the command does not consume itself is handed to WP_Site_Query,
+		// which is what makes its own arguments - search, site__not_in, date_query,
+		// lang__in and the rest - usable here.
+		//
+		// 'count' is withheld deliberately: it makes get_sites() return an integer
+		// rather than a list, and '--format=count' is how this command spells it.
+		$query_args = array_diff_key(
+			$assoc_args,
+			array_flip(
+				[ 'format', 'fields', 'field', 'count', 'blog_id', 'site_id', 'site_user', 'site-path', 'network', 'registered', 'last_updated' ]
+			)
+		);
 
-		$site_cols = [ 'blog_id', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' ];
-		foreach ( $site_cols as $col ) {
-			if ( isset( $assoc_args[ $col ] ) ) {
-				$where[ $col ] = $assoc_args[ $col ];
-			}
-		}
-
-		if ( isset( $assoc_args['site-path'] ) ) {
-			$where['path'] = $assoc_args['site-path'];
+		// Arguments this command spells differently to WP_Site_Query.
+		if ( isset( $assoc_args['blog_id'] ) ) {
+			$query_args['site__in'] = [ $assoc_args['blog_id'] ];
 		}
 
 		if ( isset( $assoc_args['site__in'] ) ) {
-			$where['blog_id'] = explode( ',', $assoc_args['site__in'] );
-			$append           = 'ORDER BY FIELD( blog_id, ' . implode( ',', array_map( 'intval', $where['blog_id'] ) ) . ' )';
+			$query_args['site__in'] = array_map( 'trim', explode( ',', $assoc_args['site__in'] ) );
 		}
 
+		if ( isset( $assoc_args['site_id'] ) ) {
+			$query_args['network_id'] = $assoc_args['site_id'];
+		}
+
+		// '--network' has always taken precedence over '--site_id'.
 		if ( isset( $assoc_args['network'] ) ) {
-			$where['site_id'] = $assoc_args['network'];
+			$query_args['network_id'] = $assoc_args['network'];
+		}
+
+		if ( isset( $assoc_args['site-path'] ) ) {
+			$query_args['path'] = $assoc_args['site-path'];
+		}
+
+		// WP_Site_Query only reaches the date columns through a date query. Bounding
+		// the range by the given value on both ends matches it as precisely as it was
+		// written: a full timestamp matches that second, a date matches that day.
+		// Interpreting the value is WP_Date_Query's job, so it is passed on as given.
+		$date_query = [];
+
+		foreach ( [ 'registered', 'last_updated' ] as $column ) {
+			if ( isset( $assoc_args[ $column ] ) ) {
+				$date_query[] = [
+					'column'    => $column,
+					'after'     => $assoc_args[ $column ],
+					'before'    => $assoc_args[ $column ],
+					'inclusive' => true,
+				];
+			}
+		}
+
+		if ( ! empty( $date_query ) ) {
+			$query_args['date_query'] = $date_query;
 		}
 
 		if ( isset( $assoc_args['site_user'] ) ) {
-			$user = ( new UserFetcher() )->get_check( $assoc_args['site_user'] );
+			$user     = ( new UserFetcher() )->get_check( $assoc_args['site_user'] );
+			$user_ids = [];
 
 			if ( $user ) {
 				/**
@@ -1134,35 +1178,35 @@ class Site_Command extends CommandWithDBObject {
 				$blogs = get_blogs_of_user( $user->ID );
 
 				foreach ( $blogs as $blog ) {
-					$where['blog_id'][] = $blog->userblog_id;
+					$user_ids[] = $blog->userblog_id;
 				}
 			}
 
-			if ( ! isset( $where['blog_id'] ) || empty( $where['blog_id'] ) ) {
+			if ( isset( $query_args['site__in'] ) ) {
+				$user_ids = array_intersect( array_map( 'intval', $query_args['site__in'] ), $user_ids );
+			}
+
+			if ( empty( $user_ids ) ) {
 				$formatter = new Formatter( $assoc_args, [], 'site' );
 				$formatter->display_items( [] );
 				return;
 			}
 
-			$append = 'ORDER BY FIELD( blog_id, ' . implode( ',', array_map( 'intval', $where['blog_id'] ) ) . ' )';
+			$query_args['site__in'] = array_values( $user_ids );
 		}
 
-		$iterator_args = [
-			'table'  => $wpdb->blogs,
-			'where'  => $where,
-			'append' => $append,
-		];
+		// Listing by explicit IDs has always come back in the order they were given.
+		if ( isset( $query_args['site__in'] ) && ! isset( $assoc_args['orderby'] ) ) {
+			$query_args['orderby'] = 'site__in';
+		}
 
-		$iterator = new TableIterator( $iterator_args );
-
-		/**
-		 * @var iterable $iterator
-		 */
 		$iterator = Utils\iterator_map(
-			$iterator,
-			function ( $blog ) {
-				$blog->url = trailingslashit( get_home_url( $blog->blog_id ) );
-				return $blog;
+			self::get_sites_iterator( $query_args ),
+			function ( $site ) {
+				$site_data        = $site->to_array();
+				$site_data['url'] = trailingslashit( get_home_url( $site->blog_id ) );
+
+				return (object) $site_data;
 			}
 		);
 
@@ -1175,6 +1219,55 @@ class Site_Command extends CommandWithDBObject {
 			$formatter = new Formatter( $assoc_args, null, 'site' );
 			$formatter->display_items( $iterator );
 		}
+	}
+
+	/**
+	 * Yields sites a page at a time.
+	 *
+	 * The previous implementation read $wpdb->blogs through a chunked iterator, so
+	 * listing a large network never held every row in memory at once. Page through
+	 * WP_Site_Query the same way, unless an explicit --number was given, in which
+	 * case that is the caller's own limit and is passed straight through.
+	 *
+	 * @param array<string, mixed> $query_args Arguments for WP_Site_Query.
+	 * @return \Generator<int, \WP_Site>
+	 */
+	private static function get_sites_iterator( $query_args ) {
+		if ( isset( $query_args['number'] ) ) {
+			// The arguments are whatever the user passed, so they cannot be narrowed
+			// to the shape get_sites() documents. WP_Site_Query validates them itself.
+			// @phpstan-ignore argument.type
+			foreach ( get_sites( $query_args ) as $site ) {
+				yield $site;
+			}
+
+			return;
+		}
+
+		$chunk_size = 500;
+		$offset     = isset( $query_args['offset'] ) && is_numeric( $query_args['offset'] )
+			? (int) $query_args['offset']
+			: 0;
+
+		do {
+			$page_args = array_merge(
+				$query_args,
+				[
+					'number' => $chunk_size,
+					'offset' => $offset,
+				]
+			);
+
+			// @phpstan-ignore argument.type
+			$sites = get_sites( $page_args );
+
+			foreach ( $sites as $site ) {
+				yield $site;
+			}
+
+			$fetched = count( $sites );
+			$offset += $chunk_size;
+		} while ( $fetched === $chunk_size );
 	}
 
 	/**

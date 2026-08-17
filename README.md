@@ -5443,7 +5443,7 @@ These fields are optionally available:
 Lists all sites in a multisite installation.
 
 ~~~
-wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_user=<value>] [--site-path=<path>] [--blog_id=<blog_id>] [--site_id=<site_id>] [--domain=<domain>] [--registered=<yyyy-mm-dd-hh-ii-ss>] [--last_updated=<yyyy-mm-dd-hh-ii-ss>] [--public=<public>] [--archived=<archived>] [--mature=<mature>] [--spam=<spam>] [--deleted=<deleted>] [--lang_id=<lang_id>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_user=<value>] [--site-path=<path>] [--blog_id=<blog_id>] [--site_id=<site_id>] [--domain=<domain>] [--registered=<date>] [--last_updated=<date>] [--public=<public>] [--archived=<archived>] [--mature=<mature>] [--spam=<spam>] [--deleted=<deleted>] [--lang_id=<lang_id>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -5452,8 +5452,10 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_u
 		The network to which the sites belong.
 
 	[--<field>=<value>]
-		Filter by one or more fields (see "Available Fields" section). However,
-		'url' isn't an available filter, as it comes from 'home' in wp_options.
+		Filter by one or more fields (see "Available Fields" section), or pass any
+		other argument accepted by WP_Site_Query, such as 'search', 'site__not_in',
+		'number', 'offset', 'orderby' or 'order'. However, 'url' isn't an available
+		filter, as it comes from 'home' in wp_options.
 		Note: '--path' conflicts with the global parameter of the same name; use
 		'--site-path' to filter by path instead.
 
@@ -5476,11 +5478,13 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_u
 	[--domain=<domain>]
 		Filter by domain.
 
-	[--registered=<yyyy-mm-dd-hh-ii-ss>]
-		Filter by the date the site was registered.
+	[--registered=<date>]
+		Filter by the date the site was registered. Accepts a timestamp or a
+		date; a value carrying no time of day matches that whole day.
 
-	[--last_updated=<yyyy-mm-dd-hh-ii-ss>]
-		Filter by the date the site was last updated.
+	[--last_updated=<date>]
+		Filter by the date the site was last updated. Accepts a timestamp or a
+		date; a value carrying no time of day matches that whole day.
 
 	[--public=<public>]
 		Filter by whether the site is public. Accepts 1 or 0.
@@ -5545,6 +5549,15 @@ These fields are optionally available:
     # Output a simple list of site URLs
     $ wp site list --field=url
     http://www.example.com/
+    http://www.example.com/subdir/
+
+    # Output site URLs, most recently registered first
+    $ wp site list --orderby=registered --order=desc --field=url
+    http://www.example.com/subdir/
+    http://www.example.com/
+
+    # Search for sites by domain or path
+    $ wp site list --search=subdir --field=url
     http://www.example.com/subdir/
 
 
