@@ -987,8 +987,7 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * [--<field>=<value>]
 	 * : Filter by one or more fields (see "Available Fields" section), or pass any
-	 * other argument accepted by WP_Site_Query, such as 'search', 'site__not_in',
-	 * 'number', 'offset', 'orderby' or 'order'. However, 'url' isn't an available
+	 * other argument accepted by WP_Site_Query. However, 'url' isn't an available
 	 * filter, as it comes from 'home' in wp_options.
 	 * Note: '--path' conflicts with the global parameter of the same name; use
 	 * '--site-path' to filter by path instead.
@@ -996,21 +995,47 @@ class Site_Command extends CommandWithDBObject {
 	 * [--site__in=<value>]
 	 * : Only list the sites with these blog_id values (comma-separated).
 	 *
+	 * [--site__not_in=<value>]
+	 * : Exclude the sites with these blog_id values (comma-separated).
+	 *
 	 * [--site_user=<value>]
 	 * : Only list the sites with this user.
 	 *
 	 * [--site-path=<path>]
 	 * : Filter by path. Avoids conflict with the global `--path` parameter.
 	 *
-	 * [--blog_id=<blog_id>]
-	 * : Filter by site ID.
+	 * [--path__in=<value>]
+	 * : Only list the sites with these paths (comma-separated).
+	 *
+	 * [--path__not_in=<value>]
+	 * : Exclude the sites with these paths (comma-separated).
+	 *
+	 * [--blog_id=<blog_id>|ID]
+	 * : Filter by site ID. `--ID` is WP_Site_Query's name for the same filter
+	 * and is accepted as an alias.
 	 *
 	 * [--site_id=<site_id>]
-	 * : Filter by the ID of the network the site belongs to. `--network` is an
-	 * alias for this, and takes precedence when both are given.
+	 * : Filter by the ID of the network the site belongs to. `--network` and
+	 * `--network_id` are aliases for this; `--network` takes precedence when
+	 * more than one is given.
+	 *
+	 * [--network_id=<network_id>]
+	 * : Filter by the ID of the network the site belongs to.
+	 *
+	 * [--network__in=<value>]
+	 * : Only list the sites belonging to these network IDs (comma-separated).
+	 *
+	 * [--network__not_in=<value>]
+	 * : Exclude the sites belonging to these network IDs (comma-separated).
 	 *
 	 * [--domain=<domain>]
 	 * : Filter by domain.
+	 *
+	 * [--domain__in=<value>]
+	 * : Only list the sites with these domains (comma-separated).
+	 *
+	 * [--domain__not_in=<value>]
+	 * : Exclude the sites with these domains (comma-separated).
 	 *
 	 * [--registered=<date>]
 	 * : Filter by the date the site was registered. Accepts a timestamp or a
@@ -1037,6 +1062,62 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * [--lang_id=<lang_id>]
 	 * : Filter by language ID.
+	 *
+	 * [--lang__in=<value>]
+	 * : Only list the sites with these language IDs (comma-separated).
+	 *
+	 * [--lang__not_in=<value>]
+	 * : Exclude the sites with these language IDs (comma-separated).
+	 *
+	 * [--search=<string>]
+	 * : Only list the sites matching this search term. Searches the domain and
+	 * path columns unless `--search_columns` narrows it.
+	 *
+	 * [--search_columns=<columns>]
+	 * : Comma-separated list of columns `--search` looks in. Accepts 'domain'
+	 * and 'path'.
+	 *
+	 * [--meta_key=<meta_key>]
+	 * : Filter by this site meta key.
+	 *
+	 * [--meta_value=<meta_value>]
+	 * : Filter by this site meta value. Used together with `--meta_key`.
+	 *
+	 * [--meta_compare=<meta_compare>]
+	 * : Operator to test the meta value against. Accepts the operators
+	 * WP_Meta_Query supports, such as '=', '!=', 'LIKE' or 'IN'.
+	 *
+	 * [--meta_type=<meta_type>]
+	 * : Cast the meta value to this type, such as 'NUMERIC' or 'DATE'.
+	 *
+	 * [--number=<number>]
+	 * : Limit the number of sites returned.
+	 *
+	 * [--offset=<offset>]
+	 * : Number of sites to skip. Used together with `--number`.
+	 *
+	 * [--no_found_rows=<no_found_rows>]
+	 * : Whether to skip counting the total rows the query matches. Accepts 1 or 0.
+	 *
+	 * [--update_site_cache=<update_site_cache>]
+	 * : Whether to prime the object cache with the sites found. Accepts 1 or 0.
+	 * Turning it off saves work when listing a large network once.
+	 *
+	 * [--update_site_meta_cache=<update_site_meta_cache>]
+	 * : Whether to prime the object cache with the site meta of the sites found.
+	 * Accepts 1 or 0.
+	 *
+	 * [--orderby=<field>]
+	 * : Order the results by this field, such as 'blog_id', 'domain', 'path',
+	 * 'registered', 'last_updated' or 'site__in'.
+	 *
+	 * [--order=<order>]
+	 * : Whether to order the results ascending or descending.
+	 * ---
+	 * options:
+	 *   - asc
+	 *   - desc
+	 * ---
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
@@ -1117,10 +1198,13 @@ class Site_Command extends CommandWithDBObject {
 		//
 		// 'count' is withheld deliberately: it makes get_sites() return an integer
 		// rather than a list, and '--format=count' is how this command spells it.
+		// 'meta_query' and 'date_query' are withheld because they are nested arrays
+		// with no command-line spelling; the meta_* and date arguments above cover
+		// what can be expressed here.
 		$query_args = array_diff_key(
 			$assoc_args,
 			array_flip(
-				[ 'format', 'fields', 'field', 'count', 'blog_id', 'site_id', 'site_user', 'site-path', 'network', 'registered', 'last_updated' ]
+				[ 'format', 'fields', 'field', 'count', 'meta_query', 'date_query', 'blog_id', 'site_id', 'site_user', 'site-path', 'network', 'registered', 'last_updated' ]
 			)
 		);
 
@@ -1131,6 +1215,16 @@ class Site_Command extends CommandWithDBObject {
 
 		if ( isset( $assoc_args['site__in'] ) ) {
 			$query_args['site__in'] = array_map( 'trim', explode( ',', $assoc_args['site__in'] ) );
+		}
+
+		// WP_Site_Query reads these through is_array() or array_intersect(), so a
+		// comma-separated string reaches them as a value they cannot use: the domain
+		// and path clauses are skipped without a word, and 'search_columns' is fatal.
+		// Splitting them here is what makes them mean anything from the command line.
+		foreach ( [ 'domain__in', 'domain__not_in', 'path__in', 'path__not_in', 'search_columns' ] as $list_arg ) {
+			if ( isset( $assoc_args[ $list_arg ] ) && ! is_array( $assoc_args[ $list_arg ] ) ) {
+				$query_args[ $list_arg ] = array_map( 'trim', explode( ',', (string) $assoc_args[ $list_arg ] ) );
+			}
 		}
 
 		if ( isset( $assoc_args['site_id'] ) ) {

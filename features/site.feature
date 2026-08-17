@@ -1087,6 +1087,103 @@ Feature: Manage sites in a multisite installation
       1
       """
 
+  Scenario: List sites using the WP_Site_Query arguments that take a list
+    Given a WP multisite install
+
+    When I run `wp site create --slug=alpha --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ALPHA_ID}
+
+    When I run `wp site create --slug=beta --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BETA_ID}
+
+    # WP_Site_Query reads these through is_array(), so before they were split
+    # they were skipped without a word and every site came back.
+    When I run `wp site list --path__in=/alpha/,/beta/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      {BETA_ID}
+      """
+
+    When I run `wp site list --path__not_in=/alpha/,/beta/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp site list --domain__in=example.com --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --domain__not_in=example.com --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # --search_columns reaches array_intersect(), which is fatal on a string.
+    When I run `wp site list --search=alpha --search_columns=path --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --search=alpha --search_columns=domain --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # The remaining newly documented filters.
+    When I run `wp site list --network__in=1 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --network__not_in=1 --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp site list --lang__in=0 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --ID={ALPHA_ID} --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --network_id=1 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site meta add {ALPHA_ID} colour blue`
+    Then STDOUT should not be empty
+
+    When I run `wp site list --meta_key=colour --meta_value=blue --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --meta_key=colour --meta_value=red --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
   Scenario: Existing site list filters keep working against WP_Site_Query
     Given a WP multisite install
 
