@@ -81,6 +81,29 @@ final class User_Application_Password_Command {
 	 * [--<field>=<value>]
 	 * : Filter the list by a specific field.
 	 *
+	 * [--uuid=<uuid>]
+	 * : Filter by the universally unique ID of the application password.
+	 *
+	 * [--app_id=<app_id>]
+	 * : Filter by the application ID. `--app-id` is also accepted.
+	 *
+	 * [--name=<name>]
+	 * : Filter by the name of the application password.
+	 *
+	 * [--password=<password>]
+	 * : Filter by the hashed password.
+	 *
+	 * [--created=<created>]
+	 * : Filter by the Unix timestamp the application password was created at.
+	 *
+	 * [--last_used=<last_used>]
+	 * : Filter by the Unix timestamp the application password was last used at.
+	 * `--last-used` is also accepted.
+	 *
+	 * [--last_ip=<last_ip>]
+	 * : Filter by the IP address the application password was last used from.
+	 * `--last-ip` is also accepted.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each application password.
 	 *
@@ -186,10 +209,18 @@ final class User_Application_Password_Command {
 
 			$value = Utils\get_flag_value( $assoc_args, $field );
 
+			// 'created' and 'last_used' come back from core as integers, while an
+			// argument always arrives as a string, so compare them as strings.
+			$filter_value = is_scalar( $value ) ? (string) $value : '';
+
 			$application_passwords = array_filter(
 				$application_passwords,
-				static function ( $application_password ) use ( $field, $value ) {
-					return $application_password[ $field ] === $value;
+				static function ( $application_password ) use ( $field, $filter_value ) {
+					$item_value = isset( $application_password[ $field ] ) && is_scalar( $application_password[ $field ] )
+						? (string) $application_password[ $field ]
+						: '';
+
+					return $item_value === $filter_value;
 				}
 			);
 		}
