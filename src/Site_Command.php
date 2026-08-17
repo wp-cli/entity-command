@@ -990,8 +990,6 @@ class Site_Command extends CommandWithDBObject {
 	 * other argument accepted by WP_Site_Query, such as 'search', 'site__not_in',
 	 * 'number', 'offset', 'orderby' or 'order'. However, 'url' isn't an available
 	 * filter, as it comes from 'home' in wp_options.
-	 * '--registered' and '--last_updated' take a timestamp or a date; a value
-	 * carrying no time of day matches that whole day.
 	 * Note: '--path' conflicts with the global parameter of the same name; use
 	 * '--site-path' to filter by path instead.
 	 *
@@ -1014,11 +1012,13 @@ class Site_Command extends CommandWithDBObject {
 	 * [--domain=<domain>]
 	 * : Filter by domain.
 	 *
-	 * [--registered=<yyyy-mm-dd-hh-ii-ss>]
-	 * : Filter by the date the site was registered.
+	 * [--registered=<date>]
+	 * : Filter by the date the site was registered. Accepts a timestamp or a
+	 * date; a value carrying no time of day matches that whole day.
 	 *
-	 * [--last_updated=<yyyy-mm-dd-hh-ii-ss>]
-	 * : Filter by the date the site was last updated.
+	 * [--last_updated=<date>]
+	 * : Filter by the date the site was last updated. Accepts a timestamp or a
+	 * date; a value carrying no time of day matches that whole day.
 	 *
 	 * [--public=<public>]
 	 * : Filter by whether the site is public. Accepts 1 or 0.
