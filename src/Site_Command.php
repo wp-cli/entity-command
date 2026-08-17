@@ -982,8 +982,10 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [--network=<id>]
-	 * : The network to which the sites belong.
+	 * [--network=<id>|site_id|network_id]
+	 * : The network to which the sites belong. `--site_id` is the name of the
+	 * column this filters, `--network_id` is WP_Site_Query's name for it, and
+	 * both are accepted as aliases. `--network` wins when more than one is given.
 	 *
 	 * [--<field>=<value>]
 	 * : Filter by one or more fields (see "Available Fields" section), or pass any
@@ -1013,14 +1015,6 @@ class Site_Command extends CommandWithDBObject {
 	 * [--blog_id=<blog_id>|ID]
 	 * : Filter by site ID. `--ID` is WP_Site_Query's name for the same filter
 	 * and is accepted as an alias.
-	 *
-	 * [--site_id=<site_id>]
-	 * : Filter by the ID of the network the site belongs to. `--network` and
-	 * `--network_id` are aliases for this; `--network` takes precedence when
-	 * more than one is given.
-	 *
-	 * [--network_id=<network_id>]
-	 * : Filter by the ID of the network the site belongs to.
 	 *
 	 * [--network__in=<value>]
 	 * : Only list the sites belonging to these network IDs (comma-separated).
@@ -1253,11 +1247,10 @@ class Site_Command extends CommandWithDBObject {
 			}
 		}
 
-		if ( isset( $assoc_args['site_id'] ) ) {
-			$query_args['network_id'] = $assoc_args['site_id'];
-		}
-
-		// '--network' has always taken precedence over '--site_id'.
+		// '--site_id' and '--network_id' are aliases of '--network', so they have
+		// already been resolved to it by the time the command runs. wp-cli lets the
+		// canonical name win when more than one is given, which is the precedence
+		// '--network' has always had over '--site_id'.
 		if ( isset( $assoc_args['network'] ) ) {
 			$query_args['network_id'] = $assoc_args['network'];
 		}
@@ -1286,11 +1279,18 @@ class Site_Command extends CommandWithDBObject {
 		// A '--date_query' of its own is kept rather than replaced, so '--registered'
 		// and '--last_updated' narrow it the way every other filter here narrows the
 		// result instead of quietly winning.
+		//
+		// It is nested a level down rather than appended to, because its 'relation'
+		// governs whatever shares its list: an 'OR' would reach the clauses added
+		// here and match a site that satisfies neither half of what was asked for.
 		if ( ! empty( $date_query ) ) {
-			$given                    = isset( $query_args['date_query'] ) && is_array( $query_args['date_query'] )
+			$given = isset( $query_args['date_query'] ) && is_array( $query_args['date_query'] )
 				? $query_args['date_query']
 				: [];
-			$query_args['date_query'] = array_merge( $given, $date_query );
+
+			$query_args['date_query'] = empty( $given )
+				? $date_query
+				: array_merge( [ 'relation' => 'AND', $given ], $date_query );
 		}
 
 		if ( isset( $assoc_args['site_user'] ) ) {

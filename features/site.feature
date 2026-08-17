@@ -1227,6 +1227,15 @@ Feature: Manage sites in a multisite installation
       0
       """
 
+    # The relation of a given --date_query governs only its own clauses. Appending
+    # to the same list would let an 'OR' reach the clause --registered adds and
+    # match a site that satisfies neither half of what was asked for.
+    When I run `wp site list --blog_id={ALPHA_ID} --date_query='{"relation":"OR","0":{"column":"registered","before":"1999-01-01"},"1":{"column":"registered","before":"1998-01-01"}}' --registered='{ALPHA_REGISTERED}' --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
     When I try `wp site list --meta_query=notjson`
     Then STDERR should contain:
       """

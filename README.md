@@ -5443,13 +5443,15 @@ These fields are optionally available:
 Lists all sites in a multisite installation.
 
 ~~~
-wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site__not_in=<value>] [--site_user=<value>] [--site-path=<path>] [--path__in=<value>] [--path__not_in=<value>] [--blog_id=<blog_id>|ID] [--site_id=<site_id>] [--network_id=<network_id>] [--network__in=<value>] [--network__not_in=<value>] [--domain=<domain>] [--domain__in=<value>] [--domain__not_in=<value>] [--registered=<date>] [--last_updated=<date>] [--public=<public>] [--archived=<archived>] [--mature=<mature>] [--spam=<spam>] [--deleted=<deleted>] [--lang_id=<lang_id>] [--lang__in=<value>] [--lang__not_in=<value>] [--search=<string>] [--search_columns=<columns>] [--meta_key=<meta_key>] [--meta_value=<meta_value>] [--meta_compare=<meta_compare>] [--meta_type=<meta_type>] [--meta_query=<meta_query>] [--date_query=<date_query>] [--number=<number>] [--offset=<offset>] [--no_found_rows=<no_found_rows>] [--update_site_cache=<update_site_cache>] [--update_site_meta_cache=<update_site_meta_cache>] [--orderby=<field>] [--order=<order>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp site list [--network=<id>|site_id|network_id] [--<field>=<value>] [--site__in=<value>] [--site__not_in=<value>] [--site_user=<value>] [--site-path=<path>] [--path__in=<value>] [--path__not_in=<value>] [--blog_id=<blog_id>|ID] [--network__in=<value>] [--network__not_in=<value>] [--domain=<domain>] [--domain__in=<value>] [--domain__not_in=<value>] [--registered=<date>] [--last_updated=<date>] [--public=<public>] [--archived=<archived>] [--mature=<mature>] [--spam=<spam>] [--deleted=<deleted>] [--lang_id=<lang_id>] [--lang__in=<value>] [--lang__not_in=<value>] [--search=<string>] [--search_columns=<columns>] [--meta_key=<meta_key>] [--meta_value=<meta_value>] [--meta_compare=<meta_compare>] [--meta_type=<meta_type>] [--meta_query=<meta_query>] [--date_query=<date_query>] [--number=<number>] [--offset=<offset>] [--no_found_rows=<no_found_rows>] [--update_site_cache=<update_site_cache>] [--update_site_meta_cache=<update_site_meta_cache>] [--orderby=<field>] [--order=<order>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 **OPTIONS**
 
-	[--network=<id>]
-		The network to which the sites belong.
+	[--network=<id>|site_id|network_id]
+		The network to which the sites belong. `--site_id` is the name of the
+		column this filters, `--network_id` is WP_Site_Query's name for it, and
+		both are accepted as aliases. `--network` wins when more than one is given.
 
 	[--<field>=<value>]
 		Filter by one or more fields (see "Available Fields" section), or pass any
@@ -5479,14 +5481,6 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site__
 	[--blog_id=<blog_id>|ID]
 		Filter by site ID. `--ID` is WP_Site_Query's name for the same filter
 		and is accepted as an alias.
-
-	[--site_id=<site_id>]
-		Filter by the ID of the network the site belongs to. `--network` and
-		`--network_id` are aliases for this; `--network` takes precedence when
-		more than one is given.
-
-	[--network_id=<network_id>]
-		Filter by the ID of the network the site belongs to.
 
 	[--network__in=<value>]
 		Only list the sites belonging to these network IDs (comma-separated).
