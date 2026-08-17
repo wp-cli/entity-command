@@ -1090,6 +1090,15 @@ class Site_Command extends CommandWithDBObject {
 	 * [--meta_type=<meta_type>]
 	 * : Cast the meta value to this type, such as 'NUMERIC' or 'DATE'.
 	 *
+	 * [--meta_query=<meta_query>]
+	 * : A WP_Meta_Query clause list, as JSON, for conditions the meta_* arguments
+	 * above cannot express.
+	 *
+	 * [--date_query=<date_query>]
+	 * : A WP_Date_Query clause list, as JSON, for ranges `--registered` and
+	 * `--last_updated` cannot express. Giving those as well narrows this further
+	 * rather than replacing it.
+	 *
 	 * [--number=<number>]
 	 * : Limit the number of sites returned.
 	 *
@@ -1198,15 +1207,32 @@ class Site_Command extends CommandWithDBObject {
 		//
 		// 'count' is withheld deliberately: it makes get_sites() return an integer
 		// rather than a list, and '--format=count' is how this command spells it.
-		// 'meta_query' and 'date_query' are withheld because they are nested arrays
-		// with no command-line spelling; the meta_* and date arguments above cover
-		// what can be expressed here.
 		$query_args = array_diff_key(
 			$assoc_args,
 			array_flip(
-				[ 'format', 'fields', 'field', 'count', 'meta_query', 'date_query', 'blog_id', 'site_id', 'site_user', 'site-path', 'network', 'registered', 'last_updated' ]
+				[ 'format', 'fields', 'field', 'count', 'blog_id', 'site_id', 'site_user', 'site-path', 'network', 'registered', 'last_updated' ]
 			)
 		);
+
+		// 'meta_query' and 'date_query' are nested arrays, so they are given as JSON.
+		// The decoded values go straight into the query arguments rather than back
+		// into $assoc_args, which the rest of this method reads as strings.
+		//
+		// parse_shell_arrays() leaves anything that is not JSON alone, and a string
+		// reaching either of these is ignored without a word. Say so instead.
+		$decoded_args = Utils\parse_shell_arrays( $assoc_args, [ 'meta_query', 'date_query' ] );
+
+		foreach ( [ 'meta_query', 'date_query' ] as $json_arg ) {
+			if ( ! isset( $decoded_args[ $json_arg ] ) ) {
+				continue;
+			}
+
+			if ( ! is_array( $decoded_args[ $json_arg ] ) ) {
+				WP_CLI::error( "Invalid JSON passed to --{$json_arg}." );
+			}
+
+			$query_args[ $json_arg ] = $decoded_args[ $json_arg ];
+		}
 
 		// Arguments this command spells differently to WP_Site_Query.
 		if ( isset( $assoc_args['blog_id'] ) ) {
@@ -1257,8 +1283,14 @@ class Site_Command extends CommandWithDBObject {
 			}
 		}
 
+		// A '--date_query' of its own is kept rather than replaced, so '--registered'
+		// and '--last_updated' narrow it the way every other filter here narrows the
+		// result instead of quietly winning.
 		if ( ! empty( $date_query ) ) {
-			$query_args['date_query'] = $date_query;
+			$given                    = isset( $query_args['date_query'] ) && is_array( $query_args['date_query'] )
+				? $query_args['date_query']
+				: [];
+			$query_args['date_query'] = array_merge( $given, $date_query );
 		}
 
 		if ( isset( $assoc_args['site_user'] ) ) {

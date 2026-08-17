@@ -5443,7 +5443,7 @@ These fields are optionally available:
 Lists all sites in a multisite installation.
 
 ~~~
-wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site__not_in=<value>] [--site_user=<value>] [--site-path=<path>] [--path__in=<value>] [--path__not_in=<value>] [--blog_id=<blog_id>|ID] [--site_id=<site_id>] [--network_id=<network_id>] [--network__in=<value>] [--network__not_in=<value>] [--domain=<domain>] [--domain__in=<value>] [--domain__not_in=<value>] [--registered=<date>] [--last_updated=<date>] [--public=<public>] [--archived=<archived>] [--mature=<mature>] [--spam=<spam>] [--deleted=<deleted>] [--lang_id=<lang_id>] [--lang__in=<value>] [--lang__not_in=<value>] [--search=<string>] [--search_columns=<columns>] [--meta_key=<meta_key>] [--meta_value=<meta_value>] [--meta_compare=<meta_compare>] [--meta_type=<meta_type>] [--number=<number>] [--offset=<offset>] [--no_found_rows=<no_found_rows>] [--update_site_cache=<update_site_cache>] [--update_site_meta_cache=<update_site_meta_cache>] [--orderby=<field>] [--order=<order>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site__not_in=<value>] [--site_user=<value>] [--site-path=<path>] [--path__in=<value>] [--path__not_in=<value>] [--blog_id=<blog_id>|ID] [--site_id=<site_id>] [--network_id=<network_id>] [--network__in=<value>] [--network__not_in=<value>] [--domain=<domain>] [--domain__in=<value>] [--domain__not_in=<value>] [--registered=<date>] [--last_updated=<date>] [--public=<public>] [--archived=<archived>] [--mature=<mature>] [--spam=<spam>] [--deleted=<deleted>] [--lang_id=<lang_id>] [--lang__in=<value>] [--lang__not_in=<value>] [--search=<string>] [--search_columns=<columns>] [--meta_key=<meta_key>] [--meta_value=<meta_value>] [--meta_compare=<meta_compare>] [--meta_type=<meta_type>] [--meta_query=<meta_query>] [--date_query=<date_query>] [--number=<number>] [--offset=<offset>] [--no_found_rows=<no_found_rows>] [--update_site_cache=<update_site_cache>] [--update_site_meta_cache=<update_site_meta_cache>] [--orderby=<field>] [--order=<order>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -5555,6 +5555,15 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site__
 
 	[--meta_type=<meta_type>]
 		Cast the meta value to this type, such as 'NUMERIC' or 'DATE'.
+
+	[--meta_query=<meta_query>]
+		A WP_Meta_Query clause list, as JSON, for conditions the meta_* arguments
+		above cannot express.
+
+	[--date_query=<date_query>]
+		A WP_Date_Query clause list, as JSON, for ranges `--registered` and
+		`--last_updated` cannot express. Giving those as well narrows this further
+		rather than replacing it.
 
 	[--number=<number>]
 		Limit the number of sites returned.

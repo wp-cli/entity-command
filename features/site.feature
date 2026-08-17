@@ -1184,6 +1184,63 @@ Feature: Manage sites in a multisite installation
       0
       """
 
+    # --meta_query and --date_query are nested arrays, so they are given as JSON.
+    When I run `wp site list --meta_query='[{"key":"colour","value":"blue"}]' --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --meta_query='[{"key":"colour","compare":"NOT EXISTS"}]' --field=blog_id`
+    Then STDOUT should be:
+      """
+      1
+      {BETA_ID}
+      """
+
+    When I run `wp site list --date_query='[{"column":"registered","after":"1999-01-01"}]' --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --date_query='[{"column":"registered","before":"1999-01-01"}]' --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # --registered narrows a --date_query of its own rather than replacing it. The
+    # date on its own has to match first, or the pair below would prove nothing.
+    When I run `wp site list --blog_id={ALPHA_ID} --field=registered`
+    Then save STDOUT as {ALPHA_REGISTERED}
+
+    When I run `wp site list --blog_id={ALPHA_ID} --registered='{ALPHA_REGISTERED}' --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp site list --blog_id={ALPHA_ID} --date_query='[{"column":"registered","before":"1999-01-01"}]' --registered='{ALPHA_REGISTERED}' --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I try `wp site list --meta_query=notjson`
+    Then STDERR should contain:
+      """
+      Invalid JSON passed to --meta_query.
+      """
+    And the return code should be 1
+
+    When I try `wp site list --date_query=notjson`
+    Then STDERR should contain:
+      """
+      Invalid JSON passed to --date_query.
+      """
+    And the return code should be 1
+
   Scenario: Existing site list filters keep working against WP_Site_Query
     Given a WP multisite install
 
