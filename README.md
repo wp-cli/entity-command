@@ -5355,6 +5355,8 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_u
 		other argument accepted by WP_Site_Query, such as 'search', 'site__not_in',
 		'number', 'offset', 'orderby' or 'order'. However, 'url' isn't an available
 		filter, as it comes from 'home' in wp_options.
+		'--registered' and '--last_updated' take a timestamp or a date; a value
+		carrying no time of day matches that whole day.
 		Note: '--path' conflicts with the global parameter of the same name; use
 		'--site-path' to filter by path instead.
 

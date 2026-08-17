@@ -1060,11 +1060,18 @@ Feature: Manage sites in a multisite installation
       {ALPHA_ID}
       """
 
-    # A value carrying no time of day matches every site registered that day.
+    # A value carrying no time of day matches every site registered that day, and
+    # only those - a day nothing was registered on comes back empty.
     When I run `wp site list --registered={REGISTERED_DAY} --field=blog_id`
     Then STDOUT should contain:
       """
       {ALPHA_ID}
+      """
+
+    When I run `wp site list --registered=1999-01-01 --format=count`
+    Then STDOUT should be:
+      """
+      0
       """
 
     When I run `wp site list --registered='1999-01-01 00:00:00' --format=count`
