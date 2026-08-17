@@ -5342,7 +5342,7 @@ These fields are optionally available:
 Lists all sites in a multisite installation.
 
 ~~~
-wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_user=<value>] [--site-path=<path>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_user=<value>] [--site-path=<path>] [--blog_id=<blog_id>] [--site_id=<site_id>] [--domain=<domain>] [--registered=<yyyy-mm-dd-hh-ii-ss>] [--last_updated=<yyyy-mm-dd-hh-ii-ss>] [--public=<public>] [--archived=<archived>] [--mature=<mature>] [--spam=<spam>] [--deleted=<deleted>] [--lang_id=<lang_id>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 **OPTIONS**
@@ -5364,6 +5364,40 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_u
 
 	[--site-path=<path>]
 		Filter by path. Avoids conflict with the global `--path` parameter.
+
+	[--blog_id=<blog_id>]
+		Filter by site ID.
+
+	[--site_id=<site_id>]
+		Filter by the ID of the network the site belongs to. `--network` is an
+		alias for this, and takes precedence when both are given.
+
+	[--domain=<domain>]
+		Filter by domain.
+
+	[--registered=<yyyy-mm-dd-hh-ii-ss>]
+		Filter by the date the site was registered.
+
+	[--last_updated=<yyyy-mm-dd-hh-ii-ss>]
+		Filter by the date the site was last updated.
+
+	[--public=<public>]
+		Filter by whether the site is public. Accepts 1 or 0.
+
+	[--archived=<archived>]
+		Filter by whether the site is archived. Accepts 1 or 0.
+
+	[--mature=<mature>]
+		Filter by whether the site is flagged as mature. Accepts 1 or 0.
+
+	[--spam=<spam>]
+		Filter by whether the site is flagged as spam. Accepts 1 or 0.
+
+	[--deleted=<deleted>]
+		Filter by whether the site is flagged as deleted. Accepts 1 or 0.
+
+	[--lang_id=<lang_id>]
+		Filter by language ID.
 
 	[--field=<field>]
 		Prints the value of a single field for each site.
@@ -7343,7 +7377,7 @@ wp user application-password get <user> <uuid> [--field=<field>] [--fields=<fiel
 Lists all application passwords associated with a user.
 
 ~~~
-wp user application-password list <user> [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
+wp user application-password list <user> [--<field>=<value>] [--uuid=<uuid>] [--app_id=<app_id>] [--name=<name>] [--password=<password>] [--created=<created>] [--last_used=<last_used>] [--last_ip=<last_ip>] [--field=<field>] [--fields=<fields>] [--format=<format>] [--orderby=<fields>] [--order=<order>]
 ~~~
 
 **OPTIONS**
@@ -7353,6 +7387,29 @@ wp user application-password list <user> [--<field>=<value>] [--field=<field>] [
 
 	[--<field>=<value>]
 		Filter the list by a specific field.
+
+	[--uuid=<uuid>]
+		Filter by the universally unique ID of the application password.
+
+	[--app_id=<app_id>]
+		Filter by the application ID. `--app-id` is also accepted.
+
+	[--name=<name>]
+		Filter by the name of the application password.
+
+	[--password=<password>]
+		Filter by the hashed password.
+
+	[--created=<created>]
+		Filter by the Unix timestamp the application password was created at.
+
+	[--last_used=<last_used>]
+		Filter by the Unix timestamp the application password was last used at.
+		`--last-used` is also accepted.
+
+	[--last_ip=<last_ip>]
+		Filter by the IP address the application password was last used from.
+		`--last-ip` is also accepted.
 
 	[--field=<field>]
 		Prints the value of a single field for each application password.
