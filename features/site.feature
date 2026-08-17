@@ -936,3 +936,135 @@ Feature: Manage sites in a multisite installation
       """
       1
       """
+
+  Scenario: List sites using WP_Site_Query arguments
+    Given a WP multisite install
+
+    When I run `wp site create --slug=alpha --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ALPHA_ID}
+
+    When I run `wp site create --slug=beta --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BETA_ID}
+
+    # --search, --site__not_in, --number, --offset and --orderby all come from
+    # WP_Site_Query and were silently ignored before.
+    When I run `wp site list --search=alpha --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --site__not_in={ALPHA_ID} --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp site list --number=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp site list --number=1 --offset=1 --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --orderby=id --order=desc --field=blog_id`
+    Then STDOUT should be:
+      """
+      {BETA_ID}
+      {ALPHA_ID}
+      1
+      """
+
+  Scenario: Existing site list filters keep working against WP_Site_Query
+    Given a WP multisite install
+
+    When I run `wp site create --slug=alpha --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ALPHA_ID}
+
+    When I run `wp site create --slug=beta --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BETA_ID}
+
+    # --site__in returns rows in the order the IDs were given.
+    When I run `wp site list --site__in={BETA_ID},{ALPHA_ID} --field=blog_id`
+    Then STDOUT should be:
+      """
+      {BETA_ID}
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --blog_id={ALPHA_ID} --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --site_id=1 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --site_id=2 --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp site list --site-path=/alpha/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    # admin belongs to every site, bobby only to the one they were created on, so the
+    # two counts differ and neither can pass by accident.
+    When I run `wp site list --site_user=admin --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp user create bobby bobby@example.com --role=author --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp site list --site_user=bobby --field=blog_id`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # registered matches exactly, which WP_Site_Query only supports via date_query.
+    When I run `wp site list --blog_id={ALPHA_ID} --field=registered`
+    Then STDOUT should not be empty
+    And save STDOUT as {REGISTERED}
+
+    When I run `wp site list --registered='{REGISTERED}' --field=blog_id`
+    Then STDOUT should contain:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --registered='1999-01-01 00:00:00' --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp site list --blog_id={ALPHA_ID} --field=last_updated`
+    Then STDOUT should not be empty
+    And save STDOUT as {LAST_UPDATED}
+
+    When I run `wp site list --last_updated='{LAST_UPDATED}' --field=blog_id`
+    Then STDOUT should contain:
+      """
+      {ALPHA_ID}
+      """
