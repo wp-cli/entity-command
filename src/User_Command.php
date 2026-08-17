@@ -542,11 +542,41 @@ class User_Command extends CommandWithDBObject {
 	 * [--rich_editing=<rich_editing>]
 	 * : A string for whether to enable the rich editor or not. False if not empty.
 	 *
+	 * [--syntax_highlighting=<syntax_highlighting>]
+	 * : Whether to enable the rich code editor for the user. Accepts 'true' or
+	 * 'false' as a string literal, not boolean.
+	 *
+	 * [--comment_shortcuts=<comment_shortcuts>]
+	 * : Whether to enable comment moderation keyboard shortcuts for the user.
+	 * Accepts 'true' or 'false' as a string literal, not boolean.
+	 *
+	 * [--admin_color=<admin_color>]
+	 * : Admin color scheme for the user.
+	 *
+	 * [--use_ssl=<use_ssl>]
+	 * : Whether the user should always access the admin over https.
+	 *
 	 * [--user_registered=<yyyy-mm-dd-hh-ii-ss>]
 	 * : The date the user registered.
 	 *
+	 * [--user_activation_key=<user_activation_key>]
+	 * : Password reset key.
+	 *
+	 * [--spam=<spam>]
+	 * : Multisite only. Whether the user is marked as spam.
+	 *
+	 * [--show_admin_bar_front=<show_admin_bar_front>]
+	 * : Whether to display the admin bar for the user on the site's front end.
+	 * Accepts 'true' or 'false' as a string literal, not boolean.
+	 *
 	 * [--role=<role>]
 	 * : A string used to set the user's role.
+	 *
+	 * [--locale=<locale>]
+	 * : The user's locale.
+	 *
+	 * [--meta_input=<meta_input>]
+	 * : Array in JSON format of user meta values keyed by their user meta key.
 	 *
 	 * --<field>=<value>
 	 * : One or more fields to update. For accepted fields, see wp_update_user().
@@ -587,6 +617,8 @@ class User_Command extends CommandWithDBObject {
 			add_filter( 'send_email_change_email', '__return_false' );
 			add_filter( 'send_password_change_email', '__return_false' );
 		}
+
+		$assoc_args = Utils\parse_shell_arrays( $assoc_args, [ 'meta_input' ] );
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $user_ids, $assoc_args, 'wp_update_user' );

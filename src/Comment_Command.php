@@ -80,6 +80,51 @@ class Comment_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
+	 * [--comment_agent=<comment_agent>]
+	 * : The HTTP user agent of the comment author.
+	 *
+	 * [--comment_approved=<comment_approved>]
+	 * : Whether the comment has been approved. Default 1.
+	 *
+	 * [--comment_author=<comment_author>]
+	 * : The name of the author of the comment.
+	 *
+	 * [--comment_author_email=<comment_author_email>]
+	 * : The email address of the comment author.
+	 *
+	 * [--comment_author_IP=<comment_author_IP>]
+	 * : The IP address of the comment author.
+	 *
+	 * [--comment_author_url=<comment_author_url>]
+	 * : The URL address of the comment author.
+	 *
+	 * [--comment_content=<comment_content>]
+	 * : The content of the comment.
+	 *
+	 * [--comment_date=<yyyy-mm-dd-hh-ii-ss>]
+	 * : The date the comment was submitted.
+	 *
+	 * [--comment_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
+	 * : The date the comment was submitted in the GMT timezone.
+	 *
+	 * [--comment_karma=<comment_karma>]
+	 * : The karma of the comment. Default 0.
+	 *
+	 * [--comment_parent=<comment_parent>]
+	 * : ID of this comment's parent, if any. Default 0.
+	 *
+	 * [--comment_post_ID=<comment_post_ID>]
+	 * : ID of the post that relates to the comment, if any.
+	 *
+	 * [--comment_type=<comment_type>]
+	 * : Comment type. Default 'comment'.
+	 *
+	 * [--comment_meta=<comment_meta>]
+	 * : Array in JSON format of comment meta values keyed by their comment meta key.
+	 *
+	 * [--user_id=<user_id>]
+	 * : ID of the user who submitted the comment. Default 0.
+	 *
 	 * [--<field>=<value>]
 	 * : Associative args for the new comment. See wp_insert_comment().
 	 *
@@ -100,6 +145,8 @@ class Comment_Command extends CommandWithDBObject {
 	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function create( $args, $assoc_args ) {
+		$assoc_args = Utils\parse_shell_arrays( $assoc_args, [ 'comment_meta' ] );
+
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create(
 			$args,
@@ -137,6 +184,52 @@ class Comment_Command extends CommandWithDBObject {
 	 * <id>...
 	 * : One or more IDs of comments to update.
 	 *
+	 * [--comment_agent=<comment_agent>]
+	 * : The HTTP user agent of the comment author.
+	 *
+	 * [--comment_approved=<comment_approved>]
+	 * : Whether the comment has been approved.
+	 *
+	 * [--comment_author=<comment_author>]
+	 * : The name of the author of the comment.
+	 *
+	 * [--comment_author_email=<comment_author_email>]
+	 * : The email address of the comment author.
+	 *
+	 * [--comment_author_IP=<comment_author_IP>]
+	 * : The IP address of the comment author.
+	 *
+	 * [--comment_author_url=<comment_author_url>]
+	 * : The URL address of the comment author.
+	 *
+	 * [--comment_content=<comment_content>]
+	 * : The content of the comment.
+	 *
+	 * [--comment_date=<yyyy-mm-dd-hh-ii-ss>]
+	 * : The date the comment was submitted.
+	 *
+	 * [--comment_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
+	 * : The date the comment was submitted in the GMT timezone. Note that
+	 * wp_update_comment() always recalculates this from 'comment_date'.
+	 *
+	 * [--comment_karma=<comment_karma>]
+	 * : The karma of the comment.
+	 *
+	 * [--comment_parent=<comment_parent>]
+	 * : ID of this comment's parent, if any.
+	 *
+	 * [--comment_post_ID=<comment_post_ID>]
+	 * : ID of the post that relates to the comment, if any.
+	 *
+	 * [--comment_type=<comment_type>]
+	 * : Comment type.
+	 *
+	 * [--comment_meta=<comment_meta>]
+	 * : Array in JSON format of comment meta values keyed by their comment meta key.
+	 *
+	 * [--user_id=<user_id>]
+	 * : ID of the user who submitted the comment.
+	 *
 	 * --<field>=<value>
 	 * : One or more fields to update. See wp_update_comment().
 	 *
@@ -150,6 +243,8 @@ class Comment_Command extends CommandWithDBObject {
 	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
+		$assoc_args = Utils\parse_shell_arrays( $assoc_args, [ 'comment_meta' ] );
+
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update(
 			$args,

@@ -127,6 +127,13 @@ class Post_Command extends CommandWithDBObject {
 	 * [--meta_input=<meta_input>]
 	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
 	 *
+	 * [--page_template=<page_template>]
+	 * : Page template to use.
+	 *
+	 * [--import_id=<import_id>]
+	 * : The post ID to be used when inserting a new post. If specified, must not
+	 * match any existing post ID.
+	 *
 	 * [<file>]
 	 * : Read post content from <file>. If this value is present, the
 	 *     `--post_content` argument will be ignored.
@@ -386,6 +393,9 @@ class Post_Command extends CommandWithDBObject {
 	 *
 	 * [--meta_input=<meta_input>]
 	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
+	 *
+	 * [--page_template=<page_template>]
+	 * : Page template to use.
 	 *
 	 * [<file>]
 	 * : Read post content from <file>. If this value is present, the

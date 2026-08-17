@@ -315,3 +315,93 @@ Feature: Manage user custom fields
       """
       true
       """
+
+  @require-wp-5.6
+  Scenario: Filter application passwords by field
+    Given a WP install
+
+    When I run `wp user application-password create 1 myapp --app-id=abc123 --porcelain`
+    Then STDOUT should not be empty
+
+    When I run `wp user application-password create 1 otherapp --porcelain`
+    Then STDOUT should not be empty
+
+    When I run `wp user application-password list 1 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp user application-password list 1 --app_id=abc123 --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --app-id=abc123 --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --name=otherapp --field=name`
+    Then STDOUT should be:
+      """
+      otherapp
+      """
+
+    When I run `wp user application-password list 1 --name=myapp --field=uuid`
+    Then STDOUT should not be empty
+    And save STDOUT as {UUID}
+
+    When I run `wp user application-password list 1 --uuid={UUID} --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --app_id=nosuchapp --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # 'created' and 'last_used' are integers in core but strings on the command
+    # line, so these only match if the comparison normalizes them.
+    When I run `wp user application-password list 1 --name=myapp --field=created`
+    Then STDOUT should not be empty
+    And save STDOUT as {CREATED}
+
+    When I run `wp user application-password list 1 --created={CREATED} --field=name`
+    Then STDOUT should contain:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --created=1 --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp user application-password record-usage 1 {UUID}`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp user application-password list 1 --name=myapp --field=last_used`
+    Then STDOUT should not be empty
+    And save STDOUT as {LAST_USED}
+
+    When I run `wp user application-password list 1 --last_used={LAST_USED} --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --last-used={LAST_USED} --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
