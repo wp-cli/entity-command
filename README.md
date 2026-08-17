@@ -5538,7 +5538,8 @@ wp site list [--network=<id>|site_id|network_id] [--<field>=<value>] [--site__in
 		and 'path'.
 
 	[--meta_key=<meta_key>]
-		Filter by this site meta key.
+		Filter by this site meta key. The site meta arguments need WordPress 5.1
+		or later, which is where multisite gained the table they read.
 
 	[--meta_value=<meta_value>]
 		Filter by this site meta value. Used together with `--meta_key`.

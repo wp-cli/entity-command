@@ -1169,35 +1169,7 @@ Feature: Manage sites in a multisite installation
       3
       """
 
-    When I run `wp site meta add {ALPHA_ID} colour blue`
-    Then STDOUT should not be empty
-
-    When I run `wp site list --meta_key=colour --meta_value=blue --field=blog_id`
-    Then STDOUT should be:
-      """
-      {ALPHA_ID}
-      """
-
-    When I run `wp site list --meta_key=colour --meta_value=red --format=count`
-    Then STDOUT should be:
-      """
-      0
-      """
-
-    # --meta_query and --date_query are nested arrays, so they are given as JSON.
-    When I run `wp site list --meta_query='[{"key":"colour","value":"blue"}]' --field=blog_id`
-    Then STDOUT should be:
-      """
-      {ALPHA_ID}
-      """
-
-    When I run `wp site list --meta_query='[{"key":"colour","compare":"NOT EXISTS"}]' --field=blog_id`
-    Then STDOUT should be:
-      """
-      1
-      {BETA_ID}
-      """
-
+    # --date_query is a nested array, so it is given as JSON.
     When I run `wp site list --date_query='[{"column":"registered","after":"1999-01-01"}]' --format=count`
     Then STDOUT should be:
       """
@@ -1236,6 +1208,21 @@ Feature: Manage sites in a multisite installation
       0
       """
 
+    When I run `wp site list --blog_id={ALPHA_ID} --field=last_updated`
+    Then save STDOUT as {ALPHA_UPDATED}
+
+    When I run `wp site list --blog_id={ALPHA_ID} --last_updated='{ALPHA_UPDATED}' --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp site list --blog_id={ALPHA_ID} --date_query='{"relation":"OR","0":{"column":"last_updated","before":"1999-01-01"},"1":{"column":"last_updated","before":"1998-01-01"}}' --last_updated='{ALPHA_UPDATED}' --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
     When I try `wp site list --meta_query=notjson`
     Then STDERR should contain:
       """
@@ -1249,6 +1236,49 @@ Feature: Manage sites in a multisite installation
       Invalid JSON passed to --date_query.
       """
     And the return code should be 1
+
+  # WP_Site_Query gained the meta_* parameters, and multisite gained the site meta
+  # table they read, in WordPress 5.1.
+  @require-wp-5.1
+  Scenario: Filter the site list by site meta
+    Given a WP multisite install
+
+    When I run `wp site create --slug=alpha --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ALPHA_ID}
+
+    When I run `wp site create --slug=beta --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BETA_ID}
+
+    When I run `wp site meta add {ALPHA_ID} colour blue`
+    Then STDOUT should not be empty
+
+    When I run `wp site list --meta_key=colour --meta_value=blue --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --meta_key=colour --meta_value=red --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # --meta_query is a nested array, so it is given as JSON.
+    When I run `wp site list --meta_query='[{"key":"colour","value":"blue"}]' --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --meta_query='[{"key":"colour","compare":"NOT EXISTS"}]' --field=blog_id`
+    Then STDOUT should be:
+      """
+      1
+      {BETA_ID}
+      """
 
   Scenario: Existing site list filters keep working against WP_Site_Query
     Given a WP multisite install

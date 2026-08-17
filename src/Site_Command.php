@@ -1072,7 +1072,8 @@ class Site_Command extends CommandWithDBObject {
 	 * and 'path'.
 	 *
 	 * [--meta_key=<meta_key>]
-	 * : Filter by this site meta key.
+	 * : Filter by this site meta key. The site meta arguments need WordPress 5.1
+	 * or later, which is where multisite gained the table they read.
 	 *
 	 * [--meta_value=<meta_value>]
 	 * : Filter by this site meta value. Used together with `--meta_key`.
@@ -1290,7 +1291,13 @@ class Site_Command extends CommandWithDBObject {
 
 			$query_args['date_query'] = empty( $given )
 				? $date_query
-				: array_merge( [ 'relation' => 'AND', $given ], $date_query );
+				: array_merge(
+					[
+						'relation' => 'AND',
+						$given,
+					],
+					$date_query
+				);
 		}
 
 		if ( isset( $assoc_args['site_user'] ) ) {
