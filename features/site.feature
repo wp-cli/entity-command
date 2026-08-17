@@ -1147,6 +1147,20 @@ Feature: Manage sites in a multisite installation
       1
       """
 
+    # --site__in and --site_user narrow each other rather than one replacing the
+    # other, so the pair keeps only the sites satisfying both.
+    When I run `wp site list --site__in={ALPHA_ID} --site_user=bobby --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp site list --site__in=1,{ALPHA_ID} --site_user=bobby --field=blog_id`
+    Then STDOUT should be:
+      """
+      1
+      """
+
   Scenario: Filter the site list by registration or update date
     Given a WP multisite install
 
