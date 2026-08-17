@@ -937,6 +937,111 @@ Feature: Manage sites in a multisite installation
       1
       """
 
+  Scenario: Filter the site list by columns of the sites table
+    Given a WP multisite install
+
+    When I run `wp site create --slug=first --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {FIRST_ID}
+
+    When I run `wp site create --slug=second --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SECOND_ID}
+
+    # Give the two new sites contrasting statuses, so each filter below has
+    # something to discriminate on and cannot pass by matching every site.
+    When I run `wp site archive {FIRST_ID}`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp site private {SECOND_ID}`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp site spam {SECOND_ID}`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp site list --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --archived=1 --field=blog_id`
+    Then STDOUT should be:
+      """
+      {FIRST_ID}
+      """
+
+    When I run `wp site list --archived=0 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp site list --public=0 --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SECOND_ID}
+      """
+
+    When I run `wp site list --public=1 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp site list --spam=1 --field=blog_id`
+    Then STDOUT should be:
+      """
+      {SECOND_ID}
+      """
+
+    When I run `wp site list --spam=0 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp site list --deleted=0 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --blog_id={FIRST_ID} --field=blog_id`
+    Then STDOUT should be:
+      """
+      {FIRST_ID}
+      """
+
+    # site_id is the ID of the network the site belongs to, not the site's own ID.
+    When I run `wp site list --site_id=1 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --site_id=2 --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # --network is an alias for site_id and takes precedence over it.
+    When I run `wp site list --site_id=2 --network=1 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
   Scenario: List sites using WP_Site_Query arguments
     Given a WP multisite install
 
