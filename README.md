@@ -3150,7 +3150,7 @@ wp post get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
 Gets a list of posts.
 
 ~~~
-wp post list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp post list [--<field>=<value>] [--p=<id>|ID] [--title=<title>|post_title] [--name=<slug>|post_name] [--author=<author>|post_author] [--author_name=<author_name>] [--post_type=<post_type>] [--post_status=<post_status>] [--post_parent=<post_parent>] [--post_mime_type=<post_mime_type>] [--menu_order=<menu_order>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--comment_count=<comment_count>] [--s=<string>] [--year=<year>] [--monthnum=<monthnum>] [--day=<day>] [--m=<yearmonth>] [--w=<week>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 Display posts based on all arguments supported by [WP_Query()](https://developer.wordpress.org/reference/classes/wp_query/).
@@ -3159,7 +3159,77 @@ Only shows post types marked as post by default.
 **OPTIONS**
 
 	[--<field>=<value>]
-		One or more args to pass to WP_Query.
+		One or more args to pass to WP_Query. The arguments below are the ones
+		that filter on what this command displays; anything else WP_Query accepts
+		still works and is documented with WP_Query itself.
+
+	[--p=<id>|ID]
+		Filter by post ID. `--ID` is the name of the column this filters and is
+		accepted as an alias.
+
+	[--title=<title>|post_title]
+		Filter by post title, matched in full. `--post_title` is the name of the
+		column this filters and is accepted as an alias.
+
+	[--name=<slug>|post_name]
+		Filter by post slug. `--post_name` is the name of the column this filters
+		and is accepted as an alias.
+		Note: this makes the query a single-post one, and WP_Query returns a draft
+		from one of those only to a user who can edit it. WP-CLI runs as no user
+		unless the global `--user` argument says otherwise, so pass that to filter
+		drafts by slug.
+
+	[--author=<author>|post_author]
+		Filter by the ID of the post's author. `--post_author` is the name of the
+		column this filters and is accepted as an alias.
+
+	[--author_name=<author_name>]
+		Filter by the 'user_nicename' of the post's author.
+
+	[--post_type=<post_type>]
+		Filter by post type. Defaults to 'post'. Accepts a comma-separated list,
+		or 'any' for every type registered without 'exclude_from_search'.
+
+	[--post_status=<post_status>]
+		Filter by post status. Defaults to 'any', which is every status
+		registered without 'exclude_from_search' - so trashed and auto-draft posts
+		are left out until asked for by name, e.g. `--post_status=trash`.
+
+	[--post_parent=<post_parent>]
+		Filter by the ID of the parent post.
+
+	[--post_mime_type=<post_mime_type>]
+		Filter by MIME type. Only attachments carry one.
+
+	[--menu_order=<menu_order>]
+		Filter by menu order.
+
+	[--comment_status=<comment_status>]
+		Filter by comment status. Accepts 'open' or 'closed'.
+
+	[--ping_status=<ping_status>]
+		Filter by ping status. Accepts 'open' or 'closed'.
+
+	[--comment_count=<comment_count>]
+		Filter by number of comments.
+
+	[--s=<string>]
+		Only list the posts matching this search term.
+
+	[--year=<year>]
+		Filter by four-digit year, e.g. 2024.
+
+	[--monthnum=<monthnum>]
+		Filter by month number, 1 to 12.
+
+	[--day=<day>]
+		Filter by day of the month, 1 to 31.
+
+	[--m=<yearmonth>]
+		Filter by year and month together, e.g. 202401.
+
+	[--w=<week>]
+		Filter by week of the year, 0 to 53.
 
 	[--field=<field>]
 		Prints the value of a single field for each post.
@@ -5443,18 +5513,19 @@ These fields are optionally available:
 Lists all sites in a multisite installation.
 
 ~~~
-wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_user=<value>] [--site-path=<path>] [--blog_id=<blog_id>] [--site_id=<site_id>] [--domain=<domain>] [--registered=<date>] [--last_updated=<date>] [--public=<public>] [--archived=<archived>] [--mature=<mature>] [--spam=<spam>] [--deleted=<deleted>] [--lang_id=<lang_id>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp site list [--network=<id>|site_id|network_id] [--<field>=<value>] [--site__in=<value>] [--site__not_in=<value>] [--site_user=<value>] [--site-path=<path>] [--path__in=<value>] [--path__not_in=<value>] [--blog_id=<blog_id>|ID] [--network__in=<value>] [--network__not_in=<value>] [--domain=<domain>] [--domain__in=<value>] [--domain__not_in=<value>] [--registered=<date>] [--last_updated=<date>] [--public=<public>] [--archived=<archived>] [--mature=<mature>] [--spam=<spam>] [--deleted=<deleted>] [--lang_id=<lang_id>] [--lang__in=<value>] [--lang__not_in=<value>] [--search=<string>] [--search_columns=<columns>] [--meta_key=<meta_key>] [--meta_value=<meta_value>] [--meta_compare=<meta_compare>] [--meta_type=<meta_type>] [--meta_query=<meta_query>] [--date_query=<date_query>] [--number=<number>] [--offset=<offset>] [--no_found_rows=<no_found_rows>] [--update_site_cache=<update_site_cache>] [--update_site_meta_cache=<update_site_meta_cache>] [--orderby=<field>] [--order=<order>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 **OPTIONS**
 
-	[--network=<id>]
-		The network to which the sites belong.
+	[--network=<id>|site_id|network_id]
+		The network to which the sites belong. `--site_id` is the name of the
+		column this filters, `--network_id` is WP_Site_Query's name for it, and
+		both are accepted as aliases. `--network` wins when more than one is given.
 
 	[--<field>=<value>]
 		Filter by one or more fields (see "Available Fields" section), or pass any
-		other argument accepted by WP_Site_Query, such as 'search', 'site__not_in',
-		'number', 'offset', 'orderby' or 'order'. However, 'url' isn't an available
+		other argument accepted by WP_Site_Query. However, 'url' isn't an available
 		filter, as it comes from 'home' in wp_options.
 		Note: '--path' conflicts with the global parameter of the same name; use
 		'--site-path' to filter by path instead.
@@ -5462,21 +5533,39 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_u
 	[--site__in=<value>]
 		Only list the sites with these blog_id values (comma-separated).
 
+	[--site__not_in=<value>]
+		Exclude the sites with these blog_id values (comma-separated).
+
 	[--site_user=<value>]
 		Only list the sites with this user.
 
 	[--site-path=<path>]
 		Filter by path. Avoids conflict with the global `--path` parameter.
 
-	[--blog_id=<blog_id>]
-		Filter by site ID.
+	[--path__in=<value>]
+		Only list the sites with these paths (comma-separated).
 
-	[--site_id=<site_id>]
-		Filter by the ID of the network the site belongs to. `--network` is an
-		alias for this, and takes precedence when both are given.
+	[--path__not_in=<value>]
+		Exclude the sites with these paths (comma-separated).
+
+	[--blog_id=<blog_id>|ID]
+		Filter by site ID. `--ID` is WP_Site_Query's name for the same filter
+		and is accepted as an alias.
+
+	[--network__in=<value>]
+		Only list the sites belonging to these network IDs (comma-separated).
+
+	[--network__not_in=<value>]
+		Exclude the sites belonging to these network IDs (comma-separated).
 
 	[--domain=<domain>]
 		Filter by domain.
+
+	[--domain__in=<value>]
+		Only list the sites with these domains (comma-separated).
+
+	[--domain__not_in=<value>]
+		Exclude the sites with these domains (comma-separated).
 
 	[--registered=<date>]
 		Filter by the date the site was registered. Accepts a timestamp or a
@@ -5503,6 +5592,72 @@ wp site list [--network=<id>] [--<field>=<value>] [--site__in=<value>] [--site_u
 
 	[--lang_id=<lang_id>]
 		Filter by language ID.
+
+	[--lang__in=<value>]
+		Only list the sites with these language IDs (comma-separated).
+
+	[--lang__not_in=<value>]
+		Exclude the sites with these language IDs (comma-separated).
+
+	[--search=<string>]
+		Only list the sites matching this search term. Searches the domain and
+		path columns unless `--search_columns` narrows it.
+
+	[--search_columns=<columns>]
+		Comma-separated list of columns `--search` looks in. Accepts 'domain'
+		and 'path'.
+
+	[--meta_key=<meta_key>]
+		Filter by this site meta key. The site meta arguments need WordPress 5.1
+		or later, which is where multisite gained the table they read.
+
+	[--meta_value=<meta_value>]
+		Filter by this site meta value. Used together with `--meta_key`.
+
+	[--meta_compare=<meta_compare>]
+		Operator to test the meta value against. Accepts the operators
+		WP_Meta_Query supports, such as '=', '!=', 'LIKE' or 'IN'.
+
+	[--meta_type=<meta_type>]
+		Cast the meta value to this type, such as 'NUMERIC' or 'DATE'.
+
+	[--meta_query=<meta_query>]
+		A WP_Meta_Query clause list, as JSON, for conditions the meta_* arguments
+		above cannot express.
+
+	[--date_query=<date_query>]
+		A WP_Date_Query clause list, as JSON, for ranges `--registered` and
+		`--last_updated` cannot express. Giving those as well narrows this further
+		rather than replacing it.
+
+	[--number=<number>]
+		Limit the number of sites returned.
+
+	[--offset=<offset>]
+		Number of sites to skip. Used together with `--number`.
+
+	[--no_found_rows=<no_found_rows>]
+		Whether to skip counting the total rows the query matches. Accepts 1 or 0.
+
+	[--update_site_cache=<update_site_cache>]
+		Whether to prime the object cache with the sites found. Accepts 1 or 0.
+		Turning it off saves work when listing a large network once.
+
+	[--update_site_meta_cache=<update_site_meta_cache>]
+		Whether to prime the object cache with the site meta of the sites found.
+		Accepts 1 or 0.
+
+	[--orderby=<field>]
+		Order the results by this field, such as 'blog_id', 'domain', 'path',
+		'registered', 'last_updated' or 'site__in'.
+
+	[--order=<order>]
+		Whether to order the results ascending or descending.
+		---
+		options:
+		  - asc
+		  - desc
+		---
 
 	[--field=<field>]
 		Prints the value of a single field for each site.

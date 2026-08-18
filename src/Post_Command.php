@@ -672,7 +672,77 @@ class Post_Command extends CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * [--<field>=<value>]
-	 * : One or more args to pass to WP_Query.
+	 * : One or more args to pass to WP_Query. The arguments below are the ones
+	 * that filter on what this command displays; anything else WP_Query accepts
+	 * still works and is documented with WP_Query itself.
+	 *
+	 * [--p=<id>|ID]
+	 * : Filter by post ID. `--ID` is the name of the column this filters and is
+	 * accepted as an alias.
+	 *
+	 * [--title=<title>|post_title]
+	 * : Filter by post title, matched in full. `--post_title` is the name of the
+	 * column this filters and is accepted as an alias.
+	 *
+	 * [--name=<slug>|post_name]
+	 * : Filter by post slug. `--post_name` is the name of the column this filters
+	 * and is accepted as an alias.
+	 * Note: this makes the query a single-post one, and WP_Query returns a draft
+	 * from one of those only to a user who can edit it. WP-CLI runs as no user
+	 * unless the global `--user` argument says otherwise, so pass that to filter
+	 * drafts by slug.
+	 *
+	 * [--author=<author>|post_author]
+	 * : Filter by the ID of the post's author. `--post_author` is the name of the
+	 * column this filters and is accepted as an alias.
+	 *
+	 * [--author_name=<author_name>]
+	 * : Filter by the 'user_nicename' of the post's author.
+	 *
+	 * [--post_type=<post_type>]
+	 * : Filter by post type. Defaults to 'post'. Accepts a comma-separated list,
+	 * or 'any' for every type registered without 'exclude_from_search'.
+	 *
+	 * [--post_status=<post_status>]
+	 * : Filter by post status. Defaults to 'any', which is every status
+	 * registered without 'exclude_from_search' - so trashed and auto-draft posts
+	 * are left out until asked for by name, e.g. `--post_status=trash`.
+	 *
+	 * [--post_parent=<post_parent>]
+	 * : Filter by the ID of the parent post.
+	 *
+	 * [--post_mime_type=<post_mime_type>]
+	 * : Filter by MIME type. Only attachments carry one.
+	 *
+	 * [--menu_order=<menu_order>]
+	 * : Filter by menu order.
+	 *
+	 * [--comment_status=<comment_status>]
+	 * : Filter by comment status. Accepts 'open' or 'closed'.
+	 *
+	 * [--ping_status=<ping_status>]
+	 * : Filter by ping status. Accepts 'open' or 'closed'.
+	 *
+	 * [--comment_count=<comment_count>]
+	 * : Filter by number of comments.
+	 *
+	 * [--s=<string>]
+	 * : Only list the posts matching this search term.
+	 *
+	 * [--year=<year>]
+	 * : Filter by four-digit year, e.g. 2024.
+	 *
+	 * [--monthnum=<monthnum>]
+	 * : Filter by month number, 1 to 12.
+	 *
+	 * [--day=<day>]
+	 * : Filter by day of the month, 1 to 31.
+	 *
+	 * [--m=<yearmonth>]
+	 * : Filter by year and month together, e.g. 202401.
+	 *
+	 * [--w=<week>]
+	 * : Filter by week of the year, 0 to 53.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each post.

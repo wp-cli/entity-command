@@ -1087,6 +1087,199 @@ Feature: Manage sites in a multisite installation
       1
       """
 
+  Scenario: List sites using the WP_Site_Query arguments that take a list
+    Given a WP multisite install
+
+    When I run `wp site create --slug=alpha --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ALPHA_ID}
+
+    When I run `wp site create --slug=beta --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BETA_ID}
+
+    # WP_Site_Query reads these through is_array(), so before they were split
+    # they were skipped without a word and every site came back.
+    When I run `wp site list --path__in=/alpha/,/beta/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      {BETA_ID}
+      """
+
+    When I run `wp site list --path__not_in=/alpha/,/beta/ --field=blog_id`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp site list --domain__in=example.com --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --domain__not_in=example.com --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # --search_columns reaches array_intersect(), which is fatal on a string.
+    When I run `wp site list --search=alpha --search_columns=path --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --search=alpha --search_columns=domain --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # The remaining newly documented filters.
+    When I run `wp site list --network__in=1 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --network__not_in=1 --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp site list --lang__in=0 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --ID={ALPHA_ID} --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --network_id=1 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    # --date_query is a nested array, so it is given as JSON.
+    When I run `wp site list --date_query='[{"column":"registered","after":"1999-01-01"}]' --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+    When I run `wp site list --date_query='[{"column":"registered","before":"1999-01-01"}]' --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # --registered narrows a --date_query of its own rather than replacing it. The
+    # date on its own has to match first, or the pair below would prove nothing.
+    When I run `wp site list --blog_id={ALPHA_ID} --field=registered`
+    Then save STDOUT as {ALPHA_REGISTERED}
+
+    When I run `wp site list --blog_id={ALPHA_ID} --registered='{ALPHA_REGISTERED}' --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp site list --blog_id={ALPHA_ID} --date_query='[{"column":"registered","before":"1999-01-01"}]' --registered='{ALPHA_REGISTERED}' --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # The relation of a given --date_query governs only its own clauses. Appending
+    # to the same list would let an 'OR' reach the clause --registered adds and
+    # match a site that satisfies neither half of what was asked for.
+    When I run `wp site list --blog_id={ALPHA_ID} --date_query='{"relation":"OR","0":{"column":"registered","before":"1999-01-01"},"1":{"column":"registered","before":"1998-01-01"}}' --registered='{ALPHA_REGISTERED}' --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp site list --blog_id={ALPHA_ID} --field=last_updated`
+    Then save STDOUT as {ALPHA_UPDATED}
+
+    When I run `wp site list --blog_id={ALPHA_ID} --last_updated='{ALPHA_UPDATED}' --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp site list --blog_id={ALPHA_ID} --date_query='{"relation":"OR","0":{"column":"last_updated","before":"1999-01-01"},"1":{"column":"last_updated","before":"1998-01-01"}}' --last_updated='{ALPHA_UPDATED}' --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I try `wp site list --meta_query=notjson`
+    Then STDERR should contain:
+      """
+      Invalid JSON passed to --meta_query.
+      """
+    And the return code should be 1
+
+    When I try `wp site list --date_query=notjson`
+    Then STDERR should contain:
+      """
+      Invalid JSON passed to --date_query.
+      """
+    And the return code should be 1
+
+  # WP_Site_Query gained the meta_* parameters, and multisite gained the site meta
+  # table they read, in WordPress 5.1.
+  @require-wp-5.1
+  Scenario: Filter the site list by site meta
+    Given a WP multisite install
+
+    When I run `wp site create --slug=alpha --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ALPHA_ID}
+
+    When I run `wp site create --slug=beta --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BETA_ID}
+
+    When I run `wp site meta add {ALPHA_ID} colour blue`
+    Then STDOUT should not be empty
+
+    When I run `wp site list --meta_key=colour --meta_value=blue --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --meta_key=colour --meta_value=red --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # --meta_query is a nested array, so it is given as JSON.
+    When I run `wp site list --meta_query='[{"key":"colour","value":"blue"}]' --field=blog_id`
+    Then STDOUT should be:
+      """
+      {ALPHA_ID}
+      """
+
+    When I run `wp site list --meta_query='[{"key":"colour","compare":"NOT EXISTS"}]' --field=blog_id`
+    Then STDOUT should be:
+      """
+      1
+      {BETA_ID}
+      """
+
   Scenario: Existing site list filters keep working against WP_Site_Query
     Given a WP multisite install
 

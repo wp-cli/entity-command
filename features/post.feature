@@ -592,6 +592,103 @@ Feature: Manage WordPress posts
       {"block_version":1}
       """
 
+  Scenario: Filtering by the wp_posts column names
+    When I run `wp post create --post_title='Alpha' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+
+    # 'title', 'name' and 'author' are WP_Query's names for these filters. The
+    # columns they filter on are spelled differently, and passing the column
+    # name used to reach WP_Query as an argument it does not know: it was
+    # dropped, and every post came back. They are aliases now.
+    When I run `wp post list --title='Hello world!' --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --post_title='Hello world!' --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --name=alpha --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --post_name=alpha --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # Only the bundled post matches: a post created by WP-CLI has author 0,
+    # because WP-CLI runs as no user unless told otherwise.
+    When I run `wp post list --author=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --post_author=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --p=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --ID=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+  Scenario: Filtering drafts by slug needs a user
+    When I run `wp post create --post_title='Beta' --post_name=beta --post_status=draft --porcelain`
+    Then STDOUT should be a number
+
+    # '--name' makes this a single-post query, and WP_Query hands a draft from
+    # one of those only to a user who can edit it. WP-CLI is no user by default.
+    When I run `wp post list --name=beta --field=ID`
+    Then STDOUT should be empty
+
+    # The global '--user' argument is what makes it reachable.
+    When I run `wp post list --name=beta --user=1 --field=ID`
+    Then STDOUT should not be empty
+
+  Scenario: Trashed posts need their status named
+    When I run `wp post create --post_title='Doomed' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {DOOMED_ID}
+
+    When I run `wp post delete {DOOMED_ID}`
+    Then STDOUT should contain:
+      """
+      Success: Trashed post
+      """
+
+    # This command defaults post_status to 'any', and WP_Query reads 'any' as
+    # every status registered without 'exclude_from_search' - which leaves out
+    # 'trash' and 'auto-draft'.
+    When I run `wp post list --field=ID`
+    Then STDOUT should not contain:
+      """
+      {DOOMED_ID}
+      """
+
+    When I run `wp post list --post_status=trash --field=ID`
+    Then STDOUT should contain:
+      """
+      {DOOMED_ID}
+      """
+
   Scenario: Set a post's modification date on update
     Given a WP install
 
