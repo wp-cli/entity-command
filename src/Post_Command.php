@@ -627,8 +627,7 @@ class Post_Command extends CommandWithDBObject {
 	 *
 	 * [--title=<title>|post_title]
 	 * : Filter by post title, matched in full. `--post_title` is the name of the
-	 * column this filters and is accepted as an alias. Needs WordPress 4.4 or
-	 * later.
+	 * column this filters and is accepted as an alias.
 	 *
 	 * [--name=<slug>|post_name]
 	 * : Filter by post slug. `--post_name` is the name of the column this filters
@@ -681,7 +680,7 @@ class Post_Command extends CommandWithDBObject {
 	 * : Filter by ping status. Accepts 'open' or 'closed'.
 	 *
 	 * [--comment_count=<comment_count>]
-	 * : Filter by number of comments. Needs WordPress 4.9 or later.
+	 * : Filter by number of comments.
 	 *
 	 * [--s=<string>]
 	 * : Only list the posts matching this search term.
@@ -734,8 +733,7 @@ class Post_Command extends CommandWithDBObject {
 	 *
 	 * [--post_name__in=<slugs>]
 	 * : Only list the posts with these slugs (comma-separated). Unlike `--name`
-	 * this is not a single-post query, so it reaches drafts as well. Needs
-	 * WordPress 4.4 or later.
+	 * this is not a single-post query, so it reaches drafts as well.
 	 *
 	 * [--post_parent__in=<ids>]
 	 * : Only list the posts whose parent is one of these IDs (comma-separated).

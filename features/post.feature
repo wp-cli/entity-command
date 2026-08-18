@@ -592,7 +592,6 @@ Feature: Manage WordPress posts
       {"block_version":1}
       """
 
-  @require-wp-4.4
   Scenario: Filtering by the wp_posts column names
     When I run `wp post create --post_title='Alpha' --post_status=publish --porcelain`
     Then STDOUT should be a number
@@ -782,7 +781,6 @@ Feature: Manage WordPress posts
       Hello world!
       """
 
-  @require-wp-4.4
   Scenario: Filtering by lists and JSON queries
     When I run `wp post create --post_title='Zebra Title' --post_content='nothing' --post_status=publish --porcelain`
     Then save STDOUT as {TITLED}
