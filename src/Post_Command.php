@@ -281,24 +281,28 @@ class Post_Command extends CommandWithDBObject {
 	 *                       no modification date was requested.
 	 */
 	private static function add_post_modified_filter( $params ) {
-		$modified = [];
+		$local = ! empty( $params['post_modified'] ) && is_scalar( $params['post_modified'] )
+			? (string) $params['post_modified']
+			: null;
+		$gmt   = ! empty( $params['post_modified_gmt'] ) && is_scalar( $params['post_modified_gmt'] )
+			? (string) $params['post_modified_gmt']
+			: null;
 
-		foreach ( [ 'post_modified', 'post_modified_gmt' ] as $key ) {
-			if ( ! empty( $params[ $key ] ) ) {
-				$modified[ $key ] = $params[ $key ];
-			}
-		}
-
-		if ( empty( $modified ) ) {
+		if ( null === $local && null === $gmt ) {
 			return null;
 		}
 
 		// Keep the pair consistent when only one of the two was given.
-		if ( ! isset( $modified['post_modified_gmt'] ) ) {
-			$modified['post_modified_gmt'] = get_gmt_from_date( $modified['post_modified'] );
-		} elseif ( ! isset( $modified['post_modified'] ) ) {
-			$modified['post_modified'] = get_date_from_gmt( $modified['post_modified_gmt'] );
+		if ( null === $gmt ) {
+			$gmt = get_gmt_from_date( $local );
+		} elseif ( null === $local ) {
+			$local = get_date_from_gmt( $gmt );
 		}
+
+		$modified = [
+			'post_modified'     => $local,
+			'post_modified_gmt' => $gmt,
+		];
 
 		$callback = static function ( $data ) use ( $modified ) {
 			return array_merge( $data, $modified );
