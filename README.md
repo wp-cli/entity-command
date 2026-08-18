@@ -3150,7 +3150,7 @@ wp post get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
 Gets a list of posts.
 
 ~~~
-wp post list [--<field>=<value>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp post list [--<field>=<value>] [--p=<id>|ID] [--title=<title>|post_title] [--name=<slug>|post_name] [--author=<author>|post_author] [--author_name=<author_name>] [--post_type=<post_type>] [--post_status=<post_status>] [--post_parent=<post_parent>] [--post_mime_type=<post_mime_type>] [--menu_order=<menu_order>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--comment_count=<comment_count>] [--s=<string>] [--year=<year>] [--monthnum=<monthnum>] [--day=<day>] [--m=<yearmonth>] [--w=<week>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 Display posts based on all arguments supported by [WP_Query()](https://developer.wordpress.org/reference/classes/wp_query/).
@@ -3159,7 +3159,74 @@ Only shows post types marked as post by default.
 **OPTIONS**
 
 	[--<field>=<value>]
-		One or more args to pass to WP_Query.
+		One or more args to pass to WP_Query. The arguments below are the ones
+		that filter on what this command displays; anything else WP_Query accepts
+		still works and is documented with WP_Query itself.
+
+	[--p=<id>|ID]
+		Filter by post ID. `--ID` is the name of the column this filters and is
+		accepted as an alias.
+
+	[--title=<title>|post_title]
+		Filter by post title, matched in full. `--post_title` is the name of the
+		column this filters and is accepted as an alias.
+
+	[--name=<slug>|post_name]
+		Filter by post slug. `--post_name` is the name of the column this filters
+		and is accepted as an alias.
+		Note: this makes the query a single-post one, and WP_Query only returns a
+		draft from one of those to a user who can edit it - which, running as no
+		user, WP-CLI cannot. Pass `--post_status=draft` with `--author` instead to
+		find drafts.
+
+	[--author=<author>|post_author]
+		Filter by the ID of the post's author. `--post_author` is the name of the
+		column this filters and is accepted as an alias.
+
+	[--author_name=<author_name>]
+		Filter by the 'user_nicename' of the post's author.
+
+	[--post_type=<post_type>]
+		Filter by post type. Defaults to 'post'; pass 'any' for every type.
+
+	[--post_status=<post_status>]
+		Filter by post status. Pass 'any' for every status.
+
+	[--post_parent=<post_parent>]
+		Filter by the ID of the parent post.
+
+	[--post_mime_type=<post_mime_type>]
+		Filter by MIME type. Only attachments carry one.
+
+	[--menu_order=<menu_order>]
+		Filter by menu order.
+
+	[--comment_status=<comment_status>]
+		Filter by comment status. Accepts 'open' or 'closed'.
+
+	[--ping_status=<ping_status>]
+		Filter by ping status. Accepts 'open' or 'closed'.
+
+	[--comment_count=<comment_count>]
+		Filter by number of comments.
+
+	[--s=<string>]
+		Only list the posts matching this search term.
+
+	[--year=<year>]
+		Filter by four-digit year, e.g. 2024.
+
+	[--monthnum=<monthnum>]
+		Filter by month number, 1 to 12.
+
+	[--day=<day>]
+		Filter by day of the month, 1 to 31.
+
+	[--m=<yearmonth>]
+		Filter by year and month together, e.g. 202401.
+
+	[--w=<week>]
+		Filter by week of the year, 0 to 53.
 
 	[--field=<field>]
 		Prints the value of a single field for each post.

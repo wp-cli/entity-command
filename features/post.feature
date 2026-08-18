@@ -591,3 +591,61 @@ Feature: Manage WordPress posts
       """
       {"block_version":1}
       """
+
+  Scenario: Filtering by the wp_posts column names
+    When I run `wp post create --post_title='Alpha' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+
+    # 'title', 'name' and 'author' are WP_Query's names for these filters. The
+    # columns they filter on are spelled differently, and passing the column
+    # name used to reach WP_Query as an argument it does not know: it was
+    # dropped, and every post came back. They are aliases now.
+    When I run `wp post list --title='Hello world!' --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --post_title='Hello world!' --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --name=alpha --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --post_name=alpha --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # Only the bundled post matches: a post created by WP-CLI has author 0,
+    # because WP-CLI runs as no user unless told otherwise.
+    When I run `wp post list --author=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --post_author=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --p=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --ID=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
