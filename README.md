@@ -3187,10 +3187,13 @@ Only shows post types marked as post by default.
 		Filter by the 'user_nicename' of the post's author.
 
 	[--post_type=<post_type>]
-		Filter by post type. Defaults to 'post'; pass 'any' for every type.
+		Filter by post type. Defaults to 'post'. Accepts a comma-separated list,
+		or 'any' for every type registered without 'exclude_from_search'.
 
 	[--post_status=<post_status>]
-		Filter by post status. Pass 'any' for every status.
+		Filter by post status. Defaults to 'any', which is every status
+		registered without 'exclude_from_search' - so trashed and auto-draft posts
+		are left out until asked for by name, e.g. `--post_status=trash`.
 
 	[--post_parent=<post_parent>]
 		Filter by the ID of the parent post.

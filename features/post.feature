@@ -662,3 +662,29 @@ Feature: Manage WordPress posts
     # The global '--user' argument is what makes it reachable.
     When I run `wp post list --name=beta --user=1 --field=ID`
     Then STDOUT should not be empty
+
+  Scenario: Trashed posts need their status named
+    When I run `wp post create --post_title='Doomed' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {DOOMED_ID}
+
+    When I run `wp post delete {DOOMED_ID}`
+    Then STDOUT should contain:
+      """
+      Success: Trashed post
+      """
+
+    # This command defaults post_status to 'any', and WP_Query reads 'any' as
+    # every status registered without 'exclude_from_search' - which leaves out
+    # 'trash' and 'auto-draft'.
+    When I run `wp post list --field=ID`
+    Then STDOUT should not contain:
+      """
+      {DOOMED_ID}
+      """
+
+    When I run `wp post list --post_status=trash --field=ID`
+    Then STDOUT should contain:
+      """
+      {DOOMED_ID}
+      """
