@@ -668,7 +668,6 @@ class Post_Command extends CommandWithDBObject {
 	 * * post_type
 	 * * post_mime_type
 	 * * comment_count
-	 * * filter
 	 * * url
 	 *
 	 * ## EXAMPLES
