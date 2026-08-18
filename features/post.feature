@@ -592,6 +592,7 @@ Feature: Manage WordPress posts
       {"block_version":1}
       """
 
+  @require-wp-4.4
   Scenario: Filtering by the wp_posts column names
     When I run `wp post create --post_title='Alpha' --post_status=publish --porcelain`
     Then STDOUT should be a number
@@ -781,7 +782,8 @@ Feature: Manage WordPress posts
       Hello world!
       """
 
-  Scenario: Filtering by lists, JSON queries and search columns
+  @require-wp-4.4
+  Scenario: Filtering by lists and JSON queries
     When I run `wp post create --post_title='Zebra Title' --post_content='nothing' --post_status=publish --porcelain`
     Then save STDOUT as {TITLED}
 
@@ -812,20 +814,7 @@ Feature: Manage WordPress posts
       Plain
       """
 
-    # --s searches every column; --search_columns narrows it.
     When I run `wp post list --s=zebra --format=count`
-    Then STDOUT should be:
-      """
-      2
-      """
-
-    When I run `wp post list --s=zebra --search_columns=post_title --field=post_title`
-    Then STDOUT should be:
-      """
-      Zebra Title
-      """
-
-    When I run `wp post list --s=zebra --search_columns=post_title,post_content --format=count`
     Then STDOUT should be:
       """
       2
@@ -855,4 +844,39 @@ Feature: Manage WordPress posts
     Then STDOUT should be:
       """
       3
+      """
+
+  # 'search_columns' is a WP_Query argument as of WordPress 6.2. Before that it
+  # is not recognised, so '--s' searches every column and the narrowing here
+  # would not happen.
+  @require-wp-6.2
+  Scenario: Narrowing a search to particular columns
+    When I run `wp post create --post_title='Zebra Title' --post_content='nothing' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp post create --post_title='Plain' --post_content='zebra in body' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp post list --s=zebra --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_title --field=post_title`
+    Then STDOUT should be:
+      """
+      Zebra Title
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_content --field=post_title`
+    Then STDOUT should be:
+      """
+      Plain
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_title,post_content --format=count`
+    Then STDOUT should be:
+      """
+      2
       """
