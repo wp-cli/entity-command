@@ -649,3 +649,16 @@ Feature: Manage WordPress posts
       """
       1
       """
+
+  Scenario: Filtering drafts by slug needs a user
+    When I run `wp post create --post_title='Beta' --post_name=beta --post_status=draft --porcelain`
+    Then STDOUT should be a number
+
+    # '--name' makes this a single-post query, and WP_Query hands a draft from
+    # one of those only to a user who can edit it. WP-CLI is no user by default.
+    When I run `wp post list --name=beta --field=ID`
+    Then STDOUT should be empty
+
+    # The global '--user' argument is what makes it reachable.
+    When I run `wp post list --name=beta --user=1 --field=ID`
+    Then STDOUT should not be empty

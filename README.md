@@ -3174,10 +3174,10 @@ Only shows post types marked as post by default.
 	[--name=<slug>|post_name]
 		Filter by post slug. `--post_name` is the name of the column this filters
 		and is accepted as an alias.
-		Note: this makes the query a single-post one, and WP_Query only returns a
-		draft from one of those to a user who can edit it - which, running as no
-		user, WP-CLI cannot. Pass `--post_status=draft` with `--author` instead to
-		find drafts.
+		Note: this makes the query a single-post one, and WP_Query returns a draft
+		from one of those only to a user who can edit it. WP-CLI runs as no user
+		unless the global `--user` argument says otherwise, so pass that to filter
+		drafts by slug.
 
 	[--author=<author>|post_author]
 		Filter by the ID of the post's author. `--post_author` is the name of the
