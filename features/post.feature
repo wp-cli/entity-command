@@ -724,9 +724,17 @@ Feature: Manage WordPress posts
   Scenario: A post's modification date defaults to the current time
     Given a WP install
 
-    When I run `wp post create --post_title='Undated post' --post_status=publish --porcelain`
+    # Given a known modification date, so that an update which failed to set one
+    # would leave this value behind and be caught.
+    When I run `wp post create --post_title='Undated post' --post_status=publish --post_modified='2019-02-03 04:05:06' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2019-02-03 04:05:06
+      """
 
     When I run `wp post update {POST_ID} --post_title='Retitled'`
     Then STDOUT should be:
@@ -735,4 +743,52 @@ Feature: Manage WordPress posts
       """
 
     When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should not contain:
+      """
+      2019-02-03 04:05:06
+      """
+    And STDOUT should not be empty
+
+  Scenario: Setting only the GMT modification date derives the local one
+    Given a WP install
+
+    # A timezone with an offset, so the derived local value is distinguishable
+    # from the GMT one it was derived from. 1 January is outside DST in New York.
+    When I run `wp option update timezone_string 'America/New_York'`
     Then STDOUT should not be empty
+
+    When I run `wp post create --post_title='GMT only' --post_status=publish --post_modified_gmt='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 07:00:00
+      """
+
+    # And the same on update, which takes the other of the two code paths.
+    When I run `wp post update {POST_ID} --post_modified_gmt='2020-06-01 12:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-06-01 12:00:00
+      """
+
+    # June is inside DST, so the offset is four hours rather than five.
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-06-01 08:00:00
+      """
