@@ -644,6 +644,17 @@ class Post_Command extends CommandWithDBObject {
 	 * [--author_name=<author_name>]
 	 * : Filter by the 'user_nicename' of the post's author.
 	 *
+	 * [--cat=<cat>]
+	 * : Filter by category ID. Accepts a comma-separated list to match any of
+	 * them, and a negative ID excludes that category instead.
+	 *
+	 * [--category_name=<category_name>]
+	 * : Filter by category slug.
+	 *
+	 * [--tag=<tag>]
+	 * : Filter by tag slug. Accepts a comma-separated list to match any of them,
+	 * or a '+'-separated list to require all of them.
+	 *
 	 * [--post_type=<post_type>]
 	 * : Filter by post type. Defaults to 'post'. Accepts a comma-separated list,
 	 * or 'any' for every type registered without 'exclude_from_search'.

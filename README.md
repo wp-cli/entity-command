@@ -3150,7 +3150,7 @@ wp post get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
 Gets a list of posts.
 
 ~~~
-wp post list [--<field>=<value>] [--p=<id>|ID] [--title=<title>|post_title] [--name=<slug>|post_name] [--author=<author>|post_author] [--author_name=<author_name>] [--post_type=<post_type>] [--post_status=<post_status>] [--post_parent=<post_parent>] [--post_mime_type=<post_mime_type>] [--menu_order=<menu_order>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--comment_count=<comment_count>] [--s=<string>] [--year=<year>] [--monthnum=<monthnum>] [--day=<day>] [--m=<yearmonth>] [--w=<week>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp post list [--<field>=<value>] [--p=<id>|ID] [--title=<title>|post_title] [--name=<slug>|post_name] [--author=<author>|post_author] [--author_name=<author_name>] [--cat=<cat>] [--category_name=<category_name>] [--tag=<tag>] [--post_type=<post_type>] [--post_status=<post_status>] [--post_parent=<post_parent>] [--post_mime_type=<post_mime_type>] [--menu_order=<menu_order>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--comment_count=<comment_count>] [--s=<string>] [--year=<year>] [--monthnum=<monthnum>] [--day=<day>] [--m=<yearmonth>] [--w=<week>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 Display posts based on all arguments supported by [WP_Query()](https://developer.wordpress.org/reference/classes/wp_query/).
@@ -3185,6 +3185,17 @@ Only shows post types marked as post by default.
 
 	[--author_name=<author_name>]
 		Filter by the 'user_nicename' of the post's author.
+
+	[--cat=<cat>]
+		Filter by category ID. Accepts a comma-separated list to match any of
+		them, and a negative ID excludes that category instead.
+
+	[--category_name=<category_name>]
+		Filter by category slug.
+
+	[--tag=<tag>]
+		Filter by tag slug. Accepts a comma-separated list to match any of them,
+		or a '+'-separated list to require all of them.
 
 	[--post_type=<post_type>]
 		Filter by post type. Defaults to 'post'. Accepts a comma-separated list,

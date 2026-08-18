@@ -688,3 +688,38 @@ Feature: Manage WordPress posts
       """
       {DOOMED_ID}
       """
+
+  Scenario: Filtering by category and tag
+    When I run `wp term create category 'Alpha Cat' --porcelain`
+    Then save STDOUT as {CAT_ID}
+
+    When I run `wp term create post_tag 'Alpha Tag' --slug=alpha-tag --porcelain`
+    Then save STDOUT as {TAG_ID}
+
+    When I run `wp post create --post_title='Tagged' --post_status=publish --post_category={CAT_ID} --tags_input=alpha-tag --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp post list --cat={CAT_ID} --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # A negative ID excludes that category rather than selecting it.
+    When I run `wp post list --cat=-{CAT_ID} --field=post_title`
+    Then STDOUT should not contain:
+      """
+      Tagged
+      """
+
+    When I run `wp post list --tag=alpha-tag --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --category_name=alpha-cat --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
