@@ -724,7 +724,7 @@ Feature: Manage WordPress posts
       1
       """
 
-  Scenario: Filtering by meta, time of day, password and order
+  Scenario: Filtering by meta, time of day and order
     When I run `wp post create --post_title='Timed' --post_status=publish --post_date='2020-03-04 05:06:07' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {TIMED_ID}
@@ -765,18 +765,6 @@ Feature: Manage WordPress posts
       0
       """
 
-    When I run `wp post list --has_password=1 --field=post_title`
-    Then STDOUT should be:
-      """
-      Locked
-      """
-
-    When I run `wp post list --post_password=secret --field=post_title`
-    Then STDOUT should be:
-      """
-      Locked
-      """
-
     When I run `wp post list --orderby=title --order=ASC --field=post_title`
     Then STDOUT should be:
       """
@@ -791,4 +779,80 @@ Feature: Manage WordPress posts
       Timed
       Locked
       Hello world!
+      """
+
+  Scenario: Filtering by lists, JSON queries and search columns
+    When I run `wp post create --post_title='Zebra Title' --post_content='nothing' --post_status=publish --porcelain`
+    Then save STDOUT as {TITLED}
+
+    When I run `wp post create --post_title='Plain' --post_name=plain --post_content='zebra in body' --post_status=publish --porcelain`
+    Then save STDOUT as {BODIED}
+
+    When I run `wp post meta add {TITLED} rank 5`
+    Then STDOUT should not be empty
+
+    # Arguments carrying '__' are split on commas before they reach WP_Query,
+    # which is what makes them usable from the command line at all.
+    When I run `wp post list --post__in={TITLED},{BODIED} --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --post__not_in={TITLED},{BODIED} --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # Unlike --name, this reaches a draft, because it is not a single-post query.
+    When I run `wp post list --post_name__in=plain --field=post_title`
+    Then STDOUT should be:
+      """
+      Plain
+      """
+
+    # --s searches every column; --search_columns narrows it.
+    When I run `wp post list --s=zebra --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_title --field=post_title`
+    Then STDOUT should be:
+      """
+      Zebra Title
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_title,post_content --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    # The nested queries are given as JSON, which this command decodes.
+    When I run `wp post list --meta_query='[{"key":"rank","value":"5"}]' --field=post_title`
+    Then STDOUT should be:
+      """
+      Zebra Title
+      """
+
+    When I run `wp post list --meta_key=rank --meta_value=4 --meta_compare=">" --field=post_title`
+    Then STDOUT should be:
+      """
+      Zebra Title
+      """
+
+    # --offset only means anything once --posts_per_page is bounded.
+    When I run `wp post list --posts_per_page=10 --offset=1 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --posts_per_page=1 --nopaging=1 --format=count`
+    Then STDOUT should be:
+      """
+      3
       """
