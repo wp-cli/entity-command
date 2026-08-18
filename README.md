@@ -3150,7 +3150,7 @@ wp post get <id> [--field=<field>] [--fields=<fields>] [--format=<format>]
 Gets a list of posts.
 
 ~~~
-wp post list [--<field>=<value>] [--p=<id>|ID] [--title=<title>|post_title] [--name=<slug>|post_name] [--author=<author>|post_author] [--author_name=<author_name>] [--cat=<cat>] [--category_name=<category_name>] [--tag=<tag>] [--post_type=<post_type>] [--post_status=<post_status>] [--post_parent=<post_parent>] [--post_mime_type=<post_mime_type>] [--menu_order=<menu_order>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--comment_count=<comment_count>] [--s=<string>] [--year=<year>] [--monthnum=<monthnum>] [--day=<day>] [--m=<yearmonth>] [--w=<week>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+wp post list [--<field>=<value>] [--p=<id>|ID] [--title=<title>|post_title] [--name=<slug>|post_name] [--author=<author>|post_author] [--author_name=<author_name>] [--cat=<cat>] [--category_name=<category_name>] [--tag=<tag>] [--post_type=<post_type>] [--post_status=<post_status>] [--post_parent=<post_parent>] [--post_mime_type=<post_mime_type>] [--menu_order=<menu_order>] [--comment_status=<comment_status>] [--ping_status=<ping_status>] [--comment_count=<comment_count>] [--s=<string>] [--year=<year>] [--monthnum=<monthnum>] [--day=<day>] [--hour=<hour>] [--minute=<minute>] [--second=<second>] [--m=<yearmonth>] [--w=<week>] [--meta_key=<meta_key>] [--meta_value=<meta_value>] [--has_password=<has_password>] [--post_password=<post_password>] [--orderby=<orderby>] [--order=<order>] [--field=<field>] [--fields=<fields>] [--format=<format>]
 ~~~
 
 Display posts based on all arguments supported by [WP_Query()](https://developer.wordpress.org/reference/classes/wp_query/).
@@ -3236,11 +3236,42 @@ Only shows post types marked as post by default.
 	[--day=<day>]
 		Filter by day of the month, 1 to 31.
 
+	[--hour=<hour>]
+		Filter by hour, 0 to 23.
+
+	[--minute=<minute>]
+		Filter by minute, 0 to 59.
+
+	[--second=<second>]
+		Filter by second, 0 to 59.
+
 	[--m=<yearmonth>]
 		Filter by year and month together, e.g. 202401.
 
 	[--w=<week>]
 		Filter by week of the year, 0 to 53.
+
+	[--meta_key=<meta_key>]
+		Filter by posts having this meta key. Pair it with `--meta_value` to
+		filter on the value as well.
+
+	[--meta_value=<meta_value>]
+		Filter by this meta value. Needs `--meta_key` to say which key it
+		belongs to.
+
+	[--has_password=<has_password>]
+		Filter by whether the post has a password. Accepts 1 or 0.
+
+	[--post_password=<post_password>]
+		Filter by the post's password, matched in full.
+
+	[--orderby=<orderby>]
+		Order the results by this field. Accepts what WP_Query accepts, e.g.
+		'date', 'title', 'ID', 'menu_order', 'rand', or 'meta_value' alongside
+		`--meta_key`.
+
+	[--order=<order>]
+		Direction to order by. Accepts 'ASC' or 'DESC'.
 
 	[--field=<field>]
 		Prints the value of a single field for each post.

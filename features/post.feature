@@ -723,3 +723,72 @@ Feature: Manage WordPress posts
       """
       1
       """
+
+  Scenario: Filtering by meta, time of day, password and order
+    When I run `wp post create --post_title='Timed' --post_status=publish --post_date='2020-03-04 05:06:07' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TIMED_ID}
+
+    When I run `wp post meta add {TIMED_ID} color blue`
+    Then STDOUT should not be empty
+
+    When I run `wp post create --post_title='Locked' --post_status=publish --post_password=secret --porcelain`
+    Then STDOUT should be a number
+
+    # Time of day, alongside the year/month/day filters already documented.
+    # Two units at once exercises the combined path; all three of hour, minute
+    # and second together is left out on purpose, because that path compares a
+    # DATE_FORMAT() string and the SQLite integration plugin does not emulate
+    # it the way MySQL does, so it matches nothing there.
+    When I run `wp post list --hour=5 --minute=6 --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      """
+
+    When I run `wp post list --second=7 --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      """
+
+    # A meta key on its own, then narrowed by its value.
+    When I run `wp post list --meta_key=color --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      """
+
+    When I run `wp post list --meta_key=color --meta_value=red --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp post list --has_password=1 --field=post_title`
+    Then STDOUT should be:
+      """
+      Locked
+      """
+
+    When I run `wp post list --post_password=secret --field=post_title`
+    Then STDOUT should be:
+      """
+      Locked
+      """
+
+    When I run `wp post list --orderby=title --order=ASC --field=post_title`
+    Then STDOUT should be:
+      """
+      Hello world!
+      Locked
+      Timed
+      """
+
+    When I run `wp post list --orderby=title --order=DESC --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      Locked
+      Hello world!
+      """

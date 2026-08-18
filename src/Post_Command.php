@@ -694,11 +694,42 @@ class Post_Command extends CommandWithDBObject {
 	 * [--day=<day>]
 	 * : Filter by day of the month, 1 to 31.
 	 *
+	 * [--hour=<hour>]
+	 * : Filter by hour, 0 to 23.
+	 *
+	 * [--minute=<minute>]
+	 * : Filter by minute, 0 to 59.
+	 *
+	 * [--second=<second>]
+	 * : Filter by second, 0 to 59.
+	 *
 	 * [--m=<yearmonth>]
 	 * : Filter by year and month together, e.g. 202401.
 	 *
 	 * [--w=<week>]
 	 * : Filter by week of the year, 0 to 53.
+	 *
+	 * [--meta_key=<meta_key>]
+	 * : Filter by posts having this meta key. Pair it with `--meta_value` to
+	 * filter on the value as well.
+	 *
+	 * [--meta_value=<meta_value>]
+	 * : Filter by this meta value. Needs `--meta_key` to say which key it
+	 * belongs to.
+	 *
+	 * [--has_password=<has_password>]
+	 * : Filter by whether the post has a password. Accepts 1 or 0.
+	 *
+	 * [--post_password=<post_password>]
+	 * : Filter by the post's password, matched in full.
+	 *
+	 * [--orderby=<orderby>]
+	 * : Order the results by this field. Accepts what WP_Query accepts, e.g.
+	 * 'date', 'title', 'ID', 'menu_order', 'rand', or 'meta_value' alongside
+	 * `--meta_key`.
+	 *
+	 * [--order=<order>]
+	 * : Direction to order by. Accepts 'ASC' or 'DESC'.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each post.
