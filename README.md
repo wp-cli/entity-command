@@ -3416,7 +3416,6 @@ These fields are optionally available:
 * post_type
 * post_mime_type
 * comment_count
-* filter
 * url
 
 **EXAMPLES**
@@ -8282,7 +8281,6 @@ These fields are optionally available:
 * caps
 * cap_key
 * allcaps
-* filter
 * url
 
 **EXAMPLES**

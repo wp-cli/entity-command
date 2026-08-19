@@ -115,7 +115,6 @@ class User_Command extends CommandWithDBObject {
 	 * * caps
 	 * * cap_key
 	 * * allcaps
-	 * * filter
 	 * * url
 	 *
 	 * ## EXAMPLES
