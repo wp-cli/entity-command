@@ -280,7 +280,7 @@ class Post_Block_Command extends WP_CLI_Command {
 		$blocks[ $original_idx ] = $block;
 
 		// @phpstan-ignore argument.type
-		$new_content = serialize_blocks( $blocks );
+		$new_content = $this->serialize_blocks( $blocks );
 		$result      = wp_update_post(
 			[
 				'ID'           => $post->ID,
@@ -398,7 +398,7 @@ class Post_Block_Command extends WP_CLI_Command {
 		// Insert at new position.
 		array_splice( $blocks, $insert_pos, 0, [ $block_to_move ] );
 
-		$new_content = serialize_blocks( $blocks );
+		$new_content = $this->serialize_blocks( $blocks );
 		$result      = wp_update_post(
 			[
 				'ID'           => $post->ID,
@@ -691,7 +691,7 @@ class Post_Block_Command extends WP_CLI_Command {
 			}
 		}
 
-		$new_content = serialize_blocks( $blocks );
+		$new_content = $this->serialize_blocks( $blocks );
 		$result      = wp_update_post(
 			[
 				'ID'           => $post->ID,
@@ -975,7 +975,7 @@ class Post_Block_Command extends WP_CLI_Command {
 		array_splice( $blocks, (int) $insert_pos, 0, [ $cloned_block ] );
 
 		// @phpstan-ignore argument.type
-		$new_content = serialize_blocks( $blocks );
+		$new_content = $this->serialize_blocks( $blocks );
 
 		$result = wp_update_post(
 			[
@@ -1424,7 +1424,7 @@ class Post_Block_Command extends WP_CLI_Command {
 		}
 
 		// @phpstan-ignore argument.type
-		$new_content = serialize_blocks( $blocks );
+		$new_content = $this->serialize_blocks( $blocks );
 		$result      = wp_update_post(
 			[
 				'ID'           => $post->ID,
@@ -1567,7 +1567,7 @@ class Post_Block_Command extends WP_CLI_Command {
 			return;
 		}
 
-		$new_content = serialize_blocks( $blocks );
+		$new_content = $this->serialize_blocks( $blocks );
 		$result      = wp_update_post(
 			[
 				'ID'           => $post->ID,
@@ -1681,7 +1681,7 @@ class Post_Block_Command extends WP_CLI_Command {
 		}
 
 		// @phpstan-ignore argument.type
-		$new_content = serialize_blocks( $blocks );
+		$new_content = $this->serialize_blocks( $blocks );
 		$result      = wp_update_post(
 			[
 				'ID'           => $post->ID,
@@ -1700,6 +1700,25 @@ class Post_Block_Command extends WP_CLI_Command {
 			$block_word = 1 === $replaced_count ? 'block' : 'blocks';
 			WP_CLI::success( "Replaced {$replaced_count} {$block_word} in post {$post->ID}." );
 		}
+	}
+
+	/**
+	 * Serializes blocks back into post content.
+	 *
+	 * The command itself requires WordPress 5.0, but `serialize_blocks()` was only
+	 * introduced in WordPress 5.3.1.
+	 *
+	 * @param array $blocks Array of blocks.
+	 * @return string Serialized post content.
+	 *
+	 * @phpstan-param array<int|string, array{blockName: string|null, attrs: array, innerBlocks: array[], innerHTML: string, innerContent: array}> $blocks
+	 */
+	private function serialize_blocks( $blocks ) {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.3.1 or greater.' );
+		}
+
+		return serialize_blocks( $blocks );
 	}
 
 	/**

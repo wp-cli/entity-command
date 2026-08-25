@@ -58,7 +58,9 @@ parameters:
       identifier: WPCompat.functionNotAvailable
       path: src/Site_Meta_Command.php
 
-    # `wp post block` aborts on WordPress < 5.0 via `before_invoke`.
+    # `wp post block` aborts on WordPress < 5.0 via `before_invoke`. Deliberately
+    # scoped to these three functions: `serialize_blocks()` is WordPress 5.3.1+ and is
+    # guarded separately, so it must keep being reported if that guard ever goes away.
     -
       identifier: WPCompat.functionNotAvailable
       message: '#^(has_blocks|parse_blocks|render_block)\(\) is only available since WordPress version 5\.0\.0\.$#'
@@ -94,24 +96,3 @@ parameters:
     -
       identifier: WPCompat.parameterNotAvailable.wploadalloptions.forcecache
       path: src/Option_Command.php
-
-    # The two entries below are not false positives. They are real gaps against the
-    # WordPress 4.9 baseline, ignored here so that wp-compat stays enabled for the
-    # rest of these files.
-
-    # `serialize_blocks()` arrived in WordPress 5.3.1, later than the WordPress 5.0
-    # `before_invoke` check on `wp post block`, so the subcommands that write post
-    # content back fatal on WordPress 5.0 - 5.3.0. Raising that check to 5.3.1 fixes it.
-    -
-      identifier: WPCompat.functionNotAvailable
-      message: '#^serialize_blocks\(\) is only available since WordPress version 5\.3\.1\.$#'
-      path: src/Post_Block_Command.php
-
-    # `wp post` has no `before_invoke` version check, so `wp post has-block` fatals on
-    # WordPress < 5.0. Its sibling `wp post has-blocks` goes through
-    # `Block_Processor_Helper::has_blocks()`; `Block_Processor_Helper::has_block()`
-    # exists and would do the same job here.
-    -
-      identifier: WPCompat.functionNotAvailable
-      message: '#^has_block\(\) is only available since WordPress version 5\.0\.0\.$#'
-      path: src/Post_Command.php
