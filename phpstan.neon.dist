@@ -20,35 +20,49 @@ parameters:
     - identifier: missingType.parameter
     - identifier: missingType.return
 
+
     # johnbillion/wp-compat checks every WordPress symbol against the WordPress 4.9
     # baseline that wp-cli-tests configures. It only recognizes function_exists() and
     # method_exists() guards, so it cannot see the `before_invoke` version checks in
     # entity-command.php or the polyfills in src/Compat/, and reports those as errors.
+    #
+    # Every entry below matches on the message as well as the identifier, so that a call
+    # to something introduced later than the version a command is gated on still gets
+    # reported rather than swallowed by a file-wide ignore.
 
-    # `WP_Block_Processor` and its dependencies are polyfilled in src/Compat/ and
-    # loaded on demand through `BlockProcessorLoader::load()`, so they are available
-    # on every supported WordPress version, not just 6.9+.
+    # `WP_Block_Processor` and its dependencies are polyfilled in src/Compat/ and loaded
+    # on demand through `BlockProcessorLoader::load()`, so they are available on every
+    # supported WordPress version, not just 6.9+.
     -
       identifier: WPCompat.methodNotAvailable
+      message: '#^WP_Block_Processor::(allocate_and_return_parsed_attributes|extract_full_block_and_advance|get_block_type|get_delimiter_type|get_depth|get_span|next_block)\(\) is only available since WordPress version 6\.9\.0\.$#'
       path: src/Block_Processor_Helper.php
 
     # `wp font collection|face|family` aborts on WordPress < 6.5 via `before_invoke`.
     -
       identifier: WPCompat.methodNotAvailable
+      message: '#^(WP_Font_Collection::get_data|WP_Font_Library::(get_font_collection|get_font_collections|get_instance))\(\) is only available since WordPress version 6\.5\.0\.$#'
       paths:
         - src/Font_Collection_Command.php
         - src/Font_Family_Command.php
 
     # `wp user application-password` aborts on WordPress < 5.6 via `before_invoke`.
-    # The single WordPress 5.7 method is additionally behind a `wp_version_compare()`
-    # check in `application_name_exists_for_user()`.
     -
       identifier: WPCompat.methodNotAvailable
+      message: '#^WP_Application_Passwords::(create_new_application_password|delete_all_application_passwords|delete_application_password|get_user_application_password|get_user_application_passwords|record_application_password_usage|update_application_password)\(\) is only available since WordPress version 5\.6\.0\.$#'
+      path: src/User_Application_Password_Command.php
+
+    # The single WordPress 5.7 method is additionally behind a `wp_version_compare()`
+    # check in `application_name_exists_for_user()`, which reimplements it for 5.6.
+    -
+      identifier: WPCompat.methodNotAvailable
+      message: '#^WP_Application_Passwords::application_name_exists_for_user\(\) is only available since WordPress version 5\.7\.0\.$#'
       path: src/User_Application_Password_Command.php
 
     # `wp user privacy-request` aborts on WordPress < 4.9.6 via `before_invoke`.
     -
       identifier: WPCompat.functionNotAvailable
+      message: '#^(_wp_privacy_completed_request|wp_create_user_request|wp_get_user_request_data|wp_privacy_exports_dir|wp_privacy_generate_personal_data_export_file|wp_send_user_request)\(\) is only available since WordPress version 4\.9\.6\.$#'
       path: src/User_Privacy_Request_Command.php
 
     # `wp site meta` aborts via `before_invoke` unless `is_site_meta_supported()`
@@ -56,11 +70,12 @@ parameters:
     # along with the `*_site_meta()` functions used here.
     -
       identifier: WPCompat.functionNotAvailable
+      message: '#^(add_site_meta|delete_site_meta|get_site_meta|update_site_meta)\(\) is only available since WordPress version 5\.1\.0\.$#'
       path: src/Site_Meta_Command.php
 
-    # `wp post block` aborts on WordPress < 5.0 via `before_invoke`. Deliberately
-    # scoped to these three functions: `serialize_blocks()` is WordPress 5.3.1+ and is
-    # guarded separately, so it must keep being reported if that guard ever goes away.
+    # `wp post block` aborts on WordPress < 5.0 via `before_invoke`. `serialize_blocks()`
+    # is WordPress 5.3.1+ and is guarded separately in the mutating subcommands, so it
+    # must keep being reported if that guard ever goes away.
     -
       identifier: WPCompat.functionNotAvailable
       message: '#^(has_blocks|parse_blocks|render_block)\(\) is only available since WordPress version 5\.0\.0\.$#'
