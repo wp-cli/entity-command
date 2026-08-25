@@ -19,3 +19,99 @@ parameters:
     - identifier: missingType.property
     - identifier: missingType.parameter
     - identifier: missingType.return
+
+    # johnbillion/wp-compat checks every WordPress symbol against the WordPress 4.9
+    # baseline that wp-cli-tests configures. It only recognizes function_exists() and
+    # method_exists() guards, so it cannot see the `before_invoke` version checks in
+    # entity-command.php or the polyfills in src/Compat/, and reports those as errors.
+
+    # `WP_Block_Processor` and its dependencies are polyfilled in src/Compat/ and
+    # loaded on demand through `BlockProcessorLoader::load()`, so they are available
+    # on every supported WordPress version, not just 6.9+.
+    -
+      identifier: WPCompat.methodNotAvailable
+      path: src/Block_Processor_Helper.php
+
+    # `wp font collection|face|family` aborts on WordPress < 6.5 via `before_invoke`.
+    -
+      identifier: WPCompat.methodNotAvailable
+      paths:
+        - src/Font_Collection_Command.php
+        - src/Font_Family_Command.php
+
+    # `wp user application-password` aborts on WordPress < 5.6 via `before_invoke`.
+    # The single WordPress 5.7 method is additionally behind a `wp_version_compare()`
+    # check in `application_name_exists_for_user()`.
+    -
+      identifier: WPCompat.methodNotAvailable
+      path: src/User_Application_Password_Command.php
+
+    # `wp user privacy-request` aborts on WordPress < 4.9.6 via `before_invoke`.
+    -
+      identifier: WPCompat.functionNotAvailable
+      path: src/User_Privacy_Request_Command.php
+
+    # `wp site meta` aborts via `before_invoke` unless `is_site_meta_supported()`
+    # exists, which is the WordPress 5.1 function that introduced site meta support
+    # along with the `*_site_meta()` functions used here.
+    -
+      identifier: WPCompat.functionNotAvailable
+      path: src/Site_Meta_Command.php
+
+    # `wp post block` aborts on WordPress < 5.0 via `before_invoke`.
+    -
+      identifier: WPCompat.functionNotAvailable
+      message: '#^(has_blocks|parse_blocks|render_block)\(\) is only available since WordPress version 5\.0\.0\.$#'
+      path: src/Post_Block_Command.php
+
+    # Only the uppercase `'ID'` alias for the `$field` parameter of `get_term_by()`
+    # is WordPress 5.5+. These call sites pass `'id'`, `'term_id'` or `'slug'`, all
+    # supported since WordPress 2.3.
+    -
+      identifier: WPCompat.parameterNotAvailable.gettermby.field
+      paths:
+        - src/Menu_Item_Command.php
+        - src/Term_Command.php
+        - src/WP_CLI/CommandWithTerms.php
+
+    # WordPress 6.0 only formalized the already documented `...$args` parameter of
+    # `apply_filters()` by adding it to the function signature. Additional arguments
+    # were collected through `func_get_args()` before that.
+    -
+      identifier: WPCompat.parameterNotAvailable.applyfilters.args
+      path: src/Post_Block_Command.php
+
+    # Same for `wpdb::prepare()`, where WordPress 5.3 formalized the already
+    # documented `...$args` parameter. Passing a single array of values is even
+    # handled explicitly by `wpdb::prepare()` itself.
+    -
+      identifier: WPCompat.parameterNotAvailable.wpdbprepare.args
+      path: src/Site_Command.php
+
+    # The `$force_cache` parameter of `wp_load_alloptions()` is WordPress 5.3.1+, but
+    # older versions simply ignore the extra argument. The cache refresh in
+    # `wp option set-autoload` degrades to a no-op there instead of failing.
+    -
+      identifier: WPCompat.parameterNotAvailable.wploadalloptions.forcecache
+      path: src/Option_Command.php
+
+    # The two entries below are not false positives. They are real gaps against the
+    # WordPress 4.9 baseline, ignored here so that wp-compat stays enabled for the
+    # rest of these files.
+
+    # `serialize_blocks()` arrived in WordPress 5.3.1, later than the WordPress 5.0
+    # `before_invoke` check on `wp post block`, so the subcommands that write post
+    # content back fatal on WordPress 5.0 - 5.3.0. Raising that check to 5.3.1 fixes it.
+    -
+      identifier: WPCompat.functionNotAvailable
+      message: '#^serialize_blocks\(\) is only available since WordPress version 5\.3\.1\.$#'
+      path: src/Post_Block_Command.php
+
+    # `wp post` has no `before_invoke` version check, so `wp post has-block` fatals on
+    # WordPress < 5.0. Its sibling `wp post has-blocks` goes through
+    # `Block_Processor_Helper::has_blocks()`; `Block_Processor_Helper::has_block()`
+    # exists and would do the same job here.
+    -
+      identifier: WPCompat.functionNotAvailable
+      message: '#^has_block\(\) is only available since WordPress version 5\.0\.0\.$#'
+      path: src/Post_Command.php
