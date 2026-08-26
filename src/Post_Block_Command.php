@@ -224,6 +224,10 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * @subcommand update
 	 */
 	public function update( $args, $assoc_args ) {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.3.1 or greater.' );
+		}
+
 		$post   = $this->fetcher->get_check( $args[0] );
 		$index  = (int) $args[1];
 		$blocks = parse_blocks( $post->post_content );
@@ -340,6 +344,10 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * @subcommand move
 	 */
 	public function move( $args, $assoc_args ) {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.3.1 or greater.' );
+		}
+
 		$post       = $this->fetcher->get_check( $args[0] );
 		$from_index = (int) $args[1];
 		$to_index   = (int) $args[2];
@@ -607,6 +615,10 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * @subcommand import
 	 */
 	public function import( $args, $assoc_args ) {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.3.1 or greater.' );
+		}
+
 		$post     = $this->fetcher->get_check( $args[0] );
 		$file     = Utils\get_flag_value( $assoc_args, 'file', null );
 		$position = Utils\get_flag_value( $assoc_args, 'position', 'end' );
@@ -914,6 +926,10 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * @subcommand clone
 	 */
 	public function clone_block( $args, $assoc_args ) {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.3.1 or greater.' );
+		}
+
 		$post         = $this->fetcher->get_check( $args[0] );
 		$source_index = (int) $args[1];
 		$position     = Utils\get_flag_value( $assoc_args, 'position', 'after' );
@@ -1393,6 +1409,10 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * @subcommand insert
 	 */
 	public function insert( $args, $assoc_args ) {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.3.1 or greater.' );
+		}
+
 		$post       = $this->fetcher->get_check( $args[0] );
 		$block_name = $args[1];
 		$content    = Utils\get_flag_value( $assoc_args, 'content', '' );
@@ -1492,6 +1512,10 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * @subcommand remove
 	 */
 	public function remove( $args, $assoc_args ) {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.3.1 or greater.' );
+		}
+
 		$post       = $this->fetcher->get_check( $args[0] );
 		$block_name = isset( $args[1] ) ? $args[1] : null;
 		$indices    = Utils\get_flag_value( $assoc_args, 'index', null );
@@ -1637,6 +1661,10 @@ class Post_Block_Command extends WP_CLI_Command {
 	 * @subcommand replace
 	 */
 	public function replace( $args, $assoc_args ) {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.3.1 or greater.' );
+		}
+
 		$post           = $this->fetcher->get_check( $args[0] );
 		$old_block_name = $args[1];
 		$new_block_name = $args[2];

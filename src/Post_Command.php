@@ -1430,6 +1430,10 @@ class Post_Command extends CommandWithDBObject {
 	 * @subcommand has-block
 	 */
 	public function has_block( $args, $assoc_args ) {
+		if ( ! function_exists( 'has_block' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.0 or greater.' );
+		}
+
 		$post       = $this->fetcher->get_check( $args[0] );
 		$block_name = $args[1];
 
