@@ -877,6 +877,7 @@ Feature: Manage WordPress posts
     Then STDOUT should be:
       """
       2
+      """
 
   Scenario: Set a post's modification date on update
     Given a WP install
