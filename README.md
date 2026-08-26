@@ -1367,6 +1367,427 @@ along with all associated font faces.
 
 
 
+### wp icon
+
+Manages registered SVG icons.
+
+~~~
+wp icon
+~~~
+
+Icons are registered in code with `wp_register_icon()` by WordPress core,
+themes, and plugins, and always belong to an icon collection. Because they
+only exist for the duration of a request, they cannot be created or deleted
+from the command line.
+
+Icon names are namespaced with the slug of the collection they belong to,
+in the form `collection/icon-name`.
+
+**EXAMPLES**
+
+    # List all registered icons
+    $ wp icon list
+    +-----------------+------------+------------+
+    | name            | label      | collection |
+    +-----------------+------------+------------+
+    | core/arrow-down | Arrow Down | core       |
+    | core/plus       | Plus       | core       |
+    +-----------------+------------+------------+
+
+    # Get details about a single icon
+    $ wp icon get core/plus --fields=name,label,collection
+    +------------+-----------+
+    | Field      | Value     |
+    +------------+-----------+
+    | name       | core/plus |
+    | label      | Plus      |
+    | collection | core      |
+    +------------+-----------+
+
+    # Render an icon at a given size, ready to be embedded in a template
+    $ wp icon render core/plus --size=48 --label="Add item" > plus.svg
+
+
+
+### wp icon collection
+
+Manages icon collections.
+
+~~~
+wp icon collection
+~~~
+
+Icon collections group registered SVG icons by source, and act as the
+namespace of the icons belonging to them. WordPress core registers the
+`core` collection, while themes and plugins register their own with
+`wp_register_icon_collection()`. Because collections only exist for the
+duration of a request, they cannot be created or deleted from the command
+line.
+
+**EXAMPLES**
+
+    # List all icon collections
+    $ wp icon collection list
+    +------+-----------+--------------------------+-------+
+    | slug | label     | description              | count |
+    +------+-----------+--------------------------+-------+
+    | core | WordPress | Default icon collection. | 88    |
+    +------+-----------+--------------------------+-------+
+
+    # List the icons of a collection
+    $ wp icon list --collection=core
+
+
+
+
+
+### wp icon collection get
+
+Gets details about a registered icon collection.
+
+~~~
+wp icon collection get <slug> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Icon collection slug.
+
+	[--field=<field>]
+		Instead of returning the whole collection, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields. Defaults to all fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for the specified collection:
+
+* slug
+* label
+* description
+* count
+
+**EXAMPLES**
+
+    # Get details of a specific collection
+    $ wp icon collection get core
+    +-------------+--------------------------+
+    | Field       | Value                    |
+    +-------------+--------------------------+
+    | slug        | core                     |
+    | label       | WordPress                |
+    | description | Default icon collection. |
+    | count       | 88                       |
+    +-------------+--------------------------+
+
+    # Get the label field only
+    $ wp icon collection get core --field=label
+    WordPress
+
+
+
+### wp icon collection is-registered
+
+Checks if an icon collection is registered.
+
+~~~
+wp icon collection is-registered <slug>
+~~~
+
+**OPTIONS**
+
+	<slug>
+		Icon collection slug.
+
+**EXAMPLES**
+
+    # Bash script for checking if an icon collection is registered, with fallback.
+
+    if wp icon collection is-registered core 2>/dev/null; then
+        # Icon collection is registered. Do something.
+    else
+        # Fallback if collection is not registered.
+    fi
+
+
+
+### wp icon collection list
+
+Lists registered icon collections.
+
+~~~
+wp icon collection list [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--field=<field>]
+		Prints the value of a single field for each collection.
+
+	[--fields=<fields>]
+		Limit the output to specific collection fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		  - ids
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each collection:
+
+* slug
+* label
+* description
+* count
+
+**EXAMPLES**
+
+    # List all icon collections
+    $ wp icon collection list
+    +------+-----------+--------------------------+-------+
+    | slug | label     | description              | count |
+    +------+-----------+--------------------------+-------+
+    | core | WordPress | Default icon collection. | 88    |
+    +------+-----------+--------------------------+-------+
+
+    # List collections in JSON format
+    $ wp icon collection list --fields=slug,label --format=json
+    [{"slug":"core","label":"WordPress"}]
+
+
+
+### wp icon get
+
+Gets details about a registered icon.
+
+~~~
+wp icon get <name> [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	<name>
+		Namespaced icon name, in the form "collection/icon-name".
+
+	[--field=<field>]
+		Instead of returning the whole icon, returns the value of a single field.
+
+	[--fields=<fields>]
+		Limit the output to specific fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - yaml
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for the specified icon:
+
+* name
+* label
+* collection
+* content
+
+This field is optionally available:
+
+* file_path
+
+**EXAMPLES**
+
+    # Get details of a specific icon
+    $ wp icon get core/plus --fields=name,label,collection
+    +------------+-----------+
+    | Field      | Value     |
+    +------------+-----------+
+    | name       | core/plus |
+    | label      | Plus      |
+    | collection | core      |
+    +------------+-----------+
+
+    # Get the SVG markup of an icon, as it was registered
+    $ wp icon get core/plus --field=content
+    <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24">
+        <path d="M11 12.5V17.5H12.5V12.5H17.5V11H12.5V6H11V11H6V12.5H11Z" />
+    </svg>
+
+    # Find out where an icon is loaded from
+    $ wp icon get core/plus --field=file_path
+    /var/www/html/wp-includes/images/icon-library/plus.svg
+
+
+
+### wp icon is-registered
+
+Checks if an icon is registered.
+
+~~~
+wp icon is-registered <name>
+~~~
+
+**OPTIONS**
+
+	<name>
+		Namespaced icon name, in the form "collection/icon-name".
+
+**EXAMPLES**
+
+    # Bash script for checking if an icon is registered, with fallback.
+
+    if wp icon is-registered core/plus 2>/dev/null; then
+        # Icon is registered. Do something.
+    else
+        # Fallback if icon is not registered.
+    fi
+
+
+
+### wp icon list
+
+Lists registered icons.
+
+~~~
+wp icon list [--collection=<slug>] [--search=<term>] [--field=<field>] [--fields=<fields>] [--format=<format>]
+~~~
+
+**OPTIONS**
+
+	[--collection=<slug>]
+		Only list icons belonging to the given collection.
+
+	[--search=<term>]
+		Only list icons whose name or label matches the given term.
+
+	[--field=<field>]
+		Prints the value of a single field for each icon.
+
+	[--fields=<fields>]
+		Limit the output to specific icon fields.
+
+	[--format=<format>]
+		Render output in a particular format.
+		---
+		default: table
+		options:
+		  - table
+		  - csv
+		  - json
+		  - count
+		  - yaml
+		  - ids
+		---
+
+**AVAILABLE FIELDS**
+
+These fields will be displayed by default for each icon:
+
+* name
+* label
+* collection
+
+These fields are optionally available:
+
+* content
+* file_path
+
+**EXAMPLES**
+
+    # List all icons of a specific collection
+    $ wp icon list --collection=core
+    +-----------------+------------+------------+
+    | name            | label      | collection |
+    +-----------------+------------+------------+
+    | core/arrow-down | Arrow Down | core       |
+    | core/plus       | Plus       | core       |
+    +-----------------+------------+------------+
+
+    # Search for icons by name or label
+    $ wp icon list --search=arrow-down --field=name
+    core/arrow-down-left
+    core/arrow-down-right
+    core/arrow-down
+
+    # Count the icons of a collection
+    $ wp icon list --collection=core --format=count
+    88
+
+
+
+### wp icon render
+
+Renders the SVG markup of a registered icon.
+
+~~~
+wp icon render <name> [--size=<size>] [--class=<class>] [--label=<label>]
+~~~
+
+Unlike `wp icon get <name> --field=content`, which prints the icon as it
+was registered, this applies the same sizing and accessibility attributes
+that WordPress applies when rendering the icon on the front end.
+
+**OPTIONS**
+
+	<name>
+		Namespaced icon name, in the form "collection/icon-name".
+
+	[--size=<size>]
+		Width and height of the icon in pixels. Pass "none" to leave the
+		intrinsic dimensions of the SVG untouched.
+		---
+		default: 24
+		---
+
+	[--class=<class>]
+		Additional CSS class names, separated by spaces.
+
+	[--label=<label>]
+		Accessible label for the icon. Without it, the icon is rendered as
+		decorative and hidden from assistive technology.
+
+**EXAMPLES**
+
+    # Render an icon at its default size of 24 pixels
+    $ wp icon render core/plus
+    <svg aria-hidden="true" focusable="false" height="24" width="24" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24">
+        <path d="M11 12.5V17.5H12.5V12.5H17.5V11H12.5V6H11V11H6V12.5H11Z" />
+    </svg>
+
+    # Render a larger icon with a CSS class and an accessible label
+    $ wp icon render core/plus --size=48 --class=my-icon --label="Add item" > plus.svg
+
+    # Keep the intrinsic dimensions of the SVG
+    $ wp icon render core/plus --size=none
+
+
+
 ### wp menu
 
 Lists, creates, assigns, and deletes the active theme's navigation menus.
