@@ -140,3 +140,14 @@ $wpcli_entity_font_version_check = array(
 WP_CLI::add_command( 'font collection', 'Font_Collection_Command', $wpcli_entity_font_version_check );
 WP_CLI::add_command( 'font family', 'Font_Family_Command', $wpcli_entity_font_version_check );
 WP_CLI::add_command( 'font face', 'Font_Face_Command', $wpcli_entity_font_version_check );
+
+$wpcli_entity_icon_version_check = array(
+	'before_invoke' => function () {
+		if ( Utils\wp_version_compare( '7.1', '<' ) ) {
+			WP_CLI::error( 'Requires WordPress 7.1 or greater.' );
+		}
+	},
+);
+
+WP_CLI::add_command( 'icon', 'Icon_Command', $wpcli_entity_icon_version_check );
+WP_CLI::add_command( 'icon collection', 'Icon_Collection_Command', $wpcli_entity_icon_version_check );

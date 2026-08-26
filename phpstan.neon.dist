@@ -46,6 +46,24 @@ parameters:
         - src/Font_Collection_Command.php
         - src/Font_Family_Command.php
 
+    # `wp icon` and `wp icon collection` abort on WordPress < 7.1 via `before_invoke`.
+    -
+      identifier: WPCompat.methodNotAvailable
+      message: '#^WP_Icon_Collections_Registry::get_instance\(\) is only available since WordPress version 7\.1\.0\.$#'
+      paths:
+        - src/Icon_Collection_Command.php
+        - src/Icon_Command.php
+    -
+      identifier: WPCompat.methodNotAvailable
+      message: '#^WP_Icons_Registry::get_instance\(\) is only available since WordPress version 7\.0\.0\.$#'
+      paths:
+        - src/Icon_Collection_Command.php
+        - src/Icon_Command.php
+    -
+      identifier: WPCompat.functionNotAvailable
+      message: '#^wp_get_icon\(\) is only available since WordPress version 7\.1\.0\.$#'
+      path: src/Icon_Command.php
+
     # `wp user application-password` aborts on WordPress < 5.6 via `before_invoke`.
     -
       identifier: WPCompat.methodNotAvailable
@@ -111,3 +129,19 @@ parameters:
     -
       identifier: WPCompat.parameterNotAvailable.wploadalloptions.forcecache
       path: src/Option_Command.php
+
+    # The Icons API introduced in WordPress 7.0 and 7.1 is not covered by the WordPress
+    # stubs yet, so PHPStan does not know these symbols at all. `reportUnmatched` keeps
+    # the entries from turning into errors themselves once the stubs catch up.
+    -
+      identifier: class.notFound
+      message: '#^Call to static method get_instance\(\) on an unknown class WP_(Icons_Registry|Icon_Collections_Registry)\.$#'
+      reportUnmatched: false
+      paths:
+        - src/Icon_Collection_Command.php
+        - src/Icon_Command.php
+    -
+      identifier: function.notFound
+      message: '#^Function wp_get_icon not found\.$#'
+      reportUnmatched: false
+      path: src/Icon_Command.php
