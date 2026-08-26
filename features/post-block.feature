@@ -47,6 +47,27 @@ Feature: Manage blocks in post content
       """
     And the return code should be 1
 
+  @less-than-wp-5.0
+  Scenario: Checking for a specific block requires WordPress 5.0
+    Given a WP install
+    When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Hello</p><!-- /wp:paragraph -->" --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    # has-blocks goes through the bundled WP_Block_Processor polyfill, so it keeps working.
+    When I run `wp post has-blocks {POST_ID}`
+    Then STDOUT should contain:
+      """
+      Success: Post {POST_ID} contains blocks.
+      """
+
+    # has-block relies on the has_block() function that WordPress only added in 5.0.
+    When I try `wp post has-block {POST_ID} core/paragraph`
+    Then STDERR should contain:
+      """
+      Error: Requires WordPress 5.0 or greater.
+      """
+    And the return code should be 1
+
   @require-wp-5.0
   Scenario: Parse blocks in a post
     Given a WP install

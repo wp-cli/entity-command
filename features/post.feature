@@ -689,6 +689,195 @@ Feature: Manage WordPress posts
       {DOOMED_ID}
       """
 
+  Scenario: Filtering by category and tag
+    When I run `wp term create category 'Alpha Cat' --porcelain`
+    Then save STDOUT as {CAT_ID}
+
+    When I run `wp term create post_tag 'Alpha Tag' --slug=alpha-tag --porcelain`
+    Then save STDOUT as {TAG_ID}
+
+    When I run `wp post create --post_title='Tagged' --post_status=publish --post_category={CAT_ID} --tags_input=alpha-tag --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp post list --cat={CAT_ID} --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # A negative ID excludes that category rather than selecting it.
+    When I run `wp post list --cat=-{CAT_ID} --field=post_title`
+    Then STDOUT should not contain:
+      """
+      Tagged
+      """
+
+    When I run `wp post list --tag=alpha-tag --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --category_name=alpha-cat --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+  Scenario: Filtering by meta, time of day and order
+    When I run `wp post create --post_title='Timed' --post_status=publish --post_date='2020-03-04 05:06:07' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TIMED_ID}
+
+    When I run `wp post meta add {TIMED_ID} color blue`
+    Then STDOUT should not be empty
+
+    When I run `wp post create --post_title='Locked' --post_status=publish --post_password=secret --porcelain`
+    Then STDOUT should be a number
+
+    # Time of day, alongside the year/month/day filters already documented.
+    # Two units at once exercises the combined path; all three of hour, minute
+    # and second together is left out on purpose, because that path compares a
+    # DATE_FORMAT() string and the SQLite integration plugin does not emulate
+    # it the way MySQL does, so it matches nothing there.
+    When I run `wp post list --hour=5 --minute=6 --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      """
+
+    When I run `wp post list --second=7 --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      """
+
+    # A meta key on its own, then narrowed by its value.
+    When I run `wp post list --meta_key=color --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      """
+
+    When I run `wp post list --meta_key=color --meta_value=red --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp post list --orderby=title --order=ASC --field=post_title`
+    Then STDOUT should be:
+      """
+      Hello world!
+      Locked
+      Timed
+      """
+
+    When I run `wp post list --orderby=title --order=DESC --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      Locked
+      Hello world!
+      """
+
+  Scenario: Filtering by lists and JSON queries
+    When I run `wp post create --post_title='Zebra Title' --post_content='nothing' --post_status=publish --porcelain`
+    Then save STDOUT as {TITLED}
+
+    When I run `wp post create --post_title='Plain' --post_name=plain --post_content='zebra in body' --post_status=publish --porcelain`
+    Then save STDOUT as {BODIED}
+
+    When I run `wp post meta add {TITLED} rank 5`
+    Then STDOUT should not be empty
+
+    # Arguments carrying '__' are split on commas before they reach WP_Query,
+    # which is what makes them usable from the command line at all.
+    When I run `wp post list --post__in={TITLED},{BODIED} --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --post__not_in={TITLED},{BODIED} --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # Unlike --name, this reaches a draft, because it is not a single-post query.
+    When I run `wp post list --post_name__in=plain --field=post_title`
+    Then STDOUT should be:
+      """
+      Plain
+      """
+
+    When I run `wp post list --s=zebra --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    # The nested queries are given as JSON, which this command decodes.
+    When I run `wp post list --meta_query='[{"key":"rank","value":"5"}]' --field=post_title`
+    Then STDOUT should be:
+      """
+      Zebra Title
+      """
+
+    When I run `wp post list --meta_key=rank --meta_value=4 --meta_compare=">" --field=post_title`
+    Then STDOUT should be:
+      """
+      Zebra Title
+      """
+
+    # --offset only means anything once --posts_per_page is bounded.
+    When I run `wp post list --posts_per_page=10 --offset=1 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --posts_per_page=1 --nopaging=1 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+  # 'search_columns' is a WP_Query argument as of WordPress 6.2. Before that it
+  # is not recognised, so '--s' searches every column and the narrowing here
+  # would not happen.
+  @require-wp-6.2
+  Scenario: Narrowing a search to particular columns
+    When I run `wp post create --post_title='Zebra Title' --post_content='nothing' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp post create --post_title='Plain' --post_content='zebra in body' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp post list --s=zebra --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_title --field=post_title`
+    Then STDOUT should be:
+      """
+      Zebra Title
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_content --field=post_title`
+    Then STDOUT should be:
+      """
+      Plain
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_title,post_content --format=count`
+    Then STDOUT should be:
+      """
+      2
+
   Scenario: Set a post's modification date on update
     Given a WP install
 

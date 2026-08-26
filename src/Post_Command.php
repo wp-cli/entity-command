@@ -703,6 +703,17 @@ class Post_Command extends CommandWithDBObject {
 	 * [--author_name=<author_name>]
 	 * : Filter by the 'user_nicename' of the post's author.
 	 *
+	 * [--cat=<cat>]
+	 * : Filter by category ID. Accepts a comma-separated list to match any of
+	 * them, and a negative ID excludes that category instead.
+	 *
+	 * [--category_name=<category_name>]
+	 * : Filter by category slug.
+	 *
+	 * [--tag=<tag>]
+	 * : Filter by tag slug. Accepts a comma-separated list to match any of them,
+	 * or a '+'-separated list to require all of them.
+	 *
 	 * [--post_type=<post_type>]
 	 * : Filter by post type. Defaults to 'post'. Accepts a comma-separated list,
 	 * or 'any' for every type registered without 'exclude_from_search'.
@@ -742,11 +753,136 @@ class Post_Command extends CommandWithDBObject {
 	 * [--day=<day>]
 	 * : Filter by day of the month, 1 to 31.
 	 *
+	 * [--hour=<hour>]
+	 * : Filter by hour, 0 to 23.
+	 *
+	 * [--minute=<minute>]
+	 * : Filter by minute, 0 to 59.
+	 *
+	 * [--second=<second>]
+	 * : Filter by second, 0 to 59.
+	 *
 	 * [--m=<yearmonth>]
 	 * : Filter by year and month together, e.g. 202401.
 	 *
 	 * [--w=<week>]
 	 * : Filter by week of the year, 0 to 53.
+	 *
+	 * [--meta_key=<meta_key>]
+	 * : Filter by posts having this meta key. Pair it with `--meta_value` to
+	 * filter on the value as well.
+	 *
+	 * [--meta_value=<meta_value>]
+	 * : Filter by this meta value. Needs `--meta_key` to say which key it
+	 * belongs to.
+	 *
+	 * [--orderby=<orderby>]
+	 * : Order the results by this field. Accepts what WP_Query accepts, e.g.
+	 * 'date', 'title', 'ID', 'menu_order', 'rand', or 'meta_value' alongside
+	 * `--meta_key`.
+	 *
+	 * [--order=<order>]
+	 * : Direction to order by. Accepts 'ASC' or 'DESC'.
+	 *
+	 * [--post__in=<ids>]
+	 * : Only list the posts with these IDs (comma-separated).
+	 *
+	 * [--post__not_in=<ids>]
+	 * : Exclude the posts with these IDs (comma-separated).
+	 *
+	 * [--post_name__in=<slugs>]
+	 * : Only list the posts with these slugs (comma-separated). Unlike `--name`
+	 * this is not a single-post query, so it reaches drafts as well.
+	 *
+	 * [--post_parent__in=<ids>]
+	 * : Only list the posts whose parent is one of these IDs (comma-separated).
+	 *
+	 * [--post_parent__not_in=<ids>]
+	 * : Exclude the posts whose parent is one of these IDs (comma-separated).
+	 *
+	 * [--author__in=<ids>]
+	 * : Only list the posts by these author IDs (comma-separated).
+	 *
+	 * [--author__not_in=<ids>]
+	 * : Exclude the posts by these author IDs (comma-separated).
+	 *
+	 * [--category__in=<ids>]
+	 * : Only list the posts in these category IDs (comma-separated).
+	 *
+	 * [--category__and=<ids>]
+	 * : Only list the posts in all of these category IDs (comma-separated).
+	 *
+	 * [--category__not_in=<ids>]
+	 * : Exclude the posts in these category IDs (comma-separated).
+	 *
+	 * [--tag_id=<tag_id>]
+	 * : Filter by tag ID.
+	 *
+	 * [--tag__in=<ids>]
+	 * : Only list the posts with these tag IDs (comma-separated).
+	 *
+	 * [--tag__and=<ids>]
+	 * : Only list the posts with all of these tag IDs (comma-separated).
+	 *
+	 * [--tag__not_in=<ids>]
+	 * : Exclude the posts with these tag IDs (comma-separated).
+	 *
+	 * [--tag_slug__in=<slugs>]
+	 * : Only list the posts with these tag slugs (comma-separated).
+	 *
+	 * [--tag_slug__and=<slugs>]
+	 * : Only list the posts with all of these tag slugs (comma-separated).
+	 *
+	 * [--page_id=<page_id>]
+	 * : Filter by page ID. Needs `--post_type=page` to match anything.
+	 *
+	 * [--pagename=<pagename>]
+	 * : Filter by page slug. Needs `--post_type=page` to match anything.
+	 *
+	 * [--attachment_id=<attachment_id>]
+	 * : Filter by attachment ID. Needs `--post_type=attachment` to match
+	 * anything.
+	 *
+	 * [--date_query=<json>]
+	 * : Filter by a date query, given as JSON. See WP_Date_Query.
+	 *
+	 * [--meta_query=<json>]
+	 * : Filter by a meta query, given as JSON. See WP_Meta_Query.
+	 *
+	 * [--tax_query=<json>]
+	 * : Filter by a taxonomy query, given as JSON. See WP_Tax_Query.
+	 *
+	 * [--meta_compare=<meta_compare>]
+	 * : Operator to test `--meta_value` with, e.g. '=', '!=', '>' or 'LIKE'.
+	 *
+	 * [--sentence=<sentence>]
+	 * : Match `--s` as one phrase rather than as separate words. Accepts 1 or 0.
+	 *
+	 * [--exact=<exact>]
+	 * : Match `--s` against the whole column rather than part of it. Accepts 1
+	 * or 0.
+	 *
+	 * [--search_columns=<columns>]
+	 * : Comma-separated list of columns `--s` looks in. Accepts 'post_title',
+	 * 'post_excerpt' and 'post_content'. Needs WordPress 6.2 or later.
+	 *
+	 * [--perm=<perm>]
+	 * : Filter by what the current user may do with the post. Accepts
+	 * 'readable' or 'editable'; pair it with the global `--user` argument,
+	 * since WP-CLI is no user by default.
+	 *
+	 * [--posts_per_page=<number>]
+	 * : How many posts to return. Defaults to -1, meaning every post.
+	 *
+	 * [--paged=<paged>]
+	 * : Which page of results to return, counted in `--posts_per_page` steps.
+	 *
+	 * [--offset=<offset>]
+	 * : How many posts to skip. Needs `--posts_per_page` set to something other
+	 * than -1, which otherwise takes precedence.
+	 *
+	 * [--nopaging=<nopaging>]
+	 * : Return every post, ignoring `--posts_per_page`. Accepts 1 or 0.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each post.
@@ -1353,6 +1489,10 @@ class Post_Command extends CommandWithDBObject {
 	 * @subcommand has-block
 	 */
 	public function has_block( $args, $assoc_args ) {
+		if ( ! function_exists( 'has_block' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.0 or greater.' );
+		}
+
 		$post       = $this->fetcher->get_check( $args[0] );
 		$block_name = $args[1];
 
