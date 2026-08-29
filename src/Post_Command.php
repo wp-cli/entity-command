@@ -943,7 +943,7 @@ class Post_Command extends CommandWithDBObject {
 		} elseif ( 'count' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
 			$query                = new WP_Query( $query_args );
-			$formatter->display_items( $query->posts );
+			$formatter->display_items( $query->posts ?? [] );
 		} else {
 			$query = new WP_Query( $query_args );
 			$posts = array_map(
@@ -956,7 +956,7 @@ class Post_Command extends CommandWithDBObject {
 					$post->url = get_permalink( $post->ID );
 					return $post;
 				},
-				$query->posts
+				$query->posts ?? []
 			);
 			$formatter->display_items( $posts );
 		}
