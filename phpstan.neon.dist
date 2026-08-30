@@ -99,16 +99,6 @@ parameters:
       message: '#^(has_blocks|parse_blocks|render_block)\(\) is only available since WordPress version 5\.0\.0\.$#'
       path: src/Post_Block_Command.php
 
-    # Only the uppercase `'ID'` alias for the `$field` parameter of `get_term_by()`
-    # is WordPress 5.5+. These call sites pass `'id'`, `'term_id'` or `'slug'`, all
-    # supported since WordPress 2.3.
-    -
-      identifier: WPCompat.parameterNotAvailable.gettermby.field
-      paths:
-        - src/Menu_Item_Command.php
-        - src/Term_Command.php
-        - src/WP_CLI/CommandWithTerms.php
-
     # WordPress 6.0 only formalized the already documented `...$args` parameter of
     # `apply_filters()` by adding it to the function signature. Additional arguments
     # were collected through `func_get_args()` before that.
