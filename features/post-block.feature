@@ -587,20 +587,20 @@ Feature: Manage blocks in post content
       """
       <?php
       WP_CLI::add_wp_hook(
-      	'wp_cli_post_block_update_html',
-      	function ( $block, $new_attrs, $block_name ) {
-      		if ( 'core/paragraph' === $block_name && isset( $new_attrs['customClass'] ) ) {
-      			$block['innerHTML']    = preg_replace(
-      				'/<p([^>]*)>/',
-      				'<p class="' . esc_attr( $new_attrs['customClass'] ) . '"$1>',
-      				$block['innerHTML']
-      			);
-      			$block['innerContent'] = [ $block['innerHTML'] ];
-      		}
-      		return $block;
-      	},
-      	10,
-      	3 
+          'wp_cli_post_block_update_html',
+          function ( $block, $new_attrs, $block_name ) {
+              if ( 'core/paragraph' === $block_name && isset( $new_attrs['customClass'] ) ) {
+                  $block['innerHTML']    = preg_replace(
+                      '/<p([^>]*)>/',
+                      '<p class="' . esc_attr( $new_attrs['customClass'] ) . '"$1>',
+                      $block['innerHTML']
+                  );
+                  $block['innerContent'] = [ $block['innerHTML'] ];
+              }
+              return $block;
+          },
+          10,
+          3
       );
       """
     When I run `wp post create --post_title="Block Post" --post_content="<!-- wp:paragraph --><p>Hello World</p><!-- /wp:paragraph -->" --porcelain`
