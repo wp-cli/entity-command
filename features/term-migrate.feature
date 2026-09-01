@@ -96,11 +96,11 @@ Feature: Migrate term custom fields
       <?php
       // Plugin Name: Test Migrate
       add_action(
-      	'init',
-      	function () {
-      		register_post_type( 'news', [ 'public' => true ] );
-      		register_taxonomy( 'topic', 'news', [ 'public' => true ] );
-      	} 
+          'init',
+          function () {
+              register_post_type( 'news', [ 'public' => true ] );
+              register_taxonomy( 'topic', 'news', [ 'public' => true ] );
+          }
       );
       """
 
