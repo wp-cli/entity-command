@@ -436,6 +436,10 @@ class User_Command extends CommandWithDBObject {
 
 		$user->user_url = Utils\get_flag_value( $assoc_args, 'user_url', false );
 
+		$user->user_nicename = Utils\get_flag_value( $assoc_args, 'user_nicename', false );
+
+		$user->rich_editing = Utils\get_flag_value( $assoc_args, 'rich_editing', false );
+
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
 		} else {

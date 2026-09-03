@@ -811,3 +811,86 @@ Feature: Manage WordPress users
       """
       newtestuser
       """
+
+  Scenario: Create a user with a nicename and rich editing preference
+    Given a WP install
+
+    When I run `wp user create bob bob@example.com --user_nicename=bobby --rich_editing=false --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=user_nicename`
+    Then STDOUT should be:
+      """
+      bobby
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+  Scenario: Creating a user without a nicename falls back to the login
+    Given a WP install
+
+    When I run `wp user create carol carol@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=user_nicename`
+    Then STDOUT should be:
+      """
+      carol
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  # Multisite creates the user through wpmu_create_user(), which takes only a
+  # login, a password and an email, and then applies the rest with
+  # wp_update_user(). That is a different path to wp_insert_user(), so both
+  # fields are worth asserting again here.
+  Scenario: Create a user with a nicename and rich editing preference on multisite
+    Given a WP multisite install
+
+    # Multisite requires a login of at least four characters, and a login that
+    # differs from the nicename shows the nicename was applied rather than
+    # derived.
+    When I run `wp user create robert robert@example.com --user_nicename=bobby --rich_editing=false --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=user_nicename`
+    Then STDOUT should be:
+      """
+      bobby
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+  Scenario: Creating a user without a nicename falls back to the login on multisite
+    Given a WP multisite install
+
+    When I run `wp user create carol carol@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=user_nicename`
+    Then STDOUT should be:
+      """
+      carol
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      true
+      """
