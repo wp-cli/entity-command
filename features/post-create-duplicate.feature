@@ -99,3 +99,14 @@ Feature: Create Duplicate WordPress post from existing posts.
       """
       2015-03-03
       """
+
+    # An explicit modification date still wins over the source post's.
+    When I run `wp post create --from-post={SOURCE_ID} --post_title='Dated duplicate' --post_modified='2016-04-04 10:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {DATED_DUPLICATE_ID}
+
+    When I run `wp post get {DATED_DUPLICATE_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2016-04-04 10:00:00
+      """

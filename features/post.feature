@@ -982,3 +982,94 @@ Feature: Manage WordPress posts
       """
       2020-06-01 08:00:00
       """
+
+  Scenario: An invalid modification date is rejected on create
+    Given a WP install
+
+    When I try `wp post create --post_title='Bad date' --post_status=publish --post_modified='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Invalid date.
+      """
+
+    When I try `wp post create --post_title='Bad GMT date' --post_status=publish --post_modified_gmt='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Invalid date.
+      """
+
+    # Well-formed but not a real calendar date.
+    When I try `wp post create --post_title='Bad calendar date' --post_status=publish --post_modified='2020-02-30 12:00:00'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Invalid date.
+      """
+
+    When I run `wp post list --s=Bad --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+  Scenario: An invalid modification date is rejected on update
+    Given a WP install
+
+    When I run `wp post create --post_title='A post' --post_status=publish --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I try `wp post update {POST_ID} --post_modified='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Warning: Invalid date.
+      """
+
+    When I try `wp post update {POST_ID} --post_modified_gmt='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Warning: Invalid date.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+  Scenario: Set an attachment's modification date
+    Given a WP install
+
+    # Attachments take the wp_insert_attachment_data filter rather than
+    # wp_insert_post_data, so they are a separate path to cover.
+    When I run `wp post create --post_type=attachment --post_title='An attachment' --post_mime_type=image/png --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ATTACHMENT_ID}
+
+    When I run `wp post get {ATTACHMENT_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post update {ATTACHMENT_ID} --post_modified='2021-02-02 13:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {ATTACHMENT_ID}.
+      """
+
+    When I run `wp post get {ATTACHMENT_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2021-02-02 13:00:00
+      """

@@ -223,6 +223,11 @@ class Post_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $params ) {
+				$modified_callback = self::add_post_modified_filter( $params );
+				if ( is_wp_error( $modified_callback ) ) {
+					return $modified_callback;
+				}
+
 				$filter_callback = null;
 
 				if ( 0 === get_current_user_id() && ! empty( $params['tax_input'] ) ) {
@@ -251,12 +256,10 @@ class Post_Command extends CommandWithDBObject {
 					}
 				}
 
-				$modified_callback = self::add_post_modified_filter( $params );
-
 				$result = wp_insert_post( $params, true );
 
 				if ( $modified_callback ) {
-					remove_filter( 'wp_insert_post_data', $modified_callback );
+					self::remove_post_modified_filter( $modified_callback );
 				}
 
 				if ( $filter_callback ) {
@@ -276,9 +279,15 @@ class Post_Command extends CommandWithDBObject {
 	 * the current time — so the documented parameters have to be applied to the
 	 * post data on its way to the database.
 	 *
+	 * The filter runs after core has validated post_date, and both
+	 * get_gmt_from_date() and get_date_from_gmt() fall back to the epoch for a
+	 * value they cannot parse, so the supplied dates are validated here the same
+	 * way core validates post_date.
+	 *
 	 * @param array<string, mixed> $params Parameters passed to wp_insert_post() or wp_update_post().
-	 * @return callable|null The registered callback, for the caller to remove, or null when
-	 *                       no modification date was requested.
+	 * @return callable|WP_Error|null The registered callback, for the caller to remove; a WP_Error
+	 *                                when a supplied date is invalid; or null when no modification
+	 *                                date was requested.
 	 */
 	private static function add_post_modified_filter( $params ) {
 		$local = ! empty( $params['post_modified'] ) && is_scalar( $params['post_modified'] )
@@ -290,6 +299,12 @@ class Post_Command extends CommandWithDBObject {
 
 		if ( null === $local && null === $gmt ) {
 			return null;
+		}
+
+		foreach ( [ $local, $gmt ] as $date ) {
+			if ( null !== $date && ! self::is_valid_post_date( $date ) ) {
+				return new WP_Error( 'invalid_date', __( 'Invalid date.' ) );
+			}
 		}
 
 		// Keep the pair consistent when only one of the two was given.
@@ -308,9 +323,36 @@ class Post_Command extends CommandWithDBObject {
 			return array_merge( $data, $modified );
 		};
 
+		// Attachments go through wp_insert_attachment_data instead.
 		add_filter( 'wp_insert_post_data', $callback );
+		add_filter( 'wp_insert_attachment_data', $callback );
 
 		return $callback;
+	}
+
+	/**
+	 * Removes the callback registered by add_post_modified_filter().
+	 *
+	 * @param callable $callback The callback to remove.
+	 * @return void
+	 */
+	private static function remove_post_modified_filter( $callback ) {
+		remove_filter( 'wp_insert_post_data', $callback );
+		remove_filter( 'wp_insert_attachment_data', $callback );
+	}
+
+	/**
+	 * Checks a date the way core checks post_date in wp_resolve_post_date().
+	 *
+	 * @param string $date Date in MySQL format.
+	 * @return bool Whether the date is valid.
+	 */
+	private static function is_valid_post_date( $date ) {
+		if ( ! preg_match( '/^(\d{4})-(\d{1,2})-(\d{1,2})/', $date, $matches ) ) {
+			return false;
+		}
+
+		return wp_checkdate( (int) $matches[2], (int) $matches[3], (int) $matches[1], $date );
 	}
 
 	/**
@@ -457,6 +499,11 @@ class Post_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $params ) {
+				$modified_callback = self::add_post_modified_filter( $params );
+				if ( is_wp_error( $modified_callback ) ) {
+					return $modified_callback;
+				}
+
 				$filter_callback = null;
 
 				if ( 0 === get_current_user_id() && ! empty( $params['tax_input'] ) ) {
@@ -485,12 +532,10 @@ class Post_Command extends CommandWithDBObject {
 					}
 				}
 
-				$modified_callback = self::add_post_modified_filter( $params );
-
 				$result = wp_update_post( $params, true );
 
 				if ( $modified_callback ) {
-					remove_filter( 'wp_insert_post_data', $modified_callback );
+					self::remove_post_modified_filter( $modified_callback );
 				}
 
 				if ( $filter_callback ) {
