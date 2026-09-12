@@ -150,6 +150,7 @@ class Term_Command extends WP_CLI_Command {
 					$assoc_args,
 					[
 						'taxonomy' => $args,
+						'fields'   => 'all',
 					]
 				)
 			);
@@ -158,10 +159,6 @@ class Term_Command extends WP_CLI_Command {
 			if ( is_wp_error( $terms ) ) {
 				WP_CLI::error( $terms );
 			}
-
-			/**
-			 * @var \WP_Term[] $terms
-			 */
 		}
 
 		$terms = array_map(
@@ -603,7 +600,7 @@ class Term_Command extends WP_CLI_Command {
 				WP_CLI::warning( $term );
 			} else {
 				$created[]        = $term['term_id'];
-				$previous_term_id = $term['term_id'];
+				$previous_term_id = absint( $term['term_id'] );
 				if ( 'ids' === $format ) {
 					echo $term['term_id'];
 					if ( $index < $max_id + $count ) {
@@ -827,9 +824,7 @@ class Term_Command extends WP_CLI_Command {
 			WP_CLI::error( "Taxonomy term '{$term_reference}' for taxonomy '{$original_taxonomy}' doesn't exist." );
 		}
 
-		$tax = get_taxonomy( $original_taxonomy );
-
-		if ( ! $tax ) {
+		if ( ! taxonomy_exists( $original_taxonomy ) ) {
 			WP_CLI::error( "Taxonomy '{$original_taxonomy}' doesn't exist." );
 		}
 
@@ -856,7 +851,7 @@ class Term_Command extends WP_CLI_Command {
 		/**
 		 * @var string[] $post_ids
 		 */
-		$post_ids   = get_objects_in_term( $term->term_id, $tax->name );
+		$post_ids   = get_objects_in_term( $term->term_id, $original_taxonomy );
 		$post_count = 0;
 
 		foreach ( $post_ids as $post_id ) {
@@ -881,7 +876,7 @@ class Term_Command extends WP_CLI_Command {
 
 		WP_CLI::log( "Term '{$term->slug}' migrated." );
 
-		$del = wp_delete_term( $term->term_id, $tax->name );
+		$del = wp_delete_term( $term->term_id, $original_taxonomy );
 
 		if ( is_wp_error( $del ) ) {
 			WP_CLI::error( "Failed to delete the term '{$term->slug}'. Reason: " . $del->get_error_message() );
@@ -889,7 +884,7 @@ class Term_Command extends WP_CLI_Command {
 
 		WP_CLI::log( "Old instance of term '{$term->slug}' removed from its original taxonomy." );
 		$post_plural = Utils\pluralize( 'post', $post_count );
-		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{$tax->name}' to taxonomy '{$destination_taxonomy}' for {$post_count} {$post_plural}." );
+		WP_CLI::success( "Migrated the term '{$term->slug}' from taxonomy '{$original_taxonomy}' to taxonomy '{$destination_taxonomy}' for {$post_count} {$post_plural}." );
 	}
 
 	private function maybe_make_child() {

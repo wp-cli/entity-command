@@ -7,7 +7,7 @@ Feature: Manage user term
       <?php
       // Plugin Name: Test Add Tax
       function add_cli_tax() {
-      	register_taxonomy( 'user_type', 'user' );
+          register_taxonomy( 'user_type', 'user' );
       }
       add_action( 'init', 'add_cli_tax' );
       """
@@ -74,7 +74,7 @@ Feature: Manage user term
       <?php
       // Plugin Name: Test Add Tax
       function add_cli_tax() {
-      	register_taxonomy( 'user_type', 'user' );
+          register_taxonomy( 'user_type', 'user' );
       }
       add_action( 'init', 'add_cli_tax' );
       """

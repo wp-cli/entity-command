@@ -525,13 +525,13 @@ class Comment_Command extends CommandWithDBObject {
 
 		if ( 'count' === $formatter->format ) {
 			/**
-			 * @var int $comments
+			 * @var int<0, max> $comments
 			 */
 			echo $comments;
 			return;
 		} else {
 			/**
-			 * @var array $comments
+			 * @var array<int<0, max>|\WP_Comment> $comments
 			 */
 
 			if ( 'ids' === $formatter->format ) {

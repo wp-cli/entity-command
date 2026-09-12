@@ -151,24 +151,24 @@ Feature: Manage WordPress SVG icons
       <?php
       // Plugin Name: Test Icons
       add_action(
-      	'init',
-      	function () {
-      		wp_register_icon_collection(
-      			'test-icons',
-      			array(
-      				'label'       => 'Test Icons',
-      				'description' => 'A collection for testing.',
-      			)
-      		);
+          'init',
+          function () {
+              wp_register_icon_collection(
+                  'test-icons',
+                  array(
+                      'label'       => 'Test Icons',
+                      'description' => 'A collection for testing.',
+                  )
+              );
 
-      		wp_register_icon(
-      			'test-icons/square',
-      			array(
-      				'label'   => 'Square',
-      				'content' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h16v16H4z" /></svg>',
-      			)
-      		);
-      	}
+              wp_register_icon(
+                  'test-icons/square',
+                  array(
+                      'label'   => 'Square',
+                      'content' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 4h16v16H4z" /></svg>',
+                  )
+              );
+          }
       );
       """
 

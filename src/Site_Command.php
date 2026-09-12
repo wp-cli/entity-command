@@ -1366,6 +1366,16 @@ class Site_Command extends CommandWithDBObject {
 	 * @return \Generator<int, \WP_Site>
 	 */
 	private static function get_sites_iterator( $query_args ) {
+		// 'count' and 'fields' are pinned to the WP_Site_Query defaults, so that
+		// get_sites() always answers with the WP_Site objects this yields.
+		$query_args = array_merge(
+			$query_args,
+			[
+				'count'  => false,
+				'fields' => '',
+			]
+		);
+
 		if ( isset( $query_args['number'] ) ) {
 			// The arguments are whatever the user passed, so they cannot be narrowed
 			// to the shape get_sites() documents. WP_Site_Query validates them itself.
