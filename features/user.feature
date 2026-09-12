@@ -894,3 +894,28 @@ Feature: Manage WordPress users
       """
       true
       """
+
+  Scenario: The rich editing preference is stored as the value core checks for
+    Given a WP install
+
+    # user_can_richedit() compares the stored meta against the string 'true',
+    # so other spellings of a boolean have to be normalised.
+    When I run `wp user create dave dave@example.com --rich_editing=1 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp user create erin erin@example.com --rich_editing=0 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      false
+      """
