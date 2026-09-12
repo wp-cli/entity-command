@@ -84,7 +84,7 @@ final class User_Application_Password_Command {
 	 * [--uuid=<uuid>]
 	 * : Filter by the universally unique ID of the application password.
 	 *
-	 * [--app_id=<app_id>]
+	 * [--app_id=<app_id>|app-id]
 	 * : Filter by the application ID. `--app-id` is also accepted.
 	 *
 	 * [--name=<name>]
@@ -96,11 +96,11 @@ final class User_Application_Password_Command {
 	 * [--created=<created>]
 	 * : Filter by the Unix timestamp the application password was created at.
 	 *
-	 * [--last_used=<last_used>]
+	 * [--last_used=<last_used>|last-used]
 	 * : Filter by the Unix timestamp the application password was last used at.
 	 * `--last-used` is also accepted.
 	 *
-	 * [--last_ip=<last_ip>]
+	 * [--last_ip=<last_ip>|last-ip]
 	 * : Filter by the IP address the application password was last used from.
 	 * `--last-ip` is also accepted.
 	 *
