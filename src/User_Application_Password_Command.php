@@ -84,8 +84,8 @@ final class User_Application_Password_Command {
 	 * [--uuid=<uuid>]
 	 * : Filter by the universally unique ID of the application password.
 	 *
-	 * [--app_id=<app_id>]
-	 * : Filter by the application ID. `--app-id` is also accepted.
+	 * [--app_id=<app_id>|app-id]
+	 * : Filter by the application ID. `--app-id` is accepted as an alias.
 	 *
 	 * [--name=<name>]
 	 * : Filter by the name of the application password.
@@ -96,13 +96,13 @@ final class User_Application_Password_Command {
 	 * [--created=<created>]
 	 * : Filter by the Unix timestamp the application password was created at.
 	 *
-	 * [--last_used=<last_used>]
+	 * [--last_used=<last_used>|last-used]
 	 * : Filter by the Unix timestamp the application password was last used at.
-	 * `--last-used` is also accepted.
+	 * `--last-used` is accepted as an alias.
 	 *
-	 * [--last_ip=<last_ip>]
+	 * [--last_ip=<last_ip>|last-ip]
 	 * : Filter by the IP address the application password was last used from.
-	 * `--last-ip` is also accepted.
+	 * `--last-ip` is accepted as an alias.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each application password.
@@ -192,15 +192,6 @@ final class User_Application_Password_Command {
 		);
 
 		$fields = self::APPLICATION_PASSWORD_FIELDS;
-
-		// Avoid confusion regarding the dash/underscore usage.
-		foreach ( [ 'app-id', 'last-used', 'last-ip' ] as $flag ) {
-			if ( array_key_exists( $flag, $assoc_args ) ) {
-				$underscored_flag                = str_replace( '-', '_', $flag );
-				$assoc_args[ $underscored_flag ] = $assoc_args[ $flag ];
-				unset( $assoc_args[ $flag ] );
-			}
-		}
 
 		foreach ( $fields as $field ) {
 			if ( ! array_key_exists( $field, $assoc_args ) ) {
