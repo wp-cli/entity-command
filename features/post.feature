@@ -882,6 +882,11 @@ Feature: Manage WordPress posts
   Scenario: Set a post's modification date on update
     Given a WP install
 
+    # A timezone with an offset, so the GMT value derived from the local one is
+    # distinguishable from it. 1 January is outside DST in New York.
+    When I run `wp option update timezone_string 'America/New_York'`
+    Then STDOUT should not be empty
+
     When I run `wp post create --post_title='A post' --post_status=publish --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
@@ -898,8 +903,17 @@ Feature: Manage WordPress posts
       2020-01-01 12:00:00
       """
 
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 17:00:00
+      """
+
   Scenario: Set a post's modification date on create
     Given a WP install
+
+    When I run `wp option update timezone_string 'America/New_York'`
+    Then STDOUT should not be empty
 
     When I run `wp post create --post_title='Another post' --post_date='2019-05-05 10:00:00' --post_modified='2020-01-01 12:00:00' --porcelain`
     Then STDOUT should be a number
@@ -909,6 +923,12 @@ Feature: Manage WordPress posts
     Then STDOUT should be:
       """
       2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 17:00:00
       """
 
   Scenario: A post's modification date defaults to the current time
@@ -1073,3 +1093,62 @@ Feature: Manage WordPress posts
       """
       2021-02-02 13:00:00
       """
+
+  Scenario: A post inserted by a save hook keeps its own modification date
+    Given a WP install
+    And a wp-content/mu-plugins/test-save-hook.php file:
+      """
+      <?php
+      // Plugin Name: Test Save Hook
+      add_action(
+          'save_post',
+          function ( $post_id, $post ) {
+              if ( 'Trigger' !== $post->post_title || 'revision' === $post->post_type ) {
+                  return;
+              }
+              wp_insert_post(
+                  [
+                      'post_title'  => 'Inserted by hook',
+                      'post_status' => 'publish',
+                  ]
+              );
+          },
+          10,
+          2
+      );
+      """
+
+    When I run `wp post create --post_title='Trigger' --post_status=publish --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_modified='2021-02-02 13:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2021-02-02 13:00:00
+      """
+
+    # The hook ran once for the create and once for the update, and neither of
+    # the posts it inserted should carry the date the command asked for.
+    When I run `wp post list --title='Inserted by hook' --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --title='Inserted by hook' --field=post_modified`
+    Then STDOUT should not contain:
+      """
+      2020-01-01
+      """
+    And STDOUT should not contain:
+      """
+      2021-02-02
+      """
+    And STDOUT should not be empty

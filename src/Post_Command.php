@@ -319,7 +319,12 @@ class Post_Command extends CommandWithDBObject {
 			'post_modified_gmt' => $gmt,
 		];
 
-		$callback = static function ( $data ) use ( $modified ) {
+		$callback = static function ( $data ) use ( $modified, &$callback ) {
+			// The first post to reach this filter is the command's own. A save hook
+			// can insert further posts before the outer call returns, and those must
+			// keep their own dates, so the filter unhooks itself right away.
+			self::remove_post_modified_filter( $callback );
+
 			return array_merge( $data, $modified );
 		};
 
@@ -332,6 +337,9 @@ class Post_Command extends CommandWithDBObject {
 
 	/**
 	 * Removes the callback registered by add_post_modified_filter().
+	 *
+	 * The callback removes itself once it has run; this is the fallback for when
+	 * it never ran, for instance because wp_insert_post() bailed out early.
 	 *
 	 * @param callable $callback The callback to remove.
 	 * @return void
