@@ -1444,6 +1444,134 @@ class Post_Command extends CommandWithDBObject {
 	}
 
 	/**
+	 * Converts the classic (non-block) content of one or more posts to block markup.
+	 *
+	 * Uses the server-side block conversion provided by the Gutenberg plugin
+	 * (see https://github.com/WordPress/gutenberg/pull/82013) to turn classic
+	 * HTML content into serialized block markup. Markup that no block claims
+	 * is kept verbatim inside a Custom HTML block, so nothing is lost. Posts
+	 * that already contain blocks or have no content are skipped.
+	 *
+	 * The conversion does not sanitize the markup. Saving the converted content
+	 * applies the usual kses filtering for the current user context, so a run
+	 * without `--user` is filtered as an untrusted author would be. Run the
+	 * command with `--user=<administrator>` to keep markup that requires the
+	 * `unfiltered_html` capability, such as iframes or scripts.
+	 *
+	 * Requires a Gutenberg build that provides `gutenberg_html_to_block_markup()`.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>...
+	 * : One or more IDs of posts to convert.
+	 *
+	 * [--dry-run]
+	 * : Preview which posts would be converted, without saving any changes.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Convert a single post.
+	 *     $ wp post convert-to-blocks 123
+	 *     Converted post 123.
+	 *     Success: Converted 1 of 1 posts.
+	 *
+	 *     # Convert every post of a post type.
+	 *     $ wp post list --post_type=post --format=ids | xargs wp post convert-to-blocks
+	 *     Converted post 123.
+	 *     Converted post 124.
+	 *     Warning: Post 125 already contains blocks.
+	 *     Success: Converted 2 of 3 posts (1 skipped).
+	 *
+	 *     # Preview a conversion without saving.
+	 *     $ wp post convert-to-blocks 123 --dry-run
+	 *     Would convert post 123.
+	 *     Success: Would convert 1 of 1 posts.
+	 *
+	 *     # Run as an administrator to keep markup that requires unfiltered_html.
+	 *     $ wp post convert-to-blocks 123 --user=admin
+	 *     Converted post 123.
+	 *     Success: Converted 1 of 1 posts.
+	 *
+	 * @subcommand convert-to-blocks
+	 */
+	public function convert_to_blocks( $args, $assoc_args ) {
+		if ( ! function_exists( 'gutenberg_html_to_block_markup' ) ) {
+			WP_CLI::error( 'Server-side block conversion is not available. Activate the Gutenberg plugin from https://github.com/WordPress/gutenberg/pull/82013.' );
+		}
+
+		$dry_run = (bool) Utils\get_flag_value( $assoc_args, 'dry-run', false );
+
+		$total     = count( $args );
+		$successes = 0;
+		$errors    = 0;
+		$skips     = 0;
+
+		foreach ( $args as $post_id ) {
+			$post = $this->fetcher->get( $post_id );
+
+			if ( ! $post ) {
+				WP_CLI::warning( "Could not find the post with ID {$post_id}." );
+				++$errors;
+				continue;
+			}
+
+			if ( '' === trim( (string) $post->post_content ) ) {
+				WP_CLI::warning( "Post {$post->ID} has no content to convert." );
+				++$skips;
+				continue;
+			}
+
+			if ( Block_Processor_Helper::has_blocks( $post->post_content ) ) {
+				WP_CLI::warning( "Post {$post->ID} already contains blocks." );
+				++$skips;
+				continue;
+			}
+
+			$markup = gutenberg_html_to_block_markup( $post->post_content );
+
+			if ( $dry_run ) {
+				WP_CLI::log( "Would convert post {$post->ID}." );
+				++$successes;
+				continue;
+			}
+
+			$result = wp_update_post(
+				[
+					'ID'           => $post->ID,
+					'post_content' => $markup,
+				],
+				true
+			);
+
+			if ( is_wp_error( $result ) ) {
+				WP_CLI::warning( "Failed converting post {$post->ID}: " . $result->get_error_message() );
+				++$errors;
+				continue;
+			}
+
+			WP_CLI::log( "Converted post {$post->ID}." );
+			++$successes;
+		}
+
+		if ( ! $dry_run ) {
+			Utils\report_batch_operation_results( 'post', 'convert', $total, $successes, $errors, $skips );
+			return;
+		}
+
+		$skipped_message = $skips ? " ({$skips} skipped)" : '';
+
+		if ( $errors ) {
+			$failed_skipped_message = " ({$errors} failed" . ( $skips ? ", {$skips} skipped" : '' ) . ')';
+			if ( $successes ) {
+				WP_CLI::error( "Would only convert {$successes} of {$total} posts{$failed_skipped_message}." );
+			}
+			WP_CLI::error( "No posts would be converted{$failed_skipped_message}." );
+		}
+
+		WP_CLI::success( "Would convert {$successes} of {$total} posts{$skipped_message}." );
+	}
+
+	/**
 	 * Convert a date-time string with a hyphen separator to a space separator.
 	 *
 	 * @param string $date_string The date-time string to convert.
