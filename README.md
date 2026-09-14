@@ -8422,7 +8422,8 @@ wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>
 		A string containing content about the user.
 
 	[--rich_editing=<rich_editing>]
-		Whether to enable the rich editor for the user. Accepts 'true' or 'false'.
+		Whether to enable the rich editor for the user. Accepts 'true' or 'false',
+		or their numeric forms 1 and 0.
 		Default: true
 
 	[--send-email]
