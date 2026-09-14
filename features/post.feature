@@ -878,3 +878,277 @@ Feature: Manage WordPress posts
       """
       2
       """
+
+  Scenario: Set a post's modification date on update
+    Given a WP install
+
+    # A timezone with an offset, so the GMT value derived from the local one is
+    # distinguishable from it. 1 January is outside DST in New York.
+    When I run `wp option update timezone_string 'America/New_York'`
+    Then STDOUT should not be empty
+
+    When I run `wp post create --post_title='A post' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_modified='2020-01-01 12:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 17:00:00
+      """
+
+  Scenario: Set a post's modification date on create
+    Given a WP install
+
+    When I run `wp option update timezone_string 'America/New_York'`
+    Then STDOUT should not be empty
+
+    When I run `wp post create --post_title='Another post' --post_date='2019-05-05 10:00:00' --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 17:00:00
+      """
+
+  Scenario: A post's modification date defaults to the current time
+    Given a WP install
+
+    # Given a known modification date, so that an update which failed to set one
+    # would leave this value behind and be caught.
+    When I run `wp post create --post_title='Undated post' --post_status=publish --post_modified='2019-02-03 04:05:06' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2019-02-03 04:05:06
+      """
+
+    When I run `wp post update {POST_ID} --post_title='Retitled'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should not contain:
+      """
+      2019-02-03 04:05:06
+      """
+    And STDOUT should not be empty
+
+  Scenario: Setting only the GMT modification date derives the local one
+    Given a WP install
+
+    # A timezone with an offset, so the derived local value is distinguishable
+    # from the GMT one it was derived from. 1 January is outside DST in New York.
+    When I run `wp option update timezone_string 'America/New_York'`
+    Then STDOUT should not be empty
+
+    When I run `wp post create --post_title='GMT only' --post_status=publish --post_modified_gmt='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 07:00:00
+      """
+
+    # And the same on update, which takes the other of the two code paths.
+    When I run `wp post update {POST_ID} --post_modified_gmt='2020-06-01 12:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-06-01 12:00:00
+      """
+
+    # June is inside DST, so the offset is four hours rather than five.
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-06-01 08:00:00
+      """
+
+  Scenario: An invalid modification date is rejected on create
+    Given a WP install
+
+    When I try `wp post create --post_title='Bad date' --post_status=publish --post_modified='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Invalid date.
+      """
+
+    When I try `wp post create --post_title='Bad GMT date' --post_status=publish --post_modified_gmt='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Invalid date.
+      """
+
+    # Well-formed but not a real calendar date.
+    When I try `wp post create --post_title='Bad calendar date' --post_status=publish --post_modified='2020-02-30 12:00:00'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Invalid date.
+      """
+
+    When I run `wp post list --s=Bad --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+  Scenario: An invalid modification date is rejected on update
+    Given a WP install
+
+    When I run `wp post create --post_title='A post' --post_status=publish --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I try `wp post update {POST_ID} --post_modified='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Warning: Invalid date.
+      """
+
+    When I try `wp post update {POST_ID} --post_modified_gmt='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Warning: Invalid date.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+  Scenario: Set an attachment's modification date
+    Given a WP install
+
+    # Attachments take the wp_insert_attachment_data filter rather than
+    # wp_insert_post_data, so they are a separate path to cover.
+    When I run `wp post create --post_type=attachment --post_title='An attachment' --post_mime_type=image/png --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ATTACHMENT_ID}
+
+    When I run `wp post get {ATTACHMENT_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post update {ATTACHMENT_ID} --post_modified='2021-02-02 13:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {ATTACHMENT_ID}.
+      """
+
+    When I run `wp post get {ATTACHMENT_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2021-02-02 13:00:00
+      """
+
+  Scenario: A post inserted by a save hook keeps its own modification date
+    Given a WP install
+    And a wp-content/mu-plugins/test-save-hook.php file:
+      """
+      <?php
+      // Plugin Name: Test Save Hook
+      add_action(
+          'save_post',
+          function ( $post_id, $post ) {
+              if ( 'Trigger' !== $post->post_title || 'revision' === $post->post_type ) {
+                  return;
+              }
+              wp_insert_post(
+                  [
+                      'post_title'  => 'Inserted by hook',
+                      'post_status' => 'publish',
+                  ]
+              );
+          },
+          10,
+          2
+      );
+      """
+
+    When I run `wp post create --post_title='Trigger' --post_status=publish --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_modified='2021-02-02 13:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2021-02-02 13:00:00
+      """
+
+    # The hook ran once for the create and once for the update, and neither of
+    # the posts it inserted should carry the date the command asked for.
+    When I run `wp post list --title='Inserted by hook' --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --title='Inserted by hook' --field=post_modified`
+    Then STDOUT should not contain:
+      """
+      2020-01-01
+      """
+    And STDOUT should not contain:
+      """
+      2021-02-02
+      """
+    And STDOUT should not be empty

@@ -8422,7 +8422,9 @@ wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>
 		A string containing content about the user.
 
 	[--rich_editing=<rich_editing>]
-		A string for whether to enable the rich editor or not. False if not empty.
+		Whether to enable the rich editor for the user. Accepts 'true' or 'false',
+		or their numeric forms 1 and 0.
+		Default: true
 
 	[--send-email]
 		Send an email to the user with their new account details.
@@ -10089,7 +10091,8 @@ wp user update <user>... [--user_pass=<password>] [--user_nicename=<nice_name>] 
 		A string containing content about the user.
 
 	[--rich_editing=<rich_editing>]
-		A string for whether to enable the rich editor or not. False if not empty.
+		Whether to enable the rich editor for the user. Accepts 'true' or
+		'false' as a string literal, not boolean.
 
 	[--syntax_highlighting=<syntax_highlighting>]
 		Whether to enable the rich code editor for the user. Accepts 'true' or

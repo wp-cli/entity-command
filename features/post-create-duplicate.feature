@@ -79,3 +79,34 @@ Feature: Create Duplicate WordPress post from existing posts.
     Then STDOUT should be a table containing rows:
 	  | Field     | Value |
 	  | post_type | page  |
+
+  Scenario: Duplicating a post does not inherit its modification date
+    Given a WP install
+
+    When I run `wp post create --post_title='Source' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {SOURCE_ID}
+
+    When I run `wp post update {SOURCE_ID} --post_modified='2015-03-03 09:00:00'`
+    Then STDOUT should not be empty
+
+    When I run `wp post create --from-post={SOURCE_ID} --post_title='Duplicate' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {DUPLICATE_ID}
+
+    When I run `wp post get {DUPLICATE_ID} --field=post_modified`
+    Then STDOUT should not contain:
+      """
+      2015-03-03
+      """
+
+    # An explicit modification date still wins over the source post's.
+    When I run `wp post create --from-post={SOURCE_ID} --post_title='Dated duplicate' --post_modified='2016-04-04 10:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {DATED_DUPLICATE_ID}
+
+    When I run `wp post get {DATED_DUPLICATE_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2016-04-04 10:00:00
+      """

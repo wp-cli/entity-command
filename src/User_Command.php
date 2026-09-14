@@ -381,7 +381,9 @@ class User_Command extends CommandWithDBObject {
 	 * : A string containing content about the user.
 	 *
 	 * [--rich_editing=<rich_editing>]
-	 * : A string for whether to enable the rich editor or not. False if not empty.
+	 * : Whether to enable the rich editor for the user. Accepts 'true' or 'false',
+	 * or their numeric forms 1 and 0.
+	 * Default: true
 	 *
 	 * [--send-email]
 	 * : Send an email to the user with their new account details.
@@ -435,6 +437,13 @@ class User_Command extends CommandWithDBObject {
 		$user->description = Utils\get_flag_value( $assoc_args, 'description', false );
 
 		$user->user_url = Utils\get_flag_value( $assoc_args, 'user_url', false );
+
+		$user->user_nicename = Utils\get_flag_value( $assoc_args, 'user_nicename', false );
+
+		// Core compares the stored value against the string 'true', so any other
+		// truthy spelling would disable the editor.
+		$rich_editing       = Utils\get_flag_value( $assoc_args, 'rich_editing', true );
+		$user->rich_editing = filter_var( $rich_editing, FILTER_VALIDATE_BOOLEAN ) ? 'true' : 'false';
 
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
@@ -535,7 +544,8 @@ class User_Command extends CommandWithDBObject {
 	 * : A string containing content about the user.
 	 *
 	 * [--rich_editing=<rich_editing>]
-	 * : A string for whether to enable the rich editor or not. False if not empty.
+	 * : Whether to enable the rich editor for the user. Accepts 'true' or
+	 * 'false' as a string literal, not boolean.
 	 *
 	 * [--syntax_highlighting=<syntax_highlighting>]
 	 * : Whether to enable the rich code editor for the user. Accepts 'true' or
