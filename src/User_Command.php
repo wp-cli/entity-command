@@ -448,10 +448,10 @@ class User_Command extends CommandWithDBObject {
 		// Core compares the stored value against the string 'true', so any other
 		// truthy spelling would disable the editor.
 		$rich_editing       = Utils\get_flag_value( $assoc_args, 'rich_editing', true );
-		$user->rich_editing = filter_var( $rich_editing, FILTER_VALIDATE_BOOLEAN ) ? 'true' : 'false';
+		$user->rich_editing = self::normalize_boolean_preference( 'rich_editing', $rich_editing );
 
 		$syntax_highlighting       = Utils\get_flag_value( $assoc_args, 'syntax_highlighting', true );
-		$user->syntax_highlighting = filter_var( $syntax_highlighting, FILTER_VALIDATE_BOOLEAN ) ? 'true' : 'false';
+		$user->syntax_highlighting = self::normalize_boolean_preference( 'syntax_highlighting', $syntax_highlighting );
 
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
@@ -616,6 +616,12 @@ class User_Command extends CommandWithDBObject {
 			self::validate_role( $assoc_args['role'], true );
 		}
 
+		foreach ( [ 'rich_editing', 'syntax_highlighting' ] as $preference ) {
+			if ( isset( $assoc_args[ $preference ] ) ) {
+				$assoc_args[ $preference ] = self::normalize_boolean_preference( $preference, $assoc_args[ $preference ] );
+			}
+		}
+
 		$user_ids = [];
 		foreach ( $this->fetcher->get_many( $args ) as $user ) {
 			$user_ids[] = $user->ID;
@@ -632,11 +638,6 @@ class User_Command extends CommandWithDBObject {
 		}
 
 		$assoc_args = Utils\parse_shell_arrays( $assoc_args, [ 'meta_input' ] );
-		foreach ( [ 'rich_editing', 'syntax_highlighting' ] as $preference ) {
-			if ( isset( $assoc_args[ $preference ] ) ) {
-				$assoc_args[ $preference ] = filter_var( $assoc_args[ $preference ], FILTER_VALIDATE_BOOLEAN ) ? 'true' : 'false';
-			}
-		}
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $user_ids, $assoc_args, 'wp_update_user' );
@@ -1424,6 +1425,23 @@ class User_Command extends CommandWithDBObject {
 				WP_CLI::error( 'No user found to reset password.' );
 			}
 		}
+	}
+
+	/**
+	 * Normalizes a user preference to the string literal core checks for.
+	 *
+	 * @param string $preference Name of the preference, used for error reporting.
+	 * @param mixed  $value      Value the preference was given on the command line.
+	 * @return string Either 'true' or 'false'.
+	 */
+	private static function normalize_boolean_preference( $preference, $value ) {
+		$normalized = filter_var( $value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+
+		if ( null === $normalized ) {
+			WP_CLI::error( "Invalid value for --{$preference}. Accepts 'true' or 'false', or their numeric forms 1 and 0." );
+		}
+
+		return $normalized ? 'true' : 'false';
 	}
 
 	/**
