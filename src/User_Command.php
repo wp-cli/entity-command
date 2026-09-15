@@ -385,6 +385,11 @@ class User_Command extends CommandWithDBObject {
 	 * or their numeric forms 1 and 0.
 	 * Default: true
 	 *
+	 * [--syntax_highlighting=<syntax_highlighting>]
+	 * : Whether to enable the rich code editor for the user. Accepts 'true' or 'false',
+	 * or their numeric forms 1 and 0.
+	 * Default: true
+	 *
 	 * [--send-email]
 	 * : Send an email to the user with their new account details.
 	 *
@@ -403,7 +408,7 @@ class User_Command extends CommandWithDBObject {
 	 *     4
 	 *
 	 * @param array{0: string, 1: string} $args Positional arguments.
-	 * @param array{role?: string, user_pass?: string, user_registered?: string, display_name?: string, user_nicename?: string, user_url?: string, nickname?: string, first_name?: string, last_name?: string, description?: string, rich_editing?: string, send_email?: bool, porcelain?: bool} $assoc_args Associative arguments.
+	 * @param array{role?: string, user_pass?: string, user_registered?: string, display_name?: string, user_nicename?: string, user_url?: string, nickname?: string, first_name?: string, last_name?: string, description?: string, rich_editing?: string, syntax_highlighting?: string, send_email?: bool, porcelain?: bool} $assoc_args Associative arguments.
 	 */
 	public function create( $args, $assoc_args ) {
 		$user = new stdClass();
@@ -443,7 +448,10 @@ class User_Command extends CommandWithDBObject {
 		// Core compares the stored value against the string 'true', so any other
 		// truthy spelling would disable the editor.
 		$rich_editing       = Utils\get_flag_value( $assoc_args, 'rich_editing', true );
-		$user->rich_editing = filter_var( $rich_editing, FILTER_VALIDATE_BOOLEAN ) ? 'true' : 'false';
+		$user->rich_editing = self::normalize_boolean_preference( 'rich_editing', $rich_editing );
+
+		$syntax_highlighting       = Utils\get_flag_value( $assoc_args, 'syntax_highlighting', true );
+		$user->syntax_highlighting = self::normalize_boolean_preference( 'syntax_highlighting', $syntax_highlighting );
 
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
@@ -544,12 +552,12 @@ class User_Command extends CommandWithDBObject {
 	 * : A string containing content about the user.
 	 *
 	 * [--rich_editing=<rich_editing>]
-	 * : Whether to enable the rich editor for the user. Accepts 'true' or
-	 * 'false' as a string literal, not boolean.
+	 * : Whether to enable the rich editor for the user. Accepts 'true' or 'false',
+	 * or their numeric forms 1 and 0.
 	 *
 	 * [--syntax_highlighting=<syntax_highlighting>]
-	 * : Whether to enable the rich code editor for the user. Accepts 'true' or
-	 * 'false' as a string literal, not boolean.
+	 * : Whether to enable the rich code editor for the user. Accepts 'true' or 'false',
+	 * or their numeric forms 1 and 0.
 	 *
 	 * [--comment_shortcuts=<comment_shortcuts>]
 	 * : Whether to enable comment moderation keyboard shortcuts for the user.
@@ -606,6 +614,12 @@ class User_Command extends CommandWithDBObject {
 
 		if ( isset( $assoc_args['role'] ) ) {
 			self::validate_role( $assoc_args['role'], true );
+		}
+
+		foreach ( [ 'rich_editing', 'syntax_highlighting' ] as $preference ) {
+			if ( isset( $assoc_args[ $preference ] ) ) {
+				$assoc_args[ $preference ] = self::normalize_boolean_preference( $preference, $assoc_args[ $preference ] );
+			}
 		}
 
 		$user_ids = [];
@@ -1411,6 +1425,23 @@ class User_Command extends CommandWithDBObject {
 				WP_CLI::error( 'No user found to reset password.' );
 			}
 		}
+	}
+
+	/**
+	 * Normalizes a user preference to the string literal core checks for.
+	 *
+	 * @param string $preference Name of the preference, used for error reporting.
+	 * @param mixed  $value      Value the preference was given on the command line.
+	 * @return string Either 'true' or 'false'.
+	 */
+	private static function normalize_boolean_preference( $preference, $value ) {
+		$normalized = filter_var( $value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+
+		if ( null === $normalized ) {
+			WP_CLI::error( "Invalid value for --{$preference}. Accepts 'true' or 'false', or their numeric forms 1 and 0." );
+		}
+
+		return $normalized ? 'true' : 'false';
 	}
 
 	/**

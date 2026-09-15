@@ -919,3 +919,119 @@ Feature: Manage WordPress users
       """
       false
       """
+
+  Scenario: The rich editing preference is normalized when updating a user
+    Given a WP install
+
+    When I run `wp user create frank frank@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user update {USER_ID} --rich_editing=0`
+    Then STDOUT should contain:
+      """
+      Success: Updated user {USER_ID}.
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+    When I run `wp user update {USER_ID} --rich_editing=1`
+    Then STDOUT should contain:
+      """
+      Success: Updated user {USER_ID}.
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  Scenario: The syntax highlighting preference is stored as the value core checks for
+    Given a WP install
+
+    # wp_get_user_editor() compares the stored meta against the string 'false',
+    # so other spellings of a boolean have to be normalised.
+    When I run `wp user create sasha sasha@example.com --syntax_highlighting=0 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user meta get {USER_ID} syntax_highlighting`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+    When I run `wp user create rosa rosa@example.com --syntax_highlighting=1 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user meta get {USER_ID} syntax_highlighting`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  Scenario: The syntax highlighting preference is normalized when updating a user
+    Given a WP install
+
+    When I run `wp user create steve steve@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user update {USER_ID} --syntax_highlighting=0`
+    Then STDOUT should contain:
+      """
+      Success: Updated user {USER_ID}.
+      """
+
+    When I run `wp user meta get {USER_ID} syntax_highlighting`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+    When I run `wp user update {USER_ID} --syntax_highlighting=1`
+    Then STDOUT should contain:
+      """
+      Success: Updated user {USER_ID}.
+      """
+
+    When I run `wp user meta get {USER_ID} syntax_highlighting`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  Scenario: Editor preferences that are not a boolean are rejected
+    Given a WP install
+
+    When I try `wp user create tina tina@example.com --rich_editing=maybe --porcelain`
+    Then STDERR should contain:
+      """
+      Error: Invalid value for --rich_editing. Accepts 'true' or 'false', or their numeric forms 1 and 0.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I run `wp user create tina tina@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I try `wp user update {USER_ID} --syntax_highlighting=maybe`
+    Then STDERR should contain:
+      """
+      Error: Invalid value for --syntax_highlighting. Accepts 'true' or 'false', or their numeric forms 1 and 0.
+      """
+    And the return code should be 1
+
+    # The rejected update must not have changed the preference.
+    When I run `wp user meta get {USER_ID} syntax_highlighting`
+    Then STDOUT should be:
+      """
+      true
+      """
