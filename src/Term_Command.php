@@ -590,7 +590,7 @@ class Term_Command extends WP_CLI_Command {
 			}
 
 			$args = [
-				'parent' => $current_parent,
+				'parent' => max( 0, $current_parent ),
 				'slug'   => $slug . "-{$index}",
 			];
 
