@@ -1097,7 +1097,7 @@ class Post_Command extends CommandWithDBObject {
 			$query = new WP_Query( $chunk_args );
 
 			$posts = [];
-			foreach ( $query->posts as $post ) {
+			foreach ( $query->posts ?? [] as $post ) {
 				if ( $post instanceof \WP_Post ) {
 					$posts[ $post->ID ] = $post;
 				}
@@ -1117,7 +1117,20 @@ class Post_Command extends CommandWithDBObject {
 			}
 
 			unset( $posts, $query );
-			Utils\wp_clear_object_cache(); // phpcs:ignore PHPCompatibility.FunctionUse.RemovedFunctions.wp_clear_object_cacheDeprecatedRemoved @phpstan-ignore-line
+			self::clear_runtime_object_cache();
+		}
+	}
+
+	/**
+	 * Free the memory held by the in-process object cache.
+	 *
+	 * Persistent object caches are left alone unless they can flush their in-process part only.
+	 */
+	private static function clear_runtime_object_cache() {
+		if ( function_exists( 'wp_cache_flush_runtime' ) && function_exists( 'wp_cache_supports' ) && wp_cache_supports( 'flush_runtime' ) ) {
+			wp_cache_flush_runtime();
+		} elseif ( ! wp_using_ext_object_cache() ) {
+			wp_cache_flush();
 		}
 	}
 
