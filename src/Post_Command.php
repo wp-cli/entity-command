@@ -1062,8 +1062,8 @@ class Post_Command extends CommandWithDBObject {
 			$query                = new WP_Query( $query_args );
 			$formatter->display_items( $query->posts ?? [] );
 		} else {
-			$need_url = 'url' === $formatter->field || in_array( 'url', (array) $formatter->fields, true );
-			$formatter->display_items( $this->query_posts_in_chunks( $query_args, $need_url ) );
+			$fields = $formatter->field ? [ $formatter->field ] : (array) $formatter->fields;
+			$formatter->display_items( $this->query_posts_in_chunks( $query_args, $fields ) );
 		}
 	}
 
@@ -1074,11 +1074,23 @@ class Post_Command extends CommandWithDBObject {
 	 * at a time with the same query arguments, and the object cache is cleared after each
 	 * chunk. Formats that can be written item by item are then streamed by the formatter.
 	 *
+	 * Fields that WP_Post computes on access, like post meta, are read from the object
+	 * cache. If any of them are displayed, the cache is kept, because the formatter may
+	 * only read them once all posts have been loaded.
+	 *
 	 * @param array<string, mixed> $query_args WP_Query arguments.
-	 * @param bool                 $need_url   Whether to add the `url` property to each post.
+	 * @param string[]             $fields     Fields that will be displayed.
 	 * @return \Generator<int, \WP_Post>
 	 */
-	private function query_posts_in_chunks( $query_args, $need_url ) {
+	private function query_posts_in_chunks( $query_args, $fields ) {
+		$need_url    = in_array( 'url', $fields, true );
+		$clear_cache = true;
+		foreach ( $fields as $field ) {
+			if ( 'url' !== $field && ! property_exists( 'WP_Post', $field ) && ! property_exists( 'WP_Post', 'post_' . $field ) ) {
+				$clear_cache = false;
+			}
+		}
+
 		/** @var int[] $ids */
 		$ids = ( new WP_Query( array_merge( $query_args, [ 'fields' => 'ids' ] ) ) )->posts;
 
@@ -1117,7 +1129,9 @@ class Post_Command extends CommandWithDBObject {
 			}
 
 			unset( $posts, $query );
-			self::clear_runtime_object_cache();
+			if ( $clear_cache ) {
+				self::clear_runtime_object_cache();
+			}
 		}
 	}
 
