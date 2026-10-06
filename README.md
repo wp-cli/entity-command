@@ -10051,7 +10051,7 @@ wp user unspam <user>...
     # Remove user from spam.
     $ wp user unspam 123
     User 123 removed from spam.
-    Success: Unspamed 1 of 1 users.
+    Success: Unspammed 1 of 1 users.
 
 
 

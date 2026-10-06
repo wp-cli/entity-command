@@ -1503,7 +1503,7 @@ class User_Command extends CommandWithDBObject {
 	 *     # Remove user from spam.
 	 *     $ wp user unspam 123
 	 *     User 123 removed from spam.
-	 *     Success: Unspamed 1 of 1 users.
+	 *     Success: Unspammed 1 of 1 users.
 	 */
 	public function unspam( $args ) {
 		$this->update_msuser_status( $args, 'spam', '0' );
