@@ -172,33 +172,81 @@ class User_Command extends CommandWithDBObject {
 			}
 		}
 
-		$users = get_users( $assoc_args );
-
 		if ( 'ids' === $formatter->format ) {
-			echo implode( ' ', $users );
+			echo implode( ' ', get_users( $assoc_args ) );
 		} elseif ( 'count' === $formatter->format ) {
-			$formatter->display_items( $users );
+			$formatter->display_items( get_users( $assoc_args ) );
 		} else {
-			$iterator = Utils\iterator_map(
-				$users,
-				function ( $user ) {
-					if ( ! is_object( $user ) ) {
-						return $user;
-					}
+			$fields = $formatter->field ? [ $formatter->field ] : (array) $formatter->fields;
+			$formatter->display_items( $this->query_users_in_chunks( $assoc_args, $fields ) );
+		}
+	}
 
-					/**
-					 * @var \WP_User $user
-					 */
+	/**
+	 * Query users in chunks, so that they don't all have to be held in memory at once.
+	 *
+	 * The IDs of all matching users are queried first. The users and their meta are then
+	 * loaded a chunk at a time, and the object cache is cleared after each chunk. Formats
+	 * that can be written item by item are then streamed by the formatter.
+	 *
+	 * User meta is read from the object cache. If any meta is displayed, the cache is
+	 * kept, because the formatter may only read it once all users have been loaded.
+	 *
+	 * @param array    $query_args WP_User_Query arguments.
+	 * @param string[] $fields     Fields that will be displayed.
+	 * @return \Generator<int, \WP_User>
+	 */
+	private function query_users_in_chunks( $query_args, $fields ) {
+		$columns     = [ 'ID', 'user_login', 'user_pass', 'user_nicename', 'user_email', 'user_url', 'user_registered', 'user_activation_key', 'user_status', 'display_name' ];
+		$need_url    = in_array( 'url', $fields, true );
+		$clear_cache = true;
+		foreach ( $fields as $field ) {
+			if (
+				! in_array( $field, [ 'url', 'roles' ], true )
+				&& ! in_array( $field, $columns, true )
+				&& ! in_array( 'user_' . $field, $columns, true )
+				&& ! property_exists( 'WP_User', $field )
+			) {
+				$clear_cache = false;
+			}
+		}
 
-					// @phpstan-ignore assign.propertyType
-					$user->roles = implode( ',', $user->roles );
+		$ids = array_map( 'intval', (array) get_users( array_merge( $query_args, [ 'fields' => 'ids' ] ) ) );
+
+		$chunk_args = $query_args;
+		unset( $chunk_args['number'], $chunk_args['offset'], $chunk_args['paged'] );
+		// The order is restored from $ids below.
+		$chunk_args['fields'] = 'all_with_meta';
+
+		foreach ( array_chunk( $ids, self::LIST_CHUNK_SIZE ) as $chunk ) {
+			$chunk_args['include'] = $chunk;
+
+			$users = [];
+			foreach ( get_users( $chunk_args ) as $user ) {
+				if ( $user instanceof \WP_User ) {
+					$users[ $user->ID ] = $user;
+				}
+			}
+
+			foreach ( $chunk as $id ) {
+				if ( ! isset( $users[ $id ] ) ) {
+					continue;
+				}
+
+				$user = $users[ $id ];
+				// @phpstan-ignore assign.propertyType
+				$user->roles = implode( ',', $user->roles );
+				if ( $need_url ) {
 					// @phpstan-ignore property.notFound
 					$user->url = get_author_posts_url( $user->ID, $user->user_nicename );
-					return $user;
 				}
-			);
+				yield $user;
+			}
 
-			$formatter->display_items( $iterator );
+			unset( $users );
+			if ( $clear_cache ) {
+				self::clear_runtime_object_cache();
+			}
 		}
 	}
 
