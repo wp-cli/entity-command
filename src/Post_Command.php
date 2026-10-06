@@ -27,11 +27,6 @@ use WP_CLI\Utils;
  */
 class Post_Command extends CommandWithDBObject {
 
-	/**
-	 * Number of posts `wp post list` loads from the database at a time.
-	 */
-	const LIST_CHUNK_SIZE = 500;
-
 	protected $obj_type   = 'post';
 	protected $obj_fields = [
 		'ID',
@@ -1132,19 +1127,6 @@ class Post_Command extends CommandWithDBObject {
 			if ( $clear_cache ) {
 				self::clear_runtime_object_cache();
 			}
-		}
-	}
-
-	/**
-	 * Free the memory held by the in-process object cache.
-	 *
-	 * Persistent object caches are left alone unless they can flush their in-process part only.
-	 */
-	private static function clear_runtime_object_cache() {
-		if ( function_exists( 'wp_cache_flush_runtime' ) && function_exists( 'wp_cache_supports' ) && wp_cache_supports( 'flush_runtime' ) ) {
-			wp_cache_flush_runtime();
-		} elseif ( ! wp_using_ext_object_cache() ) {
-			wp_cache_flush();
 		}
 	}
 
