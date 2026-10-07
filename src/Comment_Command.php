@@ -524,8 +524,7 @@ class Comment_Command extends CommandWithDBObject {
 
 		// Threaded results are nested, so they can't be loaded in chunks.
 		if ( ! in_array( $formatter->format, [ 'count', 'ids' ], true ) && empty( $assoc_args['hierarchical'] ) ) {
-			$fields = $formatter->field ? [ $formatter->field ] : (array) $formatter->fields;
-			$formatter->display_items( $this->query_comments_in_chunks( $assoc_args, $fields ) );
+			$formatter->display_items( $this->query_comments_in_chunks( $assoc_args, $need_url ) );
 			return;
 		}
 
@@ -574,23 +573,15 @@ class Comment_Command extends CommandWithDBObject {
 	 * a chunk at a time, and the object cache is cleared after each chunk. Formats that
 	 * can be written item by item are then streamed by the formatter.
 	 *
-	 * Fields that WP_Comment reads from the comment's post are read from the object
-	 * cache. If any of them are displayed, the cache is kept, because the formatter may
-	 * only read them once all comments have been loaded.
+	 * Fields that WP_Comment reads from the comment's post are read from the object cache.
+	 * The formatter reads the requested fields of each comment while it is the current
+	 * item, before the cache of its chunk is cleared, even when it can't stream them.
 	 *
 	 * @param array<string, mixed> $query_args WP_Comment_Query arguments.
-	 * @param string[]             $fields     Fields that will be displayed.
+	 * @param bool                 $need_url   Whether to add the `url` property to each comment.
 	 * @return \Generator<int, \WP_Comment>
 	 */
-	private function query_comments_in_chunks( $query_args, $fields ) {
-		$need_url    = in_array( 'url', $fields, true );
-		$clear_cache = true;
-		foreach ( $fields as $field ) {
-			if ( 'url' !== $field && ! property_exists( 'WP_Comment', $field ) && ! property_exists( 'WP_Comment', 'comment_' . $field ) ) {
-				$clear_cache = false;
-			}
-		}
-
+	private function query_comments_in_chunks( $query_args, $need_url ) {
 		$result = ( new WP_Comment_Query() )->query(
 			array_merge(
 				$query_args,
@@ -616,6 +607,8 @@ class Comment_Command extends CommandWithDBObject {
 		$chunk_args['fields']        = '';
 		$chunk_args['count']         = false;
 		$chunk_args['no_found_rows'] = true;
+		// Load the posts of each chunk in one query, as fields like `post_title` read them.
+		$chunk_args['update_comment_post_cache'] = true;
 
 		foreach ( array_chunk( $ids, self::LIST_CHUNK_SIZE ) as $chunk ) {
 			$chunk_args['comment__in'] = $chunk;
@@ -641,9 +634,7 @@ class Comment_Command extends CommandWithDBObject {
 			}
 
 			unset( $comments );
-			if ( $clear_cache ) {
-				self::clear_runtime_object_cache();
-			}
+			self::clear_runtime_object_cache();
 		}
 	}
 
