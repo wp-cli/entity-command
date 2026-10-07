@@ -1057,8 +1057,8 @@ class Post_Command extends CommandWithDBObject {
 			$query                = new WP_Query( $query_args );
 			$formatter->display_items( $query->posts ?? [] );
 		} else {
-			$fields = $formatter->field ? [ $formatter->field ] : (array) $formatter->fields;
-			$formatter->display_items( $this->query_posts_in_chunks( $query_args, $fields ) );
+			$need_url = 'url' === $formatter->field || in_array( 'url', (array) $formatter->fields, true );
+			$formatter->display_items( $this->query_posts_in_chunks( $query_args, $need_url ) );
 		}
 	}
 
@@ -1070,22 +1070,14 @@ class Post_Command extends CommandWithDBObject {
 	 * chunk. Formats that can be written item by item are then streamed by the formatter.
 	 *
 	 * Fields that WP_Post computes on access, like post meta, are read from the object
-	 * cache. If any of them are displayed, the cache is kept, because the formatter may
-	 * only read them once all posts have been loaded.
+	 * cache. The formatter reads the requested fields of each post while it is the current
+	 * item, before the cache of its chunk is cleared, even when it can't stream them.
 	 *
 	 * @param array<string, mixed> $query_args WP_Query arguments.
-	 * @param string[]             $fields     Fields that will be displayed.
+	 * @param bool                 $need_url   Whether to add the `url` property to each post.
 	 * @return \Generator<int, \WP_Post>
 	 */
-	private function query_posts_in_chunks( $query_args, $fields ) {
-		$need_url    = in_array( 'url', $fields, true );
-		$clear_cache = true;
-		foreach ( $fields as $field ) {
-			if ( 'url' !== $field && ! property_exists( 'WP_Post', $field ) && ! property_exists( 'WP_Post', 'post_' . $field ) ) {
-				$clear_cache = false;
-			}
-		}
-
+	private function query_posts_in_chunks( $query_args, $need_url ) {
 		/** @var int[] $ids */
 		$ids = ( new WP_Query( array_merge( $query_args, [ 'fields' => 'ids' ] ) ) )->posts;
 
@@ -1124,9 +1116,7 @@ class Post_Command extends CommandWithDBObject {
 			}
 
 			unset( $posts, $query );
-			if ( $clear_cache ) {
-				self::clear_runtime_object_cache();
-			}
+			self::clear_runtime_object_cache();
 		}
 	}
 
