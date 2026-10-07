@@ -177,8 +177,8 @@ class User_Command extends CommandWithDBObject {
 		} elseif ( 'count' === $formatter->format ) {
 			$formatter->display_items( get_users( $assoc_args ) );
 		} else {
-			$fields = $formatter->field ? [ $formatter->field ] : (array) $formatter->fields;
-			$formatter->display_items( $this->query_users_in_chunks( $assoc_args, $fields ) );
+			$need_url = 'url' === $formatter->field || in_array( 'url', (array) $formatter->fields, true );
+			$formatter->display_items( $this->query_users_in_chunks( $assoc_args, $need_url ) );
 		}
 	}
 
@@ -189,28 +189,15 @@ class User_Command extends CommandWithDBObject {
 	 * loaded a chunk at a time, and the object cache is cleared after each chunk. Formats
 	 * that can be written item by item are then streamed by the formatter.
 	 *
-	 * User meta is read from the object cache. If any meta is displayed, the cache is
-	 * kept, because the formatter may only read it once all users have been loaded.
+	 * User meta is read from the object cache. The formatter reads the requested fields of
+	 * each user while it is the current item, before the cache of its chunk is cleared,
+	 * even when it can't stream them.
 	 *
-	 * @param array    $query_args WP_User_Query arguments.
-	 * @param string[] $fields     Fields that will be displayed.
+	 * @param array $query_args WP_User_Query arguments.
+	 * @param bool  $need_url   Whether to add the `url` property to each user.
 	 * @return \Generator<int, \WP_User>
 	 */
-	private function query_users_in_chunks( $query_args, $fields ) {
-		$columns     = [ 'ID', 'user_login', 'user_pass', 'user_nicename', 'user_email', 'user_url', 'user_registered', 'user_activation_key', 'user_status', 'display_name' ];
-		$need_url    = in_array( 'url', $fields, true );
-		$clear_cache = true;
-		foreach ( $fields as $field ) {
-			if (
-				! in_array( $field, [ 'url', 'roles' ], true )
-				&& ! in_array( $field, $columns, true )
-				&& ! in_array( 'user_' . $field, $columns, true )
-				&& ! property_exists( 'WP_User', $field )
-			) {
-				$clear_cache = false;
-			}
-		}
-
+	private function query_users_in_chunks( $query_args, $need_url ) {
 		$ids = array_map( 'intval', (array) get_users( array_merge( $query_args, [ 'fields' => 'ids' ] ) ) );
 
 		$chunk_args = $query_args;
@@ -244,9 +231,7 @@ class User_Command extends CommandWithDBObject {
 			}
 
 			unset( $users );
-			if ( $clear_cache ) {
-				self::clear_runtime_object_cache();
-			}
+			self::clear_runtime_object_cache();
 		}
 	}
 
