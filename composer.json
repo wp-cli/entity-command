@@ -148,6 +148,7 @@
             "post url-to-id",
             "post has-blocks",
             "post has-block",
+            "post convert-to-blocks",
             "post block",
             "post block clone",
             "post block count",
