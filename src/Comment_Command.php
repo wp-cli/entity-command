@@ -520,6 +520,14 @@ class Comment_Command extends CommandWithDBObject {
 			$assoc_args['count'] = true;
 		}
 
+		$need_url = 'url' === $formatter->field || in_array( 'url', (array) $formatter->fields, true );
+
+		// Threaded results are nested, so they can't be loaded in chunks.
+		if ( ! in_array( $formatter->format, [ 'count', 'ids' ], true ) && empty( $assoc_args['hierarchical'] ) ) {
+			$formatter->display_items( $this->query_comments_in_chunks( $assoc_args, $need_url ) );
+			return;
+		}
+
 		$query    = new WP_Comment_Query();
 		$comments = $query->query( $assoc_args );
 
@@ -541,7 +549,7 @@ class Comment_Command extends CommandWithDBObject {
 				$items = wp_list_pluck( $comments, 'comment_ID' );
 
 				$comments = $items;
-			} elseif ( is_array( $comments ) ) {
+			} elseif ( is_array( $comments ) && $need_url ) {
 				$comments = array_map(
 					function ( $comment ) {
 						/**
@@ -555,6 +563,78 @@ class Comment_Command extends CommandWithDBObject {
 				);
 			}
 			$formatter->display_items( $comments );
+		}
+	}
+
+	/**
+	 * Query comments in chunks, so that they don't all have to be held in memory at once.
+	 *
+	 * The IDs of all matching comments are queried first. The comments are then loaded
+	 * a chunk at a time, and the object cache is cleared after each chunk. Formats that
+	 * can be written item by item are then streamed by the formatter.
+	 *
+	 * Fields that WP_Comment reads from the comment's post are read from the object cache.
+	 * The formatter reads the requested fields of each comment while it is the current
+	 * item, before the cache of its chunk is cleared, even when it can't stream them.
+	 *
+	 * @param array<string, mixed> $query_args WP_Comment_Query arguments.
+	 * @param bool                 $need_url   Whether to add the `url` property to each comment.
+	 * @return \Generator<int, \WP_Comment>
+	 */
+	private function query_comments_in_chunks( $query_args, $need_url ) {
+		$result = ( new WP_Comment_Query() )->query(
+			array_merge(
+				$query_args,
+				[
+					'fields' => 'ids',
+					'count'  => false,
+				]
+			)
+		);
+
+		$ids = [];
+		foreach ( is_array( $result ) ? $result : [] as $id ) {
+			if ( is_numeric( $id ) ) {
+				$ids[] = (int) $id;
+			}
+		}
+
+		$chunk_args = $query_args;
+		unset( $chunk_args['number'], $chunk_args['offset'], $chunk_args['paged'] );
+		// The order is restored from $ids below. Ordering by `comment__in` in SQL would
+		// need a FIELD() call with one argument per comment, which SQLite does not allow.
+		$chunk_args['orderby']       = 'none';
+		$chunk_args['fields']        = '';
+		$chunk_args['count']         = false;
+		$chunk_args['no_found_rows'] = true;
+		// Load the posts of each chunk in one query, as fields like `post_title` read them.
+		$chunk_args['update_comment_post_cache'] = true;
+
+		foreach ( array_chunk( $ids, self::LIST_CHUNK_SIZE ) as $chunk ) {
+			$chunk_args['comment__in'] = $chunk;
+
+			$comments = [];
+			foreach ( (array) ( new WP_Comment_Query() )->query( $chunk_args ) as $comment ) {
+				if ( $comment instanceof \WP_Comment ) {
+					$comments[ (int) $comment->comment_ID ] = $comment;
+				}
+			}
+
+			foreach ( $chunk as $id ) {
+				if ( ! isset( $comments[ (int) $id ] ) ) {
+					continue;
+				}
+
+				$comment = $comments[ (int) $id ];
+				if ( $need_url ) {
+					// @phpstan-ignore property.notFound
+					$comment->url = get_comment_link( $comment );
+				}
+				yield $comment;
+			}
+
+			unset( $comments );
+			self::clear_runtime_object_cache();
 		}
 	}
 

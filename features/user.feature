@@ -1035,3 +1035,30 @@ Feature: Manage WordPress users
       """
       true
       """
+
+  Scenario: List more users than are loaded from the database at a time
+    Given a WP install
+    And I run `wp user generate --count=600`
+    And I run `wp user meta update 1 batch_meta admin-value`
+    And I run `wp user list --orderby=ID --order=asc --format=ids`
+    And save STDOUT as {IDS}
+
+    When I run `wp user list --orderby=ID --order=asc --field=ID | tr '\n' ' ' | sed 's/ $//'`
+    Then STDOUT should be:
+      """
+      {IDS}
+      """
+
+    When I run `wp user list --fields=ID,user_login,roles --format=csv | wc -l`
+    Then STDOUT should contain:
+      """
+      602
+      """
+
+    When I run `wp user list --orderby=ID --order=asc --number=2 --fields=ID,batch_meta,roles --format=csv`
+    Then STDOUT should be:
+      """
+      ID,batch_meta,roles
+      1,admin-value,administrator
+      2,,subscriber
+      """
