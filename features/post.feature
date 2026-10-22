@@ -1152,3 +1152,46 @@ Feature: Manage WordPress posts
       2021-02-02
       """
     And STDOUT should not be empty
+
+  Scenario: List more posts than are loaded from the database at a time
+    Given a WP install
+    And I run `wp post generate --count=1200 --post_date="2020-01-01 00:00:00"`
+    And I run `wp post list --post_status=publish --orderby=ID --order=asc --format=ids`
+    And save STDOUT as {IDS}
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --field=ID | tr '\n' ' ' | sed 's/ $//'`
+    Then STDOUT should be:
+      """
+      {IDS}
+      """
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --fields=ID,post_title --format=csv | wc -l`
+    Then STDOUT should contain:
+      """
+      1202
+      """
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=desc --posts_per_page=2 --fields=ID,url --format=csv`
+    Then STDOUT should match /^ID,url\n(\d+),https?:\/\/example\.com\/\?p=\1\n(\d+),https?:\/\/example\.com\/\?p=\2$/
+
+  Scenario: List post meta as a field for some posts only
+    Given a WP install
+    And I run `wp post create --post_title=First --post_status=publish --porcelain`
+    And save STDOUT as {FIRST}
+    And I run `wp post create --post_title=Second --post_status=publish --porcelain`
+    And save STDOUT as {SECOND}
+    And I run `wp post meta add {SECOND} batch_meta second-value`
+
+    When I run `wp post list --post__in={FIRST},{SECOND} --orderby=ID --order=asc --fields=ID,batch_meta --format=csv`
+    Then STDOUT should be:
+      """
+      ID,batch_meta
+      {FIRST},
+      {SECOND},second-value
+      """
+
+    When I try `wp post list --post__in={FIRST},{SECOND} --fields=ID,missing_meta --format=csv`
+    Then STDERR should be:
+      """
+      Warning: Field not found in any item: missing_meta.
+      """
