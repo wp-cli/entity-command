@@ -667,10 +667,10 @@ Feature: Manage WordPress users
 
   Scenario: Mark/remove a user from spam
     Given a WP multisite install
-    And I run `wp user create bumblebee bbee@example.com --role=author --porcelain`
-    And save STDOUT as {BBEE_ID}
-    And I run `wp user create oprime oprime@example.com --role=author --porcelain`
-    And save STDOUT as {OP_ID}
+    And these setup commands:
+      | command                                                             | save    |
+      | wp user create bumblebee bbee@example.com --role=author --porcelain | BBEE_ID |
+      | wp user create oprime oprime@example.com --role=author --porcelain  | OP_ID   |
     And I run `wp user get bumblebee`
     And STDOUT should not be empty
     And I run `wp user get oprime`

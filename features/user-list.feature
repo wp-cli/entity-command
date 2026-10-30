@@ -3,8 +3,10 @@ Feature: List WordPress users
   @require-wp-4.4
   Scenario: List users of specific roles
     Given a WP install
-    And I run `wp user create bobjones bob@example.com --role=author`
-    And I run `wp user create sally sally@example.com --role=editor`
+    And these setup commands:
+      | command                                               |
+      | wp user create bobjones bob@example.com --role=author |
+      | wp user create sally sally@example.com --role=editor  |
 
     When I run `wp user list --field=user_login`
     Then STDOUT should be:

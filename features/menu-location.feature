@@ -11,9 +11,11 @@ Feature: Manage WordPress menu locations
       | location       | description        |
       | primary        | Primary Menu       |
 
-    When I run `wp menu create "Primary Menu"`
-    And I run `wp menu location assign primary-menu primary`
-    And I run `wp menu list --fields=slug,locations`
+    Given these setup commands:
+      | command                                      |
+      | wp menu create "Primary Menu"                |
+      | wp menu location assign primary-menu primary |
+    When I run `wp menu list --fields=slug,locations`
     Then STDOUT should be a table containing rows:
       | slug            | locations       |
       | primary-menu    | primary         |
