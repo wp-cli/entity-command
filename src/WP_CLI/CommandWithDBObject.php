@@ -15,6 +15,11 @@ use WP_Error;
 abstract class CommandWithDBObject extends WP_CLI_Command {
 
 	/**
+	 * Number of objects that list commands load from the database at a time.
+	 */
+	const LIST_CHUNK_SIZE = 500;
+
+	/**
 	 * @var string $object_type WordPress' expected name for the object.
 	 */
 	protected $obj_type;
@@ -183,5 +188,19 @@ abstract class CommandWithDBObject extends WP_CLI_Command {
 			$fields = $this->obj_fields;
 		}
 		return new Formatter( $assoc_args, $fields, $this->obj_type );
+	}
+
+	/**
+	 * Free the memory held by the in-process object cache.
+	 *
+	 * List commands call this after each chunk of objects. Persistent object
+	 * caches are left alone unless they can flush their in-process part only.
+	 */
+	protected static function clear_runtime_object_cache() {
+		if ( function_exists( 'wp_cache_flush_runtime' ) && function_exists( 'wp_cache_supports' ) && wp_cache_supports( 'flush_runtime' ) ) {
+			wp_cache_flush_runtime();
+		} elseif ( ! wp_using_ext_object_cache() ) {
+			wp_cache_flush();
+		}
 	}
 }
