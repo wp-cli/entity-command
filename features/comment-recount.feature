@@ -3,9 +3,11 @@ Feature: Recount comments on a post
   Scenario: Recount comments on a post
     Given a WP install
 
-    When I run `wp comment create --comment_post_ID=1 --comment_approved=1 --porcelain`
-    And I run `wp comment create --comment_post_ID=1 --comment_approved=1 --porcelain`
-    And I run `wp post get 1 --field=comment_count`
+    Given these setup commands:
+      | command                                                                |
+      | wp comment create --comment_post_ID=1 --comment_approved=1 --porcelain |
+      | wp comment create --comment_post_ID=1 --comment_approved=1 --porcelain |
+    When I run `wp post get 1 --field=comment_count`
     Then STDOUT should be:
       """
       3

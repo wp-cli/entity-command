@@ -36,8 +36,10 @@ Feature: List WordPress options
   @skip-object-cache
   Scenario: Using the `--autoload=on` flag excludes transients by default
     Given a WP install
-    And I run `wp option add sample_autoload_option 'sample_autoload_option' --autoload=yes`
-    And I run `wp transient set sample_autoload_transient 'sample_autoload_transient'`
+    And these setup commands:
+      | command                                                                      |
+      | wp option add sample_autoload_option 'sample_autoload_option' --autoload=yes |
+      | wp transient set sample_autoload_transient 'sample_autoload_transient'       |
 
     When I run `wp option list --autoload=on`
     Then STDOUT should contain:
@@ -62,9 +64,11 @@ Feature: List WordPress options
   Scenario: List option with exclude pattern
     Given a WP install
 
-    When I run `wp option add sample_test_field_one sample_test_field_value_one`
-    And I run `wp option add sample_test_field_two sample_test_field_value_two`
-    And I run `wp option list --search="sample_test_field_*" --format=csv`
+    Given these setup commands:
+      | command                                                         |
+      | wp option add sample_test_field_one sample_test_field_value_one |
+      | wp option add sample_test_field_two sample_test_field_value_two |
+    When I run `wp option list --search="sample_test_field_*" --format=csv`
     Then STDOUT should be:
       """
       option_name,option_value
@@ -93,8 +97,10 @@ Feature: List WordPress options
 
   Scenario: List option with sorting option
     Given a WP install
-    And I run `wp option add sample_test_field_one sample_test_field_value_one`
-    And I run `wp option add sample_test_field_two sample_test_field_value_two`
+    And these setup commands:
+      | command                                                         |
+      | wp option add sample_test_field_one sample_test_field_value_one |
+      | wp option add sample_test_field_two sample_test_field_value_two |
 
     When I run `wp option list --search="sample_test_field_*" --format=csv --orderby=option_id --order=asc`
     Then STDOUT should be:
@@ -178,10 +184,12 @@ Feature: List WordPress options
 
   Scenario: Using the `--autoload=on` flag
     Given a WP install
-    And I run `wp option add sample_autoload_one 'sample_value_one' --autoload=yes`
-    And I run `wp option add sample_autoload_two 'sample_value_two' --autoload=no`
-    And I run `wp option add sample_autoload_three 'sample_value_three' --autoload=on`
-    And I run `wp option add sample_autoload_four 'sample_value_four' --autoload=off`
+    And these setup commands:
+      | command                                                                |
+      | wp option add sample_autoload_one 'sample_value_one' --autoload=yes    |
+      | wp option add sample_autoload_two 'sample_value_two' --autoload=no     |
+      | wp option add sample_autoload_three 'sample_value_three' --autoload=on |
+      | wp option add sample_autoload_four 'sample_value_four' --autoload=off  |
 
     When I run `wp option list --autoload=on`
     Then STDOUT should not contain:
@@ -203,10 +211,12 @@ Feature: List WordPress options
 
   Scenario: Using the `--autoload=off` flag
     Given a WP install
-    And I run `wp option add sample_autoload_one 'sample_value_one' --autoload=yes`
-    And I run `wp option add sample_autoload_two 'sample_value_two' --autoload=no`
-    And I run `wp option add sample_autoload_three 'sample_value_three' --autoload=on`
-    And I run `wp option add sample_autoload_four 'sample_value_four' --autoload=off`
+    And these setup commands:
+      | command                                                                |
+      | wp option add sample_autoload_one 'sample_value_one' --autoload=yes    |
+      | wp option add sample_autoload_two 'sample_value_two' --autoload=no     |
+      | wp option add sample_autoload_three 'sample_value_three' --autoload=on |
+      | wp option add sample_autoload_four 'sample_value_four' --autoload=off  |
 
     When I run `wp option list --autoload=off`
     Then STDOUT should not contain:

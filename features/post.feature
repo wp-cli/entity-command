@@ -394,9 +394,11 @@ Feature: Manage WordPress posts
       | Sample Page  | sample-page  | publish      |
 
   Scenario: List posts with date query
-    When I run `wp post create --post_title='old post' --post_date='2023-01-24T09:52:00.000Z'`
-    And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
-    And I run `wp post list --field=post_title --date_query='{"before":{"year":"2024"}}'`
+    Given these setup commands:
+      | command                                                                       |
+      | wp post create --post_title='old post' --post_date='2023-01-24T09:52:00.000Z' |
+      | wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z' |
+    When I run `wp post list --field=post_title --date_query='{"before":{"year":"2024"}}'`
     Then STDOUT should contain:
       """
       old post
@@ -407,12 +409,14 @@ Feature: Manage WordPress posts
       """
 
   Scenario: List posts with tax query
-    When I run `wp term create category "First Category" --porcelain`
-    And I run `wp term create category "Second Category" --porcelain`
-    And I run `wp post create --post_title='post-1' --post_category="First Category"`
-    And I run `wp post create --post_title='post-2' --post_category="Second Category"`
-    And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
-    And I run `wp post list --field=post_title --tax_query='[{"taxonomy":"category","field":"slug","terms":"first-category"}]'`
+    Given these setup commands:
+      | command                                                                       |
+      | wp term create category "First Category" --porcelain                          |
+      | wp term create category "Second Category" --porcelain                         |
+      | wp post create --post_title='post-1' --post_category="First Category"         |
+      | wp post create --post_title='post-2' --post_category="Second Category"        |
+      | wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z' |
+    When I run `wp post list --field=post_title --tax_query='[{"taxonomy":"category","field":"slug","terms":"first-category"}]'`
     Then STDOUT should contain:
       """
       post-1
@@ -423,13 +427,13 @@ Feature: Manage WordPress posts
       """
 
   Scenario: Creating/updating posts with taxonomies
-    When I run `wp term create category "First Category" --porcelain`
-    And save STDOUT as {CAT_1}
-    And I run `wp term create category "Second Category" --porcelain`
-    And save STDOUT as {CAT_2}
-    And I run `wp term create post_tag "Term One" --porcelain`
-    And I run `wp term create post_tag "Term Two" --porcelain`
-    And I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"category":[{CAT_1},{CAT_2}],"post_tag":["term-one", "term-two"]}' --porcelain`
+    Given these setup commands:
+      | command                                               | save  |
+      | wp term create category "First Category" --porcelain  | CAT_1 |
+      | wp term create category "Second Category" --porcelain | CAT_2 |
+      | wp term create post_tag "Term One" --porcelain        |       |
+      | wp term create post_tag "Term Two" --porcelain        |       |
+    When I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"category":[{CAT_1},{CAT_2}],"post_tag":["term-one", "term-two"]}' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
