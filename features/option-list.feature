@@ -225,3 +225,30 @@ Feature: List WordPress options
       """
       sample_value_four
       """
+
+  @require-wp-6.6
+  Scenario: Using the `--autoload` flag with the values WordPress picks automatically
+    Given a WP install
+    And I run `wp option update sample_auto_option 'sample_value_auto'`
+    And I run `wp eval 'add_filter( "wp_default_autoload_value", "__return_true" ); add_option( "sample_auto_on_option", "sample_value_auto_on" );'`
+    And I run `wp eval 'add_filter( "wp_default_autoload_value", "__return_false" ); add_option( "sample_auto_off_option", "sample_value_auto_off" );'`
+
+    When I run `wp option list --search="sample_auto*" --fields=option_name,autoload --orderby=option_name`
+    Then STDOUT should be a table containing rows:
+      | option_name            | autoload |
+      | sample_auto_off_option | auto-off |
+      | sample_auto_on_option  | auto-on  |
+      | sample_auto_option     | auto     |
+
+    When I run `wp option list --autoload=on --search="sample_auto*" --field=option_name --orderby=option_name`
+    Then STDOUT should be:
+      """
+      sample_auto_on_option
+      sample_auto_option
+      """
+
+    When I run `wp option list --autoload=off --search="sample_auto*" --field=option_name`
+    Then STDOUT should be:
+      """
+      sample_auto_off_option
+      """
