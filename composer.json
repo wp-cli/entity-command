@@ -20,7 +20,7 @@
         "wp-cli/extension-command": "^1.2 || ^2 || ^3",
         "wp-cli/media-command": "^1.1 || ^2 || ^3",
         "wp-cli/super-admin-command": "^1 || ^2 || ^3",
-        "wp-cli/wp-cli-tests": "^5"
+        "wp-cli/wp-cli-tests": "dev-only-these-themes as 5.3.99"
     },
     "config": {
         "process-timeout": 7200,
