@@ -313,10 +313,10 @@ Feature: Manage sites in a multisite installation
 
   Scenario: Archive/unarchive a site
     Given a WP multisite install
-    And I run `wp site create --slug=first --porcelain`
-    And save STDOUT as {FIRST_SITE}
-    And I run `wp site create --slug=second --porcelain`
-    And save STDOUT as {SECOND_SITE}
+    And these sites:
+      | slug   | save        |
+      | first  | FIRST_SITE  |
+      | second | SECOND_SITE |
 
     When I run `wp site archive {FIRST_SITE}`
     Then STDOUT should be:
@@ -366,10 +366,10 @@ Feature: Manage sites in a multisite installation
 
   Scenario: Activate/deactivate a site
     Given a WP multisite install
-    And I run `wp site create --slug=first --porcelain`
-    And save STDOUT as {FIRST_SITE}
-    And I run `wp site create --slug=second --porcelain`
-    And save STDOUT as {SECOND_SITE}
+    And these sites:
+      | slug   | save        |
+      | first  | FIRST_SITE  |
+      | second | SECOND_SITE |
 
     When I run `wp site deactivate {FIRST_SITE}`
     Then STDOUT should be:
@@ -419,10 +419,10 @@ Feature: Manage sites in a multisite installation
 
   Scenario: Mark/remove a site from spam
     Given a WP multisite install
-    And I run `wp site create --slug=first --porcelain`
-    And save STDOUT as {FIRST_SITE}
-    And I run `wp site create --slug=second --porcelain`
-    And save STDOUT as {SECOND_SITE}
+    And these sites:
+      | slug   | save        |
+      | first  | FIRST_SITE  |
+      | second | SECOND_SITE |
 
     When I run `wp site spam {FIRST_SITE}`
     Then STDOUT should be:
@@ -472,10 +472,10 @@ Feature: Manage sites in a multisite installation
 
   Scenario: Mark/remove a site as mature
     Given a WP multisite install
-    And I run `wp site create --slug=first --porcelain`
-    And save STDOUT as {FIRST_SITE}
-    And I run `wp site create --slug=second --porcelain`
-    And save STDOUT as {SECOND_SITE}
+    And these sites:
+      | slug   | save        |
+      | first  | FIRST_SITE  |
+      | second | SECOND_SITE |
 
     When I run `wp site mature {FIRST_SITE}`
     Then STDOUT should be:
@@ -525,10 +525,10 @@ Feature: Manage sites in a multisite installation
 
   Scenario: Set/Unset a site as public
     Given a WP multisite install
-    And I run `wp site create --slug=first --porcelain`
-    And save STDOUT as {FIRST_SITE}
-    And I run `wp site create --slug=second --porcelain`
-    And save STDOUT as {SECOND_SITE}
+    And these sites:
+      | slug   | save        |
+      | first  | FIRST_SITE  |
+      | second | SECOND_SITE |
 
     When I run `wp site private {FIRST_SITE}`
     Then STDOUT should be:
