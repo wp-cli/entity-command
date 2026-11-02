@@ -25,9 +25,11 @@ Feature: Manage WordPress menus
       0
       """
 
-    When I run `wp menu create "First Menu"`
-    And I run `wp menu create "Second Menu"`
-    And I run `wp menu list --fields=name,slug`
+    Given these setup commands:
+      | command                      |
+      | wp menu create "First Menu"  |
+      | wp menu create "Second Menu" |
+    When I run `wp menu list --fields=name,slug`
     Then STDOUT should be a table containing rows:
       | name           | slug           |
       | First Menu     | first-menu     |

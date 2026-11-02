@@ -108,8 +108,10 @@ Feature: Import users from CSV
     Given a WP install
 
     When I run `wp user delete 1 --yes`
-    And I run `wp user create bobjones bobjones@example.com --display_name="Bob Jones" --role=contributor`
-    And I run `wp user create billjones billjones@example.com --display_name="Bill Jones" --role=administrator`
+    And these setup commands:
+      | command                                                                                         |
+      | wp user create bobjones bobjones@example.com --display_name="Bob Jones" --role=contributor      |
+      | wp user create billjones billjones@example.com --display_name="Bill Jones" --role=administrator |
     And I run `wp user add-role billjones author`
     Then STDOUT should not be empty
 
