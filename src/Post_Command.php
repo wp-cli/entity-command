@@ -27,6 +27,11 @@ use WP_CLI\Utils;
  */
 class Post_Command extends CommandWithDBObject {
 
+	/**
+	 * Number of posts `wp post list` loads from the database at a time.
+	 */
+	const LIST_CHUNK_SIZE = 500;
+
 	protected $obj_type   = 'post';
 	protected $obj_fields = [
 		'ID',
@@ -1057,20 +1062,79 @@ class Post_Command extends CommandWithDBObject {
 			$query                = new WP_Query( $query_args );
 			$formatter->display_items( $query->posts ?? [] );
 		} else {
-			$query = new WP_Query( $query_args );
-			$posts = array_map(
-				function ( $post ) {
-					/**
-					 * @var \WP_Post $post
-					 */
+			$need_url = 'url' === $formatter->field || in_array( 'url', (array) $formatter->fields, true );
+			$formatter->display_items( $this->query_posts_in_chunks( $query_args, $need_url ) );
+		}
+	}
 
+	/**
+	 * Query posts in chunks, so that they don't all have to be held in memory at once.
+	 *
+	 * The IDs of all matching posts are queried first. The posts are then loaded a chunk
+	 * at a time with the same query arguments, and the object cache is cleared after each
+	 * chunk. Formats that can be written item by item are then streamed by the formatter.
+	 *
+	 * Fields that WP_Post computes on access, like post meta, are read from the object
+	 * cache. The formatter reads the requested fields of each post while it is the current
+	 * item, before the cache of its chunk is cleared, even when it can't stream them.
+	 *
+	 * @param array<string, mixed> $query_args WP_Query arguments.
+	 * @param bool                 $need_url   Whether to add the `url` property to each post.
+	 * @return \Generator<int, \WP_Post>
+	 */
+	private function query_posts_in_chunks( $query_args, $need_url ) {
+		/** @var int[] $ids */
+		$ids = ( new WP_Query( array_merge( $query_args, [ 'fields' => 'ids' ] ) ) )->posts;
+
+		$chunk_args = $query_args;
+		unset( $chunk_args['offset'], $chunk_args['paged'], $chunk_args['page'], $chunk_args['nopaging'] );
+		// The order is restored from $ids below. Ordering by `post__in` in SQL would
+		// need a FIELD() call with one argument per post, which SQLite does not allow.
+		$chunk_args['orderby']             = 'none';
+		$chunk_args['no_found_rows']       = true;
+		$chunk_args['ignore_sticky_posts'] = true;
+
+		foreach ( array_chunk( $ids, self::LIST_CHUNK_SIZE ) as $chunk ) {
+			$chunk_args['post__in']       = $chunk;
+			$chunk_args['posts_per_page'] = count( $chunk );
+
+			$query = new WP_Query( $chunk_args );
+
+			$posts = [];
+			foreach ( $query->posts ?? [] as $post ) {
+				if ( $post instanceof \WP_Post ) {
+					$posts[ $post->ID ] = $post;
+				}
+			}
+
+			foreach ( $chunk as $id ) {
+				if ( ! isset( $posts[ $id ] ) ) {
+					continue;
+				}
+
+				$post = $posts[ $id ];
+				if ( $need_url ) {
 					// @phpstan-ignore property.notFound
-					$post->url = get_permalink( $post->ID );
-					return $post;
-				},
-				$query->posts ?? []
-			);
-			$formatter->display_items( $posts );
+					$post->url = get_permalink( $post );
+				}
+				yield $post;
+			}
+
+			unset( $posts, $query );
+			self::clear_runtime_object_cache();
+		}
+	}
+
+	/**
+	 * Free the memory held by the in-process object cache.
+	 *
+	 * Persistent object caches are left alone unless they can flush their in-process part only.
+	 */
+	private static function clear_runtime_object_cache() {
+		if ( function_exists( 'wp_cache_flush_runtime' ) && function_exists( 'wp_cache_supports' ) && wp_cache_supports( 'flush_runtime' ) ) {
+			wp_cache_flush_runtime();
+		} elseif ( ! wp_using_ext_object_cache() ) {
+			wp_cache_flush();
 		}
 	}
 
