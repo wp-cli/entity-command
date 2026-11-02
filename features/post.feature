@@ -213,6 +213,7 @@ Feature: Manage WordPress posts
       Error: No such post category 'Test'.
       """
 
+  @require-bin-ex
   Scenario: Creating/getting/editing posts
     Given a content.html file:
       """
