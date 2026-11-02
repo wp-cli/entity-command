@@ -2,8 +2,7 @@ Feature: Manage WordPress menu locations
 
   Background:
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And these installed and active themes:
+    And only these installed and active themes:
       """
       twentytwelve
       """
