@@ -48,9 +48,11 @@ Feature: Manage WordPress comments
       """
     And the return code should be 1
 
-    When I run `wp comment create --comment_post_ID=1`
-    And I run `wp comment create --comment_post_ID=1`
-    And I run `wp comment delete 3 4`
+    Given these setup commands:
+      | command                               |
+      | wp comment create --comment_post_ID=1 |
+      | wp comment create --comment_post_ID=1 |
+    When I run `wp comment delete 3 4`
     Then STDOUT should be:
       """
       Success: Trashed comment 3.
