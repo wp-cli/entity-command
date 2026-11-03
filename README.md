@@ -4696,6 +4696,62 @@ or return code 1 if it does not.
 
 
 
+### wp post convert-to-blocks
+
+Converts the classic (non-block) content of one or more posts to block markup.
+
+~~~
+wp post convert-to-blocks <id>... [--dry-run]
+~~~
+
+Uses the server-side block conversion provided by the Gutenberg plugin
+(see https://github.com/WordPress/gutenberg/pull/82013) to turn classic
+HTML content into serialized block markup. Markup that no block claims
+is kept verbatim inside a Custom HTML block, so nothing is lost. Posts
+that already contain blocks or have no content are skipped.
+
+The conversion does not sanitize the markup. Saving the converted content
+applies the usual kses filtering for the current user context, so a run
+without `--user` is filtered as an untrusted author would be. Run the
+command with `--user=<administrator>` to keep markup that requires the
+`unfiltered_html` capability, such as iframes or scripts.
+
+Requires a Gutenberg build that provides `gutenberg_html_to_block_markup()`.
+
+**OPTIONS**
+
+	<id>...
+		One or more IDs of posts to convert.
+
+	[--dry-run]
+		Preview which posts would be converted, without saving any changes.
+
+**EXAMPLES**
+
+    # Convert a single post.
+    $ wp post convert-to-blocks 123
+    Converted post 123.
+    Success: Converted 1 of 1 posts.
+
+    # Convert every post of a post type.
+    $ wp post list --post_type=post --format=ids | xargs wp post convert-to-blocks
+    Converted post 123.
+    Converted post 124.
+    Warning: Post 125 already contains blocks.
+    Success: Converted 2 of 3 posts (1 skipped).
+
+    # Preview a conversion without saving.
+    $ wp post convert-to-blocks 123 --dry-run
+    Would convert post 123.
+    Success: Would convert 1 of 1 posts.
+
+    # Run as an administrator to keep markup that requires unfiltered_html.
+    $ wp post convert-to-blocks 123 --user=admin
+    Converted post 123.
+    Success: Converted 1 of 1 posts.
+
+
+
 ### wp post block
 
 Manages blocks within post content.
