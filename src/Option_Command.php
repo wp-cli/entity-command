@@ -454,6 +454,8 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( $value === $old_value && null === $autoload ) {
 			WP_CLI::success( "Value passed for '{$key}' option is unchanged." );
+		} elseif ( $value === $old_value ) {
+			$this->set_autoload( [ $key, $autoload ] );
 			// @phpstan-ignore argument.type
 		} elseif ( update_option( $key, $value, $autoload ) ) {
 				WP_CLI::success( "Updated '{$key}' option." );
