@@ -557,13 +557,17 @@ class Option_Command extends WP_CLI_Command {
 			wp_cache_set( 'notoptions', $notoptions, 'options' );
 		}
 
+		// Refresh the 'alloptions' cache like wp_set_option_autoload_values().
 		if ( ! defined( 'WP_INSTALLING' ) ) {
-			$alloptions = wp_load_alloptions( true );
-			if ( isset( $alloptions[ $option ] ) ) {
-				$alloptions[ $option ] = $previous->option_value;
-				wp_cache_set( 'alloptions', $alloptions, 'options' );
+			if ( in_array( $autoload, array( 'on', 'yes' ), true ) ) {
+				wp_cache_delete( $option, 'options' );
+				wp_cache_delete( 'alloptions', 'options' );
 			} else {
-				wp_cache_set( $option, $previous->option_value, 'options' );
+				$alloptions = wp_load_alloptions( true );
+				if ( isset( $alloptions[ $option ] ) ) {
+					unset( $alloptions[ $option ] );
+					wp_cache_set( 'alloptions', $alloptions, 'options' );
+				}
 			}
 		}
 
