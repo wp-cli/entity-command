@@ -201,6 +201,27 @@ Feature: Manage post term
       | term_id | name | slug |
       | 3       | 4    | 4    |
 
+  Scenario: Remove a term that is not assigned to the post
+    Given a WP install
+
+    When I run `wp post term add 1 post_tag apple`
+    And I run `wp term create post_tag banana`
+    Then STDOUT should not be empty
+
+    When I try `wp post term remove 1 post_tag banana`
+    Then STDERR should be:
+      """
+      Error: Failed to remove term.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I run `wp post term list 1 post_tag --field=slug`
+    Then STDOUT should be:
+      """
+      apple
+      """
+
   Scenario: Remove all terms from post
     Given a WP install
 
