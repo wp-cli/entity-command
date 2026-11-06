@@ -210,6 +210,30 @@ Feature: Manage WordPress options
       yes
       """
 
+    When I run `wp option update hello world --autoload=off`
+    Then STDOUT should be:
+      """
+      Success: Updated autoload value for 'hello' option.
+      """
+
+    When I run `wp option get-autoload hello`
+    Then STDOUT should be:
+      """
+      no
+      """
+
+    When I run `wp option update hello world --autoload=on`
+    Then STDOUT should be:
+      """
+      Success: Updated autoload value for 'hello' option.
+      """
+
+    When I run `wp option get-autoload hello`
+    Then STDOUT should be:
+      """
+      yes
+      """
+
   @require-wp-6.6
   Scenario: Update autoload value for custom option with an unchanged value
     Given a WP install
@@ -228,6 +252,30 @@ Feature: Manage WordPress options
       """
 
     When I run `wp option update hello world --autoload=on`
+    Then STDOUT should be:
+      """
+      Success: Updated autoload value for 'hello' option.
+      """
+
+    When I run `wp option get-autoload hello`
+    Then STDOUT should be:
+      """
+      on
+      """
+
+    When I run `wp option update hello world --autoload=no`
+    Then STDOUT should be:
+      """
+      Success: Updated autoload value for 'hello' option.
+      """
+
+    When I run `wp option get-autoload hello`
+    Then STDOUT should be:
+      """
+      off
+      """
+
+    When I run `wp option update hello world --autoload=yes`
     Then STDOUT should be:
       """
       Success: Updated autoload value for 'hello' option.

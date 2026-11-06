@@ -455,6 +455,13 @@ class Option_Command extends WP_CLI_Command {
 		if ( $value === $old_value && null === $autoload ) {
 			WP_CLI::success( "Value passed for '{$key}' option is unchanged." );
 		} elseif ( $value === $old_value ) {
+			// Store the value update_option() would: WordPress before 6.6 only autoloads 'yes'.
+			$autoload_on = in_array( $autoload, [ 'on', 'yes' ], true );
+			if ( Utils\wp_version_compare( '6.6', '<' ) ) {
+				$autoload = $autoload_on ? 'yes' : 'no';
+			} else {
+				$autoload = $autoload_on ? 'on' : 'off';
+			}
 			$this->set_autoload( [ $key, $autoload ] );
 			// @phpstan-ignore argument.type
 		} elseif ( update_option( $key, $value, $autoload ) ) {
