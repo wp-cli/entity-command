@@ -211,7 +211,7 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 
 		$label = count( $terms ) > 1 ? 'terms' : 'term';
 
-		if ( is_wp_error( $result ) ) {
+		if ( ! $result || is_wp_error( $result ) ) {
 			WP_CLI::error( "Failed to remove {$label}." );
 		}
 
