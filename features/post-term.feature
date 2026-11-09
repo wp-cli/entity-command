@@ -201,6 +201,41 @@ Feature: Manage post term
       | term_id | name | slug |
       | 3       | 4    | 4    |
 
+  Scenario: Set or add terms by a term id that does not exist
+    Given a WP install
+
+    When I run `wp post term add 1 post_tag apple banana`
+    Then STDOUT should be:
+      """
+      Success: Added terms.
+      """
+
+    When I try `wp post term set 1 post_tag 9999 --by=id`
+    Then STDERR should be:
+      """
+      Error: Could not find any term with the given ID.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I try `wp post term add 1 post_tag 9998 9999 --by=id`
+    Then STDERR should be:
+      """
+      Error: Could not find any term with the given IDs.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I run `wp post term list 1 post_tag --field=slug`
+    Then STDOUT should contain:
+      """
+      apple
+      """
+    And STDOUT should contain:
+      """
+      banana
+      """
+
   Scenario: Remove all terms from post
     Given a WP install
 
