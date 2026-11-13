@@ -150,6 +150,40 @@ Feature: Manage WordPress post revisions
     When I run `wp post revision diff {REVISION_ID} --field=post_title`
     Then the return code should be 0
 
+  Scenario: Diff shows percent signs in the compared content as they are
+    When I run `wp post create --post_title='Percent Test' --post_content='Start' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_content='Progress: 100%'`
+    Then STDOUT should contain:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post update {POST_ID} --post_content='Progress: 100% of https://example.com/my%20file.pdf'`
+    Then STDOUT should contain:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post list --post_type=revision --post_parent={POST_ID} --fields=ID --format=ids --orderby=ID --order=ASC`
+    Then STDOUT should not be empty
+    And save STDOUT as {REVISION_IDS}
+
+    When I run `echo "{REVISION_IDS}" | awk '{print $1}'`
+    Then save STDOUT as {REVISION_ID_1}
+
+    When I run `echo "{REVISION_IDS}" | awk '{print $2}'`
+    Then save STDOUT as {REVISION_ID_2}
+
+    When I run `wp post revision diff {REVISION_ID_1} {REVISION_ID_2}`
+    Then STDOUT should contain:
+      """
+      - Progress: 100%
+      + Progress: 100% of https://example.com/my%20file.pdf
+      """
+
   Scenario: Prune revisions keeping latest N
     When I run `wp post create --post_title='Prune Test' --post_content='Version 1' --porcelain`
     Then STDOUT should be a number

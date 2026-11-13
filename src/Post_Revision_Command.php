@@ -204,7 +204,7 @@ class Post_Revision_Command {
 			WP_CLI::colorize(
 				sprintf(
 					'%%y--- %s (%s) - ID %d%%n',
-					$from_revision->post_title,
+					$this->escape_color_tokens( $from_revision->post_title ),
 					$from_revision->post_modified,
 					$from_revision->ID
 				)
@@ -214,7 +214,7 @@ class Post_Revision_Command {
 			WP_CLI::colorize(
 				sprintf(
 					'%%y+++ %s (%s) - ID %d%%n',
-					$to_revision->post_title,
+					$this->escape_color_tokens( $to_revision->post_title ),
 					$to_revision->post_modified,
 					$to_revision->ID
 				)
@@ -243,23 +243,33 @@ class Post_Revision_Command {
 			} elseif ( $edit instanceof \Text_Diff_Op_add ) {
 				// Added lines - show in green
 				foreach ( $edit->final as $line ) {
-					WP_CLI::line( WP_CLI::colorize( '%g+ ' . $line . '%n' ) );
+					WP_CLI::line( WP_CLI::colorize( '%g+ ' . $this->escape_color_tokens( $line ) . '%n' ) );
 				}
 			} elseif ( $edit instanceof \Text_Diff_Op_delete ) {
 				// Deleted lines - show in red
 				foreach ( $edit->orig as $line ) {
-					WP_CLI::line( WP_CLI::colorize( '%r- ' . $line . '%n' ) );
+					WP_CLI::line( WP_CLI::colorize( '%r- ' . $this->escape_color_tokens( $line ) . '%n' ) );
 				}
 			} elseif ( $edit instanceof \Text_Diff_Op_change ) {
 				// Changed lines - show deletions in red, additions in green
 				foreach ( $edit->orig as $line ) {
-					WP_CLI::line( WP_CLI::colorize( '%r- ' . $line . '%n' ) );
+					WP_CLI::line( WP_CLI::colorize( '%r- ' . $this->escape_color_tokens( $line ) . '%n' ) );
 				}
 				foreach ( $edit->final as $line ) {
-					WP_CLI::line( WP_CLI::colorize( '%g+ ' . $line . '%n' ) );
+					WP_CLI::line( WP_CLI::colorize( '%g+ ' . $this->escape_color_tokens( $line ) . '%n' ) );
 				}
 			}
 		}
+	}
+
+	/**
+	 * Escapes percent signs so that WP_CLI::colorize() does not read them as color tokens.
+	 *
+	 * @param string $text Text to print inside a colorized string.
+	 * @return string Text with every '%' doubled.
+	 */
+	private function escape_color_tokens( $text ) {
+		return str_replace( '%', '%%', $text );
 	}
 
 	/**
