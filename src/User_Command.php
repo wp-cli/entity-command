@@ -172,33 +172,66 @@ class User_Command extends CommandWithDBObject {
 			}
 		}
 
-		$users = get_users( $assoc_args );
-
 		if ( 'ids' === $formatter->format ) {
-			echo implode( ' ', $users );
+			echo implode( ' ', get_users( $assoc_args ) );
 		} elseif ( 'count' === $formatter->format ) {
-			$formatter->display_items( $users );
+			$formatter->display_items( get_users( $assoc_args ) );
 		} else {
-			$iterator = Utils\iterator_map(
-				$users,
-				function ( $user ) {
-					if ( ! is_object( $user ) ) {
-						return $user;
-					}
+			$need_url = 'url' === $formatter->field || in_array( 'url', (array) $formatter->fields, true );
+			$formatter->display_items( $this->query_users_in_chunks( $assoc_args, $need_url ) );
+		}
+	}
 
-					/**
-					 * @var \WP_User $user
-					 */
+	/**
+	 * Query users in chunks, so that they don't all have to be held in memory at once.
+	 *
+	 * The IDs of all matching users are queried first. The users and their meta are then
+	 * loaded a chunk at a time, and the object cache is cleared after each chunk. Formats
+	 * that can be written item by item are then streamed by the formatter.
+	 *
+	 * User meta is read from the object cache. The formatter reads the requested fields of
+	 * each user while it is the current item, before the cache of its chunk is cleared,
+	 * even when it can't stream them.
+	 *
+	 * @param array $query_args WP_User_Query arguments.
+	 * @param bool  $need_url   Whether to add the `url` property to each user.
+	 * @return \Generator<int, \WP_User>
+	 */
+	private function query_users_in_chunks( $query_args, $need_url ) {
+		$ids = array_map( 'intval', (array) get_users( array_merge( $query_args, [ 'fields' => 'ids' ] ) ) );
 
-					// @phpstan-ignore assign.propertyType
-					$user->roles = implode( ',', $user->roles );
+		$chunk_args = $query_args;
+		unset( $chunk_args['number'], $chunk_args['offset'], $chunk_args['paged'] );
+		// The order is restored from $ids below.
+		$chunk_args['fields'] = 'all_with_meta';
+
+		foreach ( array_chunk( $ids, self::LIST_CHUNK_SIZE ) as $chunk ) {
+			$chunk_args['include'] = $chunk;
+
+			$users = [];
+			foreach ( get_users( $chunk_args ) as $user ) {
+				if ( $user instanceof \WP_User ) {
+					$users[ $user->ID ] = $user;
+				}
+			}
+
+			foreach ( $chunk as $id ) {
+				if ( ! isset( $users[ $id ] ) ) {
+					continue;
+				}
+
+				$user = $users[ $id ];
+				// @phpstan-ignore assign.propertyType
+				$user->roles = implode( ',', $user->roles );
+				if ( $need_url ) {
 					// @phpstan-ignore property.notFound
 					$user->url = get_author_posts_url( $user->ID, $user->user_nicename );
-					return $user;
 				}
-			);
+				yield $user;
+			}
 
-			$formatter->display_items( $iterator );
+			unset( $users );
+			self::clear_runtime_object_cache();
 		}
 	}
 
