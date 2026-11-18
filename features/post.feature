@@ -1174,6 +1174,57 @@ Feature: Manage WordPress posts
     When I run `wp post list --post_status=publish --orderby=ID --order=desc --posts_per_page=2 --fields=ID,url --format=csv`
     Then STDOUT should match /^ID,url\n(\d+),https?:\/\/example\.com\/\?p=\1\n(\d+),https?:\/\/example\.com\/\?p=\2$/
 
+    # An offset that spans more than one chunk must only be applied once.
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --offset=450 --format=ids`
+    Then save STDOUT as {OFFSET_IDS}
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --offset=450 --field=ID | tr '\n' ' ' | sed 's/ $//'`
+    Then STDOUT should be:
+      """
+      {OFFSET_IDS}
+      """
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --offset=450 --field=ID | wc -l`
+    Then STDOUT should contain:
+      """
+      600
+      """
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --paged=2 --format=ids`
+    Then save STDOUT as {PAGED_IDS}
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --paged=2 --field=ID | tr '\n' ' ' | sed 's/ $//'`
+    Then STDOUT should be:
+      """
+      {PAGED_IDS}
+      """
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --paged=2 --field=ID | wc -l`
+    Then STDOUT should contain:
+      """
+      600
+      """
+
+  Scenario: Sticky posts are not prepended to the post list
+    Given a WP install
+    And I run `wp post create --post_title=Sticky --post_status=publish --post_date="2020-01-01 00:00:00" --porcelain`
+    And save STDOUT as {STICKY}
+    And I run `wp option update sticky_posts '[{STICKY}]' --format=json`
+    And I run `wp post create --post_title=Draft --post_status=draft --porcelain`
+    And save STDOUT as {DRAFT}
+
+    When I run `wp post list --post_status=draft --field=ID`
+    Then STDOUT should be:
+      """
+      {DRAFT}
+      """
+
+    When I run `wp post list --post_status=publish --orderby=date --order=desc --posts_per_page=1 --field=ID`
+    Then STDOUT should not contain:
+      """
+      {STICKY}
+      """
+
   Scenario: List post meta as a field for some posts only
     Given a WP install
     And I run `wp post create --post_title=First --post_status=publish --porcelain`
