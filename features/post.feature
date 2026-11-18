@@ -1212,6 +1212,8 @@ Feature: Manage WordPress posts
     And I run `wp option update sticky_posts '[{STICKY}]' --format=json`
     And I run `wp post create --post_title=Draft --post_status=draft --porcelain`
     And save STDOUT as {DRAFT}
+    And I run `wp post create --post_title=Latest --post_status=publish --porcelain`
+    And save STDOUT as {LATEST}
 
     When I run `wp post list --post_status=draft --field=ID`
     Then STDOUT should be:
@@ -1219,10 +1221,10 @@ Feature: Manage WordPress posts
       {DRAFT}
       """
 
-    When I run `wp post list --post_status=publish --orderby=date --order=desc --posts_per_page=1 --field=ID`
-    Then STDOUT should not contain:
+    When I run `wp post list --post_status=publish --orderby=ID --order=desc --posts_per_page=1 --field=ID`
+    Then STDOUT should be:
       """
-      {STICKY}
+      {LATEST}
       """
 
   Scenario: List post meta as a field for some posts only
