@@ -205,7 +205,10 @@ class User_Command extends CommandWithDBObject {
 		// The order is restored from $ids below.
 		$chunk_args['fields'] = 'all_with_meta';
 
-		foreach ( array_chunk( $ids, self::LIST_CHUNK_SIZE ) as $chunk ) {
+		// Slice one chunk at a time, as array_chunk() would hold a second copy of all IDs.
+		$total = count( $ids );
+		for ( $offset = 0; $offset < $total; $offset += self::LIST_CHUNK_SIZE ) {
+			$chunk = array_slice( $ids, $offset, self::LIST_CHUNK_SIZE );
 			$chunk_args['include'] = $chunk;
 
 			$users = [];

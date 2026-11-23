@@ -610,7 +610,10 @@ class Comment_Command extends CommandWithDBObject {
 		// Load the posts of each chunk in one query, as fields like `post_title` read them.
 		$chunk_args['update_comment_post_cache'] = true;
 
-		foreach ( array_chunk( $ids, self::LIST_CHUNK_SIZE ) as $chunk ) {
+		// Slice one chunk at a time, as array_chunk() would hold a second copy of all IDs.
+		$total = count( $ids );
+		for ( $offset = 0; $offset < $total; $offset += self::LIST_CHUNK_SIZE ) {
+			$chunk = array_slice( $ids, $offset, self::LIST_CHUNK_SIZE );
 			$chunk_args['comment__in'] = $chunk;
 
 			$comments = [];

@@ -1089,7 +1089,10 @@ class Post_Command extends CommandWithDBObject {
 		$chunk_args['no_found_rows']       = true;
 		$chunk_args['ignore_sticky_posts'] = true;
 
-		foreach ( array_chunk( $ids, self::LIST_CHUNK_SIZE ) as $chunk ) {
+		// Slice one chunk at a time, as array_chunk() would hold a second copy of all IDs.
+		$total = count( $ids );
+		for ( $offset = 0; $offset < $total; $offset += self::LIST_CHUNK_SIZE ) {
+			$chunk = array_slice( $ids, $offset, self::LIST_CHUNK_SIZE );
 			$chunk_args['post__in']       = $chunk;
 			$chunk_args['posts_per_page'] = count( $chunk );
 
