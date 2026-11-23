@@ -27,11 +27,6 @@ use WP_CLI\Utils;
  */
 class Post_Command extends CommandWithDBObject {
 
-	/**
-	 * Number of posts `wp post list` loads from the database at a time.
-	 */
-	const LIST_CHUNK_SIZE = 500;
-
 	protected $obj_type   = 'post';
 	protected $obj_fields = [
 		'ID',
@@ -1094,7 +1089,11 @@ class Post_Command extends CommandWithDBObject {
 		$chunk_args['no_found_rows']       = true;
 		$chunk_args['ignore_sticky_posts'] = true;
 
-		foreach ( array_chunk( $ids, self::LIST_CHUNK_SIZE ) as $chunk ) {
+		// Slice one chunk at a time, as array_chunk() would hold a second copy of all IDs.
+		$total = count( $ids );
+		for ( $offset = 0; $offset < $total; $offset += self::LIST_CHUNK_SIZE ) {
+			$chunk = array_slice( $ids, $offset, self::LIST_CHUNK_SIZE );
+
 			$chunk_args['post__in']       = $chunk;
 			$chunk_args['posts_per_page'] = count( $chunk );
 
@@ -1122,19 +1121,6 @@ class Post_Command extends CommandWithDBObject {
 
 			unset( $posts, $query );
 			self::clear_runtime_object_cache();
-		}
-	}
-
-	/**
-	 * Free the memory held by the in-process object cache.
-	 *
-	 * Persistent object caches are left alone unless they can flush their in-process part only.
-	 */
-	private static function clear_runtime_object_cache() {
-		if ( function_exists( 'wp_cache_flush_runtime' ) && function_exists( 'wp_cache_supports' ) && wp_cache_supports( 'flush_runtime' ) ) {
-			wp_cache_flush_runtime();
-		} elseif ( ! wp_using_ext_object_cache() ) {
-			wp_cache_flush();
 		}
 	}
 
