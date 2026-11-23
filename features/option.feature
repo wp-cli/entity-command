@@ -180,7 +180,6 @@ Feature: Manage WordPress options
       | option_name  | option_value   | autoload |
       | hello        | island         | on      |
 
-  @require-wp-4.2
   @less-than-wp-6.6
   Scenario: Update autoload value for custom option with an unchanged value
     Given a WP install
