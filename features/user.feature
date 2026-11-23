@@ -1062,3 +1062,15 @@ Feature: Manage WordPress users
       1,admin-value,administrator
       2,,subscriber
       """
+
+  Scenario: List a user once when it matches the query more than once
+    Given a WP install
+    And I run `wp user meta add 1 last_activity 5`
+    And I run `wp user meta add 1 last_activity 7`
+
+    When I run `wp user list --meta_key=last_activity --orderby=meta_value_num --fields=ID,roles --format=csv`
+    Then STDOUT should be:
+      """
+      ID,roles
+      1,administrator
+      """

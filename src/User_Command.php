@@ -198,7 +198,8 @@ class User_Command extends CommandWithDBObject {
 	 * @return \Generator<int, \WP_User>
 	 */
 	private function query_users_in_chunks( $query_args, $need_url ) {
-		$ids = array_map( 'intval', (array) get_users( array_merge( $query_args, [ 'fields' => 'ids' ] ) ) );
+		// A user can match more than once, e.g. when ordering by a meta key it has several values for.
+		$ids = array_values( array_unique( array_map( 'intval', (array) get_users( array_merge( $query_args, [ 'fields' => 'ids' ] ) ) ) ) );
 
 		$chunk_args = $query_args;
 		unset( $chunk_args['number'], $chunk_args['offset'], $chunk_args['paged'] );
