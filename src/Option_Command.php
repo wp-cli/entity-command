@@ -168,7 +168,7 @@ class Option_Command extends WP_CLI_Command {
 	 * : Pattern to exclude. Use wildcards ( * and ? ) to match option name.
 	 *
 	 * [--autoload=<value>]
-	 * : Match only autoload options when value is on, and only not-autoload option when off.
+	 * : Match only autoload options when value is on, and only not-autoload option when off. On WordPress 6.6 and later, options with the `auto` and `auto-on` values count as autoload options.
 	 *
 	 * [--transients]
 	 * : List only transients. Use `--no-transients` to ignore all transients.
@@ -293,10 +293,22 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['autoload'] ) ) {
 			$autoload = $assoc_args['autoload'];
+
+			// Since WordPress 6.6, options set to 'auto' or 'auto-on' are autoloaded too.
+			$autoload_values = function_exists( 'wp_autoload_values_to_autoload' )
+				? wp_autoload_values_to_autoload()
+				: [ 'on', 'yes' ];
+
 			if ( 'on' === $autoload || 'yes' === $autoload ) {
-				$autoload_query = " AND (autoload='on' OR autoload='yes')";
+				$autoload_query = $wpdb->prepare(
+					' AND autoload IN (' . implode( ', ', array_fill( 0, count( $autoload_values ), '%s' ) ) . ')',
+					$autoload_values
+				);
 			} elseif ( 'off' === $autoload || 'no' === $autoload ) {
-				$autoload_query = " AND (autoload='off' OR autoload='no')";
+				$autoload_query = $wpdb->prepare(
+					' AND autoload NOT IN (' . implode( ', ', array_fill( 0, count( $autoload_values ), '%s' ) ) . ')',
+					$autoload_values
+				);
 			} else {
 				WP_CLI::error( "Value of '--autoload' should be 'on', 'off', 'yes', or 'no'." );
 			}
