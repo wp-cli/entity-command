@@ -614,6 +614,7 @@ class Comment_Command extends CommandWithDBObject {
 		$total = count( $ids );
 		for ( $offset = 0; $offset < $total; $offset += self::LIST_CHUNK_SIZE ) {
 			$chunk = array_slice( $ids, $offset, self::LIST_CHUNK_SIZE );
+
 			$chunk_args['comment__in'] = $chunk;
 
 			$comments = [];

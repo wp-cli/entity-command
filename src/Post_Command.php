@@ -1093,6 +1093,7 @@ class Post_Command extends CommandWithDBObject {
 		$total = count( $ids );
 		for ( $offset = 0; $offset < $total; $offset += self::LIST_CHUNK_SIZE ) {
 			$chunk = array_slice( $ids, $offset, self::LIST_CHUNK_SIZE );
+
 			$chunk_args['post__in']       = $chunk;
 			$chunk_args['posts_per_page'] = count( $chunk );
 
