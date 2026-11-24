@@ -684,9 +684,9 @@ class Comment_Command extends CommandWithDBObject {
 
 		$status = 0;
 
-		$defer_term_counting = wp_defer_comment_counting();
+		$defer_comment_counting = wp_defer_comment_counting();
 		if ( $all ) {
-			wp_defer_term_counting( true );
+			wp_defer_comment_counting( true );
 		}
 
 		$total                = count( $args );
@@ -712,7 +712,7 @@ class Comment_Command extends CommandWithDBObject {
 		}
 
 		if ( $all ) {
-			wp_defer_term_counting( $defer_term_counting );
+			wp_defer_comment_counting( $defer_comment_counting );
 		}
 
 		if ( 0 === $status ) {
