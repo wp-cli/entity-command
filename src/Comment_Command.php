@@ -671,7 +671,7 @@ class Comment_Command extends CommandWithDBObject {
 	 *     $ wp comment delete --all --force
 	 *     Success: Deleted comment 1337.
 	 *     Success: Deleted comment 2341.
-	 *     Success: Deleted 2 of 2 comments.
+	 *     Success: Deleted 2 comments.
 	 */
 	public function delete( $args, $assoc_args ) {
 		$all = Utils\get_flag_value( $assoc_args, 'all', false );
@@ -1036,11 +1036,13 @@ class Comment_Command extends CommandWithDBObject {
 
 	/**
 	 * Gets all available comment IDs.
+	 *
+	 * @return list<int<0, max>>
 	 */
 	private function get_all_comment_ids(): array {
 		$query = new WP_Comment_Query();
 
-		/** @var array $comments */
+		/** @var list<int<0, max>> $comments */
 		$comments = $query->query(
 			array(
 				'fields' => 'ids',
