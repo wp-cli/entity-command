@@ -3,40 +3,42 @@ Feature: Manage user custom meta fields
   Scenario: Usermeta CRUD
     Given a WP install
 
-    When I run `wp user-meta add 1 foo 'bar'`
+    When I run `wp user meta add 1 foo 'bar'`
     Then STDOUT should not be empty
 
-    When I run `wp user-meta get 1 foo`
+    When I run `wp user meta get 1 foo`
     Then STDOUT should be:
       """
       bar
       """
 
-    When I try `wp user-meta get 2 foo`
+    When I try `wp user meta get 2 foo`
     Then STDERR should be:
       """
       Error: Invalid user ID, email or login: '2'
       """
     And the return code should be 1
 
-    When I run `wp user-meta set admin foo '[ "1", "2" ]' --format=json`
+    When I run `wp user meta set admin foo '[ "1", "2" ]' --format=json`
     Then STDOUT should not be empty
 
-    When I run `wp user-meta get admin foo --format=json`
+    When I run `wp user meta get admin foo --format=json`
     Then STDOUT should be:
       """
       ["1","2"]
       """
 
-    When I run `wp user-meta delete 1 foo`
+    When I run `wp user meta delete 1 foo`
     Then STDOUT should not be empty
 
-    When I try `wp user-meta get 1 foo`
+    When I try `wp user meta get 1 foo`
     Then the return code should be 1
 
-    When I run `wp user meta add 1 foo bar`
-    And I run `wp user meta add 1 foo bar2`
-    And I run `wp user meta add 1 foo bar3`
+    Given these setup commands:
+      | command                     |
+      | wp user meta add 1 foo bar  |
+      | wp user meta add 1 foo bar2 |
+    When I run `wp user meta add 1 foo bar3`
     Then STDOUT should not be empty
 
     When I run `wp user meta delete 1 foo bar2`
@@ -177,7 +179,7 @@ Feature: Manage user custom meta fields
     When I try the previous command again
     Then the return code should be 1
 
-    When I try `wp user-meta get {USER_ID} description`
+    When I try `wp user meta get {USER_ID} description`
     Then STDOUT should be:
       """
       This is description

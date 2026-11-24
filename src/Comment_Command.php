@@ -26,6 +26,34 @@ use WP_CLI\Utils;
  *     Success: Trashed comment 264.
  *     Success: Trashed comment 262.
  *
+ *     # Create a note for a block (WordPress 6.9+).
+ *     $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
+ *     Success: Created comment 945.
+ *
+ *     # List notes for a specific post (WordPress 6.9+).
+ *     $ wp comment list --type=note --post_id=15
+ *     +------------+---------------------+----------------------------------+
+ *     | comment_ID | comment_date        | comment_content                  |
+ *     +------------+---------------------+----------------------------------+
+ *     | 945        | 2024-11-10 14:30:00 | This block needs revision        |
+ *     +------------+---------------------+----------------------------------+
+ *
+ *     # Reply to a note (WordPress 6.9+).
+ *     $ wp comment create --comment_post_ID=15 --comment_content="Updated per feedback" --comment_author="editor" --comment_type="note" --comment_parent=945
+ *     Success: Created comment 946.
+ *
+ *     # Resolve a note by adding a comment with status meta (WordPress 6.9+).
+ *     $ wp comment create --comment_post_ID=15 --comment_content="Resolving" --comment_author="editor" --comment_type="note" --comment_parent=945 --porcelain
+ *     947
+ *     $ wp comment meta add 947 _wp_note_status resolved
+ *     Success: Added custom field.
+ *
+ *     # Reopen a resolved note (WordPress 6.9+).
+ *     $ wp comment create --comment_post_ID=15 --comment_content="Reopening for further review" --comment_author="editor" --comment_type="note" --comment_parent=945 --porcelain
+ *     948
+ *     $ wp comment meta add 948 _wp_note_status reopen
+ *     Success: Added custom field.
+ *
  * @package wp-cli
  */
 class Comment_Command extends CommandWithDBObject {
@@ -52,6 +80,51 @@ class Comment_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
+	 * [--comment_agent=<comment_agent>]
+	 * : The HTTP user agent of the comment author.
+	 *
+	 * [--comment_approved=<comment_approved>]
+	 * : Whether the comment has been approved. Default 1.
+	 *
+	 * [--comment_author=<comment_author>]
+	 * : The name of the author of the comment.
+	 *
+	 * [--comment_author_email=<comment_author_email>]
+	 * : The email address of the comment author.
+	 *
+	 * [--comment_author_IP=<comment_author_IP>]
+	 * : The IP address of the comment author.
+	 *
+	 * [--comment_author_url=<comment_author_url>]
+	 * : The URL address of the comment author.
+	 *
+	 * [--comment_content=<comment_content>]
+	 * : The content of the comment.
+	 *
+	 * [--comment_date=<yyyy-mm-dd-hh-ii-ss>]
+	 * : The date the comment was submitted.
+	 *
+	 * [--comment_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
+	 * : The date the comment was submitted in the GMT timezone.
+	 *
+	 * [--comment_karma=<comment_karma>]
+	 * : The karma of the comment. Default 0.
+	 *
+	 * [--comment_parent=<comment_parent>]
+	 * : ID of this comment's parent, if any. Default 0.
+	 *
+	 * [--comment_post_ID=<comment_post_ID>]
+	 * : ID of the post that relates to the comment, if any.
+	 *
+	 * [--comment_type=<comment_type>]
+	 * : Comment type. Default 'comment'.
+	 *
+	 * [--comment_meta=<comment_meta>]
+	 * : Array in JSON format of comment meta values keyed by their comment meta key.
+	 *
+	 * [--user_id=<user_id>]
+	 * : ID of the user who submitted the comment. Default 0.
+	 *
 	 * [--<field>=<value>]
 	 * : Associative args for the new comment. See wp_insert_comment().
 	 *
@@ -63,8 +136,17 @@ class Comment_Command extends CommandWithDBObject {
 	 *     # Create comment.
 	 *     $ wp comment create --comment_post_ID=15 --comment_content="hello blog" --comment_author="wp-cli"
 	 *     Success: Created comment 932.
+	 *
+	 *     # Create a note (WordPress 6.9+).
+	 *     $ wp comment create --comment_post_ID=15 --comment_content="This block needs revision" --comment_author="editor" --comment_type="note"
+	 *     Success: Created comment 933.
+	 *
+	 * @param string[] $args Positional arguments. Unused.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function create( $args, $assoc_args ) {
+		$assoc_args = Utils\parse_shell_arrays( $assoc_args, [ 'comment_meta' ] );
+
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_create(
 			$args,
@@ -102,6 +184,52 @@ class Comment_Command extends CommandWithDBObject {
 	 * <id>...
 	 * : One or more IDs of comments to update.
 	 *
+	 * [--comment_agent=<comment_agent>]
+	 * : The HTTP user agent of the comment author.
+	 *
+	 * [--comment_approved=<comment_approved>]
+	 * : Whether the comment has been approved.
+	 *
+	 * [--comment_author=<comment_author>]
+	 * : The name of the author of the comment.
+	 *
+	 * [--comment_author_email=<comment_author_email>]
+	 * : The email address of the comment author.
+	 *
+	 * [--comment_author_IP=<comment_author_IP>]
+	 * : The IP address of the comment author.
+	 *
+	 * [--comment_author_url=<comment_author_url>]
+	 * : The URL address of the comment author.
+	 *
+	 * [--comment_content=<comment_content>]
+	 * : The content of the comment.
+	 *
+	 * [--comment_date=<yyyy-mm-dd-hh-ii-ss>]
+	 * : The date the comment was submitted.
+	 *
+	 * [--comment_date_gmt=<yyyy-mm-dd-hh-ii-ss>]
+	 * : The date the comment was submitted in the GMT timezone. Note that
+	 * wp_update_comment() always recalculates this from 'comment_date'.
+	 *
+	 * [--comment_karma=<comment_karma>]
+	 * : The karma of the comment.
+	 *
+	 * [--comment_parent=<comment_parent>]
+	 * : ID of this comment's parent, if any.
+	 *
+	 * [--comment_post_ID=<comment_post_ID>]
+	 * : ID of the post that relates to the comment, if any.
+	 *
+	 * [--comment_type=<comment_type>]
+	 * : Comment type.
+	 *
+	 * [--comment_meta=<comment_meta>]
+	 * : Array in JSON format of comment meta values keyed by their comment meta key.
+	 *
+	 * [--user_id=<user_id>]
+	 * : ID of the user who submitted the comment.
+	 *
 	 * --<field>=<value>
 	 * : One or more fields to update. See wp_update_comment().
 	 *
@@ -110,8 +238,13 @@ class Comment_Command extends CommandWithDBObject {
 	 *     # Update comment.
 	 *     $ wp comment update 123 --comment_author='That Guy'
 	 *     Success: Updated comment 123.
+	 *
+	 * @param string[] $args Positional arguments. Comment IDs to update.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
+		$assoc_args = Utils\parse_shell_arrays( $assoc_args, [ 'comment_meta' ] );
+
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update(
 			$args,
@@ -242,6 +375,7 @@ class Comment_Command extends CommandWithDBObject {
 			WP_CLI::error( 'Invalid comment ID.' );
 		}
 
+		// @phpstan-ignore property.notFound
 		if ( ! isset( $comment->url ) ) {
 			// @phpstan-ignore property.notFound
 			$comment->url = get_comment_link( $comment );
@@ -362,6 +496,15 @@ class Comment_Command extends CommandWithDBObject {
 	 *     | 3          | 2023-11-10 11:22:31 | John Doe       |
 	 *     +------------+---------------------+----------------+
 	 *
+	 *     # List notes for a specific post (WordPress 6.9+).
+	 *     $ wp comment list --type=note --post_id=15 --fields=ID,comment_date,comment_content
+	 *     +------------+---------------------+----------------------------------+
+	 *     | comment_ID | comment_date        | comment_content                  |
+	 *     +------------+---------------------+----------------------------------+
+	 *     | 10         | 2024-11-10 14:30:00 | This block needs revision        |
+	 *     | 11         | 2024-11-10 15:45:00 | Updated per feedback             |
+	 *     +------------+---------------------+----------------------------------+
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
@@ -377,18 +520,26 @@ class Comment_Command extends CommandWithDBObject {
 			$assoc_args['count'] = true;
 		}
 
+		$need_url = 'url' === $formatter->field || in_array( 'url', (array) $formatter->fields, true );
+
+		// Threaded results are nested, so they can't be loaded in chunks.
+		if ( ! in_array( $formatter->format, [ 'count', 'ids' ], true ) && empty( $assoc_args['hierarchical'] ) ) {
+			$formatter->display_items( $this->query_comments_in_chunks( $assoc_args, $need_url ) );
+			return;
+		}
+
 		$query    = new WP_Comment_Query();
 		$comments = $query->query( $assoc_args );
 
 		if ( 'count' === $formatter->format ) {
 			/**
-			 * @var int $comments
+			 * @var int<0, max> $comments
 			 */
 			echo $comments;
 			return;
 		} else {
 			/**
-			 * @var array $comments
+			 * @var array<int<0, max>|\WP_Comment> $comments
 			 */
 
 			if ( 'ids' === $formatter->format ) {
@@ -398,16 +549,96 @@ class Comment_Command extends CommandWithDBObject {
 				$items = wp_list_pluck( $comments, 'comment_ID' );
 
 				$comments = $items;
-			} elseif ( is_array( $comments ) ) {
+			} elseif ( is_array( $comments ) && $need_url ) {
 				$comments = array_map(
 					function ( $comment ) {
-							$comment->url = get_comment_link( $comment->comment_ID );
-							return $comment;
+						/**
+						 * @var \WP_Comment $comment
+						 */
+						// @phpstan-ignore property.notFound
+						$comment->url = get_comment_link( (int) $comment->comment_ID );
+						return $comment;
 					},
 					$comments
 				);
 			}
 			$formatter->display_items( $comments );
+		}
+	}
+
+	/**
+	 * Query comments in chunks, so that they don't all have to be held in memory at once.
+	 *
+	 * The IDs of all matching comments are queried first. The comments are then loaded
+	 * a chunk at a time, and the object cache is cleared after each chunk. Formats that
+	 * can be written item by item are then streamed by the formatter.
+	 *
+	 * Fields that WP_Comment reads from the comment's post are read from the object cache.
+	 * The formatter reads the requested fields of each comment while it is the current
+	 * item, before the cache of its chunk is cleared, even when it can't stream them.
+	 *
+	 * @param array<string, mixed> $query_args WP_Comment_Query arguments.
+	 * @param bool                 $need_url   Whether to add the `url` property to each comment.
+	 * @return \Generator<int, \WP_Comment>
+	 */
+	private function query_comments_in_chunks( $query_args, $need_url ) {
+		$result = ( new WP_Comment_Query() )->query(
+			array_merge(
+				$query_args,
+				[
+					'fields' => 'ids',
+					'count'  => false,
+				]
+			)
+		);
+
+		$ids = [];
+		foreach ( is_array( $result ) ? $result : [] as $id ) {
+			if ( is_numeric( $id ) ) {
+				$ids[] = (int) $id;
+			}
+		}
+
+		$chunk_args = $query_args;
+		unset( $chunk_args['number'], $chunk_args['offset'], $chunk_args['paged'] );
+		// The order is restored from $ids below. Ordering by `comment__in` in SQL would
+		// need a FIELD() call with one argument per comment, which SQLite does not allow.
+		$chunk_args['orderby']       = 'none';
+		$chunk_args['fields']        = '';
+		$chunk_args['count']         = false;
+		$chunk_args['no_found_rows'] = true;
+		// Load the posts of each chunk in one query, as fields like `post_title` read them.
+		$chunk_args['update_comment_post_cache'] = true;
+
+		// Slice one chunk at a time, as array_chunk() would hold a second copy of all IDs.
+		$total = count( $ids );
+		for ( $offset = 0; $offset < $total; $offset += self::LIST_CHUNK_SIZE ) {
+			$chunk = array_slice( $ids, $offset, self::LIST_CHUNK_SIZE );
+
+			$chunk_args['comment__in'] = $chunk;
+
+			$comments = [];
+			foreach ( (array) ( new WP_Comment_Query() )->query( $chunk_args ) as $comment ) {
+				if ( $comment instanceof \WP_Comment ) {
+					$comments[ (int) $comment->comment_ID ] = $comment;
+				}
+			}
+
+			foreach ( $chunk as $id ) {
+				if ( ! isset( $comments[ (int) $id ] ) ) {
+					continue;
+				}
+
+				$comment = $comments[ (int) $id ];
+				if ( $need_url ) {
+					// @phpstan-ignore property.notFound
+					$comment->url = get_comment_link( $comment );
+				}
+				yield $comment;
+			}
+
+			unset( $comments );
+			self::clear_runtime_object_cache();
 		}
 	}
 

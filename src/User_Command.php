@@ -9,7 +9,8 @@ use WP_CLI\Utils;
 /**
  * Manages users, along with their roles, capabilities, and meta.
  *
- * See references for [Roles and Capabilities](https://codex.wordpress.org/Roles_and_Capabilities) and [WP User class](https://codex.wordpress.org/Class_Reference/WP_User).
+ * See references for [Roles and Capabilities](https://wordpress.org/documentation/article/roles-and-capabilities)
+ * and [WP User class](https://developer.wordpress.org/reference/classes/wp_user).
  *
  * ## EXAMPLES
  *
@@ -70,7 +71,7 @@ class User_Command extends CommandWithDBObject {
 	 * : Control output by one or more arguments of WP_User_Query().
 	 *
 	 * [--network]
-	 * : List all users in the network for multisite.
+	 * : List all users in the network for multisite. Roles are not included when using this flag, as users can have different roles on different sites in a multisite network.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each user.
@@ -114,7 +115,6 @@ class User_Command extends CommandWithDBObject {
 	 * * caps
 	 * * cap_key
 	 * * allcaps
-	 * * filter
 	 * * url
 	 *
 	 * ## EXAMPLES
@@ -172,33 +172,71 @@ class User_Command extends CommandWithDBObject {
 			}
 		}
 
-		$users = get_users( $assoc_args );
-
 		if ( 'ids' === $formatter->format ) {
-			echo implode( ' ', $users );
+			echo implode( ' ', get_users( $assoc_args ) );
 		} elseif ( 'count' === $formatter->format ) {
-			$formatter->display_items( $users );
+			$formatter->display_items( get_users( $assoc_args ) );
 		} else {
-			$iterator = Utils\iterator_map(
-				$users,
-				function ( $user ) {
-					if ( ! is_object( $user ) ) {
-						return $user;
-					}
+			$need_url = 'url' === $formatter->field || in_array( 'url', (array) $formatter->fields, true );
+			$formatter->display_items( $this->query_users_in_chunks( $assoc_args, $need_url ) );
+		}
+	}
 
-					/**
-					 * @var \WP_User $user
-					 */
+	/**
+	 * Query users in chunks, so that they don't all have to be held in memory at once.
+	 *
+	 * The IDs of all matching users are queried first. The users and their meta are then
+	 * loaded a chunk at a time, and the object cache is cleared after each chunk. Formats
+	 * that can be written item by item are then streamed by the formatter.
+	 *
+	 * User meta is read from the object cache. The formatter reads the requested fields of
+	 * each user while it is the current item, before the cache of its chunk is cleared,
+	 * even when it can't stream them.
+	 *
+	 * @param array $query_args WP_User_Query arguments.
+	 * @param bool  $need_url   Whether to add the `url` property to each user.
+	 * @return \Generator<int, \WP_User>
+	 */
+	private function query_users_in_chunks( $query_args, $need_url ) {
+		// A user can match more than once, e.g. when ordering by a meta key it has several values for.
+		$ids = array_values( array_unique( array_map( 'intval', (array) get_users( array_merge( $query_args, [ 'fields' => 'ids' ] ) ) ) ) );
 
-					// @phpstan-ignore assign.propertyType
-					$user->roles = implode( ',', $user->roles );
+		$chunk_args = $query_args;
+		unset( $chunk_args['number'], $chunk_args['offset'], $chunk_args['paged'] );
+		// The order is restored from $ids below.
+		$chunk_args['fields'] = 'all_with_meta';
+
+		// Slice one chunk at a time, as array_chunk() would hold a second copy of all IDs.
+		$total = count( $ids );
+		for ( $offset = 0; $offset < $total; $offset += self::LIST_CHUNK_SIZE ) {
+			$chunk = array_slice( $ids, $offset, self::LIST_CHUNK_SIZE );
+
+			$chunk_args['include'] = $chunk;
+
+			$users = [];
+			foreach ( get_users( $chunk_args ) as $user ) {
+				if ( $user instanceof \WP_User ) {
+					$users[ $user->ID ] = $user;
+				}
+			}
+
+			foreach ( $chunk as $id ) {
+				if ( ! isset( $users[ $id ] ) ) {
+					continue;
+				}
+
+				$user = $users[ $id ];
+				// @phpstan-ignore assign.propertyType
+				$user->roles = implode( ',', $user->roles );
+				if ( $need_url ) {
 					// @phpstan-ignore property.notFound
 					$user->url = get_author_posts_url( $user->ID, $user->user_nicename );
-					return $user;
 				}
-			);
+				yield $user;
+			}
 
-			$formatter->display_items( $iterator );
+			unset( $users );
+			self::clear_runtime_object_cache();
 		}
 	}
 
@@ -381,7 +419,14 @@ class User_Command extends CommandWithDBObject {
 	 * : A string containing content about the user.
 	 *
 	 * [--rich_editing=<rich_editing>]
-	 * : A string for whether to enable the rich editor or not. False if not empty.
+	 * : Whether to enable the rich editor for the user. Accepts 'true' or 'false',
+	 * or their numeric forms 1 and 0.
+	 * Default: true
+	 *
+	 * [--syntax_highlighting=<syntax_highlighting>]
+	 * : Whether to enable the rich code editor for the user. Accepts 'true' or 'false',
+	 * or their numeric forms 1 and 0.
+	 * Default: true
 	 *
 	 * [--send-email]
 	 * : Send an email to the user with their new account details.
@@ -401,7 +446,7 @@ class User_Command extends CommandWithDBObject {
 	 *     4
 	 *
 	 * @param array{0: string, 1: string} $args Positional arguments.
-	 * @param array{role?: string, user_pass?: string, user_registered?: string, display_name?: string, user_nicename?: string, user_url?: string, nickname?: string, first_name?: string, last_name?: string, description?: string, rich_editing?: string, send_email?: bool, porcelain?: bool} $assoc_args Associative arguments.
+	 * @param array{role?: string, user_pass?: string, user_registered?: string, display_name?: string, user_nicename?: string, user_url?: string, nickname?: string, first_name?: string, last_name?: string, description?: string, rich_editing?: string, syntax_highlighting?: string, send_email?: bool, porcelain?: bool} $assoc_args Associative arguments.
 	 */
 	public function create( $args, $assoc_args ) {
 		$user = new stdClass();
@@ -436,6 +481,16 @@ class User_Command extends CommandWithDBObject {
 
 		$user->user_url = Utils\get_flag_value( $assoc_args, 'user_url', false );
 
+		$user->user_nicename = Utils\get_flag_value( $assoc_args, 'user_nicename', false );
+
+		// Core compares the stored value against the string 'true', so any other
+		// truthy spelling would disable the editor.
+		$rich_editing       = Utils\get_flag_value( $assoc_args, 'rich_editing', true );
+		$user->rich_editing = self::normalize_boolean_preference( 'rich_editing', $rich_editing );
+
+		$syntax_highlighting       = Utils\get_flag_value( $assoc_args, 'syntax_highlighting', true );
+		$user->syntax_highlighting = self::normalize_boolean_preference( 'syntax_highlighting', $syntax_highlighting );
+
 		if ( isset( $assoc_args['user_pass'] ) ) {
 			$user->user_pass = $assoc_args['user_pass'];
 		} else {
@@ -459,7 +514,8 @@ class User_Command extends CommandWithDBObject {
 		if ( is_multisite() ) {
 			$result = wpmu_validate_user_signup( $user->user_login, $user->user_email );
 			if ( ! empty( $result['errors']->errors ) ) {
-				WP_CLI::error( $result['errors'] );
+				$error_message = implode( ' ', array_map( 'wp_strip_all_tags', $result['errors']->get_error_messages() ) );
+				WP_CLI::error( $error_message );
 			}
 			$user_id = wpmu_create_user( $user->user_login, $user->user_pass, $user->user_email );
 			if ( ! $user_id ) {
@@ -534,13 +590,44 @@ class User_Command extends CommandWithDBObject {
 	 * : A string containing content about the user.
 	 *
 	 * [--rich_editing=<rich_editing>]
-	 * : A string for whether to enable the rich editor or not. False if not empty.
+	 * : Whether to enable the rich editor for the user. Accepts 'true' or 'false',
+	 * or their numeric forms 1 and 0.
+	 *
+	 * [--syntax_highlighting=<syntax_highlighting>]
+	 * : Whether to enable the rich code editor for the user. Accepts 'true' or 'false',
+	 * or their numeric forms 1 and 0.
+	 *
+	 * [--comment_shortcuts=<comment_shortcuts>]
+	 * : Whether to enable comment moderation keyboard shortcuts for the user.
+	 * Accepts 'true' or 'false' as a string literal, not boolean.
+	 *
+	 * [--admin_color=<admin_color>]
+	 * : Admin color scheme for the user.
+	 *
+	 * [--use_ssl=<use_ssl>]
+	 * : Whether the user should always access the admin over https.
 	 *
 	 * [--user_registered=<yyyy-mm-dd-hh-ii-ss>]
 	 * : The date the user registered.
 	 *
+	 * [--user_activation_key=<user_activation_key>]
+	 * : Password reset key.
+	 *
+	 * [--spam=<spam>]
+	 * : Multisite only. Whether the user is marked as spam.
+	 *
+	 * [--show_admin_bar_front=<show_admin_bar_front>]
+	 * : Whether to display the admin bar for the user on the site's front end.
+	 * Accepts 'true' or 'false' as a string literal, not boolean.
+	 *
 	 * [--role=<role>]
 	 * : A string used to set the user's role.
+	 *
+	 * [--locale=<locale>]
+	 * : The user's locale.
+	 *
+	 * [--meta_input=<meta_input>]
+	 * : Array in JSON format of user meta values keyed by their user meta key.
 	 *
 	 * --<field>=<value>
 	 * : One or more fields to update. For accepted fields, see wp_update_user().
@@ -553,6 +640,9 @@ class User_Command extends CommandWithDBObject {
 	 *     # Update user
 	 *     $ wp user update 123 --display_name=Mary --user_pass=marypass
 	 *     Success: Updated user 123.
+	 *
+	 * @param string[] $args Positional arguments. Users to update.
+	 * @param array $assoc_args Associative arguments.
 	 */
 	public function update( $args, $assoc_args ) {
 		if ( isset( $assoc_args['user_login'] ) ) {
@@ -562,6 +652,12 @@ class User_Command extends CommandWithDBObject {
 
 		if ( isset( $assoc_args['role'] ) ) {
 			self::validate_role( $assoc_args['role'], true );
+		}
+
+		foreach ( [ 'rich_editing', 'syntax_highlighting' ] as $preference ) {
+			if ( isset( $assoc_args[ $preference ] ) ) {
+				$assoc_args[ $preference ] = self::normalize_boolean_preference( $preference, $assoc_args[ $preference ] );
+			}
 		}
 
 		$user_ids = [];
@@ -578,6 +674,8 @@ class User_Command extends CommandWithDBObject {
 			add_filter( 'send_email_change_email', '__return_false' );
 			add_filter( 'send_password_change_email', '__return_false' );
 		}
+
+		$assoc_args = Utils\parse_shell_arrays( $assoc_args, [ 'meta_input' ] );
 
 		$assoc_args = wp_slash( $assoc_args );
 		parent::_update( $user_ids, $assoc_args, 'wp_update_user' );
@@ -803,15 +901,25 @@ class User_Command extends CommandWithDBObject {
 	 * : User ID, user email, or user login.
 	 *
 	 * [<role>...]
-	 * : Remove the specified role(s) from the user.
+	 * : Remove the specified role(s) from the user. If not passed, all roles are
+	 * removed from the user; on multisite, this removes the user from the current
+	 * site/blog.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp user remove-role 12 author
-	 *     Success: Removed 'author' role for johndoe (12).
+	 *     Success: Removed 'author' role from johndoe (12).
 	 *
 	 *     $ wp user remove-role 12 author editor
-	 *     Success: Removed 'author', 'editor' roles for johndoe (12).
+	 *     Success: Removed 'author', 'editor' roles from johndoe (12).
+	 *
+	 *     # On single-site: removes all roles from the user
+	 *     $ wp user remove-role 12
+	 *     Success: Removed all roles from johndoe (12) on http://example.com.
+	 *
+	 *     # On multisite: removes the user from the current site/blog
+	 *     $ wp user remove-role 12
+	 *     Success: Removed johndoe (12) from http://example.com.
 	 *
 	 * @subcommand remove-role
 	 */
@@ -833,14 +941,14 @@ class User_Command extends CommandWithDBObject {
 			$label   = count( $roles ) > 1 ? 'roles' : 'role';
 			WP_CLI::success( "Removed '{$message}' {$label} from {$user->user_login} ({$user->ID})." );
 		} else {
-			// Multisite
+			$site_url = site_url();
 			if ( function_exists( 'remove_user_from_blog' ) ) {
 				remove_user_from_blog( $user->ID, get_current_blog_id() );
+				WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from {$site_url}." );
 			} else {
 				$user->remove_all_caps();
+				WP_CLI::success( "Removed all roles from {$user->user_login} ({$user->ID}) on {$site_url}." );
 			}
-
-			WP_CLI::success( "Removed {$user->user_login} ({$user->ID}) from " . site_url() . '.' );
 		}
 	}
 
@@ -1135,6 +1243,10 @@ class User_Command extends CommandWithDBObject {
 
 				$csv_data[] = $data;
 			}
+
+			if ( empty( $indexes ) && empty( $csv_data ) ) {
+				WP_CLI::error( 'Unable to read content from STDIN.' );
+			}
 		} else {
 			$csv_data = new CsvIterator( $filename );
 		}
@@ -1214,7 +1326,7 @@ class User_Command extends CommandWithDBObject {
 				if ( is_multisite() ) {
 					$result = wpmu_validate_user_signup( $new_user['user_login'], $new_user['user_email'] );
 					if ( ! empty( $result['errors']->errors ) ) {
-						WP_CLI::warning( $result['errors'] );
+						WP_CLI::warning( implode( ' ', array_map( 'wp_strip_all_tags', $result['errors']->get_error_messages() ) ) );
 						continue;
 					}
 					$user_id = wpmu_create_user( $new_user['user_login'], $new_user['user_pass'], $new_user['user_email'] );
@@ -1354,6 +1466,23 @@ class User_Command extends CommandWithDBObject {
 	}
 
 	/**
+	 * Normalizes a user preference to the string literal core checks for.
+	 *
+	 * @param string $preference Name of the preference, used for error reporting.
+	 * @param mixed  $value      Value the preference was given on the command line.
+	 * @return string Either 'true' or 'false'.
+	 */
+	private static function normalize_boolean_preference( $preference, $value ) {
+		$normalized = filter_var( $value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+
+		if ( null === $normalized ) {
+			WP_CLI::error( "Invalid value for --{$preference}. Accepts 'true' or 'false', or their numeric forms 1 and 0." );
+		}
+
+		return $normalized ? 'true' : 'false';
+	}
+
+	/**
 	 * Checks whether the role is valid
 	 *
 	 * @param $role string
@@ -1412,7 +1541,7 @@ class User_Command extends CommandWithDBObject {
 	 *     # Remove user from spam.
 	 *     $ wp user unspam 123
 	 *     User 123 removed from spam.
-	 *     Success: Unspamed 1 of 1 users.
+	 *     Success: Unspammed 1 of 1 users.
 	 */
 	public function unspam( $args ) {
 		$this->update_msuser_status( $args, 'spam', '0' );

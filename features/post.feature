@@ -41,21 +41,48 @@ Feature: Manage WordPress posts
       Success: Deleted post {POST_ID}.
       """
 
-    When I try `wp post delete {CUSTOM_POST_ID}`
-    Then STDERR should be:
+    When I run `wp post delete {CUSTOM_POST_ID}`
+    Then STDOUT should be:
       """
-      Warning: Posts of type 'test' do not support being sent to trash.
-      Please use the --force flag to skip trash and delete them permanently.
+      Success: Trashed post {CUSTOM_POST_ID}.
       """
 
-    When I run `wp post delete {CUSTOM_POST_ID} --force`
+    When I run the previous command again
     Then STDOUT should be:
       """
       Success: Deleted post {CUSTOM_POST_ID}.
       """
 
+  Scenario: Force-deleting a custom post type post skips trash
+    When I run `wp post create --post_title='Test CPT post' --post_type='book' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BOOK_POST_ID}
+
+    When I run `wp post delete {BOOK_POST_ID} --force`
+    Then STDOUT should be:
+      """
+      Success: Deleted post {BOOK_POST_ID}.
+      """
+
     When I try the previous command again
     Then the return code should be 1
+
+  Scenario: Deleting already trashed custom post type posts
+    When I run `wp post create --post_title='Test CPT post' --post_type='book' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {BOOK_POST_ID}
+
+    When I run `wp post update {BOOK_POST_ID} --post_status='trash'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {BOOK_POST_ID}.
+      """
+
+    When I run `wp post delete {BOOK_POST_ID}`
+    Then STDOUT should be:
+      """
+      Success: Deleted post {BOOK_POST_ID}.
+      """
 
   Scenario: Updating an invalid post should exit with an error
     Given a WP install
@@ -186,6 +213,7 @@ Feature: Manage WordPress posts
       Error: No such post category 'Test'.
       """
 
+  @require-bin-ex
   Scenario: Creating/getting/editing posts
     Given a content.html file:
       """
@@ -197,7 +225,7 @@ Feature: Manage WordPress posts
       """
     And a create-post.sh file:
       """
-      cat content.html | wp post create --post_title='Test post' --post_excerpt="A multiline
+      cat content.html | wp post create --post_title="Test post" --post_excerpt="A multiline
       excerpt" --porcelain -
       """
 
@@ -238,14 +266,14 @@ Feature: Manage WordPress posts
       }
       """
 
-    When I try `EDITOR='ex -i NONE -c q!' wp post edit {POST_ID}`
+    When I try `EDITOR="ex -i NONE -c q!" wp post edit {POST_ID}`
     Then STDERR should contain:
       """
       No change made to post content.
       """
     And the return code should be 0
 
-    When I run `EDITOR='ex -i NONE -c %s/content/bunkum -c wq' wp post edit {POST_ID}`
+    When I run `EDITOR="ex -i NONE -c %s/content/bunkum -c wq" wp post edit {POST_ID}`
     Then STDERR should be empty
     And STDOUT should contain:
       """
@@ -258,7 +286,7 @@ Feature: Manage WordPress posts
       This is some bunkum.
       """
 
-    When I run `wp post url 1 {POST_ID}`
+    When I run `wp post list --post__in=1,{POST_ID} --post_type=any --orderby=post__in --field=url`
     Then STDOUT should be:
       """
       https://example.com/?p=1
@@ -367,9 +395,11 @@ Feature: Manage WordPress posts
       | Sample Page  | sample-page  | publish      |
 
   Scenario: List posts with date query
-    When I run `wp post create --post_title='old post' --post_date='2023-01-24T09:52:00.000Z'`
-    And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
-    And I run `wp post list --field=post_title --date_query='{"before":{"year":"2024"}}'`
+    Given these setup commands:
+      | command                                                                       |
+      | wp post create --post_title='old post' --post_date='2023-01-24T09:52:00.000Z' |
+      | wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z' |
+    When I run `wp post list --field=post_title --date_query='{"before":{"year":"2024"}}'`
     Then STDOUT should contain:
       """
       old post
@@ -380,12 +410,14 @@ Feature: Manage WordPress posts
       """
 
   Scenario: List posts with tax query
-    When I run `wp term create category "First Category" --porcelain`
-    And I run `wp term create category "Second Category" --porcelain`
-    And I run `wp post create --post_title='post-1' --post_category="First Category"`
-    And I run `wp post create --post_title='post-2' --post_category="Second Category"`
-    And I run `wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z'`
-    And I run `wp post list --field=post_title --tax_query='[{"taxonomy":"category","field":"slug","terms":"first-category"}]'`
+    Given these setup commands:
+      | command                                                                       |
+      | wp term create category "First Category" --porcelain                          |
+      | wp term create category "Second Category" --porcelain                         |
+      | wp post create --post_title='post-1' --post_category="First Category"         |
+      | wp post create --post_title='post-2' --post_category="Second Category"        |
+      | wp post create --post_title='new post' --post_date='2025-01-24T09:52:00.000Z' |
+    When I run `wp post list --field=post_title --tax_query='[{"taxonomy":"category","field":"slug","terms":"first-category"}]'`
     Then STDOUT should contain:
       """
       post-1
@@ -394,6 +426,36 @@ Feature: Manage WordPress posts
       """
       post-2
       """
+
+  Scenario: Creating/updating posts with taxonomies
+    Given these setup commands:
+      | command                                               | save  |
+      | wp term create category "First Category" --porcelain  | CAT_1 |
+      | wp term create category "Second Category" --porcelain | CAT_2 |
+      | wp term create post_tag "Term One" --porcelain        |       |
+      | wp term create post_tag "Term Two" --porcelain        |       |
+    When I run `wp post create --post_title='Test Post' --post_content='Test post content' --tax_input='{"category":[{CAT_1},{CAT_2}],"post_tag":["term-one", "term-two"]}' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post term list {POST_ID} category post_tag --format=table --fields=name,taxonomy`
+    Then STDOUT should be a table containing rows:
+      | name            | taxonomy |
+      | First Category  | category |
+      | Second Category | category |
+      | Term One        | post_tag |
+      | Term Two        | post_tag |
+    When I run `wp post update {POST_ID} --tax_input='{"category":[{CAT_1}],"post_tag":["term-one"]}'`
+    Then STDOUT should contain:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post term list {POST_ID} category post_tag --format=table --fields=name,taxonomy`
+    Then STDOUT should be a table containing rows:
+      | name           | taxonomy |
+      | First Category | category |
+      | Term One       | post_tag |
 
   Scenario: Update categories on a post
     When I run `wp term create category "Test Category" --porcelain`
@@ -416,7 +478,7 @@ Feature: Manage WordPress posts
       My\Post
       """
 
-    When I run `wp post update {POST_ID} --post_content='var isEmailValid = /^\S+@\S+.\S+$/.test(email);'`
+    When I run `wp post update {POST_ID} --post_content="var isEmailValid = /^\S+@\S+.\S+$/.test(email);"`
     Then STDOUT should not be empty
 
     When I run `wp post get {POST_ID} --field=content`
@@ -469,7 +531,6 @@ Feature: Manage WordPress posts
       2005-01-24 09:52:00
       """
 
-  @require-mysql
   Scenario: Publishing a post and setting a date succeeds if the edit_date flag is passed.
     Given a WP install
 
@@ -488,24 +549,707 @@ Feature: Manage WordPress posts
       2005-01-24 09:52:00
       """
 
-  # Separate test because of a known bug in the SQLite plugin.
-  # See https://github.com/WordPress/sqlite-database-integration/issues/52.
-  # Once the bug is resolved, this separate test can be removed again.
-  @require-sqlite
-  Scenario: Publishing a post and setting a date succeeds if the edit_date flag is passed.
+  @require-wp-5.0
+  Scenario: Get block_version field for post with blocks
+    Given a block-post.html file:
+      """
+      <!-- wp:paragraph --><p>Hello block world</p><!-- /wp:paragraph -->
+      """
+    When I run `wp post create block-post.html --post_title='Block Post' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=block_version`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+  @require-wp-5.0
+  Scenario: Get block_version field for post without blocks
+    Given a classic-post.html file:
+      """
+      <p>Just plain HTML</p>
+      """
+    When I run `wp post create classic-post.html --post_title='Classic Post' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=block_version`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+  @require-wp-5.0
+  Scenario: Get block_version field included in default output
+    Given a heading-post.html file:
+      """
+      <!-- wp:heading --><h2>Title</h2><!-- /wp:heading -->
+      """
+    When I run `wp post create heading-post.html --post_title='Test Post' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {"block_version":1}
+      """
+
+  Scenario: Filtering by the wp_posts column names
+    When I run `wp post create --post_title='Alpha' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+
+    # 'title', 'name' and 'author' are WP_Query's names for these filters. The
+    # columns they filter on are spelled differently, and passing the column
+    # name used to reach WP_Query as an argument it does not know: it was
+    # dropped, and every post came back. They are aliases now.
+    When I run `wp post list --title='Hello world!' --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --post_title='Hello world!' --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --name=alpha --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --post_name=alpha --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # Only the bundled post matches: a post created by WP-CLI has author 0,
+    # because WP-CLI runs as no user unless told otherwise.
+    When I run `wp post list --author=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --post_author=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --p=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --ID=1 --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+  Scenario: Filtering drafts by slug needs a user
+    When I run `wp post create --post_title='Beta' --post_name=beta --post_status=draft --porcelain`
+    Then STDOUT should be a number
+
+    # '--name' makes this a single-post query, and WP_Query hands a draft from
+    # one of those only to a user who can edit it. WP-CLI is no user by default.
+    When I run `wp post list --name=beta --field=ID`
+    Then STDOUT should be empty
+
+    # The global '--user' argument is what makes it reachable.
+    When I run `wp post list --name=beta --user=1 --field=ID`
+    Then STDOUT should not be empty
+
+  Scenario: Trashed posts need their status named
+    When I run `wp post create --post_title='Doomed' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {DOOMED_ID}
+
+    When I run `wp post delete {DOOMED_ID}`
+    Then STDOUT should contain:
+      """
+      Success: Trashed post
+      """
+
+    # This command defaults post_status to 'any', and WP_Query reads 'any' as
+    # every status registered without 'exclude_from_search' - which leaves out
+    # 'trash' and 'auto-draft'.
+    When I run `wp post list --field=ID`
+    Then STDOUT should not contain:
+      """
+      {DOOMED_ID}
+      """
+
+    When I run `wp post list --post_status=trash --field=ID`
+    Then STDOUT should contain:
+      """
+      {DOOMED_ID}
+      """
+
+  Scenario: Filtering by category and tag
+    When I run `wp term create category 'Alpha Cat' --porcelain`
+    Then save STDOUT as {CAT_ID}
+
+    When I run `wp term create post_tag 'Alpha Tag' --slug=alpha-tag --porcelain`
+    Then save STDOUT as {TAG_ID}
+
+    When I run `wp post create --post_title='Tagged' --post_status=publish --post_category={CAT_ID} --tags_input=alpha-tag --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp post list --cat={CAT_ID} --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # A negative ID excludes that category rather than selecting it.
+    When I run `wp post list --cat=-{CAT_ID} --field=post_title`
+    Then STDOUT should not contain:
+      """
+      Tagged
+      """
+
+    When I run `wp post list --tag=alpha-tag --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    When I run `wp post list --category_name=alpha-cat --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+  Scenario: Filtering by meta, time of day and order
+    When I run `wp post create --post_title='Timed' --post_status=publish --post_date='2020-03-04 05:06:07' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {TIMED_ID}
+
+    When I run `wp post meta add {TIMED_ID} color blue`
+    Then STDOUT should not be empty
+
+    When I run `wp post create --post_title='Locked' --post_status=publish --post_password=secret --porcelain`
+    Then STDOUT should be a number
+
+    # Time of day, alongside the year/month/day filters already documented.
+    # Two units at once exercises the combined path; all three of hour, minute
+    # and second together is left out on purpose, because that path compares a
+    # DATE_FORMAT() string and the SQLite integration plugin does not emulate
+    # it the way MySQL does, so it matches nothing there.
+    When I run `wp post list --hour=5 --minute=6 --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      """
+
+    When I run `wp post list --second=7 --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      """
+
+    # A meta key on its own, then narrowed by its value.
+    When I run `wp post list --meta_key=color --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      """
+
+    When I run `wp post list --meta_key=color --meta_value=red --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp post list --orderby=title --order=ASC --field=post_title`
+    Then STDOUT should be:
+      """
+      Hello world!
+      Locked
+      Timed
+      """
+
+    When I run `wp post list --orderby=title --order=DESC --field=post_title`
+    Then STDOUT should be:
+      """
+      Timed
+      Locked
+      Hello world!
+      """
+
+  Scenario: Filtering by lists and JSON queries
+    When I run `wp post create --post_title='Zebra Title' --post_content='nothing' --post_status=publish --porcelain`
+    Then save STDOUT as {TITLED}
+
+    When I run `wp post create --post_title='Plain' --post_name=plain --post_content='zebra in body' --post_status=publish --porcelain`
+    Then save STDOUT as {BODIED}
+
+    When I run `wp post meta add {TITLED} rank 5`
+    Then STDOUT should not be empty
+
+    # Arguments carrying '__' are split on commas before they reach WP_Query,
+    # which is what makes them usable from the command line at all.
+    When I run `wp post list --post__in={TITLED},{BODIED} --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --post__not_in={TITLED},{BODIED} --format=count`
+    Then STDOUT should be:
+      """
+      1
+      """
+
+    # Unlike --name, this reaches a draft, because it is not a single-post query.
+    When I run `wp post list --post_name__in=plain --field=post_title`
+    Then STDOUT should be:
+      """
+      Plain
+      """
+
+    When I run `wp post list --s=zebra --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    # The nested queries are given as JSON, which this command decodes.
+    When I run `wp post list --meta_query='[{"key":"rank","value":"5"}]' --field=post_title`
+    Then STDOUT should be:
+      """
+      Zebra Title
+      """
+
+    When I run `wp post list --meta_key=rank --meta_value=4 --meta_compare=">" --field=post_title`
+    Then STDOUT should be:
+      """
+      Zebra Title
+      """
+
+    # --offset only means anything once --posts_per_page is bounded.
+    When I run `wp post list --posts_per_page=10 --offset=1 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --posts_per_page=1 --nopaging=1 --format=count`
+    Then STDOUT should be:
+      """
+      3
+      """
+
+  # 'search_columns' is a WP_Query argument as of WordPress 6.2. Before that it
+  # is not recognised, so '--s' searches every column and the narrowing here
+  # would not happen.
+  @require-wp-6.2
+  Scenario: Narrowing a search to particular columns
+    When I run `wp post create --post_title='Zebra Title' --post_content='nothing' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp post create --post_title='Plain' --post_content='zebra in body' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+
+    When I run `wp post list --s=zebra --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_title --field=post_title`
+    Then STDOUT should be:
+      """
+      Zebra Title
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_content --field=post_title`
+    Then STDOUT should be:
+      """
+      Plain
+      """
+
+    When I run `wp post list --s=zebra --search_columns=post_title,post_content --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+  Scenario: Set a post's modification date on update
     Given a WP install
 
-    When I run `wp post create --post_title='test' --porcelain`
-    Then save STDOUT as {POST_ID}
+    # A timezone with an offset, so the GMT value derived from the local one is
+    # distinguishable from it. 1 January is outside DST in New York.
+    When I run `wp option update timezone_string 'America/New_York'`
+    Then STDOUT should not be empty
 
-    When I run `wp post update {POST_ID} --post_date='2005-01-24T09:52:00.000Z' --post_status='publish' --edit_date=1`
+    When I run `wp post create --post_title='A post' --post_status=publish --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_modified='2020-01-01 12:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 17:00:00
+      """
+
+  Scenario: Set a post's modification date on create
+    Given a WP install
+
+    When I run `wp option update timezone_string 'America/New_York'`
+    Then STDOUT should not be empty
+
+    When I run `wp post create --post_title='Another post' --post_date='2019-05-05 10:00:00' --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 17:00:00
+      """
+
+  Scenario: A post's modification date defaults to the current time
+    Given a WP install
+
+    # Given a known modification date, so that an update which failed to set one
+    # would leave this value behind and be caught.
+    When I run `wp post create --post_title='Undated post' --post_status=publish --post_modified='2019-02-03 04:05:06' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2019-02-03 04:05:06
+      """
+
+    When I run `wp post update {POST_ID} --post_title='Retitled'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should not contain:
+      """
+      2019-02-03 04:05:06
+      """
+    And STDOUT should not be empty
+
+  Scenario: Setting only the GMT modification date derives the local one
+    Given a WP install
+
+    # A timezone with an offset, so the derived local value is distinguishable
+    # from the GMT one it was derived from. 1 January is outside DST in New York.
+    When I run `wp option update timezone_string 'America/New_York'`
+    Then STDOUT should not be empty
+
+    When I run `wp post create --post_title='GMT only' --post_status=publish --post_modified_gmt='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 07:00:00
+      """
+
+    # And the same on update, which takes the other of the two code paths.
+    When I run `wp post update {POST_ID} --post_modified_gmt='2020-06-01 12:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-06-01 12:00:00
+      """
+
+    # June is inside DST, so the offset is four hours rather than five.
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-06-01 08:00:00
+      """
+
+  Scenario: An invalid modification date is rejected on create
+    Given a WP install
+
+    When I try `wp post create --post_title='Bad date' --post_status=publish --post_modified='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Invalid date.
+      """
+
+    When I try `wp post create --post_title='Bad GMT date' --post_status=publish --post_modified_gmt='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Invalid date.
+      """
+
+    # Well-formed but not a real calendar date.
+    When I try `wp post create --post_title='Bad calendar date' --post_status=publish --post_modified='2020-02-30 12:00:00'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Error: Invalid date.
+      """
+
+    When I run `wp post list --s=Bad --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+  Scenario: An invalid modification date is rejected on update
+    Given a WP install
+
+    When I run `wp post create --post_title='A post' --post_status=publish --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I try `wp post update {POST_ID} --post_modified='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Warning: Invalid date.
+      """
+
+    When I try `wp post update {POST_ID} --post_modified_gmt='banana'`
+    Then the return code should be 1
+    And STDERR should be:
+      """
+      Warning: Invalid date.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified_gmt`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+  Scenario: Set an attachment's modification date
+    Given a WP install
+
+    # Attachments take the wp_insert_attachment_data filter rather than
+    # wp_insert_post_data, so they are a separate path to cover.
+    When I run `wp post create --post_type=attachment --post_title='An attachment' --post_mime_type=image/png --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ATTACHMENT_ID}
+
+    When I run `wp post get {ATTACHMENT_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2020-01-01 12:00:00
+      """
+
+    When I run `wp post update {ATTACHMENT_ID} --post_modified='2021-02-02 13:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {ATTACHMENT_ID}.
+      """
+
+    When I run `wp post get {ATTACHMENT_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2021-02-02 13:00:00
+      """
+
+  Scenario: A post inserted by a save hook keeps its own modification date
+    Given a WP install
+    And a wp-content/mu-plugins/test-save-hook.php file:
+      """
+      <?php
+      // Plugin Name: Test Save Hook
+      add_action(
+          'save_post',
+          function ( $post_id, $post ) {
+              if ( 'Trigger' !== $post->post_title || 'revision' === $post->post_type ) {
+                  return;
+              }
+              wp_insert_post(
+                  [
+                      'post_title'  => 'Inserted by hook',
+                      'post_status' => 'publish',
+                  ]
+              );
+          },
+          10,
+          2
+      );
+      """
+
+    When I run `wp post create --post_title='Trigger' --post_status=publish --post_modified='2020-01-01 12:00:00' --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {POST_ID}
+
+    When I run `wp post update {POST_ID} --post_modified='2021-02-02 13:00:00'`
+    Then STDOUT should be:
+      """
+      Success: Updated post {POST_ID}.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_modified`
+    Then STDOUT should be:
+      """
+      2021-02-02 13:00:00
+      """
+
+    # The hook ran once for the create and once for the update, and neither of
+    # the posts it inserted should carry the date the command asked for.
+    When I run `wp post list --title='Inserted by hook' --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp post list --title='Inserted by hook' --field=post_modified`
+    Then STDOUT should not contain:
+      """
+      2020-01-01
+      """
+    And STDOUT should not contain:
+      """
+      2021-02-02
+      """
+    And STDOUT should not be empty
+
+  Scenario: List more posts than are loaded from the database at a time
+    Given a WP install
+    And I run `wp post generate --count=1200 --post_date="2020-01-01 00:00:00"`
+    And I run `wp post list --post_status=publish --orderby=ID --order=asc --format=ids`
+    And save STDOUT as {IDS}
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --field=ID | tr '\n' ' ' | sed 's/ $//'`
+    Then STDOUT should be:
+      """
+      {IDS}
+      """
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --fields=ID,post_title --format=csv | wc -l`
     Then STDOUT should contain:
       """
-      Success:
+      1202
       """
 
-    When I run `wp post get {POST_ID} --field=post_date`
+    When I run `wp post list --post_status=publish --orderby=ID --order=desc --posts_per_page=2 --fields=ID,url --format=csv`
+    Then STDOUT should match /^ID,url\n(\d+),https?:\/\/example\.com\/\?p=\1\n(\d+),https?:\/\/example\.com\/\?p=\2$/
+
+    # An offset that spans more than one chunk must only be applied once.
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --offset=450 --format=ids`
+    Then save STDOUT as {OFFSET_IDS}
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --offset=450 --field=ID | tr '\n' ' ' | sed 's/ $//'`
+    Then STDOUT should be:
+      """
+      {OFFSET_IDS}
+      """
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --offset=450 --field=ID | wc -l`
     Then STDOUT should contain:
       """
-      2005-01-24T09:52:00.000Z
+      600
+      """
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --paged=2 --format=ids`
+    Then save STDOUT as {PAGED_IDS}
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --paged=2 --field=ID | tr '\n' ' ' | sed 's/ $//'`
+    Then STDOUT should be:
+      """
+      {PAGED_IDS}
+      """
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=asc --posts_per_page=600 --paged=2 --field=ID | wc -l`
+    Then STDOUT should contain:
+      """
+      600
+      """
+
+  Scenario: Sticky posts are not prepended to the post list
+    Given a WP install
+    And I run `wp post create --post_title=Sticky --post_status=publish --post_date="2020-01-01 00:00:00" --porcelain`
+    And save STDOUT as {STICKY}
+    And I run `wp option update sticky_posts '[{STICKY}]' --format=json`
+    And I run `wp post create --post_title=Draft --post_status=draft --porcelain`
+    And save STDOUT as {DRAFT}
+    And I run `wp post create --post_title=Latest --post_status=publish --porcelain`
+    And save STDOUT as {LATEST}
+
+    When I run `wp post list --post_status=draft --field=ID`
+    Then STDOUT should be:
+      """
+      {DRAFT}
+      """
+
+    When I run `wp post list --post_status=publish --orderby=ID --order=desc --posts_per_page=1 --field=ID`
+    Then STDOUT should be:
+      """
+      {LATEST}
+      """
+
+  Scenario: List post meta as a field for some posts only
+    Given a WP install
+    And I run `wp post create --post_title=First --post_status=publish --porcelain`
+    And save STDOUT as {FIRST}
+    And I run `wp post create --post_title=Second --post_status=publish --porcelain`
+    And save STDOUT as {SECOND}
+    And I run `wp post meta add {SECOND} batch_meta second-value`
+
+    When I run `wp post list --post__in={FIRST},{SECOND} --orderby=ID --order=asc --fields=ID,batch_meta --format=csv`
+    Then STDOUT should be:
+      """
+      ID,batch_meta
+      {FIRST},
+      {SECOND},second-value
+      """
+
+    When I try `wp post list --post__in={FIRST},{SECOND} --fields=ID,missing_meta --format=csv`
+    Then STDERR should be:
+      """
+      Warning: Field not found in any item: missing_meta.
       """

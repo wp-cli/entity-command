@@ -3,8 +3,6 @@
 use WP_CLI\CommandWithDBObject;
 use WP_CLI\ExitException;
 use WP_CLI\Fetchers\Site as SiteFetcher;
-use WP_CLI\Iterators\Query as QueryIterator;
-use WP_CLI\Iterators\Table as TableIterator;
 use WP_CLI\Utils;
 use WP_CLI\Formatter;
 use WP_CLI\Fetchers\User as UserFetcher;
@@ -49,12 +47,6 @@ class Site_Command extends CommandWithDBObject {
 	private function empty_comments() {
 		global $wpdb;
 
-		// Empty comments and comment cache
-		$comment_ids = $wpdb->get_col( "SELECT comment_ID FROM $wpdb->comments" );
-		foreach ( $comment_ids as $comment_id ) {
-			wp_cache_delete( $comment_id, 'comment' );
-			wp_cache_delete( $comment_id, 'comment_meta' );
-		}
 		$wpdb->query( "TRUNCATE TABLE $wpdb->comments" );
 		$wpdb->query( "TRUNCATE TABLE $wpdb->commentmeta" );
 	}
@@ -65,29 +57,6 @@ class Site_Command extends CommandWithDBObject {
 	private function empty_posts() {
 		global $wpdb;
 
-		// Empty posts and post cache
-		$posts_query = "SELECT ID FROM $wpdb->posts";
-		$posts       = new QueryIterator( $posts_query, 10000 );
-
-		$taxonomies = get_taxonomies();
-
-		while ( $posts->valid() ) {
-			/**
-			 * @var object{ID: int} $post
-			 */
-			$post = $posts->current();
-
-			$post_id = $post->ID;
-
-			wp_cache_delete( $post_id, 'posts' );
-			wp_cache_delete( $post_id, 'post_meta' );
-			foreach ( $taxonomies as $taxonomy ) {
-				wp_cache_delete( $post_id, "{$taxonomy}_relationships" );
-			}
-			wp_cache_delete( $wpdb->blogid . '-' . $post_id, 'global-posts' );
-
-			$posts->next();
-		}
 		$wpdb->query( "TRUNCATE TABLE $wpdb->posts" );
 		$wpdb->query( "TRUNCATE TABLE $wpdb->postmeta" );
 	}
@@ -101,26 +70,25 @@ class Site_Command extends CommandWithDBObject {
 		 */
 		global $wpdb;
 
-		// Empty taxonomies and terms
-		$terms      = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy" );
-		$taxonomies = [];
-		foreach ( (array) $terms as $term ) {
-			$taxonomies[] = $term->taxonomy;
-			wp_cache_delete( $term->term_id, $term->taxonomy );
-		}
-
-		$taxonomies = array_unique( $taxonomies );
-		$cleaned    = [];
-		foreach ( $taxonomies as $taxonomy ) {
-			if ( isset( $cleaned[ $taxonomy ] ) ) {
-				continue;
+		$taxonomies = $wpdb->get_col( "SELECT DISTINCT taxonomy FROM $wpdb->term_taxonomy" );
+		if ( ! empty( $taxonomies ) ) {
+			$option_names = array_map(
+				static function ( $taxonomy ) {
+					return "{$taxonomy}_children";
+				},
+				$taxonomies
+			);
+			$placeholders = implode( ', ', array_fill( 0, count( $option_names ), '%s' ) );
+			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+			// @phpstan-ignore argument.type
+			$query = $wpdb->prepare( 'DELETE FROM ' . $wpdb->options . ' WHERE option_name IN ( ' . $placeholders . ' )', $option_names );
+			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+			if ( $query ) {
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $query is already prepared above.
+				$wpdb->query( $query );
 			}
-			$cleaned[ $taxonomy ] = true;
-
-			wp_cache_delete( 'all_ids', $taxonomy );
-			wp_cache_delete( 'get', $taxonomy );
-			delete_option( "{$taxonomy}_children" );
 		}
+
 		$wpdb->query( "TRUNCATE TABLE $wpdb->terms" );
 		$wpdb->query( "TRUNCATE TABLE $wpdb->term_taxonomy" );
 		$wpdb->query( "TRUNCATE TABLE $wpdb->term_relationships" );
@@ -130,35 +98,11 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Delete all links, link_category terms, and related cache.
+	 * Delete all links by truncating the links table.
 	 */
 	private function empty_links() {
 		global $wpdb;
 
-		// Remove links and related cached data.
-		$links_query = "SELECT link_id FROM {$wpdb->links}";
-		$links       = new QueryIterator( $links_query, 10000 );
-
-		// Remove bookmarks cache group.
-		wp_cache_delete( 'get_bookmarks', 'bookmark' );
-
-		while ( $links->valid() ) {
-			/**
-			 * @var object{link_id: int} $link
-			 */
-			$link = $links->current();
-
-			$link_id = $link->link_id;
-
-			// Remove cache for the link.
-			wp_delete_object_term_relationships( $link_id, 'link_category' );
-			wp_cache_delete( $link_id, 'bookmark' );
-			clean_object_term_cache( $link_id, 'link' );
-
-			$links->next();
-		}
-
-		// Empty the table once link related cache and term is removed.
 		$wpdb->query( "TRUNCATE TABLE {$wpdb->links}" );
 	}
 
@@ -174,8 +118,9 @@ class Site_Command extends CommandWithDBObject {
 		/* translators: Default category slug */
 		$cat_slug = sanitize_title( _x( 'Uncategorized', 'Default category slug' ) );
 
+		// global_terms_enabled() is deprecated since WP 6.1, where global terms are always off.
 		// @phpstan-ignore function.deprecated
-		if ( global_terms_enabled() ) { // phpcs:ignore WordPress.WP.DeprecatedFunctions.global_terms_enabledFound -- Required for backwards compatibility.
+		if ( Utils\wp_version_compare( '6.1', '<' ) && global_terms_enabled() ) { // phpcs:ignore WordPress.WP.DeprecatedFunctions.global_terms_enabledFound -- Required for backwards compatibility.
 			$cat_id = $wpdb->get_var( $wpdb->prepare( "SELECT cat_ID FROM {$wpdb->sitecategories} WHERE category_nicename = %s", $cat_slug ) );
 			if ( null === $cat_id ) {
 				$wpdb->insert(
@@ -230,13 +175,14 @@ class Site_Command extends CommandWithDBObject {
 	}
 
 	/**
-	 * Empties a site of its content (posts, comments, terms, and meta).
+	 * Empties a site of its content (posts, comments, terms, links, and meta).
 	 *
-	 * Truncates posts, comments, and terms tables to empty a site of its
+	 * Truncates posts, comments, terms, and links tables to empty a site of its
 	 * content. Doesn't affect site configuration (options) or users.
 	 *
-	 * If running a persistent object cache, make sure to flush the cache
-	 * after emptying the site, as the cache values will be invalid otherwise.
+	 * Flushes the object cache after emptying the site to ensure stale data
+	 * is not served. On a Multisite installation, this will flush the cache
+	 * for all sites.
 	 *
 	 * To also empty custom database tables, you'll need to hook into command
 	 * execution:
@@ -282,6 +228,7 @@ class Site_Command extends CommandWithDBObject {
 		$this->empty_taxonomies();
 		$this->insert_default_terms();
 		$this->reset_options();
+		wp_cache_flush();
 
 		if ( ! empty( $upload_message ) ) {
 			$upload_dir = wp_upload_dir();
@@ -300,7 +247,8 @@ class Site_Command extends CommandWithDBObject {
 			foreach ( $files as $fileinfo ) {
 				$realpath = $fileinfo->getRealPath();
 				// Don't clobber subsites when operating on the main site
-				if ( $is_main_site && false !== stripos( $realpath, '/sites/' ) ) {
+				$normalized_realpath = str_replace( '\\', '/', $realpath );
+				if ( $is_main_site && false !== stripos( $normalized_realpath, '/sites/' ) ) {
 					continue;
 				}
 				if ( $fileinfo->isDir() ) {
@@ -340,6 +288,9 @@ class Site_Command extends CommandWithDBObject {
 	 * [--keep-tables]
 	 * : Delete the blog from the list, but don't drop its tables.
 	 *
+	 * [--delete-tables-with-prefix]
+	 * : Delete all tables with the site's database table prefix after deleting the site.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     $ wp site delete 123
@@ -351,10 +302,17 @@ class Site_Command extends CommandWithDBObject {
 			WP_CLI::error( 'This is not a multisite installation.' );
 		}
 
+		if ( Utils\get_flag_value( $assoc_args, 'keep-tables' ) && Utils\get_flag_value( $assoc_args, 'delete-tables-with-prefix' ) ) {
+			WP_CLI::error( "The '--keep-tables' and '--delete-tables-with-prefix' flags cannot be used together." );
+		}
+
 		if ( isset( $assoc_args['slug'] ) ) {
 			$blog_id = get_id_from_blogname( $assoc_args['slug'] );
 			if ( null === $blog_id ) {
 				WP_CLI::error( sprintf( 'Could not find site with slug \'%s\'.', $assoc_args['slug'] ) );
+			}
+			if ( is_main_site( $blog_id ) ) {
+				WP_CLI::error( 'You cannot delete the root site.' );
 			}
 			$blog = get_blog_details( $blog_id );
 		} else {
@@ -379,9 +337,180 @@ class Site_Command extends CommandWithDBObject {
 
 		WP_CLI::confirm( "Are you sure you want to delete the '{$site_url}' site?", $assoc_args );
 
-		wpmu_delete_blog( (int) $blog->blog_id, ! Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
+		$did_delete = wpmu_delete_blog( (int) $blog->blog_id, ! Utils\get_flag_value( $assoc_args, 'keep-tables' ) );
+		if ( false === $did_delete ) {
+			WP_CLI::error( "The site at '{$site_url}' could not be deleted." );
+		}
+
+		if ( Utils\get_flag_value( $assoc_args, 'delete-tables-with-prefix' ) ) {
+			$this->drop_tables_with_prefix( (int) $blog->blog_id );
+		}
 
 		WP_CLI::success( "The site at '{$site_url}' was deleted." );
+	}
+
+	/**
+	 * Drops all database tables for a site prefix.
+	 *
+	 * @param int $blog_id Site ID.
+	 */
+	private function drop_tables_with_prefix( $blog_id ) {
+		global $wpdb;
+
+		$blog_prefix = $wpdb->get_blog_prefix( $blog_id );
+		if ( is_main_site( $blog_id ) || $blog_prefix === $wpdb->base_prefix ) {
+			WP_CLI::error( 'You cannot drop tables for the root site.' );
+		}
+
+		$prefix_like = $wpdb->esc_like( $blog_prefix ) . '%';
+		$tables      = $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', $prefix_like ) );
+
+		if ( empty( $tables ) ) {
+			return;
+		}
+
+		$tables = array_map(
+			static function ( $table ) {
+				return '`' . str_replace( '`', '``', $table ) . '`';
+			},
+			$tables
+		);
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table identifiers are escaped and cannot be passed as placeholders.
+		$wpdb->query( 'DROP TABLE IF EXISTS ' . implode( ', ', $tables ) );
+	}
+
+	/**
+	 * Gets details about a site in a multisite installation.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <site>
+	 * : Site ID or URL of the site to get. For subdirectory sites, use the full URL (e.g., http://example.com/subdir/).
+	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole site, returns the value of a single field.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to all fields.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields will be displayed by default for the site:
+	 *
+	 * * blog_id
+	 * * url
+	 * * last_updated
+	 * * registered
+	 *
+	 * These fields are optionally available:
+	 *
+	 * * site_id
+	 * * domain
+	 * * path
+	 * * public
+	 * * archived
+	 * * mature
+	 * * spam
+	 * * deleted
+	 * * lang_id
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get site by ID
+	 *     $ wp site get 1
+	 *     +---------+-------------------------+---------------------+---------------------+
+	 *     | blog_id | url                     | last_updated        | registered          |
+	 *     +---------+-------------------------+---------------------+---------------------+
+	 *     | 1       | http://example.com/     | 2025-01-01 12:00:00 | 2025-01-01 12:00:00 |
+	 *     +---------+-------------------------+---------------------+---------------------+
+	 *
+	 *     # Get site URL by site ID
+	 *     $ wp site get 1 --field=url
+	 *     http://example.com/
+	 *
+	 *     # Get site ID by URL
+	 *     $ wp site get http://example.com/subdir/ --field=blog_id
+	 *     2
+	 *
+	 *     # Delete a site by URL
+	 *     $ wp site delete $(wp site get http://example.com/subdir/ --field=blog_id) --yes
+	 *     Success: The site at 'http://example.com/subdir/' was deleted.
+	 */
+	public function get( $args, $assoc_args ) {
+		if ( ! is_multisite() ) {
+			WP_CLI::error( 'This is not a multisite installation.' );
+		}
+
+		$site_arg = $args[0];
+		$site     = null;
+
+		// Check if the argument is a URL or a domain (non-numeric)
+		if ( ! is_numeric( $site_arg ) ) {
+			// Normalize URLs without a scheme for proper parsing.
+			$url_to_parse = $site_arg;
+			if ( false === strpos( $url_to_parse, '://' ) ) {
+				$url_to_parse = 'http://' . $url_to_parse;
+			}
+
+			// Parse the URL to get domain and path
+			$url_parts = wp_parse_url( $url_to_parse );
+
+			if ( ! isset( $url_parts['host'] ) ) {
+				WP_CLI::error( "Invalid URL: {$site_arg}" );
+			}
+
+			$domain = $url_parts['host'];
+			$path   = isset( $url_parts['path'] ) ? $url_parts['path'] : '/';
+
+			// Ensure path ends with /
+			if ( '/' !== substr( $path, -1 ) ) {
+				$path .= '/';
+			}
+
+			// Use WordPress's cached function to get the blog ID
+			$blog_id = get_blog_id_from_url( $domain, $path );
+
+			if ( ! $blog_id ) {
+				WP_CLI::error( "Could not find site with URL: {$site_arg}" );
+			}
+
+			$site = $this->fetcher->get_check( $blog_id );
+		} else {
+			// Treat as site ID
+			$site = $this->fetcher->get_check( $site_arg );
+		}
+
+		// Get the site details and add URL
+		$site_data        = get_object_vars( $site );
+		$site_data['url'] = trailingslashit( get_home_url( $site->blog_id ) );
+
+		// Cast numeric fields to int for consistent output
+		$numeric_fields = [ 'blog_id', 'site_id', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' ];
+		foreach ( $numeric_fields as $field ) {
+			if ( isset( $site_data[ $field ] ) && is_scalar( $site_data[ $field ] ) ) {
+				$site_data[ $field ] = (int) $site_data[ $field ];
+			}
+		}
+
+		// Set default fields if not specified
+		if ( empty( $assoc_args['fields'] ) ) {
+			$assoc_args['fields'] = [ 'blog_id', 'url', 'last_updated', 'registered' ];
+		}
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $site_data );
 	}
 
 	/**
@@ -389,8 +518,15 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * --slug=<slug>
+	 * [--slug=<slug>]
 	 * : Path for the new site. Subdomain on subdomain installs, directory on subdirectory installs.
+	 * Required if --site-url is not provided.
+	 *
+	 * [--site-url=<url>]
+	 * : Full URL for the new site. Use this to specify a custom domain instead of the auto-generated one.
+	 * For subdomain installs, this allows you to use a different base domain (e.g., 'http://site.example.com' instead of 'http://site.main.example.com').
+	 * For subdirectory installs, this allows you to use a different path.
+	 * If provided, --slug is optional and will be derived from the URL. If both --slug and --site-url are provided, --slug will be used as the base for internal operations (like user creation), while the domain/path from --site-url will be used for the actual site URL.
 	 *
 	 * [--title=<title>]
 	 * : Title of the new site. Default: prettified slug.
@@ -409,8 +545,17 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## EXAMPLES
 	 *
+	 *     # Create a site with auto-generated domain
 	 *     $ wp site create --slug=example
 	 *     Success: Site 3 created: http://www.example.com/example/
+	 *
+	 *     # Create a site with a custom domain (subdomain multisite)
+	 *     $ wp site create --site-url=http://site.example.com
+	 *     Success: Site 4 created: http://site.example.com/
+	 *
+	 *     # Create a site with a custom subdirectory (subdirectory multisite)
+	 *     $ wp site create --site-url=http://example.com/custom/path/
+	 *     Success: Site 5 created: http://example.com/custom/path/
 	 */
 	public function create( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
@@ -419,7 +564,101 @@ class Site_Command extends CommandWithDBObject {
 
 		global $wpdb, $current_site;
 
-		$base = $assoc_args['slug'];
+		// Check if either slug or site-url is provided
+		$has_slug     = isset( $assoc_args['slug'] );
+		$has_site_url = isset( $assoc_args['site-url'] );
+
+		if ( ! $has_slug && ! $has_site_url ) {
+			WP_CLI::error( 'Either --slug or --site-url must be provided.' );
+		}
+
+		// If site URL is provided, parse it to get domain and path
+		$custom_domain = null;
+		$custom_path   = null;
+		$base          = null;
+
+		if ( $has_site_url ) {
+			$parsed_url = wp_parse_url( $assoc_args['site-url'] );
+			if ( ! is_array( $parsed_url ) || ! isset( $parsed_url['host'] ) || ! is_string( $parsed_url['host'] ) ) {
+				WP_CLI::error( 'Invalid URL format. Please provide a valid URL (e.g., http://site.example.com).' );
+			}
+
+			// Validate the scheme if present
+			if ( isset( $parsed_url['scheme'] ) && ! in_array( $parsed_url['scheme'], [ 'http', 'https' ], true ) ) {
+				WP_CLI::error( 'Invalid URL scheme. Only http and https schemes are supported.' );
+			}
+
+			// Reject unsupported URL components (user, pass, port, query, fragment)
+			$unsupported = array_intersect_key( $parsed_url, array_flip( [ 'user', 'pass', 'port', 'query', 'fragment' ] ) );
+			if ( ! empty( $unsupported ) ) {
+				WP_CLI::error( 'Invalid URL format. User credentials, ports, query parameters, and fragments are not supported in --site-url.' );
+			}
+
+			// Sanitize domain and path
+			$raw_path      = isset( $parsed_url['path'] ) && is_string( $parsed_url['path'] ) ? $parsed_url['path'] : '/';
+			$custom_domain = sanitize_text_field( $parsed_url['host'] );
+			$custom_path   = sanitize_text_field( '/' . ltrim( $raw_path, '/' ) );
+
+			$domain_parts = explode( '.', $custom_domain );
+			$valid_domain = true;
+			foreach ( $domain_parts as $part ) {
+				if ( '' === $part || ! preg_match( '/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/', $part ) ) {
+					$valid_domain = false;
+					break;
+				}
+			}
+
+			if ( ! $valid_domain ) {
+				WP_CLI::error( 'Invalid domain format in --site-url.' );
+			}
+
+			if ( ! preg_match( '|^[a-zA-Z0-9/-]+$|', $custom_path ) || false !== strpos( $raw_path, '//' ) ) {
+				WP_CLI::error( 'Invalid path format in --site-url.' );
+			}
+
+			// Ensure path ends with /
+			if ( '/' !== substr( $custom_path, -1 ) ) {
+				$custom_path .= '/';
+			}
+
+			// Derive base/slug from the URL if not explicitly provided
+			if ( ! $has_slug ) {
+				if ( is_subdomain_install() ) {
+					// For subdomain installs, use the first part of the domain as the base
+					$domain_parts = explode( '.', $custom_domain );
+					$base         = $domain_parts[0];
+
+					// Validate that the derived base is suitable for use as a slug
+					if ( empty( $base ) || is_numeric( $base ) ) {
+						WP_CLI::error( 'Could not derive a valid slug from the domain (numeric-only or empty slugs are not allowed). Please provide --slug explicitly.' );
+					}
+
+					// Sanitize and lowercase the derived base
+					$base = strtolower( $base );
+				} else {
+					// For subdirectory installs, derive slug from the last part of the path.
+					$path_parts = array_filter(
+						explode( '/', trim( $custom_path, '/' ) ),
+						function ( $part ) {
+							return '' !== $part;
+						}
+					);
+					$base       = (string) array_pop( $path_parts );
+
+					// If base is empty (root path), require explicit slug.
+					if ( empty( $base ) ) {
+						WP_CLI::error( 'Could not derive a valid slug from the URL path. Please provide --slug explicitly.' );
+					}
+
+					// Sanitize and lowercase the derived base.
+					$base = strtolower( $base );
+				}
+			} else {
+				$base = $assoc_args['slug'];
+			}
+		} else {
+			$base = $assoc_args['slug'];
+		}
 
 		/**
 		 * @var string $title
@@ -441,9 +680,10 @@ class Site_Command extends CommandWithDBObject {
 		$public = ! Utils\get_flag_value( $assoc_args, 'private' );
 
 		// Sanitize
-		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
-			$base = strtolower( $base );
+		if ( ! preg_match( '|^([a-zA-Z0-9-])+$|D', $base ) ) {
+			WP_CLI::error( 'Slug may only contain letters, numbers, and dashes.' );
 		}
+		$base = strtolower( $base );
 
 		// If not a subdomain install, make sure the domain isn't a reserved word
 		if ( ! is_subdomain_install() ) {
@@ -470,10 +710,25 @@ class Site_Command extends CommandWithDBObject {
 			}
 		}
 
-		if ( is_subdomain_install() ) {
+		if ( null !== $custom_domain ) {
+			// A custom site URL was provided.
+			$newdomain = $custom_domain;
+			$path      = $custom_path;
+
+			// For subdirectory installs, warn if the domain is different from the network's domain.
+			if ( ! is_subdomain_install() ) {
+				$network_domain           = preg_replace( '|^www\.|', '', $current_site->domain );
+				$custom_domain_normalized = preg_replace( '|^www\.|', '', $custom_domain );
+				if ( $custom_domain_normalized !== $network_domain ) {
+					WP_CLI::warning( 'Using a different domain for a subdirectory multisite install may require additional configuration (such as domain mapping) to work properly.' );
+				}
+			}
+		} elseif ( is_subdomain_install() ) {
+			// No custom site URL, use the slug to generate the domain/path for subdomain install.
 			$newdomain = $base . '.' . preg_replace( '|^www\.|', '', $current_site->domain );
 			$path      = $current_site->path;
 		} else {
+			// No custom site URL, use the slug to generate the domain/path for subdirectory install.
 			$newdomain = $current_site->domain;
 			$path      = $current_site->path . $base . '/';
 		}
@@ -567,9 +822,10 @@ class Site_Command extends CommandWithDBObject {
 
 		// Base.
 		$base = $assoc_args['slug'];
-		if ( preg_match( '|^([a-zA-Z0-9-])+$|', $base ) ) {
-			$base = strtolower( $base );
+		if ( ! preg_match( '|^([a-zA-Z0-9-])+$|D', $base ) ) {
+			WP_CLI::error( 'Slug may only contain letters, numbers, and dashes.' );
 		}
+		$base = strtolower( $base );
 
 		$is_subdomain_install = is_subdomain_install();
 		// If not a subdomain install, make sure the domain isn't a reserved word
@@ -727,18 +983,146 @@ class Site_Command extends CommandWithDBObject {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [--network=<id>]
-	 * : The network to which the sites belong.
+	 * [--network=<id>|site_id|network_id]
+	 * : The network to which the sites belong. `--site_id` is the name of the
+	 * column this filters, `--network_id` is WP_Site_Query's name for it, and
+	 * both are accepted as aliases. `--network` wins when more than one is given.
 	 *
 	 * [--<field>=<value>]
-	 * : Filter by one or more fields (see "Available Fields" section). However,
-	 * 'url' isn't an available filter, as it comes from 'home' in wp_options.
+	 * : Filter by one or more fields (see "Available Fields" section), or pass any
+	 * other argument accepted by WP_Site_Query. However, 'url' isn't an available
+	 * filter, as it comes from 'home' in wp_options.
+	 * Note: '--path' conflicts with the global parameter of the same name; use
+	 * '--site-path' to filter by path instead.
 	 *
 	 * [--site__in=<value>]
 	 * : Only list the sites with these blog_id values (comma-separated).
 	 *
+	 * [--site__not_in=<value>]
+	 * : Exclude the sites with these blog_id values (comma-separated).
+	 *
 	 * [--site_user=<value>]
 	 * : Only list the sites with this user.
+	 *
+	 * [--site-path=<path>]
+	 * : Filter by path. Avoids conflict with the global `--path` parameter.
+	 *
+	 * [--path__in=<value>]
+	 * : Only list the sites with these paths (comma-separated).
+	 *
+	 * [--path__not_in=<value>]
+	 * : Exclude the sites with these paths (comma-separated).
+	 *
+	 * [--blog_id=<blog_id>|ID]
+	 * : Filter by site ID. `--ID` is WP_Site_Query's name for the same filter
+	 * and is accepted as an alias.
+	 *
+	 * [--network__in=<value>]
+	 * : Only list the sites belonging to these network IDs (comma-separated).
+	 *
+	 * [--network__not_in=<value>]
+	 * : Exclude the sites belonging to these network IDs (comma-separated).
+	 *
+	 * [--domain=<domain>]
+	 * : Filter by domain.
+	 *
+	 * [--domain__in=<value>]
+	 * : Only list the sites with these domains (comma-separated).
+	 *
+	 * [--domain__not_in=<value>]
+	 * : Exclude the sites with these domains (comma-separated).
+	 *
+	 * [--registered=<date>]
+	 * : Filter by the date the site was registered. Accepts a timestamp or a
+	 * date; a value carrying no time of day matches that whole day.
+	 *
+	 * [--last_updated=<date>]
+	 * : Filter by the date the site was last updated. Accepts a timestamp or a
+	 * date; a value carrying no time of day matches that whole day.
+	 *
+	 * [--public=<public>]
+	 * : Filter by whether the site is public. Accepts 1 or 0.
+	 *
+	 * [--archived=<archived>]
+	 * : Filter by whether the site is archived. Accepts 1 or 0.
+	 *
+	 * [--mature=<mature>]
+	 * : Filter by whether the site is flagged as mature. Accepts 1 or 0.
+	 *
+	 * [--spam=<spam>]
+	 * : Filter by whether the site is flagged as spam. Accepts 1 or 0.
+	 *
+	 * [--deleted=<deleted>]
+	 * : Filter by whether the site is flagged as deleted. Accepts 1 or 0.
+	 *
+	 * [--lang_id=<lang_id>]
+	 * : Filter by language ID.
+	 *
+	 * [--lang__in=<value>]
+	 * : Only list the sites with these language IDs (comma-separated).
+	 *
+	 * [--lang__not_in=<value>]
+	 * : Exclude the sites with these language IDs (comma-separated).
+	 *
+	 * [--search=<string>]
+	 * : Only list the sites matching this search term. Searches the domain and
+	 * path columns unless `--search_columns` narrows it.
+	 *
+	 * [--search_columns=<columns>]
+	 * : Comma-separated list of columns `--search` looks in. Accepts 'domain'
+	 * and 'path'.
+	 *
+	 * [--meta_key=<meta_key>]
+	 * : Filter by this site meta key. The site meta arguments need WordPress 5.1
+	 * or later, which is where multisite gained the table they read.
+	 *
+	 * [--meta_value=<meta_value>]
+	 * : Filter by this site meta value. Used together with `--meta_key`.
+	 *
+	 * [--meta_compare=<meta_compare>]
+	 * : Operator to test the meta value against. Accepts the operators
+	 * WP_Meta_Query supports, such as '=', '!=', 'LIKE' or 'IN'.
+	 *
+	 * [--meta_type=<meta_type>]
+	 * : Cast the meta value to this type, such as 'NUMERIC' or 'DATE'.
+	 *
+	 * [--meta_query=<meta_query>]
+	 * : A WP_Meta_Query clause list, as JSON, for conditions the meta_* arguments
+	 * above cannot express.
+	 *
+	 * [--date_query=<date_query>]
+	 * : A WP_Date_Query clause list, as JSON, for ranges `--registered` and
+	 * `--last_updated` cannot express. Giving those as well narrows this further
+	 * rather than replacing it.
+	 *
+	 * [--number=<number>]
+	 * : Limit the number of sites returned.
+	 *
+	 * [--offset=<offset>]
+	 * : Number of sites to skip. Used together with `--number`.
+	 *
+	 * [--no_found_rows=<no_found_rows>]
+	 * : Whether to skip counting the total rows the query matches. Accepts 1 or 0.
+	 *
+	 * [--update_site_cache=<update_site_cache>]
+	 * : Whether to prime the object cache with the sites found. Accepts 1 or 0.
+	 * Turning it off saves work when listing a large network once.
+	 *
+	 * [--update_site_meta_cache=<update_site_meta_cache>]
+	 * : Whether to prime the object cache with the site meta of the sites found.
+	 * Accepts 1 or 0.
+	 *
+	 * [--orderby=<field>]
+	 * : Order the results by this field, such as 'blog_id', 'domain', 'path',
+	 * 'registered', 'last_updated' or 'site__in'.
+	 *
+	 * [--order=<order>]
+	 * : Whether to order the results ascending or descending.
+	 * ---
+	 * options:
+	 *   - asc
+	 *   - desc
+	 * ---
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each site.
@@ -787,14 +1171,21 @@ class Site_Command extends CommandWithDBObject {
 	 *     http://www.example.com/
 	 *     http://www.example.com/subdir/
 	 *
+	 *     # Output site URLs, most recently registered first
+	 *     $ wp site list --orderby=registered --order=desc --field=url
+	 *     http://www.example.com/subdir/
+	 *     http://www.example.com/
+	 *
+	 *     # Search for sites by domain or path
+	 *     $ wp site list --search=subdir --field=url
+	 *     http://www.example.com/subdir/
+	 *
 	 * @subcommand list
 	 */
 	public function list_( $args, $assoc_args ) {
 		if ( ! is_multisite() ) {
 			WP_CLI::error( 'This is not a multisite installation.' );
 		}
-
-		global $wpdb;
 
 		if ( isset( $assoc_args['fields'] ) ) {
 			$assoc_args['fields'] = preg_split( '/,[ \t]*/', $assoc_args['fields'] );
@@ -806,27 +1197,113 @@ class Site_Command extends CommandWithDBObject {
 		];
 		$assoc_args = array_merge( $defaults, $assoc_args );
 
-		$where  = [];
-		$append = '';
+		// Anything the command does not consume itself is handed to WP_Site_Query,
+		// which is what makes its own arguments - search, site__not_in, date_query,
+		// lang__in and the rest - usable here.
+		//
+		// 'count' is withheld deliberately: it makes get_sites() return an integer
+		// rather than a list, and '--format=count' is how this command spells it.
+		$query_args = array_diff_key(
+			$assoc_args,
+			array_flip(
+				[ 'format', 'fields', 'field', 'count', 'blog_id', 'site_id', 'site_user', 'site-path', 'network', 'registered', 'last_updated' ]
+			)
+		);
 
-		$site_cols = [ 'blog_id', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' ];
-		foreach ( $site_cols as $col ) {
-			if ( isset( $assoc_args[ $col ] ) ) {
-				$where[ $col ] = $assoc_args[ $col ];
+		// 'meta_query' and 'date_query' are nested arrays, so they are given as JSON.
+		// The decoded values go straight into the query arguments rather than back
+		// into $assoc_args, which the rest of this method reads as strings.
+		//
+		// parse_shell_arrays() leaves anything that is not JSON alone, and a string
+		// reaching either of these is ignored without a word. Say so instead.
+		$decoded_args = Utils\parse_shell_arrays( $assoc_args, [ 'meta_query', 'date_query' ] );
+
+		foreach ( [ 'meta_query', 'date_query' ] as $json_arg ) {
+			if ( ! isset( $decoded_args[ $json_arg ] ) ) {
+				continue;
 			}
+
+			if ( ! is_array( $decoded_args[ $json_arg ] ) ) {
+				WP_CLI::error( "Invalid JSON passed to --{$json_arg}." );
+			}
+
+			$query_args[ $json_arg ] = $decoded_args[ $json_arg ];
+		}
+
+		// Arguments this command spells differently to WP_Site_Query.
+		if ( isset( $assoc_args['blog_id'] ) ) {
+			$query_args['site__in'] = [ $assoc_args['blog_id'] ];
 		}
 
 		if ( isset( $assoc_args['site__in'] ) ) {
-			$where['blog_id'] = explode( ',', $assoc_args['site__in'] );
-			$append           = 'ORDER BY FIELD( blog_id, ' . implode( ',', array_map( 'intval', $where['blog_id'] ) ) . ' )';
+			$query_args['site__in'] = array_map( 'trim', explode( ',', $assoc_args['site__in'] ) );
 		}
 
+		// WP_Site_Query reads these through is_array() or array_intersect(), so a
+		// comma-separated string reaches them as a value they cannot use: the domain
+		// and path clauses are skipped without a word, and 'search_columns' is fatal.
+		// Splitting them here is what makes them mean anything from the command line.
+		foreach ( [ 'domain__in', 'domain__not_in', 'path__in', 'path__not_in', 'search_columns' ] as $list_arg ) {
+			if ( isset( $assoc_args[ $list_arg ] ) && ! is_array( $assoc_args[ $list_arg ] ) ) {
+				$query_args[ $list_arg ] = array_map( 'trim', explode( ',', (string) $assoc_args[ $list_arg ] ) );
+			}
+		}
+
+		// '--site_id' and '--network_id' are aliases of '--network', so they have
+		// already been resolved to it by the time the command runs. wp-cli lets the
+		// canonical name win when more than one is given, which is the precedence
+		// '--network' has always had over '--site_id'.
 		if ( isset( $assoc_args['network'] ) ) {
-			$where['site_id'] = $assoc_args['network'];
+			$query_args['network_id'] = $assoc_args['network'];
+		}
+
+		if ( isset( $assoc_args['site-path'] ) ) {
+			$query_args['path'] = $assoc_args['site-path'];
+		}
+
+		// WP_Site_Query only reaches the date columns through a date query. Bounding
+		// the range by the given value on both ends matches it as precisely as it was
+		// written: a full timestamp matches that second, a date matches that day.
+		// Interpreting the value is WP_Date_Query's job, so it is passed on as given.
+		$date_query = [];
+
+		foreach ( [ 'registered', 'last_updated' ] as $column ) {
+			if ( isset( $assoc_args[ $column ] ) ) {
+				$date_query[] = [
+					'column'    => $column,
+					'after'     => $assoc_args[ $column ],
+					'before'    => $assoc_args[ $column ],
+					'inclusive' => true,
+				];
+			}
+		}
+
+		// A '--date_query' of its own is kept rather than replaced, so '--registered'
+		// and '--last_updated' narrow it the way every other filter here narrows the
+		// result instead of quietly winning.
+		//
+		// It is nested a level down rather than appended to, because its 'relation'
+		// governs whatever shares its list: an 'OR' would reach the clauses added
+		// here and match a site that satisfies neither half of what was asked for.
+		if ( ! empty( $date_query ) ) {
+			$given = isset( $query_args['date_query'] ) && is_array( $query_args['date_query'] )
+				? $query_args['date_query']
+				: [];
+
+			$query_args['date_query'] = empty( $given )
+				? $date_query
+				: array_merge(
+					[
+						'relation' => 'AND',
+						$given,
+					],
+					$date_query
+				);
 		}
 
 		if ( isset( $assoc_args['site_user'] ) ) {
-			$user = ( new UserFetcher() )->get_check( $assoc_args['site_user'] );
+			$user     = ( new UserFetcher() )->get_check( $assoc_args['site_user'] );
+			$user_ids = [];
 
 			if ( $user ) {
 				/**
@@ -835,35 +1312,35 @@ class Site_Command extends CommandWithDBObject {
 				$blogs = get_blogs_of_user( $user->ID );
 
 				foreach ( $blogs as $blog ) {
-					$where['blog_id'][] = $blog->userblog_id;
+					$user_ids[] = $blog->userblog_id;
 				}
 			}
 
-			if ( ! isset( $where['blog_id'] ) || empty( $where['blog_id'] ) ) {
+			if ( isset( $query_args['site__in'] ) ) {
+				$user_ids = array_intersect( array_map( 'intval', $query_args['site__in'] ), $user_ids );
+			}
+
+			if ( empty( $user_ids ) ) {
 				$formatter = new Formatter( $assoc_args, [], 'site' );
 				$formatter->display_items( [] );
 				return;
 			}
 
-			$append = 'ORDER BY FIELD( blog_id, ' . implode( ',', array_map( 'intval', $where['blog_id'] ) ) . ' )';
+			$query_args['site__in'] = array_values( $user_ids );
 		}
 
-		$iterator_args = [
-			'table'  => $wpdb->blogs,
-			'where'  => $where,
-			'append' => $append,
-		];
+		// Listing by explicit IDs has always come back in the order they were given.
+		if ( isset( $query_args['site__in'] ) && ! isset( $assoc_args['orderby'] ) ) {
+			$query_args['orderby'] = 'site__in';
+		}
 
-		$iterator = new TableIterator( $iterator_args );
-
-		/**
-		 * @var iterable $iterator
-		 */
 		$iterator = Utils\iterator_map(
-			$iterator,
-			function ( $blog ) {
-				$blog->url = trailingslashit( get_home_url( $blog->blog_id ) );
-				return $blog;
+			self::get_sites_iterator( $query_args ),
+			function ( $site ) {
+				$site_data        = $site->to_array();
+				$site_data['url'] = trailingslashit( get_home_url( $site->blog_id ) );
+
+				return (object) $site_data;
 			}
 		);
 
@@ -876,6 +1353,65 @@ class Site_Command extends CommandWithDBObject {
 			$formatter = new Formatter( $assoc_args, null, 'site' );
 			$formatter->display_items( $iterator );
 		}
+	}
+
+	/**
+	 * Yields sites a page at a time.
+	 *
+	 * The previous implementation read $wpdb->blogs through a chunked iterator, so
+	 * listing a large network never held every row in memory at once. Page through
+	 * WP_Site_Query the same way, unless an explicit --number was given, in which
+	 * case that is the caller's own limit and is passed straight through.
+	 *
+	 * @param array<string, mixed> $query_args Arguments for WP_Site_Query.
+	 * @return \Generator<int, \WP_Site>
+	 */
+	private static function get_sites_iterator( $query_args ) {
+		// 'count' and 'fields' are pinned to the WP_Site_Query defaults, so that
+		// get_sites() always answers with the WP_Site objects this yields.
+		$query_args = array_merge(
+			$query_args,
+			[
+				'count'  => false,
+				'fields' => '',
+			]
+		);
+
+		if ( isset( $query_args['number'] ) ) {
+			// The arguments are whatever the user passed, so they cannot be narrowed
+			// to the shape get_sites() documents. WP_Site_Query validates them itself.
+			// @phpstan-ignore argument.type
+			foreach ( get_sites( $query_args ) as $site ) {
+				yield $site;
+			}
+
+			return;
+		}
+
+		$chunk_size = 500;
+		$offset     = isset( $query_args['offset'] ) && is_numeric( $query_args['offset'] )
+			? (int) $query_args['offset']
+			: 0;
+
+		do {
+			$page_args = array_merge(
+				$query_args,
+				[
+					'number' => $chunk_size,
+					'offset' => $offset,
+				]
+			);
+
+			// @phpstan-ignore argument.type
+			$sites = get_sites( $page_args );
+
+			foreach ( $sites as $site ) {
+				yield $site;
+			}
+
+			$fetched = count( $sites );
+			$offset += $chunk_size;
+		} while ( $fetched === $chunk_size );
 	}
 
 	/**
@@ -1244,7 +1780,6 @@ class Site_Command extends CommandWithDBObject {
 	 * @param  array  $assoc_args  Passed-in parameters.
 	 *
 	 * @return bool
-	 * @throws ExitException If neither site ids nor site slug using --slug were provided.
 	 */
 	private function check_site_ids_and_slug( $args, $assoc_args ) {
 		if ( ( empty( $args ) && empty( $assoc_args['slug'] ) )

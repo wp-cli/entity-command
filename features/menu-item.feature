@@ -9,14 +9,14 @@ Feature: Manage WordPress menu items
     Then STDOUT should be a number
     And save STDOUT as {POST_ID}
 
-    When I run `wp post url {POST_ID}`
+    When I run `wp post list --post__in={POST_ID} --post_type=any --orderby=post__in --field=url`
     Then save STDOUT as {POST_LINK}
 
     When I run `wp term create post_tag 'Test term' --slug=test --description='This is a test term' --porcelain`
     Then STDOUT should be a number
     And save STDOUT as {TERM_ID}
 
-    When I run `wp term url post_tag {TERM_ID}`
+    When I run `wp term list post_tag --include={TERM_ID} --orderby=include --field=url`
     Then save STDOUT as {TERM_LINK}
 
     When I run `wp menu create "Sidebar Menu"`
@@ -103,6 +103,7 @@ Feature: Manage WordPress menu items
       | Child       | {CHILD_ID}       | {PARENT_ID}      |
 
     When I run `wp menu item delete {PARENT_ID}`
+    And I run `wp cache flush`
     And I run `wp menu item list grandparent-test --fields=title,db_id,menu_item_parent`
     Then STDOUT should be a table containing rows:
       | title       | db_id            | menu_item_parent |
@@ -194,3 +195,131 @@ Feature: Manage WordPress menu items
       | type   | title  | position | link               |
       | custom | First  | 1        | https://first.com  |
       | custom | Third  | 2        | https://third.com  |
+
+  Scenario: Menu order is recalculated on update
+    When I run `wp menu create "Sidebar Menu"`
+    Then STDOUT should not be empty
+
+    When I run `wp menu item add-custom sidebar-menu Alpha https://alpha.com --porcelain`
+    Then save STDOUT as {ITEM_ID_1}
+
+    When I run `wp menu item add-custom sidebar-menu Beta https://beta.com --porcelain`
+    Then save STDOUT as {ITEM_ID_2}
+
+    When I run `wp menu item add-custom sidebar-menu Gamma https://gamma.com --porcelain`
+    Then save STDOUT as {ITEM_ID_3}
+
+    When I run `wp menu item list sidebar-menu --fields=type,title,position,link`
+    Then STDOUT should be a table containing rows:
+      | type   | title | position | link               |
+      | custom | Alpha | 1        | https://alpha.com  |
+      | custom | Beta  | 2        | https://beta.com   |
+      | custom | Gamma | 3        | https://gamma.com  |
+
+    When I run `wp menu item update {ITEM_ID_3} --position=1`
+    Then STDOUT should be:
+      """
+      Success: Menu item updated.
+      """
+
+    When I run `wp menu item list sidebar-menu --fields=type,title,position,link`
+    Then STDOUT should be a table containing rows:
+      | type   | title | position | link               |
+      | custom | Gamma | 1        | https://gamma.com  |
+      | custom | Alpha | 2        | https://alpha.com  |
+      | custom | Beta  | 3        | https://beta.com   |
+
+    When I run `wp menu item update {ITEM_ID_1} --position=3`
+    Then STDOUT should be:
+      """
+      Success: Menu item updated.
+      """
+
+    When I run `wp menu item list sidebar-menu --fields=type,title,position,link`
+    Then STDOUT should be a table containing rows:
+      | type   | title | position | link               |
+      | custom | Gamma | 1        | https://gamma.com  |
+      | custom | Beta  | 2        | https://beta.com   |
+      | custom | Alpha | 3        | https://alpha.com  |
+
+  Scenario: Get menu item details
+    When I run `wp menu create "Sidebar Menu"`
+    Then STDOUT should not be empty
+
+    When I run `wp menu item add-custom sidebar-menu Apple https://apple.com --porcelain`
+    Then save STDOUT as {ITEM_ID}
+
+    When I run `wp menu item get {ITEM_ID}`
+    Then STDOUT should be a table containing rows:
+      | Field    | Value           |
+      | db_id    | {ITEM_ID}       |
+      | type     | custom          |
+      | title    | Apple           |
+      | link     | https://apple.com |
+      | position | 1               |
+
+    When I run `wp menu item get {ITEM_ID} --format=json`
+    Then STDOUT should be JSON containing:
+      """
+      {
+        "db_id": {ITEM_ID},
+        "type": "custom",
+        "title": "Apple",
+        "link": "https://apple.com"
+      }
+      """
+
+    When I run `wp menu item get {ITEM_ID} --field=title`
+    Then STDOUT should be:
+      """
+      Apple
+      """
+
+    When I run `wp menu item get {ITEM_ID} --fields=db_id,title,type --format=csv`
+    Then STDOUT should be CSV containing:
+      | Field  | Value      |
+      | db_id  | {ITEM_ID}  |
+      | title  | Apple      |
+      | type   | custom     |
+
+    When I try `wp menu item get 99999999`
+    Then STDERR should be:
+      """
+      Error: Invalid menu item.
+      """
+    And the return code should be 1
+
+    When I run `wp post create --post_title='Test Post' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I try `wp menu item get {POST_ID}`
+    Then STDERR should be:
+      """
+      Error: Invalid menu item.
+      """
+    And the return code should be 1
+
+  Scenario: Add a post type archive as a menu item
+
+    When I run `wp menu create "Archive Menu"`
+    Then STDOUT should not be empty
+
+    When I run `wp menu item add-post-type-archive archive-menu post --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {ITEM_ID}
+
+    When I run `wp menu item list archive-menu --fields=db_id,type,object`
+    Then STDOUT should be a table containing rows:
+      | db_id     | type               | object |
+      | {ITEM_ID} | post_type_archive  | post   |
+
+    When I run `wp menu item get {ITEM_ID} --field=link`
+    Then STDOUT should not be empty
+
+    When I try `wp menu item add-post-type-archive archive-menu invalidposttype`
+    Then STDERR should be:
+      """
+      Error: Invalid post type.
+      """
+    And the return code should be 1
+

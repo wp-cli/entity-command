@@ -139,20 +139,20 @@ Feature: Manage WordPress terms
     When I run `wp term create category "Second Category" --porcelain`
     Then save STDOUT as {SECOND_TERM_ID}
 
-    When I run `wp term url category {TERM_ID}`
+    When I run `wp term list category --include={TERM_ID} --orderby=include --field=url`
     Then STDOUT should be:
       """
       https://example.com/?cat=2
       """
 
-    When I run `wp term url category {TERM_ID} {SECOND_TERM_ID}`
+    When I run `wp term list category --include={TERM_ID},{SECOND_TERM_ID} --orderby=include --field=url`
     Then STDOUT should be:
       """
       https://example.com/?cat=2
       https://example.com/?cat=3
       """
 
-    When I run `wp term url category {SECOND_TERM_ID} {TERM_ID}`
+    When I run `wp term list category --include={SECOND_TERM_ID},{TERM_ID} --orderby=include --field=url`
     Then STDOUT should be:
       """
       https://example.com/?cat=3
@@ -181,7 +181,7 @@ Feature: Manage WordPress terms
       My\Term\Description
       """
 
-    When I run `wp term update category {TERM_ID} --name='My\New\Term' --description='var isEmailValid = /^\S+@\S+.\S+$/.test(email);'`
+    When I run `wp term update category {TERM_ID} --name="My\New\Term" --description="var isEmailValid = /^\S+@\S+.\S+$/.test(email);"`
     Then STDOUT should not be empty
 
     When I run `wp term get category {TERM_ID} --field=name`
@@ -279,4 +279,22 @@ Feature: Manage WordPress terms
     Then STDOUT should be:
       """
       Success: Term updated.
+      """
+
+  Scenario: Term list includes term_group as optional field
+    When I run `wp term create category 'Group Test' --slug=group-test --description='Test term_group field'`
+    Then STDOUT should not be empty
+
+    When I run `wp term list category --format=csv --fields=name,term_group`
+    Then STDOUT should contain:
+      """
+      term_group
+      """
+
+    When I run `wp term list category --format=json --fields=term_id,name,term_group`
+    Then STDOUT should be JSON containing:
+      """
+      [{
+        "term_group":0
+      }]
       """

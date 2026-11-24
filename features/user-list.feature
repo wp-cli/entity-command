@@ -3,8 +3,10 @@ Feature: List WordPress users
   @require-wp-4.4
   Scenario: List users of specific roles
     Given a WP install
-    And I run `wp user create bobjones bob@example.com --role=author`
-    And I run `wp user create sally sally@example.com --role=editor`
+    And these setup commands:
+      | command                                               |
+      | wp user create bobjones bob@example.com --role=author |
+      | wp user create sally sally@example.com --role=editor  |
 
     When I run `wp user list --field=user_login`
     Then STDOUT should be:
@@ -25,6 +27,20 @@ Feature: List WordPress users
     Then STDOUT should be:
       """
       bobjones
+      """
+
+  Scenario: List network users excludes roles field
+    Given a WP multisite install
+    And I run `wp user create bobjones bob@example.com --role=author`
+
+    When I run `wp user list --network --format=csv`
+    Then STDOUT should contain:
+      """
+      ID,user_login,display_name,user_email,user_registered
+      """
+    And STDOUT should not contain:
+      """
+      roles
       """
 
   @require-wp-4.9

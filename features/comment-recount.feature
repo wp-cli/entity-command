@@ -3,15 +3,24 @@ Feature: Recount comments on a post
   Scenario: Recount comments on a post
     Given a WP install
 
-    When I run `wp comment create --comment_post_ID=1 --comment_approved=1 --porcelain`
-    And I run `wp comment create --comment_post_ID=1 --comment_approved=1 --porcelain`
-    And I run `wp post get 1 --field=comment_count`
+    And these setup commands:
+      | command                                                                |
+      | wp comment create --comment_post_ID=1 --comment_approved=1 --porcelain |
+      | wp comment create --comment_post_ID=1 --comment_approved=1 --porcelain |
+    When I run `wp post get 1 --field=comment_count`
     Then STDOUT should be:
       """
       3
       """
 
-    When I run `wp eval 'global $wpdb; $wpdb->update( $wpdb->posts, array( "comment_count" => 1 ), array( "ID" => 1 ) );'`
+    Given a recount-comments.php file:
+      """
+      <?php
+      global $wpdb;
+      $wpdb->update( $wpdb->posts, array( 'comment_count' => 1 ), array( 'ID' => 1 ) );
+      clean_post_cache( 1 );
+      """
+    When I run `wp eval-file recount-comments.php`
     And I run `wp post get 1 --field=comment_count`
     Then STDOUT should be:
       """

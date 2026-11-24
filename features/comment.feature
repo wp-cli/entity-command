@@ -48,9 +48,11 @@ Feature: Manage WordPress comments
       """
     And the return code should be 1
 
-    When I run `wp comment create --comment_post_ID=1`
-    And I run `wp comment create --comment_post_ID=1`
-    And I run `wp comment delete 3 4`
+    Given these setup commands:
+      | command                               |
+      | wp comment create --comment_post_ID=1 |
+      | wp comment create --comment_post_ID=1 |
+    When I run `wp comment delete 3 4`
     Then STDOUT should be:
       """
       Success: Trashed comment 3.
@@ -110,7 +112,7 @@ Feature: Manage WordPress comments
       1
       """
 
-    When I run `wp comment url 1`
+    When I run `wp comment list --comment__in=1 --orderby=comment__in --field=url`
     Then STDOUT should contain:
       """
       #comment-1
@@ -126,14 +128,14 @@ Feature: Manage WordPress comments
     When I run `wp comment create --comment_post_ID=1 --porcelain`
     Then save STDOUT as {COMMENT_ID}
 
-    When I run `wp comment url 1 {COMMENT_ID}`
+    When I run `wp comment list --comment__in=1,{COMMENT_ID} --orderby=comment__in --field=url`
     Then STDOUT should be:
       """
       https://example.com/?p=1#comment-1
       https://example.com/?p=1#comment-{COMMENT_ID}
       """
 
-    When I run `wp comment url {COMMENT_ID} 1`
+    When I run `wp comment list --comment__in={COMMENT_ID},1 --orderby=comment__in --field=url`
     Then STDOUT should be:
       """
       https://example.com/?p=1#comment-{COMMENT_ID}
@@ -290,6 +292,7 @@ Feature: Manage WordPress comments
       """
     And the return code should be 0
 
+  @skip-windows
   Scenario: Approving/unapproving comments with multidigit comment ID
     Given I run `wp comment delete $(wp comment list --field=ID)`
     And I run `wp comment generate --count=10 --quiet`
@@ -344,6 +347,7 @@ Feature: Manage WordPress comments
       """
     And the return code should be 0
 
+  @skip-windows
   Scenario: Spam/unspam comments with multidigit comment ID
     Given I run `wp comment delete $(wp comment list --field=ID)`
     And I run `wp comment generate --count=10 --quiet`
@@ -393,6 +397,7 @@ Feature: Manage WordPress comments
       """
     And the return code should be 0
 
+  @skip-windows
   Scenario: Trash/untrash comments with multidigit comment ID
     Given I run `wp comment delete $(wp comment list --field=ID) --force`
     And I run `wp comment generate --count=10 --quiet`
@@ -618,3 +623,24 @@ Feature: Manage WordPress comments
       Error: Please specify one or more comment IDs, or use --all.
       """
     And the return code should be 1
+
+  Scenario: List more comments than are loaded from the database at a time
+    Given a WP install
+    And I run `wp comment generate --count=1200 --post_id=1`
+    And I run `wp comment list --orderby=comment_ID --order=asc --format=ids`
+    And save STDOUT as {IDS}
+
+    When I run `wp comment list --orderby=comment_ID --order=asc --field=comment_ID | tr '\n' ' ' | sed 's/ $//'`
+    Then STDOUT should be:
+      """
+      {IDS}
+      """
+
+    When I run `wp comment list --fields=comment_ID,comment_post_ID --format=csv | wc -l`
+    Then STDOUT should contain:
+      """
+      1202
+      """
+
+    When I run `wp comment list --orderby=comment_ID --order=asc --number=1 --fields=comment_ID,url --format=csv`
+    Then STDOUT should match /^comment_ID,url\n(\d+),https?:\/\/example\.com\/\?p=1#comment-\1$/

@@ -2,8 +2,10 @@ Feature: Manage WordPress menu locations
 
   Background:
     Given a WP install
-    And I run `wp theme delete --all --force`
-    And I run `wp theme install twentytwelve --activate`
+    And only these installed and active themes:
+      """
+      twentytwelve
+      """
 
   Scenario: Assign / remove location from a menu
     When I run `wp menu location list`
@@ -11,9 +13,11 @@ Feature: Manage WordPress menu locations
       | location       | description        |
       | primary        | Primary Menu       |
 
-    When I run `wp menu create "Primary Menu"`
-    And I run `wp menu location assign primary-menu primary`
-    And I run `wp menu list --fields=slug,locations`
+    Given these setup commands:
+      | command                                      |
+      | wp menu create "Primary Menu"                |
+      | wp menu location assign primary-menu primary |
+    When I run `wp menu list --fields=slug,locations`
     Then STDOUT should be a table containing rows:
       | slug            | locations       |
       | primary-menu    | primary         |

@@ -121,6 +121,95 @@ class Menu_Item_Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Gets details about a menu item.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <db-id>
+	 * : Database ID for the menu item.
+	 *
+	 * [--field=<field>]
+	 * : Instead of returning the whole menu item, returns the value of a single field.
+	 *
+	 * [--fields=<fields>]
+	 * : Limit the output to specific fields. Defaults to db_id, type, title, link, position.
+	 *
+	 * [--format=<format>]
+	 * : Render output in a particular format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - csv
+	 *   - json
+	 *   - yaml
+	 * ---
+	 *
+	 * ## AVAILABLE FIELDS
+	 *
+	 * These fields are available:
+	 *
+	 * * db_id
+	 * * type
+	 * * title
+	 * * link
+	 * * position
+	 * * menu_item_parent
+	 * * object_id
+	 * * object
+	 * * type_label
+	 * * target
+	 * * attr_title
+	 * * description
+	 * * classes
+	 * * xfn
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Get details about a menu item with ID 45
+	 *     $ wp menu item get 45
+	 *     +-------------+----------------------------------+
+	 *     | Field       | Value                            |
+	 *     +-------------+----------------------------------+
+	 *     | db_id       | 45                               |
+	 *     | type        | custom                           |
+	 *     | title       | WordPress                        |
+	 *     | link        | https://wordpress.org            |
+	 *     | position    | 1                                |
+	 *     +-------------+----------------------------------+
+	 *
+	 *     # Get a specific field from a menu item
+	 *     $ wp menu item get 45 --field=title
+	 *     WordPress
+	 *
+	 *     # Get menu item data in JSON format
+	 *     $ wp menu item get 45 --format=json
+	 *     {"db_id":45,"type":"custom","title":"WordPress","link":"https://wordpress.org","position":1}
+	 */
+	public function get( $args, $assoc_args ) {
+
+		$db_id = $args[0];
+
+		$menu_item = get_post( $db_id );
+
+		if ( ! $menu_item || 'nav_menu_item' !== $menu_item->post_type ) {
+			WP_CLI::error( 'Invalid menu item.' );
+		}
+
+		/**
+		 * @var object{title: string, url: string, description: string, object: string, object_id: int, menu_item_parent: int, attr_title: string, target: string, classes: string[], xfn: string, type: string, type_label: string, menu_order: int, db_id: int, post_type: string}&\stdClass $menu_item
+		 */
+		$menu_item = wp_setup_nav_menu_item( $menu_item );
+
+		// Correct position inconsistency and protected `url` param in WP-CLI
+		$menu_item->position = ( 0 === $menu_item->menu_order ) ? 1 : $menu_item->menu_order;
+		$menu_item->link     = $menu_item->url;
+
+		$formatter = $this->get_formatter( $assoc_args );
+		$formatter->display_item( $menu_item );
+	}
+
+	/**
 	 * Adds a post as a menu item.
 	 *
 	 * ## OPTIONS
@@ -238,6 +327,69 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 
 		$this->add_or_update_item( 'add', 'taxonomy', $args, $assoc_args );
+	}
+
+	/**
+	 * Adds a post type archive as a menu item.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <menu>
+	 * : The name, slug, or term ID for the menu.
+	 *
+	 * <post-type>
+	 * : Post type slug.
+	 *
+	 * [--title=<title>]
+	 * : Set a custom title for the menu item.
+	 *
+	 * [--link=<link>]
+	 * : Set a custom url for the menu item.
+	 *
+	 * [--description=<description>]
+	 * : Set a custom description for the menu item.
+	 *
+	 * [--attr-title=<attr-title>]
+	 * : Set a custom title attribute for the menu item.
+	 *
+	 * [--target=<target>]
+	 * : Set a custom link target for the menu item.
+	 *
+	 * [--classes=<classes>]
+	 * : Set a custom link classes for the menu item.
+	 *
+	 * [--position=<position>]
+	 * : Specify the position of this menu item.
+	 *
+	 * [--parent-id=<parent-id>]
+	 * : Make this menu item a child of another menu item.
+	 *
+	 * [--porcelain]
+	 * : Output just the new menu item id.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     $ wp menu item add-post-type-archive sidebar-menu post
+	 *     Success: Menu item added.
+	 *
+	 * @subcommand add-post-type-archive
+	 */
+	public function add_post_type_archive( $args, $assoc_args ) {
+
+		$assoc_args['object'] = $args[1];
+		unset( $args[1] );
+
+		$post_type = $assoc_args['object'];
+
+		if ( ! get_post_type_object( $post_type ) ) {
+			WP_CLI::error( 'Invalid post type.' );
+		}
+
+		if ( false === get_post_type_archive_link( $post_type ) ) {
+			WP_CLI::error( 'Post type does not have an archive.' );
+		}
+
+		$this->add_or_update_item( 'add', 'post_type_archive', $args, $assoc_args );
 	}
 
 	/**
@@ -482,7 +634,71 @@ class Menu_Item_Command extends WP_CLI_Command {
 		}
 
 		$menu_item_args['menu-item-type'] = $type;
-		$result                           = wp_update_nav_menu_item( $menu->term_id, $menu_item_db_id, $menu_item_args );
+		$pending_menu_order_updates       = [];
+
+		// Reorder other menu items when the position changes on update.
+		if ( 'update' === $method ) {
+			$new_position = (int) $menu_item_args['menu-item-position'];
+			if ( $new_position > 0 ) {
+				// Fetch all menu items sorted by their raw menu_order to determine
+				// normalized (1-indexed) ranks, since wp_get_nav_menu_items(ARRAY_A)
+				// normalises menu_order to 1,2,3… which may differ from the raw DB values.
+				$sorted_item_ids = get_posts(
+					[
+						'post_type'   => 'nav_menu_item',
+						'numberposts' => -1,
+						'orderby'     => 'menu_order',
+						'order'       => 'ASC',
+						'post_status' => 'any',
+						'tax_query'   => [
+							[
+								'taxonomy' => 'nav_menu',
+								'field'    => 'term_taxonomy_id',
+								'terms'    => $menu->term_taxonomy_id,
+							],
+						],
+						'fields'      => 'ids',
+					]
+				);
+
+				// Normalise to integers so that strict comparisons below work regardless of
+				// whether $wpdb->get_col() returned strings or integers.
+				$sorted_item_ids = array_map( 'intval', $sorted_item_ids );
+
+				// Clamp the requested position to the valid range of menu items.
+				$max_position = count( $sorted_item_ids );
+				if ( $max_position > 0 && $new_position > $max_position ) {
+					// Treat out-of-range positions as "move to end", consistent with core behavior.
+					$new_position = $max_position;
+				}
+
+				// Find the 1-indexed normalized rank of the item being moved.
+				$item_idx                = array_search( (int) $menu_item_db_id, $sorted_item_ids, true );
+				$old_position_normalized = ( false !== $item_idx ) ? $item_idx + 1 : 0;
+
+				if ( $old_position_normalized > 0 && $new_position !== $old_position_normalized ) {
+					if ( $new_position < $old_position_normalized ) {
+						// Moving up: items at 0-indexed [new_pos-1, old_pos-2] shift down by +1.
+						for ( $i = $new_position - 1; $i <= $old_position_normalized - 2; $i++ ) {
+							$pending_menu_order_updates[] = [
+								'ID'         => $sorted_item_ids[ $i ],
+								'menu_order' => $i + 2,
+							];
+						}
+					} else {
+						// Moving down: items at 0-indexed [old_pos, new_pos-1] shift up by -1.
+						for ( $i = $old_position_normalized; $i <= $new_position - 1; $i++ ) {
+							$pending_menu_order_updates[] = [
+								'ID'         => $sorted_item_ids[ $i ],
+								'menu_order' => $i,
+							];
+						}
+					}
+				}
+			}
+		}
+
+		$result = wp_update_nav_menu_item( $menu->term_id, $menu_item_db_id, $menu_item_args );
 
 		if ( is_wp_error( $result ) ) {
 			WP_CLI::error( $result->get_error_message() );
@@ -493,6 +709,26 @@ class Menu_Item_Command extends WP_CLI_Command {
 				WP_CLI::error( "Couldn't update menu item." );
 			}
 		} else {
+			// Apply deferred reordering of other menu items only after a successful update.
+			if ( ! empty( $pending_menu_order_updates ) ) {
+				global $wpdb;
+
+				$ids_to_update = [];
+				$case_clauses  = '';
+				foreach ( $pending_menu_order_updates as $update_args ) {
+					$item_id         = (int) $update_args['ID'];
+					$ids_to_update[] = $item_id;
+					$case_clauses   .= $wpdb->prepare( ' WHEN %d THEN %d', $item_id, $update_args['menu_order'] );
+				}
+
+				$ids_sql = implode( ',', $ids_to_update );
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $case_clauses and $ids_sql are constructed from prepared/safe integer values.
+				$wpdb->query( "UPDATE {$wpdb->posts} SET menu_order = CASE ID {$case_clauses} END WHERE ID IN ({$ids_sql})" );
+
+				foreach ( $ids_to_update as $id ) {
+					clean_post_cache( $id );
+				}
+			}
 
 			if ( ( 'add' === $method ) && $menu_item_args['menu-item-position'] ) {
 				$this->reorder_menu_items( $menu->term_id, $menu_item_args['menu-item-position'], +1, $result );

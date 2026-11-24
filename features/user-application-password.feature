@@ -4,7 +4,10 @@ Feature: Manage user custom fields
   @less-than-php-8.0 @require-mysql
   Scenario: User application passwords are disabled for WordPress lower than 5.6
     Given a WP install
-    And I try `wp theme install twentytwenty --activate`
+    And these installed and active themes:
+      """
+      twentytwenty
+      """
     And I run `wp core download --version=5.5 --force`
 
     When I try `wp user application-password create 1 myapp`
@@ -88,11 +91,13 @@ Feature: Manage user custom fields
     When I try `wp user application-password get 1 {UUID}`
     Then the return code should be 1
 
-    When I run `wp user application-password create 1 myapp1`
-    And I run `wp user application-password create 1 myapp2`
-    And I run `wp user application-password create 1 myapp3`
-    And I run `wp user application-password create 1 myapp4`
-    And I run `wp user application-password create 1 myapp5`
+    Given these setup commands:
+      | command                                      |
+      | wp user application-password create 1 myapp1 |
+      | wp user application-password create 1 myapp2 |
+      | wp user application-password create 1 myapp3 |
+      | wp user application-password create 1 myapp4 |
+    When I run `wp user application-password create 1 myapp5`
     Then STDOUT should not be empty
 
     When I run `wp user application-password list 1 --format=count`
@@ -271,10 +276,15 @@ Feature: Manage user custom fields
     When I run `wp user application-password list {USER_ID} --name=someapp --field=uuid`
     Then save STDOUT as {UUID}
 
-    When I run `wp user application-password get {USER_ID} {UUID} --field=password | sed 's/\$/\\\$/g'`
+    When I run `wp user application-password get {USER_ID} {UUID} --field=password`
     Then save STDOUT as {HASH}
 
-    When I run `wp eval "var_export( wp_check_password( '{PASSWORD}', '{HASH}', {USER_ID} ) );"`
+    Given a check-password.php file:
+      """
+      <?php
+      var_export( wp_check_password( '{PASSWORD}', '{HASH}', {USER_ID} ) );
+      """
+    When I run `wp eval-file check-password.php`
     Then STDOUT should contain:
       """
       true
@@ -297,11 +307,106 @@ Feature: Manage user custom fields
     When I run `wp user application-password list {USER_ID} --name=someapp --field=uuid`
     Then save STDOUT as {UUID}
 
-    When I run `wp user application-password get {USER_ID} {UUID} --field=password | sed 's/\$/\\\$/g'`
+    When I run `wp user application-password get {USER_ID} {UUID} --field=password`
     Then save STDOUT as {HASH}
 
-    When I run `wp eval "var_export( wp_verify_fast_hash( '{PASSWORD}', '{HASH}', {USER_ID} ) );"`
+    Given a verify-fast-hash.php file:
+      """
+      <?php
+      var_export( wp_verify_fast_hash( '{PASSWORD}', '{HASH}', {USER_ID} ) );
+      """
+    When I run `wp eval-file verify-fast-hash.php`
     Then STDOUT should contain:
       """
       true
+      """
+
+  @require-wp-5.6
+  Scenario: Filter application passwords by field
+    Given a WP install
+
+    When I run `wp user application-password create 1 myapp --app-id=abc123 --porcelain`
+    Then STDOUT should not be empty
+
+    When I run `wp user application-password create 1 otherapp --porcelain`
+    Then STDOUT should not be empty
+
+    When I run `wp user application-password list 1 --format=count`
+    Then STDOUT should be:
+      """
+      2
+      """
+
+    When I run `wp user application-password list 1 --app_id=abc123 --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --app-id=abc123 --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --name=otherapp --field=name`
+    Then STDOUT should be:
+      """
+      otherapp
+      """
+
+    When I run `wp user application-password list 1 --name=myapp --field=uuid`
+    Then STDOUT should not be empty
+    And save STDOUT as {UUID}
+
+    When I run `wp user application-password list 1 --uuid={UUID} --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --app_id=nosuchapp --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    # 'created' and 'last_used' are integers in core but strings on the command
+    # line, so these only match if the comparison normalizes them.
+    When I run `wp user application-password list 1 --name=myapp --field=created`
+    Then STDOUT should not be empty
+    And save STDOUT as {CREATED}
+
+    When I run `wp user application-password list 1 --created={CREATED} --field=name`
+    Then STDOUT should contain:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --created=1 --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp user application-password record-usage 1 {UUID}`
+    Then STDOUT should contain:
+      """
+      Success:
+      """
+
+    When I run `wp user application-password list 1 --name=myapp --field=last_used`
+    Then STDOUT should not be empty
+    And save STDOUT as {LAST_USED}
+
+    When I run `wp user application-password list 1 --last_used={LAST_USED} --field=name`
+    Then STDOUT should be:
+      """
+      myapp
+      """
+
+    When I run `wp user application-password list 1 --last-used={LAST_USED} --field=name`
+    Then STDOUT should be:
+      """
+      myapp
       """

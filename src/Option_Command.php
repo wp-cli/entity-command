@@ -9,6 +9,21 @@ use WP_CLI\Utils;
  *
  * See the [Plugin Settings API](https://developer.wordpress.org/plugins/settings/settings-api/) and the [Theme Options](https://developer.wordpress.org/themes/customize-api/) for more information on adding customized options.
  *
+ * ## COMMON OPTIONS
+ *
+ * These are some of the most commonly used WordPress options:
+ *
+ * * `siteurl` - Site URL, e.g. http://example.com
+ * * `blogname` - Site title
+ * * `blogdescription` - Site tagline
+ * * `admin_email` - Administration email address
+ * * `default_role` - Default role for new users
+ * * `timezone_string` - Local timezone, e.g. "America/New_York"
+ * * `home` - Home URL, e.g. http://example.com
+ * * `blog_public` - Discourage search engines when set to 0
+ *
+ * For the full list of available options, see the [Option Reference](https://developer.wordpress.org/apis/options/).
+ *
  * ## EXAMPLES
  *
  *     # Get site URL.
@@ -153,7 +168,7 @@ class Option_Command extends WP_CLI_Command {
 	 * : Pattern to exclude. Use wildcards ( * and ? ) to match option name.
 	 *
 	 * [--autoload=<value>]
-	 * : Match only autoload options when value is on, and only not-autoload option when off.
+	 * : Match only autoload options when value is on, and only not-autoload option when off. On WordPress 6.6 and later, options with the `auto` and `auto-on` values count as autoload options.
 	 *
 	 * [--transients]
 	 * : List only transients. Use `--no-transients` to ignore all transients.
@@ -278,10 +293,22 @@ class Option_Command extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['autoload'] ) ) {
 			$autoload = $assoc_args['autoload'];
+
+			// Since WordPress 6.6, options set to 'auto' or 'auto-on' are autoloaded too.
+			$autoload_values = function_exists( 'wp_autoload_values_to_autoload' )
+				? wp_autoload_values_to_autoload()
+				: [ 'on', 'yes' ];
+
 			if ( 'on' === $autoload || 'yes' === $autoload ) {
-				$autoload_query = " AND (autoload='on') OR (autoload='yes')";
+				$autoload_query = $wpdb->prepare(
+					' AND autoload IN (' . implode( ', ', array_fill( 0, count( $autoload_values ), '%s' ) ) . ')',
+					$autoload_values
+				);
 			} elseif ( 'off' === $autoload || 'no' === $autoload ) {
-				$autoload_query = " AND (autoload='off') OR (autoload='no')";
+				$autoload_query = $wpdb->prepare(
+					' AND autoload NOT IN (' . implode( ', ', array_fill( 0, count( $autoload_values ), '%s' ) ) . ')',
+					$autoload_values
+				);
 			} else {
 				WP_CLI::error( "Value of '--autoload' should be 'on', 'off', 'yes', or 'no'." );
 			}
@@ -291,11 +318,11 @@ class Option_Command extends WP_CLI_Command {
 		$show_transients = Utils\get_flag_value( $assoc_args, 'transients', false );
 
 		if ( $show_transients ) {
-			$transients_query = " AND option_name LIKE '\_transient\_%'
-			OR option_name LIKE '\_site\_transient\_%'";
+			$transients_query = " AND (option_name LIKE '\_transient\_%'
+			OR option_name LIKE '\_site\_transient\_%')";
 		} else {
-			$transients_query = " AND option_name NOT LIKE '\_transient\_%'
-			AND option_name NOT LIKE '\_site\_transient\_%'";
+			$transients_query = " AND (option_name NOT LIKE '\_transient\_%'
+			AND option_name NOT LIKE '\_site\_transient\_%')";
 		}
 
 		$where = '';
@@ -364,7 +391,7 @@ class Option_Command extends WP_CLI_Command {
 	 * : The new value. If omitted, the value is read from STDIN.
 	 *
 	 * [--autoload=<autoload>]
-	 * : Requires WP 4.2. Should this option be automatically loaded.
+	 * : Should this option be automatically loaded.
 	 * ---
 	 * options:
 	 *   - 'on'

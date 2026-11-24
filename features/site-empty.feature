@@ -6,7 +6,7 @@ Feature: Empty a WordPress site of its data
     And I run `wp option update uploads_use_yearmonth_folders 0`
     And download:
       | path                        | url                                              |
-      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.github.io/behat-data/large-image.jpg     |
     And a insert_link_data.sql file:
       """
       INSERT INTO `wp_links` (`link_url`, `link_name`, `link_image`, `link_target`, `link_description`, `link_visible`, `link_owner`, `link_rating`, `link_rel`, `link_notes`, `link_rss`)
@@ -26,7 +26,7 @@ Feature: Empty a WordPress site of its data
     When I run `wp media import {CACHE_DIR}/large-image.jpg --post_id=1`
     Then the wp-content/uploads/large-image.jpg file should exist
 
-    When I try `wp site url 1`
+    When I try `wp site list --site__in=1 --field=url`
     Then STDERR should be:
       """
       Error: This is not a multisite installation.
@@ -72,7 +72,7 @@ Feature: Empty a WordPress site of its data
     When I run `wp site empty --yes`
     Then STDOUT should be:
       """
-      Success: The site at 'https://example.com' was emptied.
+      Success: The site at 'http://example.com' was emptied.
       """
     And the wp-content/uploads/large-image.jpg file should exist
 
@@ -107,7 +107,7 @@ Feature: Empty a WordPress site of its data
     And I run `wp --url=example.com/foo option update uploads_use_yearmonth_folders 0`
     And download:
       | path                        | url                                              |
-      | {CACHE_DIR}/large-image.jpg | http://wp-cli.org/behat-data/large-image.jpg     |
+      | {CACHE_DIR}/large-image.jpg | http://wp-cli.github.io/behat-data/large-image.jpg     |
 
     When I run `wp --url=example.com/foo media import {CACHE_DIR}/large-image.jpg --post_id=1`
     Then the wp-content/uploads/sites/2/large-image.jpg file should exist
@@ -128,3 +128,14 @@ Feature: Empty a WordPress site of its data
 
     When I run `wp --url=example.com/foo post list --format=ids`
     Then STDOUT should be empty
+
+  @require-wp-6.1
+  Scenario: Empty a multisite site without deprecation notices
+    Given a WP multisite installation
+    And I run `wp config set WP_DEBUG true --raw`
+
+    When I run `wp site empty --yes`
+    Then STDERR should not contain:
+      """
+      global_terms_enabled
+      """

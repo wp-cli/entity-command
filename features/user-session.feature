@@ -5,11 +5,13 @@ Feature: Manage user session
 
   @require-wp-4.0
   Scenario: Destroy user sessions
-    When I run `wp eval 'wp_set_current_user(1);'`
-    And I run `wp eval 'wp_set_auth_cookie(1);'`
-    And I run `wp eval 'wp_set_current_user(1);'`
-    And I run `wp eval 'wp_set_auth_cookie(1);'`
-    And I run `wp user session list admin --format=count`
+    Given these setup commands:
+      | command                           |
+      | wp eval 'wp_set_current_user(1);' |
+      | wp eval 'wp_set_auth_cookie(1);'  |
+      | wp eval 'wp_set_current_user(1);' |
+      | wp eval 'wp_set_auth_cookie(1);'  |
+    When I run `wp user session list admin --format=count`
     Then STDOUT should be:
       """
       2

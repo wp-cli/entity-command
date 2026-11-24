@@ -1,6 +1,7 @@
 <?php
 
 use WP_CLI\CommandWithDBObject;
+use WP_CLI\Entity\Block_Processor_Helper;
 use WP_CLI\Fetchers\Post as PostFetcher;
 use WP_CLI\Fetchers\User as UserFetcher;
 use WP_CLI\Utils;
@@ -121,8 +122,17 @@ class Post_Command extends CommandWithDBObject {
 	 * [--tax_input=<tax_input>]
 	 * : Array of taxonomy terms keyed by their taxonomy name. Default empty.
 	 *
+	 *   Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
+	 *
 	 * [--meta_input=<meta_input>]
 	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
+	 *
+	 * [--page_template=<page_template>]
+	 * : Page template to use.
+	 *
+	 * [--import_id=<import_id>]
+	 * : The post ID to be used when inserting a new post. If specified, must not
+	 * match any existing post ID.
 	 *
 	 * [<file>]
 	 * : Read post content from <file>. If this value is present, the
@@ -182,7 +192,7 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		$array_arguments = [ 'meta_input' ];
+		$array_arguments = [ 'meta_input', 'tax_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		if ( isset( $assoc_args['from-post'] ) ) {
@@ -191,6 +201,8 @@ class Post_Command extends CommandWithDBObject {
 			$post_id  = $post_arr['ID'];
 			unset( $post_arr['post_date'] );
 			unset( $post_arr['post_date_gmt'] );
+			unset( $post_arr['post_modified'] );
+			unset( $post_arr['post_modified_gmt'] );
 			unset( $post_arr['guid'] );
 			unset( $post_arr['ID'] );
 
@@ -211,9 +223,144 @@ class Post_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $params ) {
-				return wp_insert_post( $params, true );
+				$modified_callback = self::add_post_modified_filter( $params );
+				if ( is_wp_error( $modified_callback ) ) {
+					return $modified_callback;
+				}
+
+				$filter_callback = null;
+
+				if ( 0 === get_current_user_id() && ! empty( $params['tax_input'] ) ) {
+					$allowed_caps = [];
+					/**
+					 * @var string $taxonomy
+					 */
+					foreach ( array_keys( $params['tax_input'] ) as $taxonomy ) {
+						$tax_obj = get_taxonomy( $taxonomy );
+						if ( $tax_obj ) {
+							$primitive_caps = map_meta_cap( $tax_obj->cap->assign_terms, 0 );
+							$allowed_caps   = array_merge( $allowed_caps, $primitive_caps );
+						}
+					}
+
+					if ( ! empty( $allowed_caps ) ) {
+						$filter_callback = function ( $allcaps, $caps ) use ( $allowed_caps ) {
+							foreach ( $caps as $cap ) {
+								if ( in_array( $cap, $allowed_caps, true ) ) {
+									$allcaps[ $cap ] = true;
+								}
+							}
+							return $allcaps;
+						};
+						add_filter( 'user_has_cap', $filter_callback, 10, 2 );
+					}
+				}
+
+				$result = wp_insert_post( $params, true );
+
+				if ( $modified_callback ) {
+					self::remove_post_modified_filter( $modified_callback );
+				}
+
+				if ( $filter_callback ) {
+					remove_filter( 'user_has_cap', $filter_callback );
+				}
+
+				return $result;
 			}
 		);
+	}
+
+	/**
+	 * Applies an explicitly requested modification date.
+	 *
+	 * wp_insert_post() derives post_modified and post_modified_gmt itself and
+	 * never reads them back from $postarr — on update they are unconditionally
+	 * the current time — so the documented parameters have to be applied to the
+	 * post data on its way to the database.
+	 *
+	 * The filter runs after core has validated post_date, and both
+	 * get_gmt_from_date() and get_date_from_gmt() fall back to the epoch for a
+	 * value they cannot parse, so the supplied dates are validated here the same
+	 * way core validates post_date.
+	 *
+	 * @param array<string, mixed> $params Parameters passed to wp_insert_post() or wp_update_post().
+	 * @return callable|WP_Error|null The registered callback, for the caller to remove; a WP_Error
+	 *                                when a supplied date is invalid; or null when no modification
+	 *                                date was requested.
+	 */
+	private static function add_post_modified_filter( $params ) {
+		$local = ! empty( $params['post_modified'] ) && is_scalar( $params['post_modified'] )
+			? (string) $params['post_modified']
+			: null;
+		$gmt   = ! empty( $params['post_modified_gmt'] ) && is_scalar( $params['post_modified_gmt'] )
+			? (string) $params['post_modified_gmt']
+			: null;
+
+		if ( null === $local && null === $gmt ) {
+			return null;
+		}
+
+		foreach ( [ $local, $gmt ] as $date ) {
+			if ( null !== $date && ! self::is_valid_post_date( $date ) ) {
+				return new WP_Error( 'invalid_date', __( 'Invalid date.' ) );
+			}
+		}
+
+		// Keep the pair consistent when only one of the two was given.
+		if ( null === $gmt ) {
+			$gmt = get_gmt_from_date( $local );
+		} elseif ( null === $local ) {
+			$local = get_date_from_gmt( $gmt );
+		}
+
+		$modified = [
+			'post_modified'     => $local,
+			'post_modified_gmt' => $gmt,
+		];
+
+		$callback = static function ( $data ) use ( $modified, &$callback ) {
+			// The first post to reach this filter is the command's own. A save hook
+			// can insert further posts before the outer call returns, and those must
+			// keep their own dates, so the filter unhooks itself right away.
+			self::remove_post_modified_filter( $callback );
+
+			return array_merge( $data, $modified );
+		};
+
+		// Attachments go through wp_insert_attachment_data instead.
+		add_filter( 'wp_insert_post_data', $callback );
+		add_filter( 'wp_insert_attachment_data', $callback );
+
+		return $callback;
+	}
+
+	/**
+	 * Removes the callback registered by add_post_modified_filter().
+	 *
+	 * The callback removes itself once it has run; this is the fallback for when
+	 * it never ran, for instance because wp_insert_post() bailed out early.
+	 *
+	 * @param callable $callback The callback to remove.
+	 * @return void
+	 */
+	private static function remove_post_modified_filter( $callback ) {
+		remove_filter( 'wp_insert_post_data', $callback );
+		remove_filter( 'wp_insert_attachment_data', $callback );
+	}
+
+	/**
+	 * Checks a date the way core checks post_date in wp_resolve_post_date().
+	 *
+	 * @param string $date Date in MySQL format.
+	 * @return bool Whether the date is valid.
+	 */
+	private static function is_valid_post_date( $date ) {
+		if ( ! preg_match( '/^(\d{4})-(\d{1,2})-(\d{1,2})/', $date, $matches ) ) {
+			return false;
+		}
+
+		return wp_checkdate( (int) $matches[2], (int) $matches[3], (int) $matches[1], $date );
 	}
 
 	/**
@@ -296,8 +443,13 @@ class Post_Command extends CommandWithDBObject {
 	 * [--tax_input=<tax_input>]
 	 * : Array of taxonomy terms keyed by their taxonomy name. Default empty.
 	 *
+	 *   Note: In WordPress core, this normally requires a user context to satisfy capability checks. WP-CLI bypasses this for convenience. See https://core.trac.wordpress.org/ticket/19373
+	 *
 	 * [--meta_input=<meta_input>]
 	 * : Array in JSON format of post meta values keyed by their post meta key. Default empty.
+	 *
+	 * [--page_template=<page_template>]
+	 * : Page template to use.
 	 *
 	 * [<file>]
 	 * : Read post content from <file>. If this value is present, the
@@ -347,7 +499,7 @@ class Post_Command extends CommandWithDBObject {
 			$assoc_args['post_category'] = $this->get_category_ids( $assoc_args['post_category'] );
 		}
 
-		$array_arguments = [ 'meta_input' ];
+		$array_arguments = [ 'meta_input', 'tax_input' ];
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		$assoc_args = wp_slash( $assoc_args );
@@ -355,7 +507,50 @@ class Post_Command extends CommandWithDBObject {
 			$args,
 			$assoc_args,
 			function ( $params ) {
-				return wp_update_post( $params, true );
+				$modified_callback = self::add_post_modified_filter( $params );
+				if ( is_wp_error( $modified_callback ) ) {
+					return $modified_callback;
+				}
+
+				$filter_callback = null;
+
+				if ( 0 === get_current_user_id() && ! empty( $params['tax_input'] ) ) {
+					$allowed_caps = [];
+					/**
+					 * @var string $taxonomy
+					 */
+					foreach ( array_keys( $params['tax_input'] ) as $taxonomy ) {
+						$tax_obj = get_taxonomy( $taxonomy );
+						if ( $tax_obj ) {
+							$primitive_caps = map_meta_cap( $tax_obj->cap->assign_terms, 0 );
+							$allowed_caps   = array_merge( $allowed_caps, $primitive_caps );
+						}
+					}
+
+					if ( ! empty( $allowed_caps ) ) {
+						$filter_callback = function ( $allcaps, $caps ) use ( $allowed_caps ) {
+							foreach ( $caps as $cap ) {
+								if ( in_array( $cap, $allowed_caps, true ) ) {
+									$allcaps[ $cap ] = true;
+								}
+							}
+							return $allcaps;
+						};
+						add_filter( 'user_has_cap', $filter_callback, 10, 2 );
+					}
+				}
+
+				$result = wp_update_post( $params, true );
+
+				if ( $modified_callback ) {
+					self::remove_post_modified_filter( $modified_callback );
+				}
+
+				if ( $filter_callback ) {
+					remove_filter( 'user_has_cap', $filter_callback );
+				}
+
+				return $result;
 			}
 		);
 	}
@@ -423,6 +618,11 @@ class Post_Command extends CommandWithDBObject {
 	 *
 	 *     # Save the post content to a file
 	 *     $ wp post get 123 --field=content > file.txt
+	 *
+	 *     # Get the block version of a post (1 = has blocks, 0 = no blocks)
+	 *     # Requires WordPress 5.0+.
+	 *     $ wp post get 123 --field=block_version
+	 *     1
 	 */
 	public function get( $args, $assoc_args ) {
 		$post = $this->fetcher->get_check( $args[0] );
@@ -432,6 +632,10 @@ class Post_Command extends CommandWithDBObject {
 
 		if ( ! isset( $post_arr['url'] ) ) {
 			$post_arr['url'] = get_permalink( $post->ID );
+		}
+
+		if ( function_exists( 'block_version' ) ) {
+			$post_arr['block_version'] = block_version( $post->post_content );
 		}
 
 		if ( empty( $assoc_args['fields'] ) ) {
@@ -496,22 +700,24 @@ class Post_Command extends CommandWithDBObject {
 		$status    = get_post_status( $post_id );
 		$post_type = get_post_type( $post_id );
 
-		if ( ! $assoc_args['force']
-			&& ( 'post' !== $post_type && 'page' !== $post_type ) ) {
-			return [
-				'error',
-				"Posts of type '{$post_type}' do not support being sent to trash.\n"
-				. 'Please use the --force flag to skip trash and delete them permanently.',
-			];
+		$force_delete = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type;
+
+		if ( $force_delete || ! EMPTY_TRASH_DAYS ) {
+			if ( ! wp_delete_post( $post_id, true ) ) {
+				return [ 'error', "Failed deleting post {$post_id}." ];
+			}
+
+			return [ 'success', "Deleted post {$post_id}." ];
 		}
 
-		if ( ! wp_delete_post( $post_id, $assoc_args['force'] ) ) {
-			return [ 'error', "Failed deleting post {$post_id}." ];
+		// Use wp_trash_post() directly because wp_delete_post() only auto-trashes
+		// 'post' and 'page' types, permanently deleting all other post types even
+		// when $force_delete is false. wp_trash_post() works for all post types.
+		if ( wp_trash_post( $post_id ) ) {
+			return [ 'success', "Trashed post {$post_id}." ];
 		}
 
-		$action = $assoc_args['force'] || 'trash' === $status || 'revision' === $post_type ? 'Deleted' : 'Trashed';
-
-		return [ 'success', "{$action} post {$post_id}." ];
+		return [ 'error', "Failed trashing post {$post_id}." ];
 	}
 
 	/**
@@ -523,7 +729,213 @@ class Post_Command extends CommandWithDBObject {
 	 * ## OPTIONS
 	 *
 	 * [--<field>=<value>]
-	 * : One or more args to pass to WP_Query.
+	 * : One or more args to pass to WP_Query. The arguments below are the ones
+	 * that filter on what this command displays; anything else WP_Query accepts
+	 * still works and is documented with WP_Query itself.
+	 *
+	 * [--p=<id>|ID]
+	 * : Filter by post ID. `--ID` is the name of the column this filters and is
+	 * accepted as an alias.
+	 *
+	 * [--title=<title>|post_title]
+	 * : Filter by post title, matched in full. `--post_title` is the name of the
+	 * column this filters and is accepted as an alias.
+	 *
+	 * [--name=<slug>|post_name]
+	 * : Filter by post slug. `--post_name` is the name of the column this filters
+	 * and is accepted as an alias.
+	 * Note: this makes the query a single-post one, and WP_Query returns a draft
+	 * from one of those only to a user who can edit it. WP-CLI runs as no user
+	 * unless the global `--user` argument says otherwise, so pass that to filter
+	 * drafts by slug.
+	 *
+	 * [--author=<author>|post_author]
+	 * : Filter by the ID of the post's author. `--post_author` is the name of the
+	 * column this filters and is accepted as an alias.
+	 *
+	 * [--author_name=<author_name>]
+	 * : Filter by the 'user_nicename' of the post's author.
+	 *
+	 * [--cat=<cat>]
+	 * : Filter by category ID. Accepts a comma-separated list to match any of
+	 * them, and a negative ID excludes that category instead.
+	 *
+	 * [--category_name=<category_name>]
+	 * : Filter by category slug.
+	 *
+	 * [--tag=<tag>]
+	 * : Filter by tag slug. Accepts a comma-separated list to match any of them,
+	 * or a '+'-separated list to require all of them.
+	 *
+	 * [--post_type=<post_type>]
+	 * : Filter by post type. Defaults to 'post'. Accepts a comma-separated list,
+	 * or 'any' for every type registered without 'exclude_from_search'.
+	 *
+	 * [--post_status=<post_status>]
+	 * : Filter by post status. Defaults to 'any', which is every status
+	 * registered without 'exclude_from_search' - so trashed and auto-draft posts
+	 * are left out until asked for by name, e.g. `--post_status=trash`.
+	 *
+	 * [--post_parent=<post_parent>]
+	 * : Filter by the ID of the parent post.
+	 *
+	 * [--post_mime_type=<post_mime_type>]
+	 * : Filter by MIME type. Only attachments carry one.
+	 *
+	 * [--menu_order=<menu_order>]
+	 * : Filter by menu order.
+	 *
+	 * [--comment_status=<comment_status>]
+	 * : Filter by comment status. Accepts 'open' or 'closed'.
+	 *
+	 * [--ping_status=<ping_status>]
+	 * : Filter by ping status. Accepts 'open' or 'closed'.
+	 *
+	 * [--comment_count=<comment_count>]
+	 * : Filter by number of comments.
+	 *
+	 * [--s=<string>]
+	 * : Only list the posts matching this search term.
+	 *
+	 * [--year=<year>]
+	 * : Filter by four-digit year, e.g. 2024.
+	 *
+	 * [--monthnum=<monthnum>]
+	 * : Filter by month number, 1 to 12.
+	 *
+	 * [--day=<day>]
+	 * : Filter by day of the month, 1 to 31.
+	 *
+	 * [--hour=<hour>]
+	 * : Filter by hour, 0 to 23.
+	 *
+	 * [--minute=<minute>]
+	 * : Filter by minute, 0 to 59.
+	 *
+	 * [--second=<second>]
+	 * : Filter by second, 0 to 59.
+	 *
+	 * [--m=<yearmonth>]
+	 * : Filter by year and month together, e.g. 202401.
+	 *
+	 * [--w=<week>]
+	 * : Filter by week of the year, 0 to 53.
+	 *
+	 * [--meta_key=<meta_key>]
+	 * : Filter by posts having this meta key. Pair it with `--meta_value` to
+	 * filter on the value as well.
+	 *
+	 * [--meta_value=<meta_value>]
+	 * : Filter by this meta value. Needs `--meta_key` to say which key it
+	 * belongs to.
+	 *
+	 * [--orderby=<orderby>]
+	 * : Order the results by this field. Accepts what WP_Query accepts, e.g.
+	 * 'date', 'title', 'ID', 'menu_order', 'rand', or 'meta_value' alongside
+	 * `--meta_key`.
+	 *
+	 * [--order=<order>]
+	 * : Direction to order by. Accepts 'ASC' or 'DESC'.
+	 *
+	 * [--post__in=<ids>]
+	 * : Only list the posts with these IDs (comma-separated).
+	 *
+	 * [--post__not_in=<ids>]
+	 * : Exclude the posts with these IDs (comma-separated).
+	 *
+	 * [--post_name__in=<slugs>]
+	 * : Only list the posts with these slugs (comma-separated). Unlike `--name`
+	 * this is not a single-post query, so it reaches drafts as well.
+	 *
+	 * [--post_parent__in=<ids>]
+	 * : Only list the posts whose parent is one of these IDs (comma-separated).
+	 *
+	 * [--post_parent__not_in=<ids>]
+	 * : Exclude the posts whose parent is one of these IDs (comma-separated).
+	 *
+	 * [--author__in=<ids>]
+	 * : Only list the posts by these author IDs (comma-separated).
+	 *
+	 * [--author__not_in=<ids>]
+	 * : Exclude the posts by these author IDs (comma-separated).
+	 *
+	 * [--category__in=<ids>]
+	 * : Only list the posts in these category IDs (comma-separated).
+	 *
+	 * [--category__and=<ids>]
+	 * : Only list the posts in all of these category IDs (comma-separated).
+	 *
+	 * [--category__not_in=<ids>]
+	 * : Exclude the posts in these category IDs (comma-separated).
+	 *
+	 * [--tag_id=<tag_id>]
+	 * : Filter by tag ID.
+	 *
+	 * [--tag__in=<ids>]
+	 * : Only list the posts with these tag IDs (comma-separated).
+	 *
+	 * [--tag__and=<ids>]
+	 * : Only list the posts with all of these tag IDs (comma-separated).
+	 *
+	 * [--tag__not_in=<ids>]
+	 * : Exclude the posts with these tag IDs (comma-separated).
+	 *
+	 * [--tag_slug__in=<slugs>]
+	 * : Only list the posts with these tag slugs (comma-separated).
+	 *
+	 * [--tag_slug__and=<slugs>]
+	 * : Only list the posts with all of these tag slugs (comma-separated).
+	 *
+	 * [--page_id=<page_id>]
+	 * : Filter by page ID. Needs `--post_type=page` to match anything.
+	 *
+	 * [--pagename=<pagename>]
+	 * : Filter by page slug. Needs `--post_type=page` to match anything.
+	 *
+	 * [--attachment_id=<attachment_id>]
+	 * : Filter by attachment ID. Needs `--post_type=attachment` to match
+	 * anything.
+	 *
+	 * [--date_query=<json>]
+	 * : Filter by a date query, given as JSON. See WP_Date_Query.
+	 *
+	 * [--meta_query=<json>]
+	 * : Filter by a meta query, given as JSON. See WP_Meta_Query.
+	 *
+	 * [--tax_query=<json>]
+	 * : Filter by a taxonomy query, given as JSON. See WP_Tax_Query.
+	 *
+	 * [--meta_compare=<meta_compare>]
+	 * : Operator to test `--meta_value` with, e.g. '=', '!=', '>' or 'LIKE'.
+	 *
+	 * [--sentence=<sentence>]
+	 * : Match `--s` as one phrase rather than as separate words. Accepts 1 or 0.
+	 *
+	 * [--exact=<exact>]
+	 * : Match `--s` against the whole column rather than part of it. Accepts 1
+	 * or 0.
+	 *
+	 * [--search_columns=<columns>]
+	 * : Comma-separated list of columns `--s` looks in. Accepts 'post_title',
+	 * 'post_excerpt' and 'post_content'. Needs WordPress 6.2 or later.
+	 *
+	 * [--perm=<perm>]
+	 * : Filter by what the current user may do with the post. Accepts
+	 * 'readable' or 'editable'; pair it with the global `--user` argument,
+	 * since WP-CLI is no user by default.
+	 *
+	 * [--posts_per_page=<number>]
+	 * : How many posts to return. Defaults to -1, meaning every post.
+	 *
+	 * [--paged=<paged>]
+	 * : Which page of results to return, counted in `--posts_per_page` steps.
+	 *
+	 * [--offset=<offset>]
+	 * : How many posts to skip. Needs `--posts_per_page` set to something other
+	 * than -1, which otherwise takes precedence.
+	 *
+	 * [--nopaging=<nopaging>]
+	 * : Return every post, ignoring `--posts_per_page`. Accepts 1 or 0.
 	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each post.
@@ -574,7 +986,6 @@ class Post_Command extends CommandWithDBObject {
 	 * * post_type
 	 * * post_mime_type
 	 * * comment_count
-	 * * filter
 	 * * url
 	 *
 	 * ## EXAMPLES
@@ -644,22 +1055,72 @@ class Post_Command extends CommandWithDBObject {
 		} elseif ( 'count' === $formatter->format ) {
 			$query_args['fields'] = 'ids';
 			$query                = new WP_Query( $query_args );
-			$formatter->display_items( $query->posts );
+			$formatter->display_items( $query->posts ?? [] );
 		} else {
-			$query = new WP_Query( $query_args );
-			$posts = array_map(
-				function ( $post ) {
-					/**
-					 * @var \WP_Post $post
-					 */
+			$need_url = 'url' === $formatter->field || in_array( 'url', (array) $formatter->fields, true );
+			$formatter->display_items( $this->query_posts_in_chunks( $query_args, $need_url ) );
+		}
+	}
 
+	/**
+	 * Query posts in chunks, so that they don't all have to be held in memory at once.
+	 *
+	 * The IDs of all matching posts are queried first. The posts are then loaded a chunk
+	 * at a time with the same query arguments, and the object cache is cleared after each
+	 * chunk. Formats that can be written item by item are then streamed by the formatter.
+	 *
+	 * Fields that WP_Post computes on access, like post meta, are read from the object
+	 * cache. The formatter reads the requested fields of each post while it is the current
+	 * item, before the cache of its chunk is cleared, even when it can't stream them.
+	 *
+	 * @param array<string, mixed> $query_args WP_Query arguments.
+	 * @param bool                 $need_url   Whether to add the `url` property to each post.
+	 * @return \Generator<int, \WP_Post>
+	 */
+	private function query_posts_in_chunks( $query_args, $need_url ) {
+		/** @var int[] $ids */
+		$ids = ( new WP_Query( array_merge( $query_args, [ 'fields' => 'ids' ] ) ) )->posts;
+
+		$chunk_args = $query_args;
+		unset( $chunk_args['offset'], $chunk_args['paged'], $chunk_args['page'], $chunk_args['nopaging'] );
+		// The order is restored from $ids below. Ordering by `post__in` in SQL would
+		// need a FIELD() call with one argument per post, which SQLite does not allow.
+		$chunk_args['orderby']             = 'none';
+		$chunk_args['no_found_rows']       = true;
+		$chunk_args['ignore_sticky_posts'] = true;
+
+		// Slice one chunk at a time, as array_chunk() would hold a second copy of all IDs.
+		$total = count( $ids );
+		for ( $offset = 0; $offset < $total; $offset += self::LIST_CHUNK_SIZE ) {
+			$chunk = array_slice( $ids, $offset, self::LIST_CHUNK_SIZE );
+
+			$chunk_args['post__in']       = $chunk;
+			$chunk_args['posts_per_page'] = count( $chunk );
+
+			$query = new WP_Query( $chunk_args );
+
+			$posts = [];
+			foreach ( $query->posts ?? [] as $post ) {
+				if ( $post instanceof \WP_Post ) {
+					$posts[ $post->ID ] = $post;
+				}
+			}
+
+			foreach ( $chunk as $id ) {
+				if ( ! isset( $posts[ $id ] ) ) {
+					continue;
+				}
+
+				$post = $posts[ $id ];
+				if ( $need_url ) {
 					// @phpstan-ignore property.notFound
-					$post->url = get_permalink( $post->ID );
-					return $post;
-				},
-				$query->posts
-			);
-			$formatter->display_items( $posts );
+					$post->url = get_permalink( $post );
+				}
+				yield $post;
+			}
+
+			unset( $posts, $query );
+			self::clear_runtime_object_cache();
 		}
 	}
 
@@ -767,7 +1228,6 @@ class Post_Command extends CommandWithDBObject {
 		$post_data['post_date_gmt'] = $this->maybe_convert_hyphenated_date_format( $post_data['post_date_gmt'] );
 
 		// Add time if the string is a valid date without time.
-		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
 		$date = DateTime::createFromFormat( 'Y-m-d', $post_data['post_date'] );
 		if ( $date && $date->format( 'Y-m-d' ) === $post_data['post_date'] ) {
 			$post_data['post_date'] .= ' 00:00:00';
@@ -1056,6 +1516,92 @@ class Post_Command extends CommandWithDBObject {
 			WP_CLI::success( "Post with ID {$args[0]} exists." );
 		} else {
 			WP_CLI::halt( 1 );
+		}
+	}
+
+	/**
+	 * Checks if a post contains any blocks.
+	 *
+	 * Exits with return code 0 if the post contains blocks,
+	 * or return code 1 if it does not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check if post contains blocks.
+	 *     $ wp post has-blocks 123
+	 *     Success: Post 123 contains blocks.
+	 *
+	 *     # Check a classic (non-block) post.
+	 *     $ wp post has-blocks 456
+	 *     Error: Post 456 does not contain blocks.
+	 *
+	 *     # Use in a shell conditional.
+	 *     $ if wp post has-blocks 123 2>/dev/null; then
+	 *     >   echo "Post uses blocks"
+	 *     > fi
+	 *
+	 * @subcommand has-blocks
+	 */
+	public function has_blocks( $args, $assoc_args ) {
+		$post = $this->fetcher->get_check( $args[0] );
+
+		if ( Block_Processor_Helper::has_blocks( $post->post_content ) ) {
+			WP_CLI::success( "Post {$post->ID} contains blocks." );
+		} else {
+			WP_CLI::error( "Post {$post->ID} does not contain blocks." );
+		}
+	}
+
+	/**
+	 * Checks if a post contains a specific block type.
+	 *
+	 * Exits with return code 0 if the post contains the specified block,
+	 * or return code 1 if it does not.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <id>
+	 * : The ID of the post to check.
+	 *
+	 * <block-name>
+	 * : The block type name to check for (e.g., 'core/paragraph').
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Check if post contains a paragraph block.
+	 *     $ wp post has-block 123 core/paragraph
+	 *     Success: Post 123 contains block 'core/paragraph'.
+	 *
+	 *     # Check for a heading block.
+	 *     $ wp post has-block 123 core/heading
+	 *     Success: Post 123 contains block 'core/heading'.
+	 *
+	 *     # Check for a block that doesn't exist.
+	 *     $ wp post has-block 123 core/gallery
+	 *     Error: Post 123 does not contain block 'core/gallery'.
+	 *
+	 *     # Check for a custom block from a plugin.
+	 *     $ wp post has-block 123 my-plugin/custom-block
+	 *
+	 * @subcommand has-block
+	 */
+	public function has_block( $args, $assoc_args ) {
+		if ( ! function_exists( 'has_block' ) ) {
+			WP_CLI::error( 'Requires WordPress 5.0 or greater.' );
+		}
+
+		$post       = $this->fetcher->get_check( $args[0] );
+		$block_name = $args[1];
+
+		if ( has_block( $block_name, $post ) ) {
+			WP_CLI::success( "Post {$post->ID} contains block '{$block_name}'." );
+		} else {
+			WP_CLI::error( "Post {$post->ID} does not contain block '{$block_name}'." );
 		}
 	}
 

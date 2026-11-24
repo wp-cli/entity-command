@@ -81,6 +81,29 @@ final class User_Application_Password_Command {
 	 * [--<field>=<value>]
 	 * : Filter the list by a specific field.
 	 *
+	 * [--uuid=<uuid>]
+	 * : Filter by the universally unique ID of the application password.
+	 *
+	 * [--app_id=<app_id>|app-id]
+	 * : Filter by the application ID. `--app-id` is accepted as an alias.
+	 *
+	 * [--name=<name>]
+	 * : Filter by the name of the application password.
+	 *
+	 * [--password=<password>]
+	 * : Filter by the hashed password.
+	 *
+	 * [--created=<created>]
+	 * : Filter by the Unix timestamp the application password was created at.
+	 *
+	 * [--last_used=<last_used>|last-used]
+	 * : Filter by the Unix timestamp the application password was last used at.
+	 * `--last-used` is accepted as an alias.
+	 *
+	 * [--last_ip=<last_ip>|last-ip]
+	 * : Filter by the IP address the application password was last used from.
+	 * `--last-ip` is accepted as an alias.
+	 *
 	 * [--field=<field>]
 	 * : Prints the value of a single field for each application password.
 	 *
@@ -170,15 +193,6 @@ final class User_Application_Password_Command {
 
 		$fields = self::APPLICATION_PASSWORD_FIELDS;
 
-		// Avoid confusion regarding the dash/underscore usage.
-		foreach ( [ 'app-id', 'last-used', 'last-ip' ] as $flag ) {
-			if ( array_key_exists( $flag, $assoc_args ) ) {
-				$underscored_flag                = str_replace( '-', '_', $flag );
-				$assoc_args[ $underscored_flag ] = $assoc_args[ $flag ];
-				unset( $assoc_args[ $flag ] );
-			}
-		}
-
 		foreach ( $fields as $field ) {
 			if ( ! array_key_exists( $field, $assoc_args ) ) {
 				continue;
@@ -186,10 +200,18 @@ final class User_Application_Password_Command {
 
 			$value = Utils\get_flag_value( $assoc_args, $field );
 
+			// 'created' and 'last_used' come back from core as integers, while an
+			// argument always arrives as a string, so compare them as strings.
+			$filter_value = is_scalar( $value ) ? (string) $value : '';
+
 			$application_passwords = array_filter(
 				$application_passwords,
-				static function ( $application_password ) use ( $field, $value ) {
-					return $application_password[ $field ] === $value;
+				static function ( $application_password ) use ( $field, $filter_value ) {
+					$item_value = isset( $application_password[ $field ] ) && is_scalar( $application_password[ $field ] )
+						? (string) $application_password[ $field ]
+						: '';
+
+					return $item_value === $filter_value;
 				}
 			);
 		}
@@ -357,8 +379,8 @@ final class User_Application_Password_Command {
 	 * <uuid>
 	 * : The universally unique ID of the application password.
 	 *
-	 * [--<field>=<value>]
-	 * : Update the <field> with a new <value>. Currently supported fields: name.
+	 * [--name=<name>]
+	 * : The new name of the application password.
 	 *
 	 * ## EXAMPLES
 	 *

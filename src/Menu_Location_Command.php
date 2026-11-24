@@ -1,7 +1,6 @@
 <?php
 
 use WP_CLI\Formatter;
-use WP_CLI\Utils;
 
 /**
  * Assigns, removes, and lists a menu's locations.
