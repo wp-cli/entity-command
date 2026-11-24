@@ -2880,7 +2880,7 @@ wp option list [--search=<pattern>] [--exclude=<pattern>] [--autoload=<value>] [
 		Pattern to exclude. Use wildcards ( * and ? ) to match option name.
 
 	[--autoload=<value>]
-		Match only autoload options when value is on, and only not-autoload option when off.
+		Match only autoload options when value is on, and only not-autoload option when off. On WordPress 6.6 and later, options with the `auto` and `auto-on` values count as autoload options.
 
 	[--transients]
 		List only transients. Use `--no-transients` to ignore all transients.
