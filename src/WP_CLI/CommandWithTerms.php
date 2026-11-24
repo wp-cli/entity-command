@@ -259,7 +259,7 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 		if ( $field ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
 			if ( ! $terms ) {
-				$id_label = count( $args ) > 1 ? 'IDs' : 'ID';
+				$id_label = Utils\pluralize( 'ID', count( $args ) );
 				WP_CLI::error( "Could not find any term with the given {$id_label}." );
 			}
 		}
@@ -314,7 +314,7 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 		if ( $field ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
 			if ( ! $terms ) {
-				$id_label = count( $args ) > 1 ? 'IDs' : 'ID';
+				$id_label = Utils\pluralize( 'ID', count( $args ) );
 				WP_CLI::error( "Could not find any term with the given {$id_label}." );
 			}
 		}
