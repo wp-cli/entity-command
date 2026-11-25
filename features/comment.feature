@@ -551,6 +551,45 @@ Feature: Manage WordPress comments
       0
       """
 
+  Scenario: Delete all comments with --all flag includes spam and trashed comments
+    Given a WP install
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Spam comment' --comment_approved=spam --porcelain`
+    And save STDOUT as {SPAM_ID}
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Trashed comment' --comment_approved=trash --porcelain`
+    And save STDOUT as {TRASH_ID}
+    And I run `wp comment create --comment_post_ID=1 --comment_content='Pending comment' --comment_approved=0 --porcelain`
+    And save STDOUT as {PENDING_ID}
+
+    When I run `wp comment delete --all --force`
+    Then STDOUT should contain:
+      """
+      Success: Deleted comment {SPAM_ID}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deleted comment {TRASH_ID}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deleted comment {PENDING_ID}.
+      """
+    And STDOUT should contain:
+      """
+      Success: Deleted 4 comments.
+      """
+
+    When I run `wp comment list --status=spam --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
+    When I run `wp comment list --status=trash --format=count`
+    Then STDOUT should be:
+      """
+      0
+      """
+
   Scenario: Delete all comments when no comments exist
     Given a WP install
     And I run `wp comment delete $(wp comment list --field=ID) --force`

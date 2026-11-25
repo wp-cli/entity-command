@@ -674,7 +674,7 @@ class Comment_Command extends CommandWithDBObject {
 	 *     Success: Deleted 2 comments.
 	 */
 	public function delete( $args, $assoc_args ) {
-		$all = Utils\get_flag_value( $assoc_args, 'all', false );
+		$all = (bool) Utils\get_flag_value( $assoc_args, 'all', false );
 
 		// Check if comment IDs or --all is passed.
 		$args = $this->check_optional_args_and_all( $args, $all, 'delete' );
@@ -1047,6 +1047,7 @@ class Comment_Command extends CommandWithDBObject {
 			array(
 				'fields' => 'ids',
 				'number' => 0, // Get all comments
+				'status' => 'any', // Include spam and trashed comments.
 			)
 		);
 
