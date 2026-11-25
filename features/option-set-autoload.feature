@@ -91,3 +91,21 @@ Feature: Set 'autoload' value for an option
       """
       off
       """
+
+  @require-wp-6.6
+  Scenario: Updates the cached alloptions in the same request
+    Given a WP install
+    And I run `wp option add foo bar --autoload=on`
+    And I run `wp option add baz qux --autoload=off`
+
+    When I run `wp eval 'wp_load_alloptions(); WP_CLI::runcommand( "option set-autoload foo off", array( "launch" => false ) ); var_dump( array_key_exists( "foo", wp_load_alloptions() ) );'`
+    Then STDOUT should contain:
+      """
+      bool(false)
+      """
+
+    When I run `wp eval 'wp_load_alloptions(); get_option( "baz" ); WP_CLI::runcommand( "option set-autoload baz on", array( "launch" => false ) ); var_dump( array_key_exists( "baz", wp_load_alloptions() ) );'`
+    Then STDOUT should contain:
+      """
+      bool(true)
+      """
