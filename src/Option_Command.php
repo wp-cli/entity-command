@@ -564,11 +564,15 @@ class Option_Command extends WP_CLI_Command {
 			return;
 		}
 
-		$wpdb->update(
+		$updated = $wpdb->update(
 			$wpdb->options,
 			array( 'autoload' => $autoload ),
 			array( 'option_name' => $option )
 		);
+
+		if ( false === $updated ) {
+			WP_CLI::error( "Could not update autoload value for '{$option}' option." );
+		}
 
 		// Recreate cache refreshing from update_option().
 		$notoptions = wp_cache_get( 'notoptions', 'options' );
