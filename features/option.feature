@@ -286,6 +286,45 @@ Feature: Manage WordPress options
       on
       """
 
+  Scenario: Report an error when the autoload value cannot be stored
+    Given a WP install
+    And a wp-content/mu-plugins/fail-autoload-update.php file:
+      """
+      <?php
+      add_filter(
+        'query',
+        static function ( $query ) {
+          if ( false !== strpos( $query, 'SET `autoload` =' ) && false !== strpos( $query, "`option_name` = 'hello'" ) ) {
+            return 'UPDATE wp_cli_missing_table SET autoload = 1';
+          }
+          return $query;
+        }
+      );
+      """
+    And I run `wp option add hello world --autoload=on`
+
+    When I try `wp option update hello world --autoload=off`
+    Then STDERR should contain:
+      """
+      Error: Could not update autoload value for 'hello' option.
+      """
+    And STDOUT should not contain:
+      """
+      Success:
+      """
+    And the return code should be 1
+
+    When I try `wp option set-autoload hello off`
+    Then STDERR should contain:
+      """
+      Error: Could not update autoload value for 'hello' option.
+      """
+    And STDOUT should not contain:
+      """
+      Success:
+      """
+    And the return code should be 1
+
   @require-wp-4.2
   @less-than-wp-6.6
   Scenario: Managed autoloaded options
