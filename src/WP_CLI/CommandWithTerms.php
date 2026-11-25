@@ -211,7 +211,7 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 
 		$label = count( $terms ) > 1 ? 'terms' : 'term';
 
-		if ( is_wp_error( $result ) ) {
+		if ( ! $result || is_wp_error( $result ) ) {
 			WP_CLI::error( "Failed to remove {$label}." );
 		}
 
@@ -258,6 +258,10 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 		$field = Utils\get_flag_value( $assoc_args, 'by' );
 		if ( $field ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
+			if ( ! $terms ) {
+				$id_label = Utils\pluralize( 'ID', count( $args ) );
+				WP_CLI::error( "Could not find any term with the given {$id_label}." );
+			}
 		}
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, true );
 
@@ -309,6 +313,10 @@ abstract class CommandWithTerms extends WP_CLI_Command {
 		$field = Utils\get_flag_value( $assoc_args, 'by' );
 		if ( $field ) {
 			$terms = $this->prepare_terms( $field, $terms, $taxonomy );
+			if ( ! $terms ) {
+				$id_label = Utils\pluralize( 'ID', count( $args ) );
+				WP_CLI::error( "Could not find any term with the given {$id_label}." );
+			}
 		}
 		$result = wp_set_object_terms( $object_id, $terms, $taxonomy, false );
 
