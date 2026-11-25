@@ -1689,6 +1689,7 @@ class Post_Command extends CommandWithDBObject {
 				continue;
 			}
 
+			/** @var string $markup */
 			$markup = gutenberg_html_to_block_markup( $post->post_content );
 
 			if ( $dry_run ) {
@@ -1700,7 +1701,8 @@ class Post_Command extends CommandWithDBObject {
 			$result = wp_update_post(
 				[
 					'ID'           => $post->ID,
-					'post_content' => $markup,
+					// wp_update_post() expects slashed data and would strip the backslashes of escaped block attributes.
+					'post_content' => wp_slash( $markup ),
 				],
 				true
 			);

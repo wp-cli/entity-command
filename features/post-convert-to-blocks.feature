@@ -21,6 +21,37 @@ Feature: Convert classic post content to blocks
     And STDOUT should be empty
     And the return code should be 1
 
+  Scenario: Keep backslashes when saving the converted content
+    Given a WP install
+    # Stands in for the Gutenberg conversion, to check how the command saves the result.
+    And a wp-content/mu-plugins/fake-block-conversion.php file:
+      """
+      <?php
+      function gutenberg_html_to_block_markup( $html ) {
+        return '<!-- wp:paragraph {"className":"\u003cb\u003e"} -->' . trim( $html ) . '<!-- /wp:paragraph -->';
+      }
+      """
+    And a content.txt file:
+      """
+      <p>C:\Users\me</p>
+      """
+
+    When I run `wp post create content.txt --post_title='Classic post' --porcelain`
+    Then save STDOUT as {POST_ID}
+
+    When I run `wp post convert-to-blocks {POST_ID}`
+    Then STDOUT should be:
+      """
+      Converted post {POST_ID}.
+      Success: Converted 1 of 1 posts.
+      """
+
+    When I run `wp post get {POST_ID} --field=post_content`
+    Then STDOUT should be:
+      """
+      <!-- wp:paragraph {"className":"\u003cb\u003e"} --><p>C:\Users\me</p><!-- /wp:paragraph -->
+      """
+
   @broken
   Scenario: Convert a classic post to blocks
     Given a WP install
