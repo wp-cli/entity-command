@@ -2880,7 +2880,7 @@ wp option list [--search=<pattern>] [--exclude=<pattern>] [--autoload=<value>] [
 		Pattern to exclude. Use wildcards ( * and ? ) to match option name.
 
 	[--autoload=<value>]
-		Match only autoload options when value is on, and only not-autoload option when off.
+		Match only autoload options when value is on, and only not-autoload option when off. On WordPress 6.6 and later, options with the `auto` and `auto-on` values count as autoload options.
 
 	[--transients]
 		List only transients. Use `--no-transients` to ignore all transients.
@@ -8435,7 +8435,7 @@ wp user check-password <user> <user_pass> [--escape-chars]
 Creates a new user.
 
 ~~~
-wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--display_name=<name>] [--user_nicename=<nice_name>] [--user_url=<url>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--send-email] [--porcelain]
+wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>] [--user_registered=<yyyy-mm-dd-hh-ii-ss>] [--display_name=<name>] [--user_nicename=<nice_name>] [--user_url=<url>] [--nickname=<nickname>] [--first_name=<first_name>] [--last_name=<last_name>] [--description=<description>] [--rich_editing=<rich_editing>] [--syntax_highlighting=<syntax_highlighting>] [--send-email] [--porcelain]
 ~~~
 
 **OPTIONS**
@@ -8478,7 +8478,14 @@ wp user create <user-login> <user-email> [--role=<role>] [--user_pass=<password>
 		A string containing content about the user.
 
 	[--rich_editing=<rich_editing>]
-		A string for whether to enable the rich editor or not. False if not empty.
+		Whether to enable the rich editor for the user. Accepts 'true' or 'false',
+		or their numeric forms 1 and 0.
+		Default: true
+
+	[--syntax_highlighting=<syntax_highlighting>]
+		Whether to enable the rich code editor for the user. Accepts 'true' or 'false',
+		or their numeric forms 1 and 0.
+		Default: true
 
 	[--send-email]
 		Send an email to the user with their new account details.
@@ -10100,7 +10107,7 @@ wp user unspam <user>...
     # Remove user from spam.
     $ wp user unspam 123
     User 123 removed from spam.
-    Success: Unspamed 1 of 1 users.
+    Success: Unspammed 1 of 1 users.
 
 
 
@@ -10145,11 +10152,12 @@ wp user update <user>... [--user_pass=<password>] [--user_nicename=<nice_name>] 
 		A string containing content about the user.
 
 	[--rich_editing=<rich_editing>]
-		A string for whether to enable the rich editor or not. False if not empty.
+		Whether to enable the rich editor for the user. Accepts 'true' or 'false',
+		or their numeric forms 1 and 0.
 
 	[--syntax_highlighting=<syntax_highlighting>]
-		Whether to enable the rich code editor for the user. Accepts 'true' or
-		'false' as a string literal, not boolean.
+		Whether to enable the rich code editor for the user. Accepts 'true' or 'false',
+		or their numeric forms 1 and 0.
 
 	[--comment_shortcuts=<comment_shortcuts>]
 		Whether to enable comment moderation keyboard shortcuts for the user.

@@ -161,13 +161,17 @@ class Term_Command extends WP_CLI_Command {
 			}
 		}
 
+		$need_url = 'url' === $formatter->field || in_array( 'url', (array) $formatter->fields, true );
+
 		$terms = array_map(
-			function ( $term ) {
+			function ( $term ) use ( $need_url ) {
 					$term->count  = (int) $term->count;
 					$term->parent = (int) $term->parent;
 
+				if ( $need_url ) {
 					// @phpstan-ignore property.notFound
 					$term->url = get_term_link( $term );
+				}
 					return $term;
 			},
 			$terms
@@ -590,7 +594,7 @@ class Term_Command extends WP_CLI_Command {
 			}
 
 			$args = [
-				'parent' => $current_parent,
+				'parent' => max( 0, $current_parent ),
 				'slug'   => $slug . "-{$index}",
 			];
 

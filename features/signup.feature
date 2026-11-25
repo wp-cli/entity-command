@@ -11,8 +11,10 @@ Feature: Manage signups in a multisite installation
 
   Scenario: List signups
     Given a WP multisite install
-    And I run `wp eval "wpmu_signup_user( 'bobuser', 'bobuser@example.com' );"`
-    And I run `wp eval "wpmu_signup_user( 'johnuser', 'johnuser@example.com' );"`
+    And these setup commands:
+      | command                                                           |
+      | wp eval "wpmu_signup_user( 'bobuser', 'bobuser@example.com' );"   |
+      | wp eval "wpmu_signup_user( 'johnuser', 'johnuser@example.com' );" |
 
     When I run `wp user signup list --fields=signup_id,user_login,user_email,active --format=csv`
     Then STDOUT should be:
@@ -101,8 +103,10 @@ Feature: Manage signups in a multisite installation
 
   Scenario: Activate multiple signups
     Given a WP multisite install
-    And I run `wp eval "wpmu_signup_user( 'bobuser', 'bobuser@example.com' );"`
-    And I run `wp eval "wpmu_signup_user( 'johnuser', 'johnuser@example.com' );"`
+    And these setup commands:
+      | command                                                           |
+      | wp eval "wpmu_signup_user( 'bobuser', 'bobuser@example.com' );"   |
+      | wp eval "wpmu_signup_user( 'johnuser', 'johnuser@example.com' );" |
 
     When I run `wp user signup list --active=0 --format=count`
     Then STDOUT should be:
@@ -147,8 +151,10 @@ Feature: Manage signups in a multisite installation
 
   Scenario: Delete signups
     Given a WP multisite install
-    And I run `wp eval "wpmu_signup_user( 'bobuser', 'bobuser@example.com' );"`
-    And I run `wp eval "wpmu_signup_user( 'johnuser', 'johnuser@example.com' );"`
+    And these setup commands:
+      | command                                                           |
+      | wp eval "wpmu_signup_user( 'bobuser', 'bobuser@example.com' );"   |
+      | wp eval "wpmu_signup_user( 'johnuser', 'johnuser@example.com' );" |
 
     When I run `wp user signup get bobuser --field=user_email`
     Then STDOUT should be:
@@ -176,8 +182,10 @@ Feature: Manage signups in a multisite installation
 
   Scenario: Delete all signups
     Given a WP multisite install
-    And I run `wp eval "wpmu_signup_user( 'bobuser', 'bobuser@example.com' );"`
-    And I run `wp eval "wpmu_signup_user( 'johnuser', 'johnuser@example.com' );"`
+    And these setup commands:
+      | command                                                           |
+      | wp eval "wpmu_signup_user( 'bobuser', 'bobuser@example.com' );"   |
+      | wp eval "wpmu_signup_user( 'johnuser', 'johnuser@example.com' );" |
 
     When I try `wp user signup delete`
     Then STDERR should be:
@@ -199,10 +207,12 @@ Feature: Manage signups in a multisite installation
 
   Scenario: Expose add_to_blog, new_role, and blog_id fields and support filtering by them
     Given a WP multisite install
-    And I run `wp eval "wpmu_signup_user( 'adminuser', 'adminuser@example.com', array( 'add_to_blog' => 228, 'new_role' => 'administrator' ) );"`
-    And I run `wp eval "wpmu_signup_user( 'editoruser', 'editoruser@example.com', array( 'add_to_blog' => 228, 'new_role' => 'editor' ) );"`
-    And I run `wp eval "wpmu_signup_user( 'otherbloguser', 'otherbloguser@example.com', array( 'add_to_blog' => 300, 'new_role' => 'administrator' ) );"`
-    And I run `wp eval "wpmu_signup_user( 'plainuser', 'plainuser@example.com' );"`
+    And these setup commands:
+      | command                                                                                                                                   |
+      | wp eval "wpmu_signup_user( 'adminuser', 'adminuser@example.com', array( 'add_to_blog' => 228, 'new_role' => 'administrator' ) );"         |
+      | wp eval "wpmu_signup_user( 'editoruser', 'editoruser@example.com', array( 'add_to_blog' => 228, 'new_role' => 'editor' ) );"              |
+      | wp eval "wpmu_signup_user( 'otherbloguser', 'otherbloguser@example.com', array( 'add_to_blog' => 300, 'new_role' => 'administrator' ) );" |
+      | wp eval "wpmu_signup_user( 'plainuser', 'plainuser@example.com' );"                                                                       |
 
     When I run `wp user signup list --active=0 --new_role=administrator --fields=user_login,new_role,blog_id --format=csv`
     Then STDOUT should be:
@@ -248,10 +258,12 @@ Feature: Manage signups in a multisite installation
 
   Scenario: Filter signups by metadata with per_page pagination
     Given a WP multisite install
-    And I run `wp eval "wpmu_signup_user( 'plainuser', 'plainuser@example.com' );"`
-    And I run `wp eval "wpmu_signup_user( 'adminuser', 'adminuser@example.com', array( 'add_to_blog' => 228, 'new_role' => 'administrator' ) );"`
-    And I run `wp eval "wpmu_signup_user( 'editoruser', 'editoruser@example.com', array( 'add_to_blog' => 228, 'new_role' => 'editor' ) );"`
-    And I run `wp eval "wpmu_signup_user( 'otherbloguser', 'otherbloguser@example.com', array( 'add_to_blog' => 300, 'new_role' => 'administrator' ) );"`
+    And these setup commands:
+      | command                                                                                                                                   |
+      | wp eval "wpmu_signup_user( 'plainuser', 'plainuser@example.com' );"                                                                       |
+      | wp eval "wpmu_signup_user( 'adminuser', 'adminuser@example.com', array( 'add_to_blog' => 228, 'new_role' => 'administrator' ) );"         |
+      | wp eval "wpmu_signup_user( 'editoruser', 'editoruser@example.com', array( 'add_to_blog' => 228, 'new_role' => 'editor' ) );"              |
+      | wp eval "wpmu_signup_user( 'otherbloguser', 'otherbloguser@example.com', array( 'add_to_blog' => 300, 'new_role' => 'administrator' ) );" |
 
     When I run `wp user signup list --blog_id=228 --per_page=2 --fields=user_login,blog_id --format=csv`
     Then STDOUT should be:

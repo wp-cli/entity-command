@@ -48,9 +48,11 @@ Feature: Manage WordPress comments
       """
     And the return code should be 1
 
-    When I run `wp comment create --comment_post_ID=1`
-    And I run `wp comment create --comment_post_ID=1`
-    And I run `wp comment delete 3 4`
+    Given these setup commands:
+      | command                               |
+      | wp comment create --comment_post_ID=1 |
+      | wp comment create --comment_post_ID=1 |
+    When I run `wp comment delete 3 4`
     Then STDOUT should be:
       """
       Success: Trashed comment 3.
@@ -475,3 +477,24 @@ Feature: Manage WordPress comments
     And I run `wp comment unspam {COMMENT_ID} --url=www.example.com`
     And I run `wp comment trash {COMMENT_ID} --url=www.example.com`
     And I run `wp comment untrash {COMMENT_ID} --url=www.example.com`
+
+  Scenario: List more comments than are loaded from the database at a time
+    Given a WP install
+    And I run `wp comment generate --count=1200 --post_id=1`
+    And I run `wp comment list --orderby=comment_ID --order=asc --format=ids`
+    And save STDOUT as {IDS}
+
+    When I run `wp comment list --orderby=comment_ID --order=asc --field=comment_ID | tr '\n' ' ' | sed 's/ $//'`
+    Then STDOUT should be:
+      """
+      {IDS}
+      """
+
+    When I run `wp comment list --fields=comment_ID,comment_post_ID --format=csv | wc -l`
+    Then STDOUT should contain:
+      """
+      1202
+      """
+
+    When I run `wp comment list --orderby=comment_ID --order=asc --number=1 --fields=comment_ID,url --format=csv`
+    Then STDOUT should match /^comment_ID,url\n(\d+),https?:\/\/example\.com\/\?p=1#comment-\1$/

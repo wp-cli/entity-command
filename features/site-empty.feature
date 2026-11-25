@@ -128,3 +128,14 @@ Feature: Empty a WordPress site of its data
 
     When I run `wp --url=example.com/foo post list --format=ids`
     Then STDOUT should be empty
+
+  @require-wp-6.1
+  Scenario: Empty a multisite site without deprecation notices
+    Given a WP multisite installation
+    And I run `wp config set WP_DEBUG true --raw`
+
+    When I run `wp site empty --yes`
+    Then STDERR should not contain:
+      """
+      global_terms_enabled
+      """

@@ -4,7 +4,10 @@ Feature: Manage user custom fields
   @less-than-php-8.0 @require-mysql
   Scenario: User application passwords are disabled for WordPress lower than 5.6
     Given a WP install
-    And I try `wp theme install twentytwenty --activate`
+    And these installed and active themes:
+      """
+      twentytwenty
+      """
     And I run `wp core download --version=5.5 --force`
 
     When I try `wp user application-password create 1 myapp`
@@ -88,11 +91,13 @@ Feature: Manage user custom fields
     When I try `wp user application-password get 1 {UUID}`
     Then the return code should be 1
 
-    When I run `wp user application-password create 1 myapp1`
-    And I run `wp user application-password create 1 myapp2`
-    And I run `wp user application-password create 1 myapp3`
-    And I run `wp user application-password create 1 myapp4`
-    And I run `wp user application-password create 1 myapp5`
+    Given these setup commands:
+      | command                                      |
+      | wp user application-password create 1 myapp1 |
+      | wp user application-password create 1 myapp2 |
+      | wp user application-password create 1 myapp3 |
+      | wp user application-password create 1 myapp4 |
+    When I run `wp user application-password create 1 myapp5`
     Then STDOUT should not be empty
 
     When I run `wp user application-password list 1 --format=count`

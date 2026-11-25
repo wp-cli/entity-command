@@ -123,7 +123,11 @@ Feature: Manage WordPress SVG icons
       """
     And STDOUT should not contain:
       """
-      width=
+      width="24"
+      """
+    And STDOUT should not contain:
+      """
+      height="24"
       """
 
   @require-wp-7.1

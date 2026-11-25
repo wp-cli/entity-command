@@ -667,10 +667,10 @@ Feature: Manage WordPress users
 
   Scenario: Mark/remove a user from spam
     Given a WP multisite install
-    And I run `wp user create bumblebee bbee@example.com --role=author --porcelain`
-    And save STDOUT as {BBEE_ID}
-    And I run `wp user create oprime oprime@example.com --role=author --porcelain`
-    And save STDOUT as {OP_ID}
+    And these setup commands:
+      | command                                                             | save    |
+      | wp user create bumblebee bbee@example.com --role=author --porcelain | BBEE_ID |
+      | wp user create oprime oprime@example.com --role=author --porcelain  | OP_ID   |
     And I run `wp user get bumblebee`
     And STDOUT should not be empty
     And I run `wp user get oprime`
@@ -810,4 +810,267 @@ Feature: Manage WordPress users
     Then STDOUT should be:
       """
       newtestuser
+      """
+
+  Scenario: Create a user with a nicename and rich editing preference
+    Given a WP install
+
+    When I run `wp user create bob bob@example.com --user_nicename=bobby --rich_editing=false --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=user_nicename`
+    Then STDOUT should be:
+      """
+      bobby
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+  Scenario: Creating a user without a nicename falls back to the login
+    Given a WP install
+
+    When I run `wp user create carol carol@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=user_nicename`
+    Then STDOUT should be:
+      """
+      carol
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  # Multisite creates the user through wpmu_create_user(), which takes only a
+  # login, a password and an email, and then applies the rest with
+  # wp_update_user(). That is a different path to wp_insert_user(), so both
+  # fields are worth asserting again here.
+  Scenario: Create a user with a nicename and rich editing preference on multisite
+    Given a WP multisite install
+
+    # Multisite requires a login of at least four characters, and a login that
+    # differs from the nicename shows the nicename was applied rather than
+    # derived.
+    When I run `wp user create robert robert@example.com --user_nicename=bobby --rich_editing=false --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=user_nicename`
+    Then STDOUT should be:
+      """
+      bobby
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+  Scenario: Creating a user without a nicename falls back to the login on multisite
+    Given a WP multisite install
+
+    When I run `wp user create carol carol@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user get {USER_ID} --field=user_nicename`
+    Then STDOUT should be:
+      """
+      carol
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  Scenario: The rich editing preference is stored as the value core checks for
+    Given a WP install
+
+    # user_can_richedit() compares the stored meta against the string 'true',
+    # so other spellings of a boolean have to be normalised.
+    When I run `wp user create dave dave@example.com --rich_editing=1 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+    When I run `wp user create erin erin@example.com --rich_editing=0 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+  Scenario: The rich editing preference is normalized when updating a user
+    Given a WP install
+
+    When I run `wp user create frank frank@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user update {USER_ID} --rich_editing=0`
+    Then STDOUT should contain:
+      """
+      Success: Updated user {USER_ID}.
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+    When I run `wp user update {USER_ID} --rich_editing=1`
+    Then STDOUT should contain:
+      """
+      Success: Updated user {USER_ID}.
+      """
+
+    When I run `wp user meta get {USER_ID} rich_editing`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  Scenario: The syntax highlighting preference is stored as the value core checks for
+    Given a WP install
+
+    # wp_get_user_editor() compares the stored meta against the string 'false',
+    # so other spellings of a boolean have to be normalised.
+    When I run `wp user create sasha sasha@example.com --syntax_highlighting=0 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user meta get {USER_ID} syntax_highlighting`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+    When I run `wp user create rosa rosa@example.com --syntax_highlighting=1 --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user meta get {USER_ID} syntax_highlighting`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  Scenario: The syntax highlighting preference is normalized when updating a user
+    Given a WP install
+
+    When I run `wp user create steve steve@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I run `wp user update {USER_ID} --syntax_highlighting=0`
+    Then STDOUT should contain:
+      """
+      Success: Updated user {USER_ID}.
+      """
+
+    When I run `wp user meta get {USER_ID} syntax_highlighting`
+    Then STDOUT should be:
+      """
+      false
+      """
+
+    When I run `wp user update {USER_ID} --syntax_highlighting=1`
+    Then STDOUT should contain:
+      """
+      Success: Updated user {USER_ID}.
+      """
+
+    When I run `wp user meta get {USER_ID} syntax_highlighting`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  Scenario: Editor preferences that are not a boolean are rejected
+    Given a WP install
+
+    When I try `wp user create tina tina@example.com --rich_editing=maybe --porcelain`
+    Then STDERR should contain:
+      """
+      Error: Invalid value for --rich_editing. Accepts 'true' or 'false', or their numeric forms 1 and 0.
+      """
+    And STDOUT should be empty
+    And the return code should be 1
+
+    When I run `wp user create tina tina@example.com --porcelain`
+    Then STDOUT should be a number
+    And save STDOUT as {USER_ID}
+
+    When I try `wp user update {USER_ID} --syntax_highlighting=maybe`
+    Then STDERR should contain:
+      """
+      Error: Invalid value for --syntax_highlighting. Accepts 'true' or 'false', or their numeric forms 1 and 0.
+      """
+    And the return code should be 1
+
+    # The rejected update must not have changed the preference.
+    When I run `wp user meta get {USER_ID} syntax_highlighting`
+    Then STDOUT should be:
+      """
+      true
+      """
+
+  Scenario: List more users than are loaded from the database at a time
+    Given a WP install
+    And I run `wp user generate --count=600`
+    And I run `wp user meta update 1 batch_meta admin-value`
+    And I run `wp user list --orderby=ID --order=asc --format=ids`
+    And save STDOUT as {IDS}
+
+    When I run `wp user list --orderby=ID --order=asc --field=ID | tr '\n' ' ' | sed 's/ $//'`
+    Then STDOUT should be:
+      """
+      {IDS}
+      """
+
+    When I run `wp user list --fields=ID,user_login,roles --format=csv | wc -l`
+    Then STDOUT should contain:
+      """
+      602
+      """
+
+    When I run `wp user list --orderby=ID --order=asc --number=2 --fields=ID,batch_meta,roles --format=csv`
+    Then STDOUT should be:
+      """
+      ID,batch_meta,roles
+      1,admin-value,administrator
+      2,,subscriber
+      """
+
+  Scenario: List a user once when it matches the query more than once
+    Given a WP install
+    And I run `wp user meta add 1 last_activity 5`
+    And I run `wp user meta add 1 last_activity 7`
+
+    When I run `wp user list --meta_key=last_activity --orderby=meta_value_num --fields=ID,roles --format=csv`
+    Then STDOUT should be:
+      """
+      ID,roles
+      1,administrator
       """
