@@ -4,11 +4,18 @@ Feature: Convert classic post content to blocks
   # https://github.com/WordPress/gutenberg/pull/82013 (branch
   # `try/13163-php-block-conversion`), which no released Gutenberg build
   # provides yet. The scenarios tagged @broken below need a Gutenberg build
-  # of that PR. To run them locally, build the plugin ZIP from that branch,
-  # remove the @broken tags, and add the following step after the
-  # `Given a WP install` step in each scenario:
+  # of that PR, which CI cannot install, so `composer behat` skips them.
+  # To run them locally:
   #
-  #   And I run `wp plugin install /path/to/gutenberg.zip --activate`
+  # 1. Build the plugin zip from that branch
+  #    (`npm run build:plugin-zip` in a Gutenberg checkout).
+  # 2. Copy it to `gutenberg.zip` in the root of this package. Git ignores it.
+  # 3. Prepare the test database once with `composer prepare-tests`.
+  # 4. Run the scenarios by tag, bypassing the @broken exclusion:
+  #
+  #        vendor/bin/behat --tags=@broken features/post-convert-to-blocks.feature
+  #
+  # Each scenario installs the zip with `wp plugin install gutenberg.zip --activate`.
 
   Scenario: Conversion requires the Gutenberg build with server-side block conversion
     Given a WP install
@@ -55,6 +62,7 @@ Feature: Convert classic post content to blocks
   @broken
   Scenario: Convert a classic post to blocks
     Given a WP install
+    And I run `wp plugin install {PROJECT_DIR}/gutenberg.zip --activate`
 
     When I run `wp post create --post_title='Classic post' --post_content='<h2>Title</h2><p>Text</p>' --porcelain`
     Then save STDOUT as {POST_ID}
@@ -86,6 +94,7 @@ Feature: Convert classic post content to blocks
   @broken
   Scenario: Preview a conversion with --dry-run
     Given a WP install
+    And I run `wp plugin install {PROJECT_DIR}/gutenberg.zip --activate`
 
     When I run `wp post create --post_title='Classic post' --post_content='<h2>Title</h2><p>Text</p>' --porcelain`
     Then save STDOUT as {POST_ID}
@@ -107,6 +116,7 @@ Feature: Convert classic post content to blocks
   @broken
   Scenario: Skip posts that already contain blocks
     Given a WP install
+    And I run `wp plugin install {PROJECT_DIR}/gutenberg.zip --activate`
 
     When I run `wp post create --post_title='Block post' --post_content='<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->' --porcelain`
     Then save STDOUT as {POST_ID}
@@ -125,6 +135,7 @@ Feature: Convert classic post content to blocks
   @broken
   Scenario: Skip posts without content
     Given a WP install
+    And I run `wp plugin install {PROJECT_DIR}/gutenberg.zip --activate`
 
     When I run `wp post create --post_title='Empty post' --post_content='' --porcelain`
     Then save STDOUT as {POST_ID}
@@ -143,6 +154,7 @@ Feature: Convert classic post content to blocks
   @broken
   Scenario: Report missing posts as failures
     Given a WP install
+    And I run `wp plugin install {PROJECT_DIR}/gutenberg.zip --activate`
 
     When I run `wp post create --post_title='Classic post' --post_content='<p>Text</p>' --porcelain`
     Then save STDOUT as {POST_ID}
